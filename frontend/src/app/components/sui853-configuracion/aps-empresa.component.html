@@ -1,0 +1,33 @@
+<section>
+  <h2>APS Empresa</h2>
+
+  <p *ngIf="loading">Cargando...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <div class="table-wrapper" *ngIf="!loading && !error">
+    <p-table [value]="rows" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>TCFG_APS_ID</th>
+          <th>NOMAPS</th>
+          <th>NUAP</th>
+          <th>EMPRESA</th>
+          <th>CODSUI</th>
+          <th>DEPARTAMENTO</th>
+          <th>MUNICIPIO</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.TCFG_APS_ID }}</td>
+          <td>{{ row.NOMAPS }}</td>
+          <td>{{ row.NUAP }}</td>
+          <td>{{ row.EMPRESA }}</td>
+          <td>{{ row.CODSUI }}</td>
+          <td>{{ row.DEPARTAMENTO }}</td>
+          <td>{{ row.MUNICIPIO }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</section>

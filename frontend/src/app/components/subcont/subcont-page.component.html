@@ -1,0 +1,117 @@
+<div class="subcont-container">
+  <h2>Subsidios y Contribuciones</h2>
+  <p class="subtitle">Gestione los valores de subsidios y contribuciones por APS, año y mes</p>
+
+  <!-- Filtros -->
+  <p-card styleClass="filtros-card">
+    <ng-template pTemplate="title">
+      <div class="card-header">
+        <span>⚙️ Parámetros</span>
+      </div>
+    </ng-template>
+    <div class="filtros-grid">
+      <div class="filtro-item">
+        <label>APS</label>
+        <p-select
+          [options]="apsOptions()"
+          [(ngModel)]="aps"
+          optionLabel="apsaNombre"
+          optionValue="apsaId"
+          placeholder="Seleccione APS"
+          styleClass="w-full">
+        </p-select>
+      </div>
+      <div class="filtro-item">
+        <label>Año</label>
+        <p-select
+          [options]="annoOptions"
+          [(ngModel)]="anno"
+          placeholder="Seleccione año"
+          styleClass="w-full">
+        </p-select>
+      </div>
+      <div class="filtro-item">
+        <label>Mes</label>
+        <p-select
+          [options]="mesOptions"
+          [(ngModel)]="mes"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccione mes"
+          styleClass="w-full">
+        </p-select>
+      </div>
+    </div>
+    <div class="filtros-actions">
+      <p-button
+        label="Consultar"
+        icon="pi pi-search"
+        severity="primary"
+        [loading]="loading()"
+        (onClick)="consultar()">
+      </p-button>
+    </div>
+  </p-card>
+
+  <!-- Tabla de Clases -->
+  @if (clases().length > 0) {
+    <p-card styleClass="tabla-card">
+      <ng-template pTemplate="title">
+        <div class="card-header">
+          <span>📋 Valores por Clase</span>
+          <p-button
+            label="Guardar"
+            icon="pi pi-save"
+            severity="success"
+            [loading]="guardando()"
+            (onClick)="guardar()">
+          </p-button>
+        </div>
+      </ng-template>
+      
+      <p-table [value]="clases()" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Clase</th>
+            <th>Nombre</th>
+            <th>Valor</th>
+            <th>Estado</th>
+            <th style="width: 100px">Acciones</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>{{ item.clase }}</td>
+            <td>{{ item.nombre }}</td>
+            <td>
+              <p-inputNumber
+                [(ngModel)]="item.valor"
+                mode="decimal"
+                [minFractionDigits]="0"
+                [maxFractionDigits]="2"
+                placeholder="Ingrese valor">
+              </p-inputNumber>
+            </td>
+            <td>
+              @if (item.existe) {
+                <span class="badge badge-success">Registrado</span>
+              } @else {
+                <span class="badge badge-secondary">Nuevo</span>
+              }
+            </td>
+            <td>
+              @if (item.existe && item.sucoId) {
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true"
+                  (onClick)="eliminar(item)">
+                </p-button>
+              }
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  }</div>
+<p-toast></p-toast>

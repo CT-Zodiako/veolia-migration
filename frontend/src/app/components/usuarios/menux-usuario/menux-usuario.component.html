@@ -1,0 +1,70 @@
+<div class="menu-container">
+  <div class="menu-header">
+    <h2>Asignación de Menú por Usuario</h2>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <div class="filters">
+    <div class="form-group">
+      <label>Usuario</label>
+      <p-select
+        [options]="usuarioOptions"
+        [(ngModel)]="selectedUsuarioId"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccione un usuario"
+        [style]="{width: '100%'}"
+        (onChange)="cargarMenu()"
+      ></p-select>
+    </div>
+
+    <div class="form-group">
+      <label>Sistema</label>
+      <p-select
+        [options]="sistemaOptions"
+        [(ngModel)]="selectedSistemaId"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccione un sistema"
+        [style]="{width: '100%'}"
+        (onChange)="cargarMenu()"
+      ></p-select>
+    </div>
+  </div>
+
+  <div *ngIf="menuTree.length > 0" class="menu-tree">
+    <ng-container *ngTemplateOutlet="menuItems; context: { $implicit: menuTree }"></ng-container>
+  </div>
+
+  <p-button
+    *ngIf="menuTree.length > 0"
+    icon="pi pi-save"
+    label="{{ loading ? 'Guardando...' : 'Guardar Menú' }}"
+    [loading]="loading"
+    (click)="guardar()"
+    styleClass="w-full"
+  ></p-button>
+</div>
+
+<ng-template #menuItems let-items>
+  <div *ngFor="let item of items" class="menu-item">
+    <div
+      class="menu-item-content"
+      [class.selected]="isSelected(item.id)"
+      (click)="toggleMenuItem(item.id)"
+    >
+      <p-checkbox
+        [binary]="true"
+        [ngModel]="isSelected(item.id)"
+        (click)="$event.stopPropagation()"
+        (onChange)="toggleMenuItem(item.id)"
+      ></p-checkbox>
+      <label>{{ item.label }}</label>
+    </div>
+    <div *ngIf="item.children && item.children.length > 0" class="menu-children">
+      <ng-container *ngTemplateOutlet="menuItems; context: { $implicit: item.children }"></ng-container>
+    </div>
+  </div>
+</ng-template>

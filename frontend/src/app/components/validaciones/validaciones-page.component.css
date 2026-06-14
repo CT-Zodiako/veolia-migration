@@ -1,0 +1,128 @@
+.validaciones-container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+h2 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.subtitle {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-color-secondary);
+  font-size: 0.95rem;
+}
+
+.filtros-card {
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filtro-item label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+}
+
+.acciones-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.validaciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1rem;
+}
+
+.validacion-card {
+  transition: all 0.2s ease;
+}
+
+.validacion-card.has-result {
+  border-left: 4px solid var(--primary-color);
+}
+
+.validacion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.validacion-nombre {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.validacion-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.descripcion {
+  margin: 0;
+  color: var(--text-color-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.error-mensaje {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.75rem;
+  background: var(--red-50);
+  border: 1px solid var(--red-200);
+  border-radius: 6px;
+  color: var(--red-700);
+  font-size: 0.875rem;
+}
+
+.error-mensaje i {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+:host ::ng-deep .validacion-card .p-card-body {
+  padding: 1rem;
+}
+
+:host ::ng-deep .validacion-card .p-card-footer {
+  padding-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .validaciones-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filtros-grid {
+    grid-template-columns: 1fr;
+  }
+}

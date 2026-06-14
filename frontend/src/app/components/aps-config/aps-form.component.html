@@ -1,0 +1,35 @@
+<div class="modal-overlay" (click)="cancel.emit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing() ? 'Editar APS' : 'Nueva APS' }}</h3>
+      <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="cancel.emit()"></p-button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input pInputText type="text" [(ngModel)]="nombre" name="nombre" required style="width: 100%" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>ID SUI</label>
+          <input pInputText type="number" [(ngModel)]="idsui" name="idsui" style="width: 100%" />
+        </div>
+        <div class="form-group">
+          <label>Resolución</label>
+          <input pInputText type="number" [(ngModel)]="resolucion" name="resolucion" style="width: 100%" />
+        </div>
+      </div>
+
+      <div class="checks-grid">
+        <p-checkbox [(ngModel)]="propio" [binary]="true" label="Propio" name="propio"></p-checkbox>
+        <p-checkbox [(ngModel)]="relleno" [binary]="true" label="Solo relleno" name="relleno"></p-checkbox>
+        <p-checkbox [(ngModel)]="estado" [binary]="true" label="Activo" name="estado"></p-checkbox>
+        <p-checkbox [(ngModel)]="iat" [binary]="true" label="IAT" name="iat"></p-checkbox>
+      </div>
+
+      <p-button type="submit" label="{{ loading ? 'Guardando...' : 'Guardar' }}" [loading]="loading" styleClass="w-full"></p-button>
+    </form>
+  </div>
+</div>

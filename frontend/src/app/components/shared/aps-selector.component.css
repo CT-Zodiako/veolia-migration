@@ -1,0 +1,16 @@
+.aps-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.selector-control {
+  max-width: 320px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.error-message {
+  color: #b42318;
+}

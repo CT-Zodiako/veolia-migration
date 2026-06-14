@@ -1,0 +1,62 @@
+<div class="login-container">
+  <div class="login-box">
+    <div class="login-header">
+      <h1>Veolia</h1>
+      <p>Sistema de Gestión</p>
+    </div>
+
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+
+    <form (ngSubmit)="login()">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input
+          pInputText
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="usuario@veolia.com"
+          (input)="onEmailChange()"
+          required
+          style="width: 100%"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input
+          pInputText
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          required
+          style="width: 100%"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Sistema</label>
+        <p-select
+          [options]="sistemas"
+          [(ngModel)]="idSistema"
+          name="sistema"
+          optionLabel="SIST_NOMBRE"
+          optionValue="SIST_ID"
+          placeholder="Seleccione un sistema"
+          appendTo="body"
+          [style]="{width: '100%'}"
+        ></p-select>
+      </div>
+
+      <p-button
+        type="submit"
+        label="{{ loading ? 'Ingresando...' : 'Ingresar' }}"
+        [loading]="loading"
+        styleClass="w-full"
+      ></p-button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,168 @@
+-- ============================================================
+-- DDL: Módulo PGIRS
+-- Vistas y tabla para gestión de residuos
+-- ============================================================
+
+-- -----------------------------------------------------------
+-- 1. PGRI_PARAMETROS - Tabla de variables PGIRS
+-- -----------------------------------------------------------
+CREATE TABLE PGRI_PARAMETROS (
+    APSAID          NUMBER NOT NULL,
+    PGRIANNO        NUMBER NOT NULL,
+    PGRIMES         NUMBER NOT NULL,
+    PGRIVARIABLE    NUMBER NOT NULL,
+    PGRIVALOR       NUMBER,
+    PGRIFRECUENCIA  VARCHAR2(50),
+    PGRIFECHA       DATE DEFAULT SYSDATE,
+    PGRIUSUARIO     NUMBER,
+    PGRINGRESO      VARCHAR2(20) DEFAULT 'MANUAL',
+    CONSTRAINT PK_PGRI_PARAMETROS PRIMARY KEY (APSAID, PGRIANNO, PGRIMES, PGRIVARIABLE)
+);
+
+COMMENT ON TABLE PGRI_PARAMETROS IS 'Parámetros/variables PGIRS por APS, año y mes';
+COMMENT ON COLUMN PGRI_PARAMETROS.PGRIVARIABLE IS 'Códigos: 11=LBL, 21=CESPED, 22=PODA, 23=LAVADO, 24=PLAYAS, 25=INSCESTAS, 26=MANCESTAS';
+
+-- Índices
+CREATE INDEX IDX_PGRI_PARAM_APS ON PGRI_PARAMETROS(APSAID);
+CREATE INDEX IDX_PGRI_PARAM_ANNO_MES ON PGRI_PARAMETROS(PGRIANNO, PGRIMES);
+
+-- -----------------------------------------------------------
+-- 2. VGIRS_INFORME - Vista resumen PGIRS
+-- -----------------------------------------------------------
+CREATE OR REPLACE VIEW VGIRS_INFORME AS
+SELECT 
+    APSA_ID AS APSID,
+    APSA_NOMAPS AS APS_NOMBRE,
+    PERIODO_ANNO AS ANNO,
+    PERIODO_MES AS MES,
+    TIPO_RESIDUO,
+    CANTIDAD_TONELADAS,
+    FRECUENCIA,
+    OBSERVACION,
+    ESTADO
+FROM AUCO_RESIDUOS
+WHERE ESTADO = 1;
+
+-- -----------------------------------------------------------
+-- 3. VGIRS_INFORMELBL - Vista barrido LBL
+-- -----------------------------------------------------------
+CREATE OR REPLACE VIEW VGIRS_INFORMELBL AS
+SELECT 
+    APSA_ID AS APSID,
+    APSA_NOMAPS AS APS_NOMBRE,
+    PERIODO_ANNO AS ANNO,
+    PERIODO_MES AS MES,
+    LBL_VALOR,
+    LBL_FRECUENCIA,
+    CESPED_VALOR,
+    CESPED_FRECUENCIA,
+    PODA_VALOR,
+    PODA_FRECUENCIA,
+    LAVADO_VALOR,
+    LAVADO_FRECUENCIA,
+    PLAYAS_VALOR,
+    PLAYAS_FRECUENCIA,
+    INSCESTAS_VALOR,
+    INSCESTAS_FRECUENCIA,
+    MANCESTAS_VALOR,
+    MANCESTAS_FRECUENCIA,
+    ESTADO
+FROM AUCO_RESIDUOS
+WHERE ESTADO = 1;
+
+-- -----------------------------------------------------------
+-- 4. VPGIR_INFVARIABLES - Vista informe de variables
+-- -----------------------------------------------------------
+CREATE OR REPLACE VIEW VPGIR_INFVARIABLES AS
+SELECT 
+    P.APSAID,
+    A.APSA_NOMAPS AS APSA_NOMAPS,
+    P.PGRIANNO || LPAD(TO_CHAR(P.PGRIMES), 2, '0') AS PERIODO,
+    P.PGRIANNO AS ANNO,
+    P.PGRIMES AS MES,
+    P.PGRIVARIABLE,
+    CASE P.PGRIVARIABLE
+        WHEN 11 THEN 'LBL'
+        WHEN 21 THEN 'CESPED'
+        WHEN 22 THEN 'PODA'
+        WHEN 23 THEN 'LAVADO'
+        WHEN 24 THEN 'PLAYAS'
+        WHEN 25 THEN 'INSCESTAS'
+        WHEN 26 THEN 'MANCESTAS'
+        ELSE 'OTRO'
+    END AS NOMBRE_VARIABLE,
+    P.PGRIVALOR,
+    P.PGRIFRECUENCIA,
+    P.PGRIFECHA,
+    P.PGRINGRESO
+FROM PGRI_PARAMETROS P
+JOIN AUCO_APSASEO A ON P.APSAID = A.APSA_ID
+WHERE P.PGRINGRESO = 'MANUAL';
+
+-- -----------------------------------------------------------
+-- 5. VPIRG_PARAMETROS - Vista consulta variables
+-- -----------------------------------------------------------
+CREATE OR REPLACE VIEW VPIRG_PARAMETROS AS
+SELECT 
+    APSAID,
+    PGRIANNO,
+    PGRIMES,
+    PGRIVARIABLE,
+    CASE PGRIVARIABLE
+        WHEN 11 THEN 'LBL'
+        WHEN 21 THEN 'CESPED'
+        WHEN 22 THEN 'PODA'
+        WHEN 23 THEN 'LAVADO'
+        WHEN 24 THEN 'PLAYAS'
+        WHEN 25 THEN 'INSCESTAS'
+        WHEN 26 THEN 'MANCESTAS'
+        ELSE 'OTRO'
+    END AS NOMBRE_VARIABLE,
+    PGRIVALOR,
+    PGRIFRECUENCIA,
+    PGRIFECHA,
+    PGRIUSUARIO,
+    PGRINGRESO
+FROM PGRI_PARAMETROS;
+
+-- -----------------------------------------------------------
+-- 6. Tabla base para residuos (si no existe)
+-- -----------------------------------------------------------
+CREATE TABLE AUCO_RESIDUOS (
+    RESID_ID        NUMBER PRIMARY KEY,
+    APSA_ID         NUMBER,
+    PERIODO_ANNO    NUMBER,
+    PERIODO_MES     NUMBER,
+    TIPO_RESIDUO    VARCHAR2(100),
+    CANTIDAD_TONELADAS NUMBER,
+    FRECUENCIA      VARCHAR2(50),
+    OBSERVACION     VARCHAR2(500),
+    ESTADO          NUMBER DEFAULT 1
+);
+
+-- Secuencia
+CREATE SEQUENCE SRESIDUOS START WITH 1 INCREMENT BY 1;
+
+-- -----------------------------------------------------------
+-- 7. Seed data
+-- -----------------------------------------------------------
+INSERT INTO AUCO_RESIDUOS (RESID_ID, APSA_ID, PERIODO_ANNO, PERIODO_MES, TIPO_RESIDUO, CANTIDAD_TONELADAS, FRECUENCIA, OBSERVACION)
+VALUES (SRESIDUOS.NEXTVAL, 1, 2024, 1, 'Residuos Orgánicos', 150.5, 'Diaria', 'Recolección zona norte');
+
+INSERT INTO AUCO_RESIDUOS (RESID_ID, APSA_ID, PERIODO_ANNO, PERIODO_MES, TIPO_RESIDUO, CANTIDAD_TONELADAS, FRECUENCIA, OBSERVACION)
+VALUES (SRESIDUOS.NEXTVAL, 1, 2024, 2, 'Residuos Reciclables', 85.3, '3x semana', 'Recolección zona sur');
+
+INSERT INTO AUCO_RESIDUOS (RESID_ID, APSA_ID, PERIODO_ANNO, PERIODO_MES, TIPO_RESIDUO, CANTIDAD_TONELADAS, FRECUENCIA, OBSERVACION)
+VALUES (SRESIDUOS.NEXTVAL, 2, 2024, 1, 'Residuos Peligrosos', 12.8, 'Semanal', 'Disposición especial');
+
+-- Seed data PGRI_PARAMETROS
+INSERT INTO PGRI_PARAMETROS (APSAID, PGRIANNO, PGRIMES, PGRIVARIABLE, PGRIVALOR, PGRIFRECUENCIA, PGRIUSUARIO, PGRINGRESO)
+VALUES (1, 2024, 1, 11, 5000, 'Diaria', 1, 'MANUAL');
+
+INSERT INTO PGRI_PARAMETROS (APSAID, PGRIANNO, PGRIMES, PGRIVARIABLE, PGRIVALOR, PGRIFRECUENCIA, PGRIUSUARIO, PGRINGRESO)
+VALUES (1, 2024, 1, 21, 2500, 'Semanal', 1, 'MANUAL');
+
+INSERT INTO PGRI_PARAMETROS (APSAID, PGRIANNO, PGRIMES, PGRIVARIABLE, PGRIVALOR, PGRIFRECUENCIA, PGRIUSUARIO, PGRINGRESO)
+VALUES (1, 2024, 1, 22, 1800, 'Quincenal', 1, 'MANUAL');
+
+COMMIT;

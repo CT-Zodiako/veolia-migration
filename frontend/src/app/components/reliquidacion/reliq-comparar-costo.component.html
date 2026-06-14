@@ -1,0 +1,25 @@
+<div class="page-wrap">
+  <p-card>
+    <div class="toolbar">
+      <p-select [options]="reliquidaciones()" optionLabel="relqNombre" optionValue="relqId" [(ngModel)]="selectedReliq" placeholder="Seleccione reliquidación" />
+      <p-button label="Comparar costos" icon="pi pi-search" [loading]="loading()" (onClick)="consultar()" />
+    </div>
+  </p-card>
+
+  <p-card styleClass="mt-3">
+    <p-table [value]="rows()" [loading]="loading()" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr><th>Reliq</th><th>APS</th><th>Año</th><th>Mes</th><th>Costo</th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.codReliq }}</td>
+          <td>{{ row.apsNom }}</td>
+          <td>{{ row.costAnno }}</td>
+          <td>{{ row.costMes }}</td>
+          <td>{{ row.costo }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

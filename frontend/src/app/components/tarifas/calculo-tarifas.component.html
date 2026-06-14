@@ -1,0 +1,58 @@
+<section class="calculo-container">
+  <div class="calculo-header">
+    <h2>Cálculo Tarifas</h2>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div class="filters-row">
+    <app-aps-selector 
+      [(selectedAps)]="aps"
+      label="APS"></app-aps-selector>
+    
+    <app-anno-selector 
+      [(selectedAnno)]="anno"
+      label="Año"></app-anno-selector>
+    
+    <app-mes-selector 
+      [(selectedMes)]="mes"
+      label="Mes"></app-mes-selector>
+
+    <p-button
+      icon="pi pi-search"
+      label="{{ loading ? 'Consultando...' : 'Consultar' }}"
+      [loading]="loading"
+      (click)="consultar()"
+    ></p-button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <p>Cargando tarifas...</p>
+  </div>
+
+  <section *ngIf="!loading && chartData.length > 0" class="chart-section">
+    <h3>Gráfica de Tarifas</h3>
+    <div class="chart-dataset">
+      <div *ngFor="let point of chartData" class="chart-bar">
+        <span class="chart-label">{{ point.label }}</span>
+        <div class="chart-bar-visual" [style.width.%]="getBarWidth(point.value)"></div>
+        <span class="chart-value">{{ point.value | number:'1.2-2' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <div *ngIf="!loading && rows.length > 0" class="table-container">
+    <p-table [value]="rows" [columns]="getColumns(rows)" [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template pTemplate="header" let-columns>
+        <tr>
+          <th *ngFor="let col of columns">{{ col }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row let-columns="columns">
+        <tr>
+          <td *ngFor="let col of columns">{{ row[col] }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</section>

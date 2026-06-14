@@ -1,0 +1,67 @@
+# Design: Fase 4 Facturación
+
+## Technical Approach
+Implementar backend-first con un `FacturacionController` que expone 5 endpoints AS-IS y delega en servicio/repositorio Oracle. El frontend consume esos 5 contratos y renderiza una página única con filtros compartidos y 5 tablas independientes.
+
+## Architecture Decisions
+
+### Decision: Separación 1 endpoint por consulta
+**Choice**: Mantener 5 endpoints especializados.
+**Alternatives considered**: Endpoint único con tipo de consulta.
+**Rationale**: Paridad AS-IS, menor riesgo de regresión y trazabilidad directa con vistas Oracle.
+
+### Decision: Rollover mensual en backend
+**Choice**: Calcular mes/año anterior en capa de servicio (o helper de dominio usado por repository).
+**Alternatives considered**: Resolver en frontend o SQL ad-hoc en cada query.
+**Rationale**: Regla crítica única, testeable y reusable por los 5 flujos.
+
+### Decision: Dependencia `PK_TARIFACOMPONENTE` con adapter
+**Choice**: Definir interfaz y stub inicial cuando no esté disponible.
+**Alternatives considered**: Bloquear entrega hasta tener paquete real.
+**Rationale**: Permite avanzar vertical slice sin romper contratos.
+
+## Data Flow
+`facturacion-page` → `facturacion-service` → `FacturacionController` → `FacturacionService` → `IFacturacionRepository` → Oracle Views
+
+El request entra con `{aps, anno, mes}`; `FacturacionService` calcula período anterior; repository ejecuta la vista correspondiente y devuelve colección tipada.
+
+## File Changes
+
+| File | Action | Description |
+|------|--------|-------------|
+| `backend/.../FacturacionController.*` | Create | Endpoints REST de facturación |
+| `backend/.../FacturacionService.*` | Create | Orquestación y rollover mensual |
+| `backend/.../IFacturacionRepository.*` | Create | Contrato de acceso a datos |
+| `backend/.../FacturacionRepository.*` | Create | Queries a 5 vistas Oracle |
+| `backend/.../dto/facturacion/*` | Create | Request/response DTOs por endpoint |
+| `frontend/src/.../facturacion-page.*` | Create | Página y filtros compartidos |
+| `frontend/src/.../facturacion-service.*` | Create | Cliente API para 5 endpoints |
+| `frontend/src/.../tables/*` | Create | 5 componentes de tabla |
+
+## Interfaces / Contracts
+```ts
+type FacturacionRequest = { aps: string; anno: number; mes: number }
+
+interface IFacturacionRepository {
+  getFacturacion(req: FacturacionRequest): Promise<FacturacionRow[]>
+  getDetaFacturacion(req: FacturacionRequest): Promise<DetaFacturacionRow[]>
+  getFacturacionClus(req: FacturacionRequest): Promise<FacturacionClusRow[]>
+  getFacturacionDinc(req: FacturacionRequest): Promise<FacturacionDincRow[]>
+  getFacturacionElectronica(req: FacturacionRequest): Promise<FacturacionElectronicaRow[]>
+}
+```
+
+## Testing Strategy
+
+| Layer | What to Test | Approach |
+|-------|-------------|----------|
+| Unit | Rollover mes/año | Casos: meses 2..12 y enero→diciembre |
+| Integration | Controller→repository por endpoint | Tests de contrato HTTP + mapping DTO |
+| E2E/UI | Filtros + 5 tablas + error parcial | Flujo de consulta y rendering por sección |
+
+## Migration / Rollout
+No migration required. Se agrega módulo nuevo sin reemplazar comportamiento existente.
+
+## Open Questions
+- [ ] Confirmar naming final de rutas/namespace según convención backend actual.
+- [ ] Confirmar disponibilidad real de `PK_TARIFACOMPONENTE` en ambiente objetivo.

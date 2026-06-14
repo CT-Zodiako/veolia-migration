@@ -1,0 +1,9 @@
+namespace Veolia.Api.Contracts.Reliquidacion;
+
+public sealed class UpdateResumenAdicionalRequestDto
+{
+    public long CeadId { get; set; }
+    public long ReliId { get; set; }
+    public decimal Cdf { get; set; }
+    public decimal Ctl { get; set; }
+}

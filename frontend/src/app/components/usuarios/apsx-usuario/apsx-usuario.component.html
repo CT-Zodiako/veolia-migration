@@ -1,0 +1,72 @@
+<div class="aps-container">
+  <div class="aps-header">
+    <h2>Asignación de APS por Usuario</h2>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <div class="form-group">
+    <label>Usuario</label>
+    <p-select
+      [options]="usuarioOptions"
+      [(ngModel)]="selectedUsuarioId"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Seleccione un usuario"
+      [style]="{width: '100%'}"
+      (onChange)="onUsuarioChange()"
+    ></p-select>
+  </div>
+
+  <div *ngIf="selectedUsuarioId" class="aps-columns">
+    <div class="aps-column">
+      <h3>Asignadas ({{ asignadas.length }})</h3>
+      <div class="aps-list">
+        <div
+          *ngFor="let aps of asignadas"
+          class="aps-item"
+          [class.selected]="selectedAsignadas.includes(aps.APSA_ID)"
+          (click)="toggleAsignada(aps.APSA_ID)"
+        >
+          <p-checkbox
+            [binary]="true"
+            [ngModel]="selectedAsignadas.includes(aps.APSA_ID)"
+            (click)="$event.stopPropagation()"
+            (onChange)="toggleAsignada(aps.APSA_ID)"
+          ></p-checkbox>
+          <label>{{ aps.APSA_NOMAPS }}</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="aps-column">
+      <h3>Sin Asignar ({{ sinAsignar.length }})</h3>
+      <div class="aps-list">
+        <div
+          *ngFor="let aps of sinAsignar"
+          class="aps-item"
+          [class.selected]="selectedSinAsignar.includes(aps.APSA_ID)"
+          (click)="toggleSinAsignar(aps.APSA_ID)"
+        >
+          <p-checkbox
+            [binary]="true"
+            [ngModel]="selectedSinAsignar.includes(aps.APSA_ID)"
+            (click)="$event.stopPropagation()"
+            (onChange)="toggleSinAsignar(aps.APSA_ID)"
+          ></p-checkbox>
+          <label>{{ aps.APSA_NOMAPS }}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p-button
+    *ngIf="selectedUsuarioId"
+    icon="pi pi-save"
+    label="{{ loading ? 'Guardando...' : 'Guardar Asignaciones' }}"
+    [loading]="loading"
+    (click)="guardar()"
+    styleClass="w-full"
+  ></p-button>
+</div>

@@ -1,0 +1,57 @@
+<div class="page-wrap">
+  <p-card>
+    <div class="toolbar">
+      <h3>Reliquidación · Crear / Editar</h3>
+      <p-button label="Nueva reliquidación" icon="pi pi-plus" (onClick)="nueva()" />
+    </div>
+  </p-card>
+
+  <p-card styleClass="mt-3">
+    <p-table [value]="reliquidaciones()" [loading]="loading()" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th><th>APS</th><th>Nombre</th><th>Descripción</th><th>Periodo</th><th>Estado</th><th>Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.relqId }}</td>
+          <td>{{ row.apsaId }}</td>
+          <td>{{ row.relqNombre }}</td>
+          <td>{{ row.relqDescripcion }}</td>
+          <td>{{ row.relqDesde }} - {{ row.relqHasta }}</td>
+          <td>{{ row.relqEstado }}</td>
+          <td class="actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editar(row)"></p-button>
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="eliminar(row)"></p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<p-dialog [visible]="showDialog()" header="Reliquidación" [modal]="true" [style]="{width:'50rem'}" (visibleChange)="showDialog.set($event)">
+  <form [formGroup]="form" class="form-grid">
+    <label>APS</label>
+    <p-select formControlName="apsaId" [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" />
+    <label>Nombre</label>
+    <input pInputText formControlName="nombre" />
+    <label>Descripción</label>
+    <textarea pTextarea rows="2" formControlName="descripcion"></textarea>
+    <label>Periodo desde (YYYYMM)</label>
+    <input pInputText formControlName="desde" />
+    <label>Periodo hasta (YYYYMM)</label>
+    <input pInputText formControlName="hasta" />
+    <label>Solicitante</label>
+    <p-inputNumber formControlName="usuSolicita" />
+    <label>Estado</label>
+    <input pInputText formControlName="estado" />
+    <label>Aprobador</label>
+    <p-inputNumber formControlName="usuAprueba" />
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" (onClick)="showDialog.set(false)" />
+    <p-button label="Guardar" icon="pi pi-save" [loading]="saving()" (onClick)="guardar()" />
+  </ng-template>
+</p-dialog>

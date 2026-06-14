@@ -1,0 +1,320 @@
+<p-toast></p-toast>
+
+<p-card header="Información Generales">
+  <div class="grid mb-3">
+    <div class="col-12 md:col-4">
+      <label class="block mb-1">APS</label>
+      <p-select
+        [options]="apsOptions()"
+        optionLabel="apsaNombre"
+        optionValue="apsaId"
+        placeholder="Seleccione APS"
+        [ngModel]="aps()"
+        (ngModelChange)="aps.set($event); onApsChange()"
+        styleClass="w-full"
+      ></p-select>
+    </div>
+    <div class="col-12 md:col-4" *ngIf="proyecciones().length > 0">
+      <label class="block mb-1">Proyección</label>
+      <p-select
+        [options]="proyecciones()"
+        optionLabel="proyNombre"
+        optionValue="proyId"
+        placeholder="Seleccione proyección"
+        [ngModel]="proyId()"
+        (ngModelChange)="proyId.set($event); onProyChange()"
+        styleClass="w-full"
+      ></p-select>
+    </div>
+  </div>
+
+  <p-tabs [(value)]="activeTab" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab [value]="0">Energía</p-tab>
+      <p-tab [value]="1">Acueducto</p-tab>
+      <p-tab [value]="2">Costos</p-tab>
+      <p-tab [value]="3">Tarifas</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <!-- Energía -->
+      <p-tabpanel [value]="0">
+        <div *ngIf="energiaLoading()" class="text-center py-4">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+          <p>Cargando...</p>
+        </div>
+        <div *ngIf="energiaError()" class="p-error p-3">
+          <i class="pi pi-exclamation-circle"></i> {{ energiaError() }}
+        </div>
+        <div *ngIf="!energiaLoading() && !energiaError() && energiaData().length === 0" class="text-center py-4 text-secondary">
+          <i class="pi pi-inbox" style="font-size: 2rem"></i>
+          <p>Sin datos para mostrar</p>
+        </div>
+        <p-table
+          *ngIf="energiaData().length > 0"
+          [value]="energiaData()"
+          [scrollable]="true"
+          scrollHeight="400px"
+          [tableStyle]="{ 'min-width': '50rem' }"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Clase</th>
+              <th>Factor Prod</th>
+              <th>Tipo Tar</th>
+              <th>Año</th>
+              <th>Mes</th>
+              <th>Subcon</th>
+              <th>Usuarios</th>
+              <th>TC Prop</th>
+              <th>TC Terc</th>
+              <th>TC Apro</th>
+              <th>TBL</th>
+              <th>TLU</th>
+              <th>TRT</th>
+              <th>TDF</th>
+              <th>TInc</th>
+              <th>TIAT</th>
+              <th>TTL</th>
+              <th>TA</th>
+              <th>Total</th>
+              <th>Tot SC</th>
+              <th>Tot Prop Leno</th>
+              <th>Tot Prop Subcon</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-row>
+            <tr>
+              <td>{{ row.CLAS_NOMBRE || row.clas_nombre }}</td>
+              <td>{{ row.FACTOR_PROD || row.factor_prod }}</td>
+              <td>{{ row.TIPOTAR || row.TipoTar || row.tipo_tar }}</td>
+              <td>{{ row.FAEN_ANNO || row.faen_anno }}</td>
+              <td>{{ row.FAEN_MES || row.faen_mes }}</td>
+              <td>{{ row.FAEN_SUBCON || row.faen_subcon }}</td>
+              <td>{{ row.FAEN_USUARIOS || row.faen_usuarios }}</td>
+              <td>{{ row.FAEN_TCPROP || row.faen_tcprop }}</td>
+              <td>{{ row.FAEN_TCTERC || row.faen_tcterc }}</td>
+              <td>{{ row.FAEN_TCAPRO || row.faen_tcapro }}</td>
+              <td>{{ row.FAEN_TBL || row.faen_tbl }}</td>
+              <td>{{ row.FAEN_TLU || row.faen_tlu }}</td>
+              <td>{{ row.FAEN_TRT || row.faen_trt }}</td>
+              <td>{{ row.FAEN_TDF || row.faen_tdf }}</td>
+              <td>{{ row.FAEN_TINC || row.faen_tinc }}</td>
+              <td>{{ row.FAEN_TIAT || row.faen_tiat }}</td>
+              <td>{{ row.FAEN_TTL || row.faen_ttl }}</td>
+              <td>{{ row.FAEN_TA || row.faen_ta }}</td>
+              <td>{{ row.FAEN_TOTAL || row.faen_total }}</td>
+              <td>{{ row.FAEN_TOTSC || row.faen_totsc }}</td>
+              <td>{{ row.FAEN_TOTPROPLENO || row.faen_totpropleno }}</td>
+              <td>{{ row.FAEN_TOTPROSUBCON || row.faen_totprosubcon }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabpanel>
+
+      <!-- Acueducto -->
+      <p-tabpanel [value]="1">
+        <div *ngIf="acueductoLoading()" class="text-center py-4">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+          <p>Cargando...</p>
+        </div>
+        <div *ngIf="acueductoError()" class="p-error p-3">
+          <i class="pi pi-exclamation-circle"></i> {{ acueductoError() }}
+        </div>
+        <div *ngIf="!acueductoLoading() && !acueductoError() && acueductoData().length === 0" class="text-center py-4 text-secondary">
+          <i class="pi pi-inbox" style="font-size: 2rem"></i>
+          <p>Sin datos para mostrar</p>
+        </div>
+        <p-table
+          *ngIf="acueductoData().length > 0"
+          [value]="acueductoData()"
+          [scrollable]="true"
+          scrollHeight="400px"
+          [tableStyle]="{ 'min-width': '50rem' }"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Clase</th>
+              <th>Factor Prod</th>
+              <th>Tipo Tar</th>
+              <th>Año</th>
+              <th>Mes</th>
+              <th>Subcon</th>
+              <th>Usuarios</th>
+              <th>TC Prop</th>
+              <th>TC Terc</th>
+              <th>TC Apro</th>
+              <th>TBL</th>
+              <th>TLU</th>
+              <th>TRT</th>
+              <th>TDF</th>
+              <th>TInc</th>
+              <th>TIAT</th>
+              <th>TTL</th>
+              <th>TA</th>
+              <th>Total</th>
+              <th>Tot SC</th>
+              <th>Tot Prop Leno</th>
+              <th>Tot Prop Subcon</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-row>
+            <tr>
+              <td>{{ row.CLAS_NOMBRE || row.clas_nombre }}</td>
+              <td>{{ row.FACTOR_PROD || row.factor_prod }}</td>
+              <td>{{ row.TIPOTAR || row.TipoTar || row.tipo_tar }}</td>
+              <td>{{ row.FACU_ANNO || row.facu_anno }}</td>
+              <td>{{ row.FACU_MES || row.facu_mes }}</td>
+              <td>{{ row.FACU_SUBCON || row.facu_subcon }}</td>
+              <td>{{ row.FACU_USUARIOS || row.facu_usuarios }}</td>
+              <td>{{ row.FACU_TCPROP || row.facu_tcprop }}</td>
+              <td>{{ row.FACU_TCTERC || row.facu_tcterc }}</td>
+              <td>{{ row.FACU_TCAPRO || row.facu_tcapro }}</td>
+              <td>{{ row.FACU_TBL || row.facu_tbl }}</td>
+              <td>{{ row.FACU_TLU || row.facu_tlu }}</td>
+              <td>{{ row.FACU_TRT || row.facu_trt }}</td>
+              <td>{{ row.FACU_TDF || row.facu_tdf }}</td>
+              <td>{{ row.FACU_TINC || row.facu_tinc }}</td>
+              <td>{{ row.FACU_TIAT || row.facu_tiat }}</td>
+              <td>{{ row.FACU_TTL || row.facu_ttl }}</td>
+              <td>{{ row.FACU_TA || row.facu_ta }}</td>
+              <td>{{ row.FACU_TOTAL || row.facu_total }}</td>
+              <td>{{ row.FACU_TOTSC || row.facu_totsc }}</td>
+              <td>{{ row.FACU_TOTPROPLENO || row.facu_totpropleno }}</td>
+              <td>{{ row.FACU_TOTPROSUBCON || row.facu_totprosubcon }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabpanel>
+
+      <!-- Costos -->
+      <p-tabpanel [value]="2">
+        <div *ngIf="costosLoading()" class="text-center py-4">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+          <p>Cargando...</p>
+        </div>
+        <div *ngIf="costosError()" class="p-error p-3">
+          <i class="pi pi-exclamation-circle"></i> {{ costosError() }}
+        </div>
+        <div *ngIf="!costosLoading() && !costosError() && costosData().length === 0" class="text-center py-4 text-secondary">
+          <i class="pi pi-inbox" style="font-size: 2rem"></i>
+          <p>Sin datos para mostrar</p>
+        </div>
+        <p-table
+          *ngIf="costosData().length > 0"
+          [value]="costosData()"
+          [scrollable]="true"
+          scrollHeight="400px"
+          [tableStyle]="{ 'min-width': '50rem' }"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Tipo Fact</th>
+              <th>Año</th>
+              <th>Mes</th>
+              <th>CCS</th>
+              <th>CCS Apro</th>
+              <th>CBL</th>
+              <th>CLUS</th>
+              <th>CRT</th>
+              <th>CDF</th>
+              <th>Inc</th>
+              <th>IAT</th>
+              <th>CTL</th>
+              <th>VBA</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-row>
+            <tr>
+              <td>{{ row.TIPO_FACT || row.tipo_fact }}</td>
+              <td>{{ row.COST_ANNO || row.cost_anno }}</td>
+              <td>{{ row.COST_MES || row.cost_mes }}</td>
+              <td>{{ row.COST_CCS || row.cost_ccs }}</td>
+              <td>{{ row.COST_CCSAPRO || row.cost_ccsapro }}</td>
+              <td>{{ row.COST_CBL || row.cost_cbl }}</td>
+              <td>{{ row.COST_CLUS || row.cost_clus }}</td>
+              <td>{{ row.COST_CRT || row.cost_crt }}</td>
+              <td>{{ row.COST_CDF || row.cost_cdf }}</td>
+              <td>{{ row.COST_INC || row.cost_inc }}</td>
+              <td>{{ row.COST_IAT || row.cost_iat }}</td>
+              <td>{{ row.COST_CTL || row.cost_ctl }}</td>
+              <td>{{ row.COST_VBA || row.cost_vba }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabpanel>
+
+      <!-- Tarifas -->
+      <p-tabpanel [value]="3">
+        <div *ngIf="tarifasLoading()" class="text-center py-4">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+          <p>Cargando...</p>
+        </div>
+        <div *ngIf="tarifasError()" class="p-error p-3">
+          <i class="pi pi-exclamation-circle"></i> {{ tarifasError() }}
+        </div>
+        <div *ngIf="!tarifasLoading() && !tarifasError() && tarifasData().length === 0" class="text-center py-4 text-secondary">
+          <i class="pi pi-inbox" style="font-size: 2rem"></i>
+          <p>Sin datos para mostrar</p>
+        </div>
+        <p-table
+          *ngIf="tarifasData().length > 0"
+          [value]="tarifasData()"
+          [scrollable]="true"
+          scrollHeight="400px"
+          [tableStyle]="{ 'min-width': '50rem' }"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Proy ID</th>
+              <th>APS ID</th>
+              <th>Clase</th>
+              <th>Tipo Tar</th>
+              <th>Tipo Fact</th>
+              <th>Año</th>
+              <th>Mes</th>
+              <th>Subcon</th>
+              <th>TC Prop</th>
+              <th>TC Terc</th>
+              <th>TC Apro</th>
+              <th>TBL</th>
+              <th>TLU</th>
+              <th>TRT</th>
+              <th>TDF</th>
+              <th>Inc</th>
+              <th>TIAT</th>
+              <th>TTL</th>
+              <th>TA</th>
+              <th>Total</th>
+              <th>Tot SC</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-row>
+            <tr>
+              <td>{{ row.PROY_ID || row.proy_id }}</td>
+              <td>{{ row.APSA_ID || row.apsa_id }}</td>
+              <td>{{ row.CLAS_NOMBRE || row.clas_nombre }}</td>
+              <td>{{ row.TIPO_TAR || row.tipo_tar }}</td>
+              <td>{{ row.TIPO_FACT || row.tipo_fact }}</td>
+              <td>{{ row.TARI_ANNO || row.tari_anno }}</td>
+              <td>{{ row.TARI_MES || row.tari_mes }}</td>
+              <td>{{ row.TARI_SUBCON || row.tari_subcon }}</td>
+              <td>{{ row.TARI_TCPROP || row.tari_tcprop }}</td>
+              <td>{{ row.TARI_TCTERC || row.tari_tcterc }}</td>
+              <td>{{ row.TARI_TCAPRO || row.tari_tcapro }}</td>
+              <td>{{ row.TARI_TBL || row.tari_tbl }}</td>
+              <td>{{ row.TARI_TLU || row.tari_tlu }}</td>
+              <td>{{ row.TARI_TRT || row.tari_trt }}</td>
+              <td>{{ row.TARI_TDF || row.tari_tdf }}</td>
+              <td>{{ row.TARI_INC || row.tari_inc }}</td>
+              <td>{{ row.TARI_TIAT || row.tari_tiat }}</td>
+              <td>{{ row.TARI_TTL || row.tari_ttl }}</td>
+              <td>{{ row.TARI_TA || row.tari_ta }}</td>
+              <td>{{ row.TARI_TOTAL || row.tari_total }}</td>
+              <td>{{ row.TARI_TOTSC || row.tari_totsc }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</p-card>

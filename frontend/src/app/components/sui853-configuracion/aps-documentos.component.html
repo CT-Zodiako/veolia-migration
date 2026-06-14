@@ -1,0 +1,27 @@
+<section>
+  <h2>APS Documentos</h2>
+
+  <p *ngIf="loading">Cargando...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <div class="table-wrapper" *ngIf="!loading && !error">
+    <p-table [value]="rows" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>NOMAPS</th>
+          <th>SEGMENTO</th>
+          <th>CODFORMATO</th>
+          <th>NOMFORMATO</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.NOMAPS }}</td>
+          <td>{{ row.SEGMENTO }}</td>
+          <td>{{ row.CODFORMATO }}</td>
+          <td>{{ row.NOMFORMATO }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</section>

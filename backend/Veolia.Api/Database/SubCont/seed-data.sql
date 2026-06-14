@@ -1,0 +1,79 @@
+-- ============================================================
+-- DDL: Módulo Subsidios y Contribuciones (subcont)
+-- Tablas: AUCO_APSSUBSCONT, AUCO_APSEMPRDIVI
+-- Secuencia: SAUCO_APSSUBSCONT
+-- ============================================================
+
+-- ---------------------------------------------------------
+-- Tabla lookup: APS-Empresa-División
+-- ---------------------------------------------------------
+CREATE TABLE AUCO_APSEMPRDIVI (
+    APSA_ID     NUMBER NOT NULL,
+    EMPR_EMPR   NUMBER NOT NULL,
+    DIVI_DIVI   NUMBER NOT NULL,
+    APEM_ESTADO NUMBER DEFAULT 1 NOT NULL,
+    APEM_FECHACREACION DATE DEFAULT SYSDATE,
+    USUA_USUA   NUMBER NOT NULL,
+    APSA_UBICACION NUMBER DEFAULT 0,
+    CONSTRAINT PK_AUCO_APSEMPRDIVI PRIMARY KEY (APSA_ID, EMPR_EMPR, DIVI_DIVI)
+);
+
+-- ---------------------------------------------------------
+-- Tabla principal: Subsidios y Contribuciones por APS
+-- ---------------------------------------------------------
+CREATE TABLE AUCO_APSSUBSCONT (
+    SUCO_ID             NUMBER NOT NULL,
+    APSA_ID             NUMBER NOT NULL,
+    EMPR_EMPR           NUMBER NOT NULL,
+    DIVI_DIVI           NUMBER NOT NULL,
+    CLAS_CLASE          NUMBER NOT NULL,
+    SUCO_ANNO           NUMBER NOT NULL,
+    SUCO_MES            NUMBER NOT NULL,
+    PARA_TIPPRED20016   NUMBER NOT NULL,
+    SUCO_VALOR          FLOAT(126) DEFAULT 0 NOT NULL,
+    SUCO_ESTADO         NUMBER DEFAULT 1 NOT NULL,
+    SUCO_FECHACREACION  DATE DEFAULT SYSDATE,
+    USUA_USUA           NUMBER NOT NULL,
+    CONSTRAINT PK_AUCO_APSSUBSCONT PRIMARY KEY (SUCO_ID)
+);
+
+-- ---------------------------------------------------------
+-- Secuencias
+-- ---------------------------------------------------------
+CREATE SEQUENCE SAUCO_APSSUBSCONT
+    MINVALUE 1
+    MAXVALUE 9999999999999999999999999999
+    INCREMENT BY 1
+    START WITH 1
+    CACHE 20
+    NOORDER
+    NOCYCLE;
+
+-- ---------------------------------------------------------
+-- Datos de prueba: Lookup APS-Empresa-División
+-- ---------------------------------------------------------
+INSERT INTO AUCO_APSEMPRDIVI (APSA_ID, EMPR_EMPR, DIVI_DIVI, APEM_ESTADO, USUA_USUA)
+VALUES (1, 1, 11001, 1, 1);
+
+INSERT INTO AUCO_APSEMPRDIVI (APSA_ID, EMPR_EMPR, DIVI_DIVI, APEM_ESTADO, USUA_USUA)
+VALUES (2, 2, 11001, 1, 1);
+
+-- ---------------------------------------------------------
+-- Datos de prueba: Subsidios y Contribuciones
+-- ---------------------------------------------------------
+INSERT INTO AUCO_APSSUBSCONT (SUCO_ID, APSA_ID, EMPR_EMPR, DIVI_DIVI, CLAS_CLASE, SUCO_ANNO, SUCO_MES, PARA_TIPPRED20016, SUCO_VALOR, SUCO_ESTADO, USUA_USUA)
+VALUES (SAUCO_APSSUBSCONT.NEXTVAL, 1, 1, 11001, 1, 2025, 4, 2, 150000, 1, 1);
+
+INSERT INTO AUCO_APSSUBSCONT (SUCO_ID, APSA_ID, EMPR_EMPR, DIVI_DIVI, CLAS_CLASE, SUCO_ANNO, SUCO_MES, PARA_TIPPRED20016, SUCO_VALOR, SUCO_ESTADO, USUA_USUA)
+VALUES (SAUCO_APSSUBSCONT.NEXTVAL, 1, 1, 11001, 2, 2025, 4, 2, 250000, 1, 1);
+
+INSERT INTO AUCO_APSSUBSCONT (SUCO_ID, APSA_ID, EMPR_EMPR, DIVI_DIVI, CLAS_CLASE, SUCO_ANNO, SUCO_MES, PARA_TIPPRED20016, SUCO_VALOR, SUCO_ESTADO, USUA_USUA)
+VALUES (SAUCO_APSSUBSCONT.NEXTVAL, 1, 1, 11001, 3, 2025, 4, 2, 180000, 1, 1);
+
+INSERT INTO AUCO_APSSUBSCONT (SUCO_ID, APSA_ID, EMPR_EMPR, DIVI_DIVI, CLAS_CLASE, SUCO_ANNO, SUCO_MES, PARA_TIPPRED20016, SUCO_VALOR, SUCO_ESTADO, USUA_USUA)
+VALUES (SAUCO_APSSUBSCONT.NEXTVAL, 2, 2, 11001, 1, 2025, 4, 2, 200000, 1, 1);
+
+INSERT INTO AUCO_APSSUBSCONT (SUCO_ID, APSA_ID, EMPR_EMPR, DIVI_DIVI, CLAS_CLASE, SUCO_ANNO, SUCO_MES, PARA_TIPPRED20016, SUCO_VALOR, SUCO_ESTADO, USUA_USUA)
+VALUES (SAUCO_APSSUBSCONT.NEXTVAL, 2, 2, 11001, 2, 2025, 4, 2, 300000, 1, 1);
+
+COMMIT;

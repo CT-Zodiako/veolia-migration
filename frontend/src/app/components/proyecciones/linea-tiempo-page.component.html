@@ -1,0 +1,29 @@
+<p-toast></p-toast>
+<div class="page-wrap">
+  <p-card>
+    <div class="toolbar">
+      <p-select [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" [(ngModel)]="apsaId" placeholder="APS" (onChange)="cargarProyecciones()"></p-select>
+      <p-select [options]="proyecciones()" optionLabel="proyNombre" optionValue="proyId" [(ngModel)]="proyId" placeholder="Proyección"></p-select>
+      <div class="actions"><p-button label="Consultar" icon="pi pi-search" (onClick)="consultar()"></p-button></div>
+    </div>
+  </p-card>
+  <p-card styleClass="mt-3">
+    <p-table [value]="rows" [loading]="loading()" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header"><tr><th>Año</th><th>Mes</th><th>IPC</th><th>IPCC</th><th>SMLV</th><th>IOEXP</th><th>FACPRODUC</th><th>INDIPCC</th><th>IPCCS</th></tr></ng-template>
+      <ng-template pTemplate="body" let-r let-i="rowIndex">
+        <tr>
+          <td><p-inputNumber [(ngModel)]="rows[i].anno"></p-inputNumber></td>
+          <td><p-inputNumber [(ngModel)]="rows[i].mes" [min]="1" [max]="12"></p-inputNumber></td>
+          <td><p-inputNumber [(ngModel)]="rows[i].deltipc"></p-inputNumber></td>
+          <td><p-inputNumber [(ngModel)]="rows[i].deltipcc"></p-inputNumber></td>
+          <td><p-inputNumber [(ngModel)]="rows[i].deltsmlv"></p-inputNumber></td>
+          <td><p-inputNumber [(ngModel)]="rows[i].deltioexp"></p-inputNumber></td>
+          <td><p-inputNumber [(ngModel)]="rows[i].deltfacproduc"></p-inputNumber></td>
+          <td><p-inputNumber [(ngModel)]="rows[i].deltindipcc"></p-inputNumber></td>
+          <td><p-inputNumber [(ngModel)]="rows[i].deltipccs"></p-inputNumber></td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <div class="actions mt-3"><p-button label="Guardar" icon="pi pi-save" severity="success" (onClick)="guardar()"></p-button></div>
+  </p-card>
+</div>

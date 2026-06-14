@@ -1,0 +1,79 @@
+<div class="sistema-container">
+  <div class="sistema-header">
+    <h2>Asignación de Sistemas</h2>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <div class="search-box">
+    <div class="form-group">
+      <label>Correo del Usuario</label>
+      <input
+        pInputText
+        type="email"
+        [(ngModel)]="correo"
+        placeholder="usuario@veolia.com"
+        (keyup.enter)="buscarSistemas()"
+        style="width: 100%"
+      />
+    </div>
+    <p-button
+      icon="pi pi-search"
+      label="{{ loading ? 'Buscando...' : 'Buscar' }}"
+      [loading]="loading"
+      (click)="buscarSistemas()"
+    ></p-button>
+  </div>
+
+  <div *ngIf="asignados.length > 0 || sinAsignar.length > 0" class="sistema-columns">
+    <div class="sistema-column">
+      <h3>Asignados ({{ asignados.length }})</h3>
+      <div class="sistema-list">
+        <div
+          *ngFor="let sistema of asignados"
+          class="sistema-item"
+          [class.selected]="selectedAsignados.includes(sistema.SIST_ID)"
+          (click)="toggleAsignado(sistema.SIST_ID)"
+        >
+          <p-checkbox
+            [binary]="true"
+            [ngModel]="selectedAsignados.includes(sistema.SIST_ID)"
+            (click)="$event.stopPropagation()"
+            (onChange)="toggleAsignado(sistema.SIST_ID)"
+          ></p-checkbox>
+          <label>{{ sistema.SIST_NOMBRE }}</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="sistema-column">
+      <h3>Sin Asignar ({{ sinAsignar.length }})</h3>
+      <div class="sistema-list">
+        <div
+          *ngFor="let sistema of sinAsignar"
+          class="sistema-item"
+          [class.selected]="selectedSinAsignar.includes(sistema.SIST_ID)"
+          (click)="toggleSinAsignar(sistema.SIST_ID)"
+        >
+          <p-checkbox
+            [binary]="true"
+            [ngModel]="selectedSinAsignar.includes(sistema.SIST_ID)"
+            (click)="$event.stopPropagation()"
+            (onChange)="toggleSinAsignar(sistema.SIST_ID)"
+          ></p-checkbox>
+          <label>{{ sistema.SIST_NOMBRE }}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p-button
+    *ngIf="asignados.length > 0 || sinAsignar.length > 0"
+    icon="pi pi-save"
+    label="{{ loading ? 'Guardando...' : 'Guardar Asignaciones' }}"
+    [loading]="loading"
+    (click)="guardar()"
+    styleClass="w-full"
+  ></p-button>
+</div>

@@ -1,0 +1,17 @@
+<div class="page-wrap">
+  <p-card>
+    <div class="toolbar">
+      <p-select [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" [(ngModel)]="apsaId" placeholder="APS" (onChange)="cargarProyecciones()"></p-select>
+      <p-select [options]="proyecciones()" optionLabel="proyNombre" optionValue="proyId" [(ngModel)]="proyId" placeholder="Proyección"></p-select>
+      <p-inputNumber [(ngModel)]="anno"></p-inputNumber>
+      <p-inputNumber [(ngModel)]="mes" [min]="1" [max]="12"></p-inputNumber>
+      <div class="actions"><p-button label="Consultar" (onClick)="consultar()"></p-button><p-button label="Guardar" severity="success" (onClick)="guardar()"></p-button></div>
+    </div>
+  </p-card>
+  <p-card styleClass="mt-3">
+    <p-table [value]="items">
+      <ng-template pTemplate="header"><tr><th>Clase</th><th>Valor</th></tr></ng-template>
+      <ng-template pTemplate="body" let-item let-i="rowIndex"><tr><td>{{item.clasClase}}</td><td><p-inputNumber [(ngModel)]="items[i].sucoValor"></p-inputNumber></td></tr></ng-template>
+    </p-table>
+  </p-card>
+</div>

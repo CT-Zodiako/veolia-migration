@@ -1,0 +1,38 @@
+<p-toast></p-toast>
+
+<p-card header="Costo de Poda">
+  <div class="grid mb-3">
+    <div class="col-12 md:col-4">
+      <label class="block mb-1">APS</label>
+      <p-select
+        [options]="apsOptions()"
+        optionLabel="apsaNombre"
+        optionValue="apsaId"
+        placeholder="Seleccione APS"
+        [ngModel]="aps()"
+        (ngModelChange)="aps.set($event)"
+        styleClass="w-full"
+      ></p-select>
+    </div>
+    <div class="col-12 md:col-3 flex align-items-end">
+      <button pButton type="button" label="Consultar" icon="pi pi-search" (click)="consultar()"></button>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="text-center py-4"><i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i><p>Cargando...</p></div>
+  <div *ngIf="error()" class="p-error p-3"><i class="pi pi-exclamation-circle"></i> {{ error() }}</div>
+  <div *ngIf="!loading() && !error() && data().length === 0" class="text-center py-4 text-secondary"><i class="pi pi-inbox" style="font-size: 2rem"></i><p>Sin datos para mostrar</p></div>
+
+  <p-table *ngIf="data().length > 0" [value]="data()" [scrollable]="true" scrollHeight="430px" [tableStyle]="{ 'min-width': '60rem' }">
+    <ng-template pTemplate="header">
+      <tr>
+        <th *ngFor="let col of columns()">{{ col }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td *ngFor="let col of columns()">{{ row[col] }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

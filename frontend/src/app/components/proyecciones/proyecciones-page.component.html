@@ -1,0 +1,57 @@
+<p-toast></p-toast>
+
+<div class="page-wrap">
+  <p-card>
+    <div class="toolbar">
+      <p-select [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" [(ngModel)]="aps" placeholder="Seleccione APS" styleClass="w-18rem"></p-select>
+      <div class="actions">
+        <p-button label="Consultar" icon="pi pi-search" (onClick)="consultar()" [loading]="loading()"></p-button>
+        <p-button label="Nueva Proyección" icon="pi pi-plus" severity="success" (onClick)="nueva()"></p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <p-card styleClass="mt-3">
+    <p-table [value]="rows()" [loading]="loading()" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th><th>Nombre</th><th>APS</th><th>Desde</th><th>Hasta</th><th>Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.proyId }}</td>
+          <td>{{ row.proyNombre }}</td>
+          <td>{{ row.apsaId }}</td>
+          <td>{{ row.proyAnnoDes }}/{{ row.proyMesDes }}</td>
+          <td>{{ row.proyAnnoHas }}/{{ row.proyMesHas }}</td>
+          <td class="actions">
+            <p-button icon="pi pi-pencil" [text]="true" (onClick)="editar(row)"></p-button>
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="eliminar(row)"></p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<p-dialog [visible]="showDialog()" [modal]="true" [closable]="true" [style]="{ width: '42rem' }" header="Proyección" (visibleChange)="showDialog.set($event)">
+  <div class="form-grid">
+    <label>APS</label>
+    <p-select [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" [(ngModel)]="form.apsaId"></p-select>
+    <label>Nombre</label>
+    <input pInputText [(ngModel)]="form.proyNombre" />
+    <label>Año desde</label>
+    <p-inputNumber [(ngModel)]="form.proyAnnoDes"></p-inputNumber>
+    <label>Mes desde</label>
+    <p-inputNumber [(ngModel)]="form.proyMesDes" [min]="1" [max]="12"></p-inputNumber>
+    <label>Año hasta</label>
+    <p-inputNumber [(ngModel)]="form.proyAnnoHas"></p-inputNumber>
+    <label>Mes hasta</label>
+    <p-inputNumber [(ngModel)]="form.proyMesHas" [min]="1" [max]="12"></p-inputNumber>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" (onClick)="showDialog.set(false)"></p-button>
+    <p-button label="Guardar" icon="pi pi-save" [loading]="saving()" (onClick)="guardar()"></p-button>
+  </ng-template>
+</p-dialog>

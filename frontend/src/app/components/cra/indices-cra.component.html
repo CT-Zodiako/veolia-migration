@@ -1,0 +1,53 @@
+<p-toast></p-toast>
+
+<p-card header="Índices CRA">
+  <div class="toolbar">
+    <div class="filters">
+      <input pInputText type="number" [ngModel]="anno()" (ngModelChange)="anno.set(+$event)" placeholder="Año" />
+      <p-select [options]="meses" optionLabel="label" optionValue="value" [ngModel]="mes()" (ngModelChange)="mes.set($event)"></p-select>
+      <p-button label="Consultar" icon="pi pi-search" (click)="consultar()"></p-button>
+    </div>
+    <p-button label="Nuevo" icon="pi pi-plus" (click)="abrirNuevo()"></p-button>
+  </div>
+
+  <p-table [value]="rows()" [loading]="loading()" [tableStyle]="{ 'min-width': '60rem' }">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Tipo Índice</th>
+        <th>Año</th>
+        <th>Mes</th>
+        <th>Valor</th>
+        <th>Mitad Valor</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.paraIndice20011 === 1 ? 'IPC' : row.paraIndice20011 === 2 ? 'SMLV' : row.paraIndice20011 === 3 ? 'IPCC' : 'IOEXP' }}</td>
+        <td>{{ row.indiAnno }}</td>
+        <td>{{ row.indiMes }}</td>
+        <td>{{ row.indiValor }}</td>
+        <td>{{ row.indiMitadValor }}</td>
+        <td class="actions">
+          <p-button icon="pi pi-pencil" severity="info" size="small" (click)="abrirEditar(row)"></p-button>
+          <p-button icon="pi pi-trash" severity="danger" size="small" (click)="eliminar(row)"></p-button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)" [header]="isEdit() ? 'Editar índices' : 'Nuevo índices'" [modal]="true" [style]="{ width: '40rem' }">
+  <div class="form-grid">
+    <input pInputText type="number" [ngModel]="formAnno()" (ngModelChange)="formAnno.set(+$event)" placeholder="Año" />
+    <p-select [options]="meses" optionLabel="label" optionValue="value" [ngModel]="formMes()" (ngModelChange)="formMes.set($event)"></p-select>
+    <p-inputnumber [ngModel]="ipc()" (ngModelChange)="ipc.set($event)" inputId="ipc" placeholder="IPC"></p-inputnumber>
+    <p-inputnumber [ngModel]="smlv()" (ngModelChange)="smlv.set($event)" inputId="smlv" placeholder="SMLV"></p-inputnumber>
+    <p-inputnumber [ngModel]="ipcc()" (ngModelChange)="ipcc.set($event)" inputId="ipcc" placeholder="IPCC"></p-inputnumber>
+    <p-inputnumber [ngModel]="ioexp()" (ngModelChange)="ioexp.set($event)" inputId="ioexp" placeholder="IOEXP"></p-inputnumber>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" (click)="dialogVisible.set(false)"></p-button>
+    <p-button label="Guardar" (click)="guardar()" [loading]="loading()"></p-button>
+  </ng-template>
+</p-dialog>

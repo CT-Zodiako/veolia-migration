@@ -1,0 +1,38 @@
+-- ============================================================
+-- SEED DATA: REVE_AUTORIZACION
+-- Módulo: reversiones
+-- Usuario de prueba: admin@veolia.com (SISU_ID=1)
+-- Fecha: 2026-04-28
+-- ============================================================
+
+-- Datos de prueba para usuario admin@veolia.com (SISU_ID=1)
+INSERT INTO REVE_AUTORIZACION (APSA_ID, AUTO_ANNO, AUTO_MES, AUTO_DESCRIPCION, AUTO_FECCREA, USUA_USUARIO)
+VALUES (1, 2024, 11, 'Reversión por ajuste de tarifa noviembre 2024', SYSDATE - 30, 1);
+
+INSERT INTO REVE_AUTORIZACION (APSA_ID, AUTO_ANNO, AUTO_MES, AUTO_DESCRIPCION, AUTO_FECCREA, USUA_USUARIO)
+VALUES (2, 2024, 12, 'Reversión cierre año 2024 - APS Norte', SYSDATE - 20, 1);
+
+INSERT INTO REVE_AUTORIZACION (APSA_ID, AUTO_ANNO, AUTO_MES, AUTO_DESCRIPCION, AUTO_FECCREA, USUA_USUARIO)
+VALUES (1, 2025, 1, 'Reversión enero 2025 - Ajuste inicial', SYSDATE - 10, 1);
+
+INSERT INTO REVE_AUTORIZACION (APSA_ID, AUTO_ANNO, AUTO_MES, AUTO_DESCRIPCION, AUTO_FECCREA, USUA_USUARIO)
+VALUES (3, 2025, 2, 'Reversión febrero 2025 - APS Sur', SYSDATE - 5, 1);
+
+INSERT INTO REVE_AUTORIZACION (APSA_ID, AUTO_ANNO, AUTO_MES, AUTO_DESCRIPCION, AUTO_FECCREA, USUA_USUARIO)
+VALUES (4, 2025, 3, 'Reversión marzo 2025 - APS Este', SYSDATE, 1);
+
+-- Datos de prueba para otro usuario (SISU_ID=2) - verificar filtrado
+INSERT INTO REVE_AUTORIZACION (APSA_ID, AUTO_ANNO, AUTO_MES, AUTO_DESCRIPCION, AUTO_FECCREA, USUA_USUARIO)
+VALUES (2, 2024, 10, 'Reversión usuario juan.perez - octubre 2024', SYSDATE - 45, 2);
+
+COMMIT;
+
+-- Verificación
+SELECT 'Total registros admin (SISU_ID=1): ' || COUNT(*) FROM REVE_AUTORIZACION WHERE USUA_USUARIO = 1;
+SELECT 'Total registros otros (SISU_ID=2): ' || COUNT(*) FROM REVE_AUTORIZACION WHERE USUA_USUARIO = 2;
+
+-- Verificar vista con rollover de mes/año
+SELECT APSA_NOMAPS, AUTO_ANNO, AUTO_MES, AUTO_DESCRIPCION, SISU_CORREO
+FROM VREVE_AUTORIZACION
+WHERE SISU_ID = 1
+ORDER BY AUTO_ANNO DESC, AUTO_MES DESC;

@@ -1,0 +1,47 @@
+<section>
+  <h2>Detalle Tarifas por Componente</h2>
+
+  <div class="filters-row">
+    <div class="form-group">
+      <label>APS</label>
+      <app-aps-selector [(selectedAps)]="aps" label="APS"></app-aps-selector>
+    </div>
+
+    <div class="form-group">
+      <label>Año</label>
+      <app-anno-selector [(selectedAnno)]="anno" label="Año"></app-anno-selector>
+    </div>
+
+    <div class="form-group">
+      <label>Mes</label>
+      <app-mes-selector [(selectedMes)]="mes" label="Mes"></app-mes-selector>
+    </div>
+
+    <p-button
+      icon="pi pi-search"
+      label="Consultar"
+      [loading]="loading"
+      (click)="consultar()"
+    ></p-button>
+  </div>
+
+  <p *ngIf="loading">Cargando...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <p *ngIf="!loading && !error && rows.length === 0">Sin datos para el período seleccionado.</p>
+
+  <div *ngIf="!loading && rows.length > 0" class="table-wrapper">
+    <p-table [value]="rows" [columns]="getColumns(rows)" [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template pTemplate="header" let-columns>
+        <tr>
+          <th *ngFor="let col of columns">{{ col }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row let-columns="columns">
+        <tr>
+          <td *ngFor="let col of columns">{{ row[col] }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</section>

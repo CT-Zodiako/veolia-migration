@@ -1,0 +1,4 @@
+.page-wrap { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.actions { display: flex; gap: .5rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; align-items: center; }

@@ -1,0 +1,104 @@
+<div class="validaciones-container">
+  <h2>Validaciones</h2>
+  <p class="subtitle">Ejecute las validaciones de negocio para el período seleccionado</p>
+
+  <!-- Filtros -->
+  <p-card styleClass="filtros-card">
+    <ng-template pTemplate="title">
+      <div class="card-header">
+        <span>⚙️ Parámetros</span>
+      </div>
+    </ng-template>
+    <div class="filtros-grid">
+      <div class="filtro-item">
+        <label>APS</label>
+        <p-select
+          [options]="apsOptions"
+          [(ngModel)]="aps"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccione APS"
+          styleClass="w-full">
+        </p-select>
+      </div>
+      <div class="filtro-item">
+        <label>Año</label>
+        <p-select
+          [options]="annoOptions"
+          [(ngModel)]="anno"
+          placeholder="Seleccione año"
+          styleClass="w-full">
+        </p-select>
+      </div>
+      <div class="filtro-item">
+        <label>Mes</label>
+        <p-select
+          [options]="mesOptions"
+          [(ngModel)]="mes"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccione mes"
+          styleClass="w-full">
+        </p-select>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Acciones -->
+  <div class="acciones-bar">
+    <p-button
+      label="Ejecutar Todas"
+      icon="pi pi-play"
+      severity="primary"
+      [loading]="ejecutandoTodas()"
+      (onClick)="ejecutarTodas()">
+    </p-button>
+    <p-button
+      label="Limpiar"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="limpiarResultados()">
+    </p-button>
+  </div>
+
+  <!-- Grid de Validaciones -->
+  <div class="validaciones-grid">
+    @for (item of validaciones(); track item.id; let idx = $index) {
+      <p-card styleClass="validacion-card" [ngClass]="{ 'has-result': item.resultado !== null }">
+        <ng-template pTemplate="title">
+          <div class="validacion-header">
+            <span class="validacion-nombre">{{ item.nombre }}</span>
+            @if (item.resultado) {
+              <p-tag
+                [value]="getResultadoTexto(item.resultado)"
+                [severity]="getSeverity(item.resultado)">
+              </p-tag>
+            }
+          </div>
+        </ng-template>
+        <div class="validacion-body">
+          <p class="descripcion">{{ item.descripcion }}</p>
+          
+          @if (item.resultado && !item.resultado.ok && item.resultado.message) {
+            <div class="error-mensaje">
+              <i class="pi pi-exclamation-triangle"></i>
+              <span>{{ item.resultado.message }}</span>
+            </div>
+          }
+        </div>
+        <ng-template pTemplate="footer">
+          <p-button
+            [label]="item.ejecutando ? 'Ejecutando...' : 'Ejecutar'"
+            [icon]="item.ejecutando ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
+            [disabled]="item.ejecutando || ejecutandoTodas()"
+            severity="primary"
+            size="small"
+            (onClick)="ejecutarUna(idx)">
+          </p-button>
+        </ng-template>
+      </p-card>
+    }
+  </div>
+</div>
+<p-toast></p-toast>

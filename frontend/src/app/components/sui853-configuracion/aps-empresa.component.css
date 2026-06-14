@@ -1,0 +1,19 @@
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #d9d9d9;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.error {
+  color: #b00020;
+}

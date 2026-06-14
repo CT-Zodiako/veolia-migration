@@ -1,0 +1,23 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p>Bienvenido al sistema de gestión Veolia</p>
+  </div>
+
+  <div class="cards-grid">
+    <a
+      *ngFor="let card of cards"
+      [routerLink]="card.route"
+      class="card"
+    >
+      <div
+        class="card-icon"
+        [style.background]="card.color + '15'"
+      >
+        {{ card.icon }}
+      </div>
+      <h3>{{ card.title }}</h3>
+      <p>{{ card.description }}</p>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+<p-toast></p-toast>
+
+<p-card header="Informe Variables PGIRS">
+  <div class="grid mb-3">
+    <div class="col-12 md:col-4">
+      <label class="block mb-1">APS</label>
+      <p-select
+        [options]="apsOptions()"
+        optionLabel="apsaNombre"
+        optionValue="apsaId"
+        placeholder="Seleccione APS"
+        [ngModel]="aps()"
+        (ngModelChange)="aps.set($event)"
+        styleClass="w-full"
+      ></p-select>
+    </div>
+    <div class="col-12 md:col-2 flex align-items-end">
+      <p-button label="Consultar" icon="pi pi-search" (onClick)="consultar()"></p-button>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="text-center py-4">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>Cargando...</p>
+  </div>
+
+  <div *ngIf="error()" class="p-error p-3">
+    <i class="pi pi-exclamation-circle"></i> {{ error() }}
+  </div>
+
+  <div *ngIf="!loading() && !error() && data().length === 0" class="text-center py-4 text-secondary">
+    <i class="pi pi-inbox" style="font-size: 2rem"></i>
+    <p>Sin datos</p>
+  </div>
+
+  <p-table *ngIf="data().length > 0" [value]="data()" [scrollable]="true" scrollHeight="400px" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>APS ID</th>
+        <th>APS</th>
+        <th>Periodo</th>
+        <th>Año</th>
+        <th>Mes</th>
+        <th>Variable ID</th>
+        <th>Variable</th>
+        <th>Valor</th>
+        <th>Frecuencia</th>
+        <th>Fecha</th>
+        <th>Ingreso</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.APSAID || row.apsaid }}</td>
+        <td>{{ row.APSA_NOMAPS || row.apsa_nomaps }}</td>
+        <td>{{ row.PERIODO || row.periodo }}</td>
+        <td>{{ row.ANNO || row.anno }}</td>
+        <td>{{ row.MES || row.mes }}</td>
+        <td>{{ row.PGRIVARIABLE || row.pgrivariable }}</td>
+        <td>{{ row.NOMBRE_VARIABLE || row.nombre_variable }}</td>
+        <td>{{ row.PGRIVALOR || row.pgrivalor }}</td>
+        <td>{{ row.PGRIFRECUENCIA || row.pgrifrecuencia }}</td>
+        <td>{{ row.PGRIFECHA || row.pgrifecha }}</td>
+        <td>{{ row.PGRINGRESO || row.pgringreso }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

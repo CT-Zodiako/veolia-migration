@@ -1,0 +1,59 @@
+<div class="layout-container">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Veolia</h1>
+      <p>Sistema de Gestión</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div *ngFor="let group of menuGroups" class="menu-group">
+        <!-- Padre -->
+        <button
+          *ngIf="group.children.length > 1"
+          class="nav-item menu-parent"
+          [class.expanded]="group.expanded"
+          (click)="toggleExpand(group)"
+        >
+          <span class="nav-icon">{{ group.icon }}</span>
+          <span class="nav-label">{{ group.label }}</span>
+          <span class="nav-arrow">{{ group.expanded ? '▾' : '▸' }}</span>
+        </button>
+
+        <!-- Si solo tiene un hijo, mostrar como link directo -->
+        <a
+          *ngIf="group.children.length === 1"
+          [routerLink]="group.children[0].path"
+          class="nav-item"
+          [class.active]="isActive(group.children[0].path)"
+        >
+          <span class="nav-icon">{{ group.children[0].icon }}</span>
+          <span class="nav-label">{{ group.children[0].label }}</span>
+        </a>
+
+        <!-- Hijos (submenú) -->
+        <div *ngIf="group.expanded && group.children.length > 1" class="submenu">
+          <a
+            *ngFor="let item of group.children"
+            [routerLink]="item.path"
+            class="submenu-item"
+            [class.active]="isActive(item.path)"
+          >
+            <span class="submenu-icon">{{ item.icon }}</span>
+            <span class="submenu-label">{{ item.label }}</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="top-bar-title">{{ getPageTitle() }}</div>
+      <app-profile></app-profile>
+    </header>
+
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

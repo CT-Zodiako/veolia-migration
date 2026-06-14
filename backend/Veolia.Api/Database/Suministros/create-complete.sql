@@ -1,0 +1,228 @@
+-- ============================================================
+-- DDL COMPLETO: Suministros - Reversiones fase 3
+-- Schema: VEOLIA_APP
+-- Nota: Entorno de desarrollo - tablas originales mínimas
+-- ============================================================
+
+-- 1. Tabla bitácora (ya existe parcialmente, verificar)
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE AUCO_REVERSIONES';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE TABLE AUCO_REVERSIONES (
+    REVE_ID            NUMBER PRIMARY KEY,
+    APSA_ID            NUMBER NOT NULL,
+    REVE_ANNO          NUMBER NOT NULL,
+    REVE_MES           NUMBER NOT NULL,
+    REVE_MOTIVO        VARCHAR2(255) NOT NULL,
+    APSA_FECHACREACION DATE DEFAULT SYSDATE NOT NULL,
+    USUA_USUA          NUMBER NOT NULL
+);
+
+-- Secuencia
+BEGIN
+  EXECUTE IMMEDIATE 'DROP SEQUENCE SAUCO_REVERSIONES';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE SEQUENCE SAUCO_REVERSIONES START WITH 1 INCREMENT BY 1;
+
+-- 2. Tablas originales mínimas (para que el package funcione)
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE AUCO_INFOEMPRDIVI';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE TABLE AUCO_INFOEMPRDIVI (
+    INED_ID         NUMBER,
+    EMPR_EMPR       NUMBER,
+    DIVI_DIVI       NUMBER,
+    INED_ANNO       NUMBER,
+    INED_MES        NUMBER,
+    INED_CBLJ       NUMBER,
+    INED_LBLJ       NUMBER,
+    INED_N          NUMBER,
+    INED_M3AGUA     NUMBER,
+    INED_CP         NUMBER,
+    INED_M2CCJ      NUMBER,
+    INED_M2LAVJ     NUMBER,
+    INED_TIJ        NUMBER,
+    INED_KLPJ       NUMBER,
+    INED_TMJ        NUMBER,
+    INED_CLAVJ      NUMBER,
+    INED_QRTJ       NUMBER,
+    INED_QRSJ       NUMBER,
+    INED_FECHACREACION DATE,
+    USUA_USUA       NUMBER
+);
+
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE AUCO_INFOAPSEMPRDIVI';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE TABLE AUCO_INFOAPSEMPRDIVI (
+    IAED_ID         NUMBER,
+    APSA_ID         NUMBER,
+    EMPR_EMPR       NUMBER,
+    DIVI_DIVI       NUMBER,
+    IAED_ANNO       NUMBER,
+    IAED_MES        NUMBER,
+    IAED_QRTZ       NUMBER,
+    IAED_CPE        NUMBER,
+    IAED_T          NUMBER,
+    IAED_VACRTABC   NUMBER,
+    IAED_VACRT      NUMBER,
+    IAED_CRTZ       NUMBER,
+    IAED_QBL        NUMBER,
+    IAED_QLU        NUMBER,
+    IAED_QR         NUMBER,
+    IAED_TAFA       NUMBER,
+    IAED_ND         NUMBER,
+    IAED_NA         NUMBER,
+    IAED_QNA        NUMBER,
+    IAED_TAFNA      NUMBER,
+    IAED_QA         NUMBER,
+    IAED_FECHACREACION DATE,
+    USUA_USUA       NUMBER
+);
+
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE AUCO_INFOAPSRELLENO';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE TABLE AUCO_INFOAPSRELLENO (
+    IARE_ID         NUMBER,
+    APSA_ID         NUMBER,
+    RELL_ID         NUMBER,
+    IARE_ANNO       NUMBER,
+    IARE_MES        NUMBER,
+    IARE_QRS        NUMBER,
+    IARE_CDFK       NUMBER,
+    IARE_VACDFABC   NUMBER,
+    IARE_VACDF      NUMBER,
+    IARE_VL         NUMBER,
+    IARE_CTMLX      NUMBER,
+    IARE_CTLK       NUMBER,
+    IARE_VACTLABC   NUMBER,
+    IARE_VACTL      NUMBER,
+    IARE_ESCENARIO  NUMBER,
+    IARE_FECHACREACION DATE,
+    USUA_USUA       NUMBER
+);
+
+-- AUCO_TARIFAS ya existe, solo verificar que tiene datos
+
+-- 3. Tablas backup
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE AUCO_REVEEMPRDIVI';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE TABLE AUCO_REVEEMPRDIVI AS SELECT * FROM AUCO_INFOEMPRDIVI WHERE 1=0;
+ALTER TABLE AUCO_REVEEMPRDIVI ADD REVE_ID NUMBER;
+
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE AUCO_REVEAPSEMPRDIVI';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE TABLE AUCO_REVEAPSEMPRDIVI AS SELECT * FROM AUCO_INFOAPSEMPRDIVI WHERE 1=0;
+ALTER TABLE AUCO_REVEAPSEMPRDIVI ADD REVE_ID NUMBER;
+
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE AUCO_REVEAPSRELLENO';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE TABLE AUCO_REVEAPSRELLENO AS SELECT * FROM AUCO_INFOAPSRELLENO WHERE 1=0;
+ALTER TABLE AUCO_REVEAPSRELLENO ADD REVE_ID NUMBER;
+
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE AUCO_REVETARIFAS';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+CREATE TABLE AUCO_REVETARIFAS AS SELECT * FROM AUCO_TARIFAS WHERE 1=0;
+ALTER TABLE AUCO_REVETARIFAS ADD REVE_ID NUMBER;
+
+-- 4. Package PK_REVERSION simplificado para entorno de desarrollo
+CREATE OR REPLACE PACKAGE PK_REVERSION AS
+  FUNCTION fauco_reversion(aps integer, mes integer, anno integer, motivo character, usuario integer) RETURN integer;
+END PK_REVERSION;
+/
+
+CREATE OR REPLACE PACKAGE BODY PK_REVERSION AS
+
+FUNCTION fauco_reversion(aps integer, mes integer, anno integer, motivo character, usuario integer) RETURN integer IS
+  lint_revrid     NUMBER;
+  lint_resultado  INTEGER := 0;
+  lint_count      INTEGER;
+BEGIN
+  -- Verificar si hay tarifas para revertir
+  SELECT COUNT(1) INTO lint_count
+  FROM auco_tarifas
+  WHERE apsa_id = aps AND tari_anno = anno AND tari_mes = mes;
+  
+  IF lint_count = 0 THEN
+    RETURN 0; -- No hay datos para revertir
+  END IF;
+  
+  -- Obtener ID de reversión
+  SELECT SAUCO_REVERSIONES.NEXTVAL INTO lint_revrid FROM dual;
+  
+  -- Backup de tarifas
+  INSERT INTO AUCO_REVETARIFAS
+  SELECT t.*, lint_revrid
+  FROM auco_tarifas t
+  WHERE t.apsa_id = aps AND t.tari_anno = anno AND t.tari_mes = mes;
+  
+  -- Backup de infoemprdivi (si hay datos)
+  INSERT INTO AUCO_REVEEMPRDIVI
+  SELECT i.*, lint_revrid
+  FROM auco_infoemprdivi i
+  WHERE i.empr_empr IN (SELECT apsa_id FROM auco_apsaseo WHERE apsa_id = aps)
+    AND i.ined_anno = anno AND i.ined_mes = mes;
+  
+  -- Borrar tarifas originales
+  DELETE FROM auco_tarifas WHERE apsa_id = aps AND tari_anno = anno AND tari_mes = mes;
+  
+  -- Registrar en bitácora
+  INSERT INTO AUCO_REVERSIONES (REVE_ID, APSA_ID, REVE_ANNO, REVE_MES, REVE_MOTIVO, USUA_USUA)
+  VALUES (lint_revrid, aps, anno, mes, motivo, usuario);
+  
+  COMMIT;
+  
+  lint_resultado := 1;
+  RETURN lint_resultado;
+
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+    RETURN 0;
+END;
+
+END PK_REVERSION;
+/
+
+COMMIT;
+
+-- Verificación
+SELECT 'AUCO_REVERSIONES' as tabla, COUNT(*) as registros FROM AUCO_REVERSIONES
+UNION ALL
+SELECT 'AUCO_TARIFAS', COUNT(*) FROM AUCO_TARIFAS
+UNION ALL
+SELECT 'AUCO_REVETARIFAS', COUNT(*) FROM AUCO_REVETARIFAS
+UNION ALL
+SELECT 'AUCO_INFOEMPRDIVI', COUNT(*) FROM AUCO_INFOEMPRDIVI;

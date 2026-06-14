@@ -1,0 +1,67 @@
+# Facturación Specification
+
+## Purpose
+Definir comportamiento funcional del módulo de consulta de facturación con paridad AS-IS para 5 consultas especializadas.
+
+## Requirements
+
+### Requirement: Contrato de endpoints de facturación
+The system MUST exponer exactamente los siguientes endpoints POST:
+- `/api/v1/facturacion/facturacion`
+- `/api/v1/facturacion/detafacturacion`
+- `/api/v1/facturacion/facturacionclus`
+- `/api/v1/facturacion/facturaciondinc`
+- `/api/v1/facturacion/facturacionelectronica`
+
+Todos SHALL aceptar body JSON `{ aps: string, anno: number, mes: number }` y responder `200` con colección tipada por endpoint.
+
+#### Scenario: Request válido por endpoint
+- GIVEN un request con `aps`, `anno`, `mes` válidos
+- WHEN el cliente invoca cualquiera de los 5 endpoints
+- THEN el backend responde `200` con una lista de registros del dataset correspondiente
+
+#### Scenario: Request inválido
+- GIVEN `aps` vacío o `mes` fuera de `1..12`
+- WHEN el cliente invoca un endpoint
+- THEN el backend responde `400` con detalle de validación
+
+### Requirement: Regla de rollover mensual
+The system MUST consultar SIEMPRE el período del mes anterior al solicitado.
+
+#### Scenario: Mes estándar
+- GIVEN `anno=2026` y `mes=5`
+- WHEN se procesa la consulta
+- THEN el período consultado es `anno=2026`, `mes=4`
+
+#### Scenario: Rollover enero-diciembre
+- GIVEN `anno=2026` y `mes=1`
+- WHEN se procesa la consulta
+- THEN el período consultado es `anno=2025`, `mes=12`
+
+### Requirement: Requisitos frontend de consulta
+The system SHALL proveer una página `facturacion` con filtros `APS`, `Año`, `Mes` y 5 secciones/tablas independientes alineadas a los endpoints.
+
+#### Scenario: Ejecución de consulta desde UI
+- GIVEN filtros completos en pantalla
+- WHEN el usuario ejecuta consultar
+- THEN el frontend dispara las 5 llamadas y muestra cada resultado en su tabla
+
+#### Scenario: Estado de carga y error parcial
+- GIVEN una falla en uno de los 5 endpoints
+- WHEN termina la operación
+- THEN la UI muestra error contextual en la sección afectada y conserva datos de secciones exitosas
+
+### Requirement: Requisitos de acceso a datos Oracle
+The system MUST leer exclusivamente desde las vistas:
+`VACUO_FACTURACION`, `VACUO_DETAFACTURACION`, `VACUO_FACTURACIONCLUS`, `VACUO_FACTURACIONDINC`, `VAUCO_FATELECTRONICA`.
+The system SHOULD asegurar índices en columnas de filtro lógico (`APS`, `ANNO`, `MES`) o equivalente en tablas base para performance.
+
+#### Scenario: Consulta por vista correcta
+- GIVEN una operación de facturación específica
+- WHEN el repository ejecuta query
+- THEN utiliza la vista Oracle correspondiente al endpoint
+
+#### Scenario: Dependencia faltante de paquete
+- GIVEN ausencia de `PK_TARIFACOMPONENTE`
+- WHEN el módulo necesita esa dependencia
+- THEN se utiliza stub controlado sin romper el contrato API

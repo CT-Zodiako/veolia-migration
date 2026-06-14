@@ -1,0 +1,12 @@
+<div class="page-wrap">
+  <p-card>
+    <div class="toolbar">
+      <p-select [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" [(ngModel)]="apsaId" placeholder="APS" (onChange)="cargarProyecciones()"></p-select>
+      <p-select [options]="proyecciones()" optionLabel="proyNombre" optionValue="proyId" [(ngModel)]="proyId" placeholder="Proyección"></p-select>
+      <p-button label="Ejecutar Proyección" icon="pi pi-play" severity="success" [loading]="loading()" (onClick)="ejecutar()"></p-button>
+    </div>
+    @if (resultado()) {
+      <div class="mt-3"><strong>Resultado:</strong> {{ resultado() }}</div>
+    }
+  </p-card>
+</div>

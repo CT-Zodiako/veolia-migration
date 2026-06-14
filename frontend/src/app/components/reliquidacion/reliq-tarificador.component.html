@@ -1,0 +1,37 @@
+<div class="page-wrap">
+  <p-card>
+    <div class="toolbar">
+      <p-select [options]="reliquidaciones()" optionLabel="relqNombre" optionValue="relqId" [(ngModel)]="selectedReliq" placeholder="Seleccione reliquidación" />
+      <p-button label="Previsualizar" icon="pi pi-search" [loading]="loading()" (onClick)="consultar()" />
+      <p-button *ngIf="estado()?.puedeAprobar" label="Aprobar" severity="success" icon="pi pi-check" (onClick)="abrirAprobar()" />
+    </div>
+    <p *ngIf="estado()">Estado actual: <b>{{ estado()?.estado }}</b></p>
+  </p-card>
+
+  <p-card styleClass="mt-3">
+    <p-tabs value="usuarios">
+      <p-tablist>
+        <p-tab value="usuarios">Usuarios</p-tab>
+        <p-tab value="empresa">Empresa</p-tab>
+        <p-tab value="adicional">Adicional</p-tab>
+        <p-tab value="relleno">Relleno</p-tab>
+        <p-tab value="aps">APS</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="usuarios"><pre>{{ resumenes().usuarios | json }}</pre></p-tabpanel>
+        <p-tabpanel value="empresa"><pre>{{ resumenes().empresa | json }}</pre></p-tabpanel>
+        <p-tabpanel value="adicional"><pre>{{ resumenes().adicional | json }}</pre></p-tabpanel>
+        <p-tabpanel value="relleno"><pre>{{ resumenes().relleno | json }}</pre></p-tabpanel>
+        <p-tabpanel value="aps"><pre>{{ resumenes().aps | json }}</pre></p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </p-card>
+</div>
+
+<p-dialog [visible]="showApproveModal()" header="Confirmar aprobación" [modal]="true" [style]="{width:'30rem'}" (visibleChange)="showApproveModal.set($event)">
+  <p>¿Confirmás aprobar esta reliquidación?</p>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" (onClick)="showApproveModal.set(false)" />
+    <p-button label="Aprobar" severity="success" icon="pi pi-check" (onClick)="aprobar()" />
+  </ng-template>
+</p-dialog>

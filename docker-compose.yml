@@ -1,0 +1,23 @@
+services:
+  oracle:
+    image: ${ORACLE_IMAGE:-gvenzl/oracle-free:23-slim}
+    container_name: ${ORACLE_CONTAINER_NAME:-veolia-oracle}
+    restart: unless-stopped
+    ports:
+      - "${ORACLE_PORT:-1521}:1521"
+      - "${ORACLE_EM_PORT:-5500}:5500"
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_DATABASE_PASSWORD:-change_me_sys_password}
+      APP_USER: ${ORACLE_APP_USER:-veolia_app}
+      APP_USER_PASSWORD: ${ORACLE_APP_PASSWORD:-change_me_app_password}
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  oracle_data:

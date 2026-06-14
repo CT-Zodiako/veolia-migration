@@ -1,0 +1,59 @@
+# Proposal: Fase 4 Facturación
+
+## Intent
+Implementar el módulo de consulta de facturación por APS/período con paridad AS-IS, para exponer los 5 reportes existentes en Oracle sin cambiar reglas funcionales.
+
+## Scope
+
+### In Scope
+- Exponer 5 endpoints POST en `/api/v1/facturacion/*` con request `{ aps, anno, mes }`.
+- Construir página frontend de facturación con filtros y 5 secciones/tablas.
+- Consultar vistas Oracle: `VACUO_FACTURACION`, `VACUO_DETAFACTURACION`, `VACUO_FACTURACIONCLUS`, `VACUO_FACTURACIONDINC`, `VAUCO_FATELECTRONICA`.
+- Aplicar regla crítica de período: siempre consultar mes anterior, incluyendo rollover enero→diciembre con decremento de año.
+
+### Out of Scope
+- Consolidar endpoints en uno solo o rediseñar contrato AS-IS.
+- Cambios en negocio de tarifas fuera de dependencias requeridas.
+- Reportería/exportaciones adicionales.
+
+## Capabilities
+
+### New Capabilities
+- `facturacion-api`: API de consulta de facturación con 5 endpoints especializados.
+- `facturacion-frontend`: Pantalla de consulta de facturación con filtros APS/año/mes y 5 tablas de resultados.
+- `facturacion-data-access`: Acceso Oracle mediante vistas de facturación y validación de dependencias de paquetes.
+
+### Modified Capabilities
+- None.
+
+## Approach
+Implementación incremental con paridad AS-IS: crear `FacturacionController` y capa de servicio/repositorio con 5 consultas separadas; centralizar la lógica de rollover mensual en backend para consistencia transversal.
+
+## Affected Areas
+
+| Area | Impact | Description |
+|------|--------|-------------|
+| `backend/` | New | Controller, DTOs, service y repository de facturación |
+| `frontend/` | New | Ruta/página de facturación, servicio API y 5 componentes de tabla |
+| `backend` Oracle access | New | Queries/vistas para las 5 consultas de facturación |
+
+## Risks
+
+| Risk | Likelihood | Mitigation |
+|------|------------|------------|
+| Nombre/estructura real de vistas difiere | Med | Validar esquema Oracle antes de cerrar repository |
+| `PK_TARIFACOMPONENTE` faltante | Med | Definir stub/adapter temporal y contrato explícito |
+| Error de rollover en límites de año | Low | Tests unitarios dedicados enero→diciembre |
+
+## Rollback Plan
+Revertir ruta y componentes frontend, desregistrar endpoints de `FacturacionController`, y desactivar consultas del módulo sin impactar otros dominios.
+
+## Dependencies
+- `PK_VALGRAL` (existente).
+- `PK_TARIFACOMPONENTE` (stub si no disponible).
+- Acceso Oracle a las 5 vistas objetivo.
+
+## Success Criteria
+- [ ] Los 5 endpoints responden usando mes anterior correcto en todos los meses.
+- [ ] La pantalla frontend permite filtrar por APS/año/mes y renderiza 5 tablas.
+- [ ] El módulo mantiene paridad funcional AS-IS sin romper otros módulos.
