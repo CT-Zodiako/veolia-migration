@@ -6,6 +6,9 @@ public interface IAuthRepository
     Task<IReadOnlyList<object>> GetSistemasByCorreoAsync(string correo, CancellationToken cancellationToken);
     Task<object?> LoginAsync(string correo, string pass, int idSistema, CancellationToken cancellationToken);
 
+    // F-AUTH-01b Cambio de sistema activo sin re-loguearse (requiere token válido)
+    Task<SwitchSistemaRepositoryResult> SwitchSistemaAsync(long sisuId, int idSistema, CancellationToken cancellationToken);
+
     // F-AUTH-02 Logout (dead token)
     Task<object?> LogoutAsync(long sisuId, string token, CancellationToken cancellationToken);
 
@@ -36,4 +39,5 @@ public interface IAuthRepository
     Task<IReadOnlyList<long>> GetMenuByUserAsync(int idSistema, long sisuId, CancellationToken cancellationToken);
     Task<IReadOnlyList<long>> GetMenuUserOptionsAsync(long id, CancellationToken cancellationToken);
     Task<object?> UptUserMenuAsync(long id, IReadOnlyList<long> options, int sistema, CancellationToken cancellationToken);
+    Task<IReadOnlyList<object>> GetMenuCatalogAsync(CancellationToken cancellationToken);
 }

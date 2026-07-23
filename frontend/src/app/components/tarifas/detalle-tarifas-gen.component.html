@@ -1,24 +1,15 @@
 <section>
   <h2>Detalle Tarifas General</h2>
 
-  <div class="filters-row">
-    <div class="form-group">
-      <label>Año</label>
-      <app-anno-selector [(selectedAnno)]="anno" label="Año"></app-anno-selector>
-    </div>
-
-    <div class="form-group">
-      <label>Mes</label>
-      <app-mes-selector [(selectedMes)]="mes" label="Mes"></app-mes-selector>
-    </div>
-
-    <p-button
-      icon="pi pi-search"
-      label="Consultar"
-      [loading]="loading"
-      (click)="consultar()"
-    ></p-button>
-  </div>
+  <app-parametros-consulta
+    [mostrarAps]="false"
+    [(anno)]="anno"
+    [(mes)]="mes"
+    [loading]="loading"
+    [autoConsultar]="true"
+    (consultar)="consultar()"
+    (parametrosIncompletos)="limpiar()"
+  ></app-parametros-consulta>
 
   <p *ngIf="loading">Cargando...</p>
   <p *ngIf="error" class="error">{{ error }}</p>

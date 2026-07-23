@@ -30,7 +30,7 @@ interface MesOption {
   `,
   styles: [`
     .form-group { margin-bottom: 12px; }
-    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #334155; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--color-text-body); }
   `]
 })
 export class MesSelectorComponent {

@@ -71,6 +71,28 @@ public class AuthController(IAuthRepository authRepository, AuthContractMapper c
         };
     }
 
+    [HttpPost("switchSistema")]
+    public async Task<IActionResult> SwitchSistema([FromBody] SwitchSistemaRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        var result = await authRepository.SwitchSistemaAsync(tokenContext.SisuId, request.idSistema, cancellationToken);
+
+        return result.Kind switch
+        {
+            LoginOutcomeKind.Success when result.Sistema is not null && !string.IsNullOrWhiteSpace(result.AuthToken)
+                => Ok(contractMapper.MapSwitchSistemaSuccess(result.AuthToken!, result.Sistema)),
+
+            LoginOutcomeKind.InvalidSystem
+                => StatusCode(StatusCodes.Status404NotFound, contractMapper.MapLoginError(404, result.Message)),
+
+            _ => StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLoginError(500, "Error al cambiar de sistema"))
+        };
+    }
+
     [HttpGet("allSistemas")]
     public async Task<IActionResult> AllSistemas(CancellationToken cancellationToken)
     {
@@ -247,6 +269,13 @@ public class AuthController(IAuthRepository authRepository, AuthContractMapper c
         return Ok(response);
     }
 
+    [HttpPost("getMenuCatalog")]
+    public async Task<IActionResult> GetMenuCatalog(CancellationToken cancellationToken)
+    {
+        var catalog = await authRepository.GetMenuCatalogAsync(cancellationToken);
+        return Ok(catalog);
+    }
+
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
     {
         var token = Request.Headers["x-access-token"].FirstOrDefault();
@@ -257,6 +286,7 @@ public class AuthController(IAuthRepository authRepository, AuthContractMapper c
 public sealed record RegistroRequest(string nombre, string apellido, string correo, string password, int estado);
 public sealed record UpdateUsuarioRequest(long id, string nombre, string apellido, string correo, int estado);
 public sealed record LoginRequest(string correo, string pass, int idSistema);
+public sealed record SwitchSistemaRequest(int idSistema);
 public sealed record SetChangePassRequest(string oldPass, string newPass, string confirmPass);
 public sealed record IdRequest(long id);
 public sealed record SetApsxUsuarioRequest(long id, IReadOnlyList<long> outAps, IReadOnlyList<long> inAps);

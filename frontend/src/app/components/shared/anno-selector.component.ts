@@ -29,7 +29,7 @@ interface AnnoOption {
   `,
   styles: [`
     .form-group { margin-bottom: 12px; }
-    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #334155; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--color-text-body); }
   `]
 })
 export class AnnoSelectorComponent {
@@ -37,7 +37,7 @@ export class AnnoSelectorComponent {
   @Input() placeholder = 'Seleccione año';
   @Input() selectedAnno: number | null = null;
   @Input() rangoInicio = 2020;
-  @Input() rangoFin = 2025;
+  @Input() rangoFin = 2026;
   
   @Output() selectedAnnoChange = new EventEmitter<number | null>();
 

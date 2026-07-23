@@ -47,6 +47,14 @@ export interface ApsItem {
   APSA_NOMAPS: string;
 }
 
+export interface MenuCatalogItem {
+  id: number;
+  label: string;
+  parentId: number | null;
+  sistemaId: number;
+  sistemaNombre: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -91,6 +99,24 @@ export class AuthService {
         this.authState.setLoading(false);
         this.authState.setError(err.error?.message || 'Error de conexión');
         return throwError(() => err);
+      })
+    );
+  }
+
+  // Cambiar de sistema sin cerrar sesión: pide un token nuevo, ya autenticado
+  switchSistema(idSistema: number): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(
+      `${this.baseUrl}/switchSistema`,
+      { idSistema },
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(response => {
+        if (response.auth_token) {
+          this.authState.setToken(response.auth_token);
+          this.authState.setSistema(response.sistema);
+          localStorage.setItem('jwtOken', response.auth_token);
+          localStorage.setItem('sistema', JSON.stringify(response.sistema));
+        }
       })
     );
   }
@@ -175,5 +201,9 @@ export class AuthService {
 
   getMenuUserOptions(id: number): Observable<number[]> {
     return this.http.post<number[]>(`${this.baseUrl}/getMenuUserOptions`, { id }, { headers: this.getHeaders() });
+  }
+
+  getMenuCatalog(): Observable<MenuCatalogItem[]> {
+    return this.http.post<MenuCatalogItem[]>(`${this.baseUrl}/getMenuCatalog`, {}, { headers: this.getHeaders() });
   }
 }

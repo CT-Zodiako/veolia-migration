@@ -30,9 +30,9 @@ import { AuthService, ApsItem } from '../../services/auth.service';
   `,
   styles: [`
     .form-group { margin-bottom: 12px; }
-    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #334155; }
-    .text-muted { color: #94a3b8; }
-    .text-danger { color: #dc2626; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--color-text-body); }
+    .text-muted { color: var(--color-text-muted); }
+    .text-danger { color: var(--color-brand-accent); }
   `]
 })
 export class ApsSelectorComponent implements OnInit {

@@ -35,7 +35,7 @@ import { SuiReversionRow, SuiReversionesService } from '../../services/sui-rever
         <button pButton type="button" label="Consultar" (click)="cargar()" [disabled]="loading"></button>
       </div>
 
-      <p *ngIf="error" style="color:#b91c1c">{{ error }}</p>
+      <p *ngIf="error" style="color:var(--color-brand-medium)">{{ error }}</p>
 
       <p-tabs value="0">
         <p-tablist>

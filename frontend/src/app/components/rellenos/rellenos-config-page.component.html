@@ -7,29 +7,53 @@
   <div *ngIf="error" class="error-message">{{ error }}</div>
 
   <div class="table-container" *ngIf="!loading; else loadingTpl">
-    <p-table [value]="rellenos" [tableStyle]="{ 'min-width': '56rem' }" [paginator]="true" [rows]="10">
+    <p-table [value]="filteredRellenos" [tableStyle]="{ 'min-width': '56rem', 'table-layout': 'fixed' }" [paginator]="true" [rows]="10">
       <ng-template pTemplate="header">
         <tr>
-          <th>ID</th>
-          <th>Nombre</th>
+          <th style="width: 70px">ID</th>
+          <th style="width: 180px">Nombre</th>
           <th>Descripción</th>
-          <th>Estado</th>
-          <th>Propio</th>
-          <th>Regional</th>
-          <th>NUSD</th>
-          <th>Acciones</th>
+          <th style="width: 110px">Estado</th>
+          <th style="width: 90px">Propio</th>
+          <th style="width: 100px">Regional</th>
+          <th style="width: 110px">NUSD</th>
+          <th style="width: 100px">Acciones</th>
+        </tr>
+        <tr class="filter-row">
+          <th></th>
+          <th>
+            <input
+              pInputText
+              type="text"
+              class="column-filter-input"
+              placeholder="Buscar"
+              (input)="nombreFilter = $any($event.target).value" />
+          </th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
         <tr>
           <td>{{ item.RELL_ID }}</td>
           <td>{{ item.RELL_NOMRELLENO }}</td>
-          <td>{{ item.RELL_DESCRIPCION || '-' }}</td>
-          <td>{{ item.RELL_ESTADO === 1 ? 'Activo' : 'Inactivo' }}</td>
+          <td class="celda-truncada" [pTooltip]="item.RELL_DESCRIPCION" tooltipPosition="top">{{ item.RELL_DESCRIPCION || '-' }}</td>
+          <td>
+            <p-button
+              [label]="item.RELL_ESTADO === 1 ? 'Activo' : 'Inactivo'"
+              [severity]="item.RELL_ESTADO === 1 ? 'success' : 'secondary'"
+              size="small"
+              (onClick)="toggleEstado(item)">
+            </p-button>
+          </td>
           <td>{{ item.RELL_PROPIO === 1 ? 'Sí' : 'No' }}</td>
           <td>{{ item.RELL_REGIONAL === 1 ? 'Sí' : 'No' }}</td>
           <td>{{ item.RELL_NUSD || '-' }}</td>
-          <td class="actions">
+          <td class="actions-cell">
             <p-button icon="pi pi-pencil" severity="info" size="small" (click)="openEdit(item)"></p-button>
             <p-button icon="pi pi-trash" severity="danger" size="small" (click)="eliminar(item)"></p-button>
           </td>

@@ -22,7 +22,6 @@ SELECT
     RELL_FECHACREACION,
     USUA_USUA
 FROM AUCO_RELLENOS
-WHERE RELL_ESTADO = 1
 ORDER BY RELL_NOMRELLENO";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
@@ -126,9 +125,10 @@ WHERE RELL_ID = :rellId";
 
     public async Task<object?> EliminarAsync(long id, CancellationToken cancellationToken)
     {
+        // Catálogo AS-IS de RELL_ESTADO: 1 = Activo, 2 = Inactivo (doc migracion/modules/rellenos/rellenos.md).
         const string sql = @"
 UPDATE AUCO_RELLENOS
-SET RELL_ESTADO = 0
+SET RELL_ESTADO = 2
 WHERE RELL_ID = :rellId";
 
         using var connection = await OpenConnectionAsync(cancellationToken);

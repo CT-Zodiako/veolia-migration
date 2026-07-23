@@ -5,26 +5,15 @@
 
   <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <div class="filters-row">
-    <app-aps-selector 
-      [(selectedAps)]="aps"
-      label="APS"></app-aps-selector>
-    
-    <app-anno-selector 
-      [(selectedAnno)]="anno"
-      label="Año"></app-anno-selector>
-    
-    <app-mes-selector 
-      [(selectedMes)]="mes"
-      label="Mes"></app-mes-selector>
-
-    <p-button
-      icon="pi pi-search"
-      label="{{ loading ? 'Consultando...' : 'Consultar' }}"
-      [loading]="loading"
-      (click)="consultar()"
-    ></p-button>
-  </div>
+  <app-parametros-consulta
+    [(aps)]="aps"
+    [(anno)]="anno"
+    [(mes)]="mes"
+    [loading]="loading"
+    [autoConsultar]="true"
+    (consultar)="consultar()"
+    (parametrosIncompletos)="limpiar()"
+  ></app-parametros-consulta>
 
   <div *ngIf="loading" class="loading-container">
     <p>Cargando tarifas...</p>

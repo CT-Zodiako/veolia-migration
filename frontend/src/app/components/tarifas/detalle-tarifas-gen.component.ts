@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TarifaRow, TarifasService } from '../../services/tarifas.service';
-import { AnnoSelectorComponent } from '../shared/anno-selector.component';
-import { MesSelectorComponent } from '../shared/mes-selector.component';
+import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 
 @Component({
   selector: 'app-detalle-tarifas-gen',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, AnnoSelectorComponent, MesSelectorComponent],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ParametrosConsultaComponent],
   templateUrl: './detalle-tarifas-gen.component.html'
 })
 export class DetalleTarifasGenComponent {
@@ -52,5 +51,11 @@ export class DetalleTarifasGenComponent {
   getColumns(rows: TarifaRow[]): string[] {
     const first = rows[0];
     return first ? Object.keys(first) : [];
+  }
+
+  limpiar(): void {
+    this.rows = [];
+    this.error = '';
+    this.cdr.detectChanges();
   }
 }

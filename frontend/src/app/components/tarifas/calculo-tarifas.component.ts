@@ -3,14 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TarifaChartPoint, TarifaRow, TarifasService } from '../../services/tarifas.service';
-import { ApsSelectorComponent } from '../shared/aps-selector.component';
-import { AnnoSelectorComponent } from '../shared/anno-selector.component';
-import { MesSelectorComponent } from '../shared/mes-selector.component';
+import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 
 @Component({
   selector: 'app-calculo-tarifas',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ApsSelectorComponent, AnnoSelectorComponent, MesSelectorComponent],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ParametrosConsultaComponent],
   templateUrl: './calculo-tarifas.component.html',
   styleUrls: ['./calculo-tarifas.component.css']
 })
@@ -67,6 +65,13 @@ export class CalculoTarifasComponent {
   getColumns(rows: TarifaRow[]): string[] {
     const first = rows[0];
     return first ? Object.keys(first) : [];
+  }
+
+  limpiar(): void {
+    this.rows = [];
+    this.chartData = [];
+    this.error = '';
+    this.cdr.detectChanges();
   }
 
   getBarWidth(value: number): number {

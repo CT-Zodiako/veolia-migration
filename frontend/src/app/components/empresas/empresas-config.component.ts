@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfirmationService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { EmpresasService, EmpresaItem, EmpresaMutationPayload } from '../../services/empresas.service';
 import { EmpresaFormComponent } from './empresa-form.component';
@@ -17,9 +18,17 @@ export class EmpresasConfigComponent implements OnInit {
   error = '';
   showForm = false;
   selectedEmpresa: EmpresaItem | null = null;
+  nombreFilter = '';
+
+  get filteredEmpresas(): EmpresaItem[] {
+    const term = this.nombreFilter.trim().toLowerCase();
+    if (!term) return this.empresas;
+    return this.empresas.filter(item => (item.EMPR_NOMBRE ?? '').toLowerCase().includes(term));
+  }
 
   constructor(
     private readonly empresasService: EmpresasService,
+    private readonly confirmationService: ConfirmationService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -73,9 +82,19 @@ export class EmpresasConfigComponent implements OnInit {
   }
 
   eliminar(item: EmpresaItem): void {
-    const accepted = window.confirm(`¿Seguro que querés eliminar la empresa "${item.EMPR_NOMBRE}"?`);
-    if (!accepted) return;
+    this.confirmationService.confirm({
+      header: 'Eliminar empresa',
+      message: `¿Seguro que querés eliminar la empresa "${item.EMPR_NOMBRE}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => this.confirmarEliminar(item)
+    });
+  }
 
+  private confirmarEliminar(item: EmpresaItem): void {
     this.loading = true;
     this.empresasService.eliminar(item.EMPR_EMPR).subscribe({
       next: () => {

@@ -13,7 +13,7 @@
 
       <div class="form-group">
         <label>Descripción</label>
-        <textarea pTextarea [(ngModel)]="rell_descripcion" name="rell_descripcion" rows="3" style="width: 100%"></textarea>
+        <textarea pTextarea [(ngModel)]="rell_descripcion" name="rell_descripcion" rows="3" required style="width: 100%"></textarea>
       </div>
 
       <div class="form-group">
@@ -22,9 +22,18 @@
       </div>
 
       <div class="checks-grid">
-        <p-checkbox [(ngModel)]="rell_estado" [binary]="true" label="Activo" name="rell_estado"></p-checkbox>
-        <p-checkbox [(ngModel)]="rell_propio" [binary]="true" label="Propio" name="rell_propio"></p-checkbox>
-        <p-checkbox [(ngModel)]="rell_regional" [binary]="true" label="Regional" name="rell_regional"></p-checkbox>
+        <div class="check-item">
+          <p-checkbox [(ngModel)]="rell_estado" [binary]="true" inputId="relleno-estado" name="rell_estado"></p-checkbox>
+          <label for="relleno-estado">Activo</label>
+        </div>
+        <div class="check-item">
+          <p-checkbox [(ngModel)]="rell_propio" [binary]="true" inputId="relleno-propio" name="rell_propio"></p-checkbox>
+          <label for="relleno-propio">Propio</label>
+        </div>
+        <div class="check-item">
+          <p-checkbox [(ngModel)]="rell_regional" [binary]="true" inputId="relleno-regional" name="rell_regional"></p-checkbox>
+          <label for="relleno-regional">Regional</label>
+        </div>
       </div>
 
       <p-button type="submit" label="{{ loading ? 'Guardando...' : 'Guardar' }}" [loading]="loading" styleClass="w-full"></p-button>

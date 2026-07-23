@@ -1,101 +1,143 @@
 <div class="usuarios-container">
-  <div class="usuarios-header">
-    <h2>Gestión de Usuarios</h2>
-    <p-button icon="pi pi-plus" label="Nuevo Usuario" (click)="openNewForm()"></p-button>
-  </div>
-
-  <div *ngIf="error && !showForm" class="error-message">{{ error }}</div>
-  <div *ngIf="success && !showForm" class="success-message">{{ success }}</div>
-
-  <div class="table-container">
-    <p-table [value]="usuarios" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Apellido</th>
-          <th>Correo</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-usuario>
-        <tr>
-          <td>{{ usuario.SISU_ID }}</td>
-          <td>{{ usuario.SISU_NOMBRE }}</td>
-          <td>{{ usuario.SISU_APELLIDO }}</td>
-          <td>{{ usuario.SISU_CORREO }}</td>
-          <td>
-            <span class="status-badge" [class.status-active]="usuario.SISU_ESTADO === 1" [class.status-inactive]="usuario.SISU_ESTADO !== 1">
-              {{ usuario.SISU_ESTADO === 1 ? 'Activo' : 'Inactivo' }}
-            </span>
-          </td>
-          <td>
-            <p-button icon="pi pi-pencil" severity="info" size="small" (click)="editUsuario(usuario)"></p-button>
-            <p-button icon="pi pi-key" severity="warn" size="small" (click)="resetPassword(usuario)"></p-button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
-
-  <!-- Modal Form -->
-  <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
-        <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="closeForm()"></p-button>
-      </div>
-
-      <div *ngIf="error" class="error-message">{{ error }}</div>
-      <div *ngIf="success" class="success-message">{{ success }}</div>
-
-      <form (ngSubmit)="saveUsuario()">
-        <div *ngIf="isEditing && selectedUsuario?.SISU_ID" class="form-group">
-          <label>ID</label>
-          <input pInputText type="text" [value]="selectedUsuario?.SISU_ID" disabled style="width: 100%" />
+  <p-tabs value="usuarios">
+    <p-tablist>
+      <p-tab value="usuarios"><i class="pi pi-users"></i> Usuarios</p-tab>
+      <p-tab value="aps"><i class="pi pi-map-marker"></i> APS</p-tab>
+      <p-tab value="sistemas"><i class="pi pi-desktop"></i> Sistemas</p-tab>
+      <p-tab value="permisos"><i class="pi pi-shield"></i> Permisos</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="usuarios">
+        <div class="usuarios-header">
+          <h2>Gestión de Usuarios</h2>
+          <p-button icon="pi pi-plus" label="Nuevo Usuario" (click)="openNewForm()"></p-button>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Nombre</label>
-            <input pInputText type="text" [(ngModel)]="nombre" name="nombre" required style="width: 100%" />
+        <div *ngIf="error && !showForm" class="error-message">{{ error }}</div>
+        <div *ngIf="success && !showForm" class="success-message">{{ success }}</div>
+
+        <div class="table-container">
+          <p-table [value]="filteredUsuarios" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Correo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+              <tr class="filter-row">
+                <th></th>
+                <th>
+                  <input
+                    pInputText
+                    type="text"
+                    class="column-filter-input"
+                    placeholder="Buscar"
+                    (input)="nombreFilter = $any($event.target).value" />
+                </th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-usuario>
+              <tr>
+                <td>{{ usuario.SISU_ID }}</td>
+                <td>{{ usuario.SISU_NOMBRE }}</td>
+                <td>{{ usuario.SISU_APELLIDO }}</td>
+                <td>{{ usuario.SISU_CORREO }}</td>
+                <td>
+                  <p-button
+                    [label]="usuario.SISU_ESTADO === 1 ? 'Activo' : 'Inactivo'"
+                    [severity]="usuario.SISU_ESTADO === 1 ? 'success' : 'secondary'"
+                    size="small"
+                    (onClick)="toggleEstado(usuario)">
+                  </p-button>
+                </td>
+                <td class="actions-cell">
+                  <p-button icon="pi pi-pencil" severity="info" size="small" (click)="editUsuario(usuario)"></p-button>
+                  <p-button icon="pi pi-key" severity="warn" size="small" (click)="resetPassword(usuario)"></p-button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <!-- Modal Form -->
+        <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
+              <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="closeForm()"></p-button>
+            </div>
+
+            <div *ngIf="error" class="error-message">{{ error }}</div>
+            <div *ngIf="success" class="success-message">{{ success }}</div>
+
+            <form (ngSubmit)="saveUsuario()">
+              <div *ngIf="isEditing && selectedUsuario?.SISU_ID" class="form-group">
+                <label>ID</label>
+                <input pInputText type="text" [value]="selectedUsuario?.SISU_ID" disabled style="width: 100%" />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nombre</label>
+                  <input pInputText type="text" [(ngModel)]="nombre" name="nombre" required style="width: 100%" />
+                </div>
+                <div class="form-group">
+                  <label>Apellido</label>
+                  <input pInputText type="text" [(ngModel)]="apellido" name="apellido" required style="width: 100%" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Correo</label>
+                <input pInputText type="email" [(ngModel)]="correo" name="correo" required style="width: 100%" />
+              </div>
+
+              <div class="form-group" *ngIf="!isEditing">
+                <label>Contraseña</label>
+                <input pInputText type="password" [(ngModel)]="password" name="password" [required]="!isEditing" style="width: 100%" />
+              </div>
+
+              <div class="form-group" *ngIf="!isEditing">
+                <label>Confirmar Contraseña</label>
+                <input pInputText type="password" [(ngModel)]="confirmPassword" name="confirmPassword" [required]="!isEditing" style="width: 100%" />
+              </div>
+
+              <div class="form-group">
+                <label>Estado</label>
+                <p-select
+                  [options]="estadoOptions"
+                  [(ngModel)]="estado"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Seleccione estado"
+                  [style]="{width: '100%'}"
+                ></p-select>
+              </div>
+
+              <p-button type="submit" label="{{ loading ? 'Guardando...' : 'Guardar' }}" [loading]="loading" styleClass="w-full"></p-button>
+            </form>
           </div>
-          <div class="form-group">
-            <label>Apellido</label>
-            <input pInputText type="text" [(ngModel)]="apellido" name="apellido" required style="width: 100%" />
-          </div>
         </div>
+      </p-tabpanel>
 
-        <div class="form-group">
-          <label>Correo</label>
-          <input pInputText type="email" [(ngModel)]="correo" name="correo" required style="width: 100%" />
-        </div>
+      <p-tabpanel value="aps">
+        <app-apsx-usuario></app-apsx-usuario>
+      </p-tabpanel>
 
-        <div class="form-group" *ngIf="!isEditing">
-          <label>Contraseña</label>
-          <input pInputText type="password" [(ngModel)]="password" name="password" [required]="!isEditing" style="width: 100%" />
-        </div>
+      <p-tabpanel value="sistemas">
+        <app-asignacion-sistema></app-asignacion-sistema>
+      </p-tabpanel>
 
-        <div class="form-group" *ngIf="!isEditing">
-          <label>Confirmar Contraseña</label>
-          <input pInputText type="password" [(ngModel)]="confirmPassword" name="confirmPassword" [required]="!isEditing" style="width: 100%" />
-        </div>
-
-        <div class="form-group">
-          <label>Estado</label>
-          <p-select
-            [options]="estadoOptions"
-            [(ngModel)]="estado"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Seleccione estado"
-            [style]="{width: '100%'}"
-          ></p-select>
-        </div>
-
-        <p-button type="submit" label="{{ loading ? 'Guardando...' : 'Guardar' }}" [loading]="loading" styleClass="w-full"></p-button>
-      </form>
-    </div>
-  </div>
+      <p-tabpanel value="permisos">
+        <app-permisos></app-permisos>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
 </div>

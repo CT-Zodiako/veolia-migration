@@ -4,18 +4,21 @@
 }
 
 .dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   margin-bottom: 32px;
 }
 
 .dashboard-header h1 {
-  color: #0c4a6e;
+  color: var(--color-brand-strong);
   font-size: 32px;
   font-weight: 700;
   margin: 0 0 8px 0;
 }
 
 .dashboard-header p {
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 16px;
   margin: 0;
 }
@@ -27,7 +30,7 @@
 }
 
 .card {
-  background: white;
+  background: var(--color-bg-card);
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -43,6 +46,33 @@
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
 }
 
+.card:active {
+  cursor: grabbing;
+}
+
+.card.cdk-drag-dragging {
+  transition: none;
+  cursor: grabbing;
+  transform: none;
+}
+
+.card.cdk-drag-preview {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  border-radius: 16px;
+}
+
+.card-drag-placeholder {
+  background: var(--color-bg-page);
+  border: 2px dashed var(--color-scrollbar-thumb);
+  border-radius: 16px;
+  height: 100%;
+  min-height: 148px;
+}
+
+.cards-grid.cdk-drop-list-dragging .card:not(.cdk-drag-placeholder) {
+  transition: transform 0.25s ease;
+}
+
 .card-icon {
   width: 56px;
   height: 56px;
@@ -55,15 +85,39 @@
 }
 
 .card h3 {
-  color: #0f172a;
+  color: var(--color-text-primary);
   font-size: 20px;
   font-weight: 700;
   margin: 0 0 8px 0;
 }
 
 .card p {
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 14px;
   margin: 0;
   line-height: 1.5;
+}
+
+.btn-personalizar ::ng-deep .p-button {
+  color: var(--color-text-muted);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+  opacity: 0.85;
+}
+
+.btn-personalizar ::ng-deep .p-button:hover {
+  color: var(--color-text-secondary);
+  background: transparent;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.16);
+  opacity: 1;
+}
+
+.sin-accesos {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  grid-column: 1 / -1;
+  padding: 24px;
+  text-align: center;
+  background: var(--color-bg-card);
+  border-radius: 16px;
+  border: 1px dashed var(--color-border);
 }

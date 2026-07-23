@@ -114,6 +114,19 @@ internal sealed class StubAuthRepository : IAuthRepository
             },
             "header.payload.signature"));
 
+    public Task<SwitchSistemaRepositoryResult> SwitchSistemaAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
+        => Task.FromResult(idSistema == 999
+            ? new SwitchSistemaRepositoryResult(LoginOutcomeKind.InvalidSystem, "Sistema no encontrado para el usuario")
+            : new SwitchSistemaRepositoryResult(
+                LoginOutcomeKind.Success,
+                "OK",
+                new Dictionary<string, object>
+                {
+                    ["SIST_ID"] = idSistema,
+                    ["SIST_NOMBRE"] = "Operaciones"
+                },
+                "header.payload.signature"));
+
     public async Task<object?> LogoutAsync(long sisuId, string token, CancellationToken cancellationToken)
     {
         using var connection = connectionFactory.CreateConnection();
@@ -218,6 +231,11 @@ internal sealed class StubAuthRepository : IAuthRepository
 
     public Task<object?> UptUserMenuAsync(long id, IReadOnlyList<long> options, int sistema, CancellationToken cancellationToken)
         => Task.FromResult<object?>(new { rowsAffected = 2 });
+
+    public Task<IReadOnlyList<object>> GetMenuCatalogAsync(CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<object>>([
+            new Dictionary<string, object> { ["MENU_ID"] = 11, ["MENU_NOMBRE"] = "Dashboard" }
+        ]);
 }
 
 internal sealed class StubApsRepository : IApsRepository

@@ -1,6 +1,65 @@
 /* PrimeIcons */
 @import 'primeicons/primeicons.css';
 
+/* Tokens de tema: superficies neutras (cards, fondos, texto, bordes).
+   Los colores de marca (rojo del sidebar/login/botones) NO usan estos tokens
+   a propósito: son elementos con marca fija, no superficies que cambian con el tema. */
+:root {
+  --color-bg-page: #f1f5f9;
+  --color-bg-card: #ffffff;
+  --color-bg-soft: #f8fafc;
+  --color-bg-danger-soft: #fff2f2;
+  --color-bg-danger-soft-alt: #ffe6e5;
+  --color-bg-card-glass: rgba(255, 255, 255, 0.95);
+  --color-border: #e2e8f0;
+  --color-border-soft: #f1f5f9;
+  --color-border-danger-soft: #ffcdcc;
+  --color-text-primary: #0f172a;
+  --color-text-body: #334155;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-scrollbar-track: #f1f5f9;
+  --color-scrollbar-thumb: #cbd5e1;
+  --color-scrollbar-thumb-hover: #94a3b8;
+
+  /* Texto en rojo de marca sobre superficies neutras (títulos, hover, mensajes de error).
+     NO usar para fondos/botones/gradientes de marca: esos quedan siempre en rojo puro. */
+  --color-brand-strong: #780200;
+  --color-brand-medium: #c40300;
+  --color-brand-accent: #f10400;
+
+  --color-bg-success-soft: #f0fdf4;
+  --color-border-success-soft: #bbf7d0;
+  --color-text-success: #16a34a;
+}
+
+.app-dark {
+  --color-bg-page: #0f172a;
+  --color-bg-card: #1e293b;
+  --color-bg-soft: #172033;
+  --color-bg-danger-soft: #3f1212;
+  --color-bg-danger-soft-alt: #4a1717;
+  --color-bg-card-glass: rgba(30, 41, 59, 0.92);
+  --color-border: #334155;
+  --color-border-soft: #1e293b;
+  --color-border-danger-soft: #5c2323;
+  --color-text-primary: #f1f5f9;
+  --color-text-body: #cbd5e1;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-scrollbar-track: #1e293b;
+  --color-scrollbar-thumb: #475569;
+  --color-scrollbar-thumb-hover: #64748b;
+
+  --color-brand-strong: #ffa5a3;
+  --color-brand-medium: #ff6966;
+  --color-brand-accent: #ff2a26;
+
+  --color-bg-success-soft: #14291d;
+  --color-border-success-soft: #1e4a2f;
+  --color-text-success: #4ade80;
+}
+
 /* Reset y base */
 * {
   margin: 0;
@@ -10,11 +69,12 @@
 
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #f1f5f9;
-  color: #1e293b;
+  background: var(--color-bg-page);
+  color: var(--color-text-body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 /* Scrollbar personalizada */
@@ -24,16 +84,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--color-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--color-scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-scrollbar-thumb-hover);
 }
 
 /* Utilidades */
@@ -50,6 +110,11 @@ body {
 .mb-2 { margin-bottom: 8px; }
 .mb-3 { margin-bottom: 12px; }
 .mb-4 { margin-bottom: 16px; }
+
+/* Contenedor de tablas anchas: evita que crezcan la página en vez de scrollear */
+.table-scroll {
+  overflow-x: auto;
+}
 
 /* Animaciones */
 @keyframes fadeIn {

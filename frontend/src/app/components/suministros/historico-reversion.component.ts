@@ -29,7 +29,7 @@ import { ReversionHistoryItem, SuministrosService } from '../../services/suminis
           </tr>
         </ng-template>
       </p-table>
-      <p class="mt-2" *ngIf="error" style="color: #b91c1c">{{ error }}</p>
+      <p class="mt-2" *ngIf="error" style="color: var(--color-brand-medium)">{{ error }}</p>
     </div>
   `
 })

@@ -29,8 +29,8 @@ import { SuministrosService } from '../../services/suministros.service';
       </div>
       <button pButton type="button" [disabled]="loading" (click)="ejecutar()" label="Ejecutar"></button>
 
-      <p class="mt-2" *ngIf="success" style="color: #15803d">{{ success }}</p>
-      <p class="mt-2" *ngIf="error" style="color: #b91c1c">{{ error }}</p>
+      <p class="mt-2" *ngIf="success" style="color: var(--color-text-success)">{{ success }}</p>
+      <p class="mt-2" *ngIf="error" style="color: var(--color-brand-medium)">{{ error }}</p>
     </div>
   `
 })

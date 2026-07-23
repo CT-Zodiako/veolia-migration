@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfirmationService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { RellenosService } from '../../services/rellenos.service';
-import { CrearRellenoRequest, RellenoItem } from '../../models/rellenos.models';
+import { CrearRellenoRequest, EditarRellenoRequest, RellenoItem } from '../../models/rellenos.models';
 import { RellenoFormComponent } from './relleno-form.component';
 
 @Component({
@@ -18,9 +19,17 @@ export class RellenosConfigPageComponent implements OnInit {
   error = '';
   showForm = false;
   selectedRelleno: RellenoItem | null = null;
+  nombreFilter = '';
+
+  get filteredRellenos(): RellenoItem[] {
+    const term = this.nombreFilter.trim().toLowerCase();
+    if (!term) return this.rellenos;
+    return this.rellenos.filter(item => (item.RELL_NOMRELLENO ?? '').toLowerCase().includes(term));
+  }
 
   constructor(
     private readonly rellenosService: RellenosService,
+    private readonly confirmationService: ConfirmationService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -69,11 +78,19 @@ export class RellenosConfigPageComponent implements OnInit {
   }
 
   eliminar(item: RellenoItem): void {
-    const accepted = window.confirm(`¿Seguro que querés eliminar lógicamente el relleno "${item.RELL_NOMRELLENO}"?`);
-    if (!accepted) {
-      return;
-    }
+    this.confirmationService.confirm({
+      header: 'Eliminar relleno',
+      message: `¿Seguro que querés eliminar lógicamente el relleno "${item.RELL_NOMRELLENO}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => this.confirmarEliminar(item)
+    });
+  }
 
+  private confirmarEliminar(item: RellenoItem): void {
     this.loading = true;
     this.rellenosService.eliminarRelleno(item.RELL_ID).subscribe({
       next: () => {
@@ -82,6 +99,29 @@ export class RellenosConfigPageComponent implements OnInit {
       error: err => {
         this.error = err?.error?.data || 'Error al eliminar relleno';
         this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  toggleEstado(item: RellenoItem): void {
+    const nuevoEstado = item.RELL_ESTADO === 1 ? 2 : 1;
+    const payload: EditarRellenoRequest = {
+      rell_nomrelleno: item.RELL_NOMRELLENO,
+      rell_descripcion: item.RELL_DESCRIPCION ?? '',
+      rell_estado: nuevoEstado,
+      rell_propio: item.RELL_PROPIO,
+      rell_regional: item.RELL_REGIONAL,
+      rell_nusd: item.RELL_NUSD ?? null
+    };
+
+    this.rellenosService.editarRelleno(item.RELL_ID, payload).subscribe({
+      next: () => {
+        item.RELL_ESTADO = nuevoEstado;
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.error = err?.error?.data || 'Error al cambiar estado';
         this.cdr.detectChanges();
       }
     });

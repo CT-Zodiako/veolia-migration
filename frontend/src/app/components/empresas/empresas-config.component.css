@@ -1,55 +1,49 @@
 .empresas-container {
-  padding: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
 .empresas-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-border);
 }
 
-.btn-new {
-  border: 0;
-  border-radius: 8px;
-  background: #198754;
-  color: #fff;
-  padding: 8px 12px;
-  cursor: pointer;
+.empresas-header h2 {
+  color: var(--color-brand-strong);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.filter-row th {
+  padding: 4px 8px;
+}
+
+.column-filter-input {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .table-container {
-  overflow: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-  padding: 8px;
-  border-bottom: 1px solid #eee;
-  text-align: left;
-  white-space: nowrap;
-}
-
-.btn-action {
-  border: 0;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.btn-edit {
-  background: #0d6efd;
-  color: #fff;
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .error-message {
-  color: #b42318;
-  margin-bottom: 12px;
+  background: var(--color-bg-danger-soft);
+  border: 1px solid var(--color-border-danger-soft);
+  color: var(--color-brand-accent);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
 }
 
 .actions-cell {

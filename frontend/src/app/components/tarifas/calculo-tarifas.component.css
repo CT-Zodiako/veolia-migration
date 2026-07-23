@@ -7,62 +7,24 @@
 .calculo-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .calculo-header h2 {
-  color: #0c4a6e;
+  color: var(--color-brand-strong);
   font-size: 28px;
   font-weight: 700;
   margin: 0;
 }
 
-.filters-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: 16px;
-  align-items: end;
-  margin-bottom: 24px;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.btn-consultar {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  height: fit-content;
-}
-
-.btn-consultar:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px -5px rgba(2, 132, 199, 0.4);
-}
-
-.btn-consultar:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
 .loading-container {
   text-align: center;
   padding: 40px;
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .chart-section {
-  background: white;
+  background: var(--color-bg-card);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -70,7 +32,7 @@
 }
 
 .chart-section h3 {
-  color: #0c4a6e;
+  color: var(--color-brand-strong);
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 16px 0;
@@ -98,7 +60,7 @@
 
 .chart-bar-visual {
   height: 24px;
-  background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%);
+  background: linear-gradient(90deg, #f10400 0%, #c40300 100%);
   border-radius: 4px;
   transition: width 0.5s ease;
   min-width: 4px;
@@ -107,13 +69,13 @@
 .chart-value {
   font-size: 13px;
   font-weight: 600;
-  color: #0c4a6e;
+  color: var(--color-brand-strong);
   min-width: 60px;
   text-align: right;
 }
 
 .table-container {
-  background: white;
+  background: var(--color-bg-card);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -126,7 +88,7 @@
 }
 
 .data-table thead {
-  background: #f8fafc;
+  background: var(--color-bg-soft);
 }
 
 .data-table th {
@@ -137,7 +99,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #475569;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-border);
   white-space: nowrap;
 }
 
@@ -145,10 +107,10 @@
   padding: 10px 16px;
   border-bottom: 1px solid #f1f5f9;
   font-size: 13px;
-  color: #334155;
+  color: var(--color-text-body);
   white-space: nowrap;
 }
 
 .data-table tr:hover {
-  background: #f8fafc;
+  background: var(--color-bg-soft);
 }

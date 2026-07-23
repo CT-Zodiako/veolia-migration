@@ -12,7 +12,8 @@ import { AuthService, Sistema } from '../../../services/auth.service';
   styleUrls: ['./asignacion-sistema.component.css']
 })
 export class AsignacionSistemaComponent implements OnInit {
-  correo = '';
+  usuarios: any[] = [];
+  correo: string | null = null;
   sisuId: number | null = null;
   listaSistema: Sistema[][] = [];
   loading = false;
@@ -24,20 +25,52 @@ export class AsignacionSistemaComponent implements OnInit {
     private readonly cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadUsuarios();
+  }
+
+  loadUsuarios(): void {
+    this.authService.getAllUsers().subscribe({
+      next: (usuarios: any[]) => {
+        this.usuarios = usuarios;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.error = err.error?.message || 'Error al cargar usuarios';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  get usuarioOptions(): { label: string; value: string }[] {
+    return this.usuarios
+      .filter(u => !!u.SISU_CORREO)
+      .map(u => ({
+        label: `${u.SISU_NOMBRE} ${u.SISU_APELLIDO} — ${u.SISU_CORREO}`,
+        value: u.SISU_CORREO
+      }));
+  }
 
   buscarSistemas(): void {
-    this.correo = this.correo?.trim() ?? '';
     if (!this.correo) {
-      this.error = 'Ingrese un correo';
+      this.error = 'Seleccione un usuario';
       return;
     }
 
-    this.loading = true;
     this.error = '';
     this.success = '';
     this.sisuId = null;
     this.listaSistema = [];
+
+    // El backend (GetSistemasPorUsuarioAsync) solo busca usuarios con SISU_ESTADO = 1;
+    // si está inactivo devuelve todo vacío en silencio, por eso lo detectamos antes de llamarlo.
+    const usuario = this.usuarios.find(u => u.SISU_CORREO === this.correo);
+    if (usuario && usuario.SISU_ESTADO !== 1) {
+      this.error = 'Este usuario está inactivo. Activalo desde la pestaña "Usuarios" antes de asignarle sistemas.';
+      return;
+    }
+
+    this.loading = true;
 
     this.authService.getSistemasPorUsuario(this.correo).subscribe({
       next: (response: any) => {

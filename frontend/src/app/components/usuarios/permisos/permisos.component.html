@@ -1,0 +1,91 @@
+<div class="permisos-container">
+  <div class="permisos-header">
+    <h2>Permisos del Usuario</h2>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <div class="filters">
+    <div class="form-group">
+      <label>Usuario</label>
+      <p-select
+        [options]="usuarioOptions"
+        [(ngModel)]="selectedUsuarioId"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccione un usuario"
+        [style]="{width: '100%'}"
+        [filter]="true"
+        filterBy="label"
+        filterPlaceholder="Buscar usuario..."
+        (onChange)="cargarPermisos()"
+      ></p-select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-message"><i class="pi pi-spin pi-spinner"></i> Cargando permisos...</div>
+
+  <div *ngIf="!loading && selectedUsuarioId && sistemasPermisos.length === 0" class="empty-message">
+    <i class="pi pi-info-circle"></i>
+    Este usuario no tiene sistemas asignados. Asigná un sistema en la pestaña "Sistemas" antes de configurar sus permisos.
+  </div>
+
+  <div *ngIf="!loading && sistemasPermisos.length > 0" class="sistemas-list">
+    <div class="usuario-activo">
+      <i class="pi pi-user"></i>
+      Configurando permisos de <strong>{{ usuarioSeleccionadoNombre }}</strong>
+    </div>
+
+    <p-accordion class="sistemas-accordion">
+      <p-accordion-panel *ngFor="let sistema of sistemasPermisos" [value]="sistema.sistemaId">
+        <p-accordion-header>
+          <div class="panel-header">
+            <span class="panel-header-title">{{ sistema.sistemaNombre }}</span>
+            <span class="panel-header-count">{{ contarSeleccionados(sistema.items) }} / {{ contarTotal(sistema.items) }} seleccionados</span>
+          </div>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="panel-actions">
+            <a (click)="marcarTodos(sistema, true)">Marcar todos</a>
+            <span class="panel-actions-separator">·</span>
+            <a (click)="marcarTodos(sistema, false)">Desmarcar todos</a>
+          </div>
+          <ng-container *ngTemplateOutlet="menuItems; context: { $implicit: sistema.items }"></ng-container>
+        </p-accordion-content>
+      </p-accordion-panel>
+    </p-accordion>
+
+    <div class="guardar-bar">
+      <p-button
+        icon="pi pi-save"
+        label="{{ loading ? 'Guardando...' : 'Guardar Permisos' }}"
+        [loading]="loading"
+        (click)="guardar()"
+        styleClass="w-full"
+      ></p-button>
+    </div>
+  </div>
+</div>
+
+<ng-template #menuItems let-items>
+  <div *ngFor="let item of items" class="menu-item">
+    <div
+      class="menu-item-content"
+      [class.selected]="isSelected(item.id)"
+      [class.partial]="isPartiallySelected(item.id)"
+      (click)="toggleMenuItem(item.id)"
+    >
+      <p-checkbox
+        [binary]="true"
+        [ngModel]="isSelected(item.id)"
+        (click)="$event.stopPropagation()"
+        (onChange)="toggleMenuItem(item.id)"
+      ></p-checkbox>
+      <label>{{ item.label }}</label>
+    </div>
+    <div *ngIf="item.children && item.children.length > 0" class="menu-children">
+      <ng-container *ngTemplateOutlet="menuItems; context: { $implicit: item.children }"></ng-container>
+    </div>
+  </div>
+</ng-template>

@@ -1,15 +1,28 @@
 <div class="dashboard-container">
   <div class="dashboard-header">
-    <h1>Dashboard</h1>
-    <p>Bienvenido al sistema de gestión Veolia</p>
+    <div>
+      <h1>Dashboard</h1>
+      <p>Bienvenido al sistema de gestión Veolia</p>
+    </div>
+    <p-button
+      class="btn-personalizar"
+      icon="pi pi-cog"
+      label="Personalizar"
+      severity="secondary"
+      [text]="true"
+      (click)="mostrarPersonalizar = true"
+    ></p-button>
   </div>
 
-  <div class="cards-grid">
+  <div class="cards-grid" cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="onDrop($event)">
     <a
-      *ngFor="let card of cards"
+      *ngFor="let card of cards; trackBy: trackByRoute"
       [routerLink]="card.route"
       class="card"
+      cdkDrag
+      cdkDragBoundary=".cards-grid"
     >
+      <div class="card-drag-placeholder" *cdkDragPlaceholder></div>
       <div
         class="card-icon"
         [style.background]="card.color + '15'"
@@ -17,7 +30,17 @@
         {{ card.icon }}
       </div>
       <h3>{{ card.title }}</h3>
-      <p>{{ card.description }}</p>
     </a>
+
+    <p *ngIf="cards.length === 0" class="sin-accesos">
+      No elegiste ningún acceso todavía. Tocá "Personalizar" para agregar los que quieras ver acá.
+    </p>
   </div>
 </div>
+
+<app-personalizar-inicio-dialog
+  [(visible)]="mostrarPersonalizar"
+  [disponibles]="disponibles"
+  [seleccionadosIniciales]="cardPaths"
+  (guardar)="guardarSeleccion($event)"
+></app-personalizar-inicio-dialog>

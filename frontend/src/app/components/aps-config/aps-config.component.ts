@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfirmationService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ApsService, ApsConfigItem, ApsMutationPayload } from '../../services/aps.service';
 import { ApsFormComponent } from './aps-form.component';
@@ -17,9 +18,33 @@ export class ApsConfigComponent implements OnInit {
   error = '';
   showForm = false;
   selectedAps: ApsConfigItem | null = null;
+  nombreFilter = '';
+
+  get filteredApsItems(): ApsConfigItem[] {
+    const term = this.nombreFilter.trim().toLowerCase();
+    if (!term) return this.apsItems;
+    return this.apsItems.filter(item => (item.APSA_NOMAPS ?? '').toLowerCase().includes(term));
+  }
+
+  get kpiTotal(): number {
+    return this.filteredApsItems.length;
+  }
+
+  get kpiActivos(): number {
+    return this.filteredApsItems.filter(item => item.APSA_ESTADO === 1).length;
+  }
+
+  get kpiInactivos(): number {
+    return this.filteredApsItems.filter(item => item.APSA_ESTADO !== 1).length;
+  }
+
+  get kpiConIat(): number {
+    return this.filteredApsItems.filter(item => item.APSA_VIAT === 1).length;
+  }
 
   constructor(
     private readonly apsService: ApsService,
+    private readonly confirmationService: ConfirmationService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -68,9 +93,19 @@ export class ApsConfigComponent implements OnInit {
   }
 
   eliminar(item: ApsConfigItem): void {
-    const accepted = window.confirm(`¿Seguro que querés eliminar lógicamente la APS "${item.APSA_NOMAPS}"?`);
-    if (!accepted) return;
+    this.confirmationService.confirm({
+      header: 'Eliminar APS',
+      message: `¿Seguro que querés eliminar lógicamente la APS "${item.APSA_NOMAPS}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => this.confirmarEliminar(item)
+    });
+  }
 
+  private confirmarEliminar(item: ApsConfigItem): void {
     this.loading = true;
     this.apsService.eliminar(item.APSA_ID).subscribe({
       next: () => {

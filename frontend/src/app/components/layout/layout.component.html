@@ -1,8 +1,18 @@
 <div class="layout-container">
-  <aside class="sidebar">
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
     <div class="sidebar-header">
-      <h1>Veolia</h1>
-      <p>Sistema de Gestión</p>
+      <div class="sidebar-header-text">
+        <img src="/Veolia_sml.png" alt="Veolia" class="sidebar-logo" />
+        <p>{{ nombreSistema }}</p>
+      </div>
+      <button
+        type="button"
+        class="sidebar-toggle"
+        [title]="sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'"
+        (click)="toggleSidebar()"
+      >
+        {{ sidebarCollapsed ? '»' : '«' }}
+      </button>
     </div>
 
     <nav class="sidebar-nav">
@@ -16,7 +26,7 @@
         >
           <span class="nav-icon">{{ group.icon }}</span>
           <span class="nav-label">{{ group.label }}</span>
-          <span class="nav-arrow">{{ group.expanded ? '▾' : '▸' }}</span>
+          <span class="nav-arrow">{{ group.expanded ? '−' : '+' }}</span>
         </button>
 
         <!-- Si solo tiene un hijo, mostrar como link directo -->
@@ -46,10 +56,47 @@
     </nav>
   </aside>
 
-  <main class="main-content">
+  <main class="main-content" [class.collapsed]="sidebarCollapsed">
     <header class="top-bar">
       <div class="top-bar-title">{{ getPageTitle() }}</div>
-      <app-profile></app-profile>
+      <div class="top-bar-actions">
+        <button
+          type="button"
+          class="theme-toggle-button"
+          [title]="themeService.oscuro() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          (click)="themeService.toggle()"
+        >
+          <i class="pi" [class.pi-sun]="themeService.oscuro()" [class.pi-moon]="!themeService.oscuro()"></i>
+        </button>
+        <div class="sistema-switch-container" *ngIf="sistemasDisponibles.length > 1">
+          <button
+            pButton
+            type="button"
+            class="sistema-switch-button"
+            [loading]="cambiandoSistema"
+            (click)="showSistemaDropdown = !showSistemaDropdown"
+          >
+            <i class="pi pi-sitemap"></i>
+            <span>{{ nombreSistema }}</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div *ngIf="showSistemaDropdown" class="sistema-dropdown">
+            <button
+              *ngFor="let sistema of sistemasDisponibles"
+              type="button"
+              class="sistema-dropdown-item"
+              [class.active]="sistema.SIST_ID === sistemaSeleccionadoId"
+              (click)="cambiarSistema(sistema.SIST_ID); showSistemaDropdown = false"
+            >
+              {{ sistema.SIST_NOMBRE }}
+            </button>
+          </div>
+        </div>
+        <app-profile></app-profile>
+      </div>
     </header>
 
     <div class="content-area">

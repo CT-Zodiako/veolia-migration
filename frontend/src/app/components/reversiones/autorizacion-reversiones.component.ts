@@ -2,15 +2,13 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
-import { ApsSelectorComponent } from '../shared/aps-selector.component';
-import { AnnoSelectorComponent } from '../shared/anno-selector.component';
-import { MesSelectorComponent } from '../shared/mes-selector.component';
+import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { ReversionesService } from '../../services/reversiones.service';
 
 @Component({
   selector: 'app-autorizacion-reversiones',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ApsSelectorComponent, AnnoSelectorComponent, MesSelectorComponent],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ParametrosConsultaComponent],
   templateUrl: './autorizacion-reversiones.component.html'
 })
 export class AutorizacionReversionesComponent implements OnInit {

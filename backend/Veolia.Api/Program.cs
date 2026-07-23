@@ -7,7 +7,14 @@ using Veolia.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+// Sin esto, System.Text.Json aplica camelCase por defecto y mangla los nombres
+// de columna Oracle en mayúsculas (ej. "RELL_ID" -> "relL_ID"), rompiendo el
+// binding con el frontend, que espera el nombre exacto de columna.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    });
 
 builder.Services.AddCors(options =>
 {

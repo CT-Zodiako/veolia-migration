@@ -20,6 +20,12 @@ public sealed record LoginRepositoryResult(
     object? Sistema = null,
     string? AuthToken = null);
 
+public sealed record SwitchSistemaRepositoryResult(
+    LoginOutcomeKind Kind,
+    string Message,
+    object? Sistema = null,
+    string? AuthToken = null);
+
 public sealed record UserMutationRepositoryResult(
     bool IsDuplicateEmail,
     object? Payload,
@@ -61,17 +67,6 @@ FROM AUGE_SISUSUARIO
 WHERE LOWER(SISU_CORREO) = LOWER(:correo)
   AND SISU_ESTADO = 1";
 
-        const string sistemaSql = @"
-SELECT
-    s.SIST_ID,
-    s.SIST_NOMBRE
-FROM AUGE_USUASISTEMA us
-INNER JOIN AUGE_SISTEMA s ON s.SIST_ID = us.SIST_ID
-WHERE us.USUA_ID = :sisuId
-  AND us.SIST_ID = :idSistema
-  AND us.USSI_ESTADO = 1
-  AND s.SIST_ESTADO = 1";
-
         using var connection = await OpenConnectionAsync(cancellationToken);
         var userRow = await connection.QueryFirstOrDefaultAsync(userSql, new { correo });
         if (userRow is null)
@@ -94,7 +89,7 @@ WHERE us.USUA_ID = :sisuId
             return new LoginRepositoryResult(LoginOutcomeKind.InvalidCredentials, "Correo o contraseña inválida");
         }
 
-        var sistemaRow = await connection.QueryFirstOrDefaultAsync(sistemaSql, new { sisuId, idSistema });
+        var sistemaRow = await GetSistemaParaUsuarioAsync(connection, sisuId, idSistema);
         if (sistemaRow is null)
         {
             return new LoginRepositoryResult(LoginOutcomeKind.InvalidSystem, "Sistema no encontrado para el usuario");
@@ -109,6 +104,38 @@ WHERE us.USUA_ID = :sisuId
             Usuario: user,
             Sistema: sistema,
             AuthToken: authToken);
+    }
+
+    public async Task<SwitchSistemaRepositoryResult> SwitchSistemaAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
+    {
+        using var connection = await OpenConnectionAsync(cancellationToken);
+
+        var sistemaRow = await GetSistemaParaUsuarioAsync(connection, sisuId, idSistema);
+        if (sistemaRow is null)
+        {
+            return new SwitchSistemaRepositoryResult(LoginOutcomeKind.InvalidSystem, "Sistema no encontrado para el usuario");
+        }
+
+        var sistema = ToDictionaryObject(sistemaRow);
+        var authToken = BuildParityJwtToken(sisuId, idSistema);
+
+        return new SwitchSistemaRepositoryResult(LoginOutcomeKind.Success, "OK", Sistema: sistema, AuthToken: authToken);
+    }
+
+    private static Task<dynamic?> GetSistemaParaUsuarioAsync(System.Data.IDbConnection connection, long sisuId, int idSistema)
+    {
+        const string sistemaSql = @"
+SELECT
+    s.SIST_ID,
+    s.SIST_NOMBRE
+FROM AUGE_USUASISTEMA us
+INNER JOIN AUGE_SISTEMA s ON s.SIST_ID = us.SIST_ID
+WHERE us.USUA_ID = :sisuId
+  AND us.SIST_ID = :idSistema
+  AND us.USSI_ESTADO = 1
+  AND s.SIST_ESTADO = 1";
+
+        return connection.QueryFirstOrDefaultAsync(sistemaSql, new { sisuId, idSistema });
     }
 
     public async Task<object?> LogoutAsync(long sisuId, string token, CancellationToken cancellationToken)
@@ -592,6 +619,32 @@ WHEN NOT MATCHED THEN
         return new { rowsAffected };
     }
 
+    public async Task<IReadOnlyList<object>> GetMenuCatalogAsync(CancellationToken cancellationToken)
+    {
+        const string sql = @"
+SELECT
+    m.MENU_ID,
+    m.MENU_NOMBRE,
+    m.MENU_PADRE,
+    m.MENU_SISTEMA,
+    s.SIST_NOMBRE
+FROM AUGE_MENU m
+LEFT JOIN AUGE_SISTEMA s ON s.SIST_ID = m.MENU_SISTEMA
+WHERE m.MENU_ESTADO = 1
+ORDER BY m.MENU_SISTEMA, m.MENU_ID";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var rows = await connection.QueryAsync(sql);
+
+        return rows.Select(row => (object)new MenuCatalogItem(
+                (long)row.MENU_ID,
+                (string)row.MENU_NOMBRE,
+                row.MENU_PADRE != null ? (long?)row.MENU_PADRE : null,
+                (int)row.MENU_SISTEMA,
+                row.SIST_NOMBRE != null ? (string)row.SIST_NOMBRE : string.Empty))
+            .ToList();
+    }
+
     private const string DuplicateEmailMessage = "El correo ya se encuentra registrado";
 
     private async Task<System.Data.IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)
@@ -708,4 +761,6 @@ WHERE LOWER(SISU_CORREO) = LOWER(:correo)";
     }
 
     private sealed record MenuTreeNode(long id, string label, List<MenuTreeNode> children);
+
+    private sealed record MenuCatalogItem(long id, string label, long? parentId, int sistemaId, string sistemaNombre);
 }

@@ -50,6 +50,39 @@ public sealed class AuthContractSmokeTests(AuthApiSmokeFactory factory) : IClass
     }
 
     [Fact]
+    public async Task R_AUTH_01b_SwitchSistema_WithToken_ReturnsNewTokenAndSistema()
+    {
+        var response = await PostWithTokenAsync("/api/v1/auth/switchSistema", new { idSistema = 20 });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(200, payload.GetProperty("status").GetInt32());
+        Assert.Equal("header.payload.signature", payload.GetProperty("auth_token").GetString());
+        Assert.True(payload.TryGetProperty("sistema", out var sistema));
+        Assert.Equal(20, sistema.GetProperty("SIST_ID").GetInt32());
+    }
+
+    [Fact]
+    public async Task R_AUTH_01b_SwitchSistema_WithoutToken_Returns403MissingTokenMessage()
+    {
+        var response = await client.PostAsJsonAsync("/api/v1/auth/switchSistema", new { idSistema = 20 });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task R_AUTH_01b_SwitchSistema_WhenUserHasNoAccessToTargetSistema_Returns404()
+    {
+        var response = await PostWithTokenAsync("/api/v1/auth/switchSistema", new { idSistema = 999 });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(404, payload.GetProperty("status").GetInt32());
+    }
+
+    [Fact]
     public async Task R_AUTH_01_GetSistemasByCorreo_ReturnsArrayShape()
     {
         var response = await client.GetAsync("/api/v1/auth/getSistemasByCorreo?correo=ada@veolia.com");

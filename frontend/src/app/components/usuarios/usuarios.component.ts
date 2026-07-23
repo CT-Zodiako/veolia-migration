@@ -3,11 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AuthService, Usuario } from '../../services/auth.service';
+import { PermisosComponent } from './permisos/permisos.component';
+import { AsignacionSistemaComponent } from './asignacion-sistema/asignacion-sistema.component';
+import { ApsxUsuarioComponent } from './apsx-usuario/apsx-usuario.component';
 
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, PermisosComponent, AsignacionSistemaComponent, ApsxUsuarioComponent],
   templateUrl: './usuarios.component.html',
   styleUrls: ['./usuarios.component.css']
 })
@@ -31,6 +34,13 @@ export class UsuariosComponent implements OnInit {
   password = '';
   confirmPassword = '';
   estado = 1;
+  nombreFilter = '';
+
+  get filteredUsuarios(): Usuario[] {
+    const term = this.nombreFilter.trim().toLowerCase();
+    if (!term) return this.usuarios;
+    return this.usuarios.filter(u => (u.SISU_NOMBRE ?? '').toLowerCase().includes(term));
+  }
 
   constructor(
     private authService: AuthService,
@@ -187,5 +197,27 @@ export class UsuariosComponent implements OnInit {
         }
       });
     }
+  }
+
+  toggleEstado(usuario: Usuario): void {
+    if (!usuario.SISU_ID) return;
+
+    const nuevoEstado = usuario.SISU_ESTADO === 1 ? 0 : 1;
+    this.authService.updateUsuario({
+      id: usuario.SISU_ID,
+      nombre: usuario.SISU_NOMBRE,
+      apellido: usuario.SISU_APELLIDO,
+      correo: usuario.SISU_CORREO,
+      estado: nuevoEstado
+    }).subscribe({
+      next: () => {
+        usuario.SISU_ESTADO = nuevoEstado;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.error = err.error?.message || 'Error al cambiar estado';
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

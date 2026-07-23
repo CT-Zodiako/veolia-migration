@@ -12,6 +12,15 @@ public class AuthContractMapper
             sistema
         };
 
+    public object MapSwitchSistemaSuccess(string authToken, object sistema, string message = "OK")
+        => new
+        {
+            status = 200,
+            message,
+            auth_token = authToken,
+            sistema
+        };
+
     public object MapLoginError(int status, string message)
         => new
         {

@@ -1,8 +1,12 @@
 <p-card header="Autorización Reversiones">
   <div class="p-fluid">
-    <app-aps-selector [(selectedAps)]="aps"></app-aps-selector>
-    <app-anno-selector [(selectedAnno)]="anno"></app-anno-selector>
-    <app-mes-selector [(selectedMes)]="mes"></app-mes-selector>
+    <app-parametros-consulta
+      [wrapInCard]="false"
+      [mostrarBoton]="false"
+      [(aps)]="aps"
+      [(anno)]="anno"
+      [(mes)]="mes"
+    ></app-parametros-consulta>
 
     <div class="field" style="margin-bottom: 12px;">
       <label for="descripcion">Descripción</label>
@@ -23,7 +27,7 @@
       (onClick)="autorizar()">
     </p-button>
 
-    <p *ngIf="success" style="color: #16a34a; margin-top: 12px;">{{ success }}</p>
-    <p *ngIf="error" style="color: #dc2626; margin-top: 12px;">{{ error }}</p>
+    <p *ngIf="success" style="color: var(--color-text-success); margin-top: 12px;">{{ success }}</p>
+    <p *ngIf="error" style="color: var(--color-brand-accent); margin-top: 12px;">{{ error }}</p>
   </div>
 </p-card>

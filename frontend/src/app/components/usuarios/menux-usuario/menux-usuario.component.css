@@ -7,11 +7,11 @@
 .menu-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .menu-header h2 {
-  color: #0c4a6e;
+  color: var(--color-brand-strong);
   font-size: 28px;
   font-weight: 700;
   margin: 0;
@@ -30,7 +30,7 @@
 
 .form-group label {
   display: block;
-  color: #334155;
+  color: var(--color-text-body);
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -41,23 +41,23 @@
 .form-control {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   font-size: 15px;
-  color: #1e293b;
-  background: #fff;
+  color: var(--color-text-body);
+  background: var(--color-bg-card);
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #0284c7;
+  border-color: var(--color-brand-accent);
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
 }
 
 .menu-tree {
-  background: white;
+  background: var(--color-bg-card);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -78,12 +78,12 @@
 }
 
 .menu-item-content:hover {
-  background: #f8fafc;
+  background: var(--color-bg-soft);
 }
 
 .menu-item-content.selected {
-  background: #e0f2fe;
-  color: #0369a1;
+  background: var(--color-bg-danger-soft-alt);
+  color: var(--color-brand-medium);
 }
 
 .menu-item-content input[type="checkbox"] {
@@ -103,13 +103,13 @@
 
 .menu-children {
   margin-left: 28px;
-  border-left: 2px solid #e2e8f0;
+  border-left: 2px solid var(--color-border);
   padding-left: 12px;
 }
 
 .btn-save {
   padding: 14px 32px;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  background: linear-gradient(135deg, #f10400 0%, #c40300 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -133,9 +133,9 @@
 }
 
 .error-message {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
+  background: var(--color-bg-danger-soft);
+  border: 1px solid var(--color-border-danger-soft);
+  color: var(--color-brand-accent);
   padding: 12px;
   border-radius: 8px;
   font-size: 14px;
@@ -143,9 +143,9 @@
 }
 
 .success-message {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #16a34a;
+  background: var(--color-bg-success-soft);
+  border: 1px solid var(--color-border-success-soft);
+  color: var(--color-text-success);
   padding: 12px;
   border-radius: 8px;
   font-size: 14px;

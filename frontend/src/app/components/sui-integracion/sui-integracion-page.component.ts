@@ -79,14 +79,14 @@ import { ApsService } from '../../services/aps.service';
       border-radius: 12px;
       padding: .12rem .45rem;
       font-weight: 700;
-      color: #166534;
-      background: #dcfce7;
-      border: 1px solid #86efac;
+      color: var(--color-text-success);
+      background: var(--color-bg-success-soft);
+      border: 1px solid var(--color-border-success-soft);
     }
     .tab-label small.no-aplica {
-      color: #991b1b;
-      background: #fee2e2;
-      border-color: #fca5a5;
+      color: var(--color-brand-accent);
+      background: var(--color-bg-danger-soft-alt);
+      border-color: var(--color-border-danger-soft);
     }
   `]
 })

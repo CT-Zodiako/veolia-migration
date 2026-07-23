@@ -7,6 +7,7 @@
  */
 
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -18,9 +19,12 @@ import { TabsModule } from 'primeng/tabs';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SkeletonModule } from 'primeng/skeleton';
 import { PickListModule } from 'primeng/picklist';
+import { PanelModule } from 'primeng/panel';
+import { AccordionModule } from 'primeng/accordion';
 
 export const CommonPrimeNgModules = [
   SelectModule,
+  MultiSelectModule,
   InputTextModule,
   TextareaModule,
   CheckboxModule,
@@ -31,5 +35,7 @@ export const CommonPrimeNgModules = [
   TabsModule,
   InputNumberModule,
   SkeletonModule,
-  PickListModule
+  PickListModule,
+  PanelModule,
+  AccordionModule
 ] as const;

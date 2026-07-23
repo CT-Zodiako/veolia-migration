@@ -17,8 +17,14 @@
       </div>
 
       <div class="checks-grid">
-        <p-checkbox [(ngModel)]="estado" [binary]="true" label="Activa" name="estado"></p-checkbox>
-        <p-checkbox [(ngModel)]="propia" [binary]="true" label="Propia" name="propia"></p-checkbox>
+        <div class="check-item">
+          <p-checkbox [(ngModel)]="estado" [binary]="true" inputId="empresa-estado" name="estado"></p-checkbox>
+          <label for="empresa-estado">Activa</label>
+        </div>
+        <div class="check-item">
+          <p-checkbox [(ngModel)]="propia" [binary]="true" inputId="empresa-propia" name="propia"></p-checkbox>
+          <label for="empresa-propia">Propia</label>
+        </div>
       </div>
 
       <p-button type="submit" label="{{ loading ? 'Guardando...' : 'Guardar' }}" [loading]="loading" styleClass="w-full"></p-button>

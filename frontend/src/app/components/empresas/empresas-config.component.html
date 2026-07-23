@@ -7,7 +7,7 @@
   <div *ngIf="error" class="error-message">{{ error }}</div>
 
   <div class="table-container" *ngIf="!loading; else loadingTpl">
-    <p-table [value]="empresas" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
+    <p-table [value]="filteredEmpresas" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
       <ng-template pTemplate="header">
         <tr>
           <th>ID</th>
@@ -16,6 +16,21 @@
           <th>Propia</th>
           <th>NUAP</th>
           <th>Acciones</th>
+        </tr>
+        <tr class="filter-row">
+          <th></th>
+          <th>
+            <input
+              pInputText
+              type="text"
+              class="column-filter-input"
+              placeholder="Buscar"
+              (input)="nombreFilter = $any($event.target).value" />
+          </th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
