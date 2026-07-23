@@ -5,6 +5,7 @@ public sealed class ProyeccionListItem
     public long ProyId { get; set; }
     public long ApsaId { get; set; }
     public string ProyNombre { get; set; } = string.Empty;
+    public string? ProyDescripcion { get; set; }
     public int ProyTipo100 { get; set; }
     public int ProyAnnoDes { get; set; }
     public int ProyMesDes { get; set; }

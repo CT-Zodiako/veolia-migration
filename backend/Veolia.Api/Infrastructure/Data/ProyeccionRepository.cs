@@ -6,12 +6,13 @@ namespace Veolia.Api.Infrastructure.Data;
 
 public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFactory) : IProyeccionRepository
 {
-    public async Task<IReadOnlyList<ProyeccionListItem>> ConsultaAsync(long apsaId, int anno, int mes, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ProyeccionListItem>> ConsultaAsync(long apsaId, CancellationToken cancellationToken)
     {
         const string sql = @"
             SELECT P.PROYID AS ProyId,
-                   P.APSA_ID AS ApsaId,
+                   P.APS AS ApsaId,
                    P.PROYNOMBRE AS ProyNombre,
+                   P.PROYDESCRIPCION AS ProyDescripcion,
                    P.PROYTIPO100 AS ProyTipo100,
                    P.PROYANNODES AS ProyAnnoDes,
                    P.PROYMESDES AS ProyMesDes,
@@ -20,16 +21,11 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
                    P.PROYESTADO AS ProyEstado,
                    P.PROYFECHA AS ProyFecha
               FROM PROY_PROYECCION P
-             WHERE P.APSA_ID = :1
-               AND :2 BETWEEN P.PROYANNODES AND P.PROYANNOHAS
-               AND :3 BETWEEN 1 AND 12
-               AND P.PROYESTADO = 1
-             ORDER BY P.PROYID DESC";
+             WHERE P.APS = :1
+             ORDER BY P.PROYNOMBRE";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", apsaId);
-        parameters.Add("2", anno);
-        parameters.Add("3", mes);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<ProyeccionListItem>(sql, parameters);
@@ -40,8 +36,9 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
     {
         const string sql = @"
             SELECT P.PROYID AS ProyId,
-                   P.APSA_ID AS ApsaId,
+                   P.APS AS ApsaId,
                    P.PROYNOMBRE AS ProyNombre,
+                   P.PROYDESCRIPCION AS ProyDescripcion,
                    P.PROYTIPO100 AS ProyTipo100,
                    P.PROYANNODES AS ProyAnnoDes,
                    P.PROYMESDES AS ProyMesDes,
@@ -68,7 +65,7 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
     {
         const string sql = @"
             SELECT P.PROYID AS ProyId,
-                   P.APSA_ID AS ApsaId,
+                   P.APS AS ApsaId,
                    P.PROYNOMBRE AS ProyNombre,
                    P.PROYTIPO100 AS ProyTipo100,
                    P.PROYANNODES AS ProyAnnoDes,
@@ -92,7 +89,7 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
     {
         const string insertSql = @"
             INSERT INTO PROY_PROYECCION
-            (PROYID, APSA_ID, PROYNOMBRE, PROYTIPO100, PROYANNODES, PROYMESDES, PROYANNOHAS, PROYMESHAS, PROYESTADO, USUA_USUA, PROYFECHA)
+            (PROYID, APS, PROYNOMBRE, PROYTIPO100, PROYANNODES, PROYMESDES, PROYANNOHAS, PROYMESHAS, PROYESTADO, USUA_USUA, PROYFECHA)
             VALUES (SPROY_PROYECCION.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, 1, :8, SYSDATE)
             RETURNING PROYID INTO :9";
 
@@ -126,7 +123,7 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
     {
         const string sql = @"
             UPDATE PROY_PROYECCION
-               SET APSA_ID = :1,
+               SET APS = :1,
                    PROYNOMBRE = :2,
                    PROYTIPO100 = :3,
                    PROYANNODES = :4,

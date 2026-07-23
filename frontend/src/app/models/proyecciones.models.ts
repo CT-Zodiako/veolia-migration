@@ -20,6 +20,7 @@ export interface Proyeccion {
   proyId: number;
   apsaId: number;
   proyNombre: string;
+  proyDescripcion?: string | null;
   proyTipo100: number;
   proyAnnoDes: number;
   proyMesDes: number;

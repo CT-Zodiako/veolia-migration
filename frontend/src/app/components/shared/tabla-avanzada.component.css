@@ -2,6 +2,15 @@
   text-align: right;
 }
 
+.tabla-avanzada.pantalla-completa {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: var(--color-bg-page);
+  padding: 20px;
+  overflow-y: auto;
+}
+
 /* Clases de estado disponibles para [cellClass] — mismos colores que el
    legacy PGIRS (definirColor: rojo/azul/verde, y naranja para ingreso manual) */
 .color-red {

@@ -368,11 +368,11 @@ internal sealed class StubApsRepository : IApsRepository
 
 internal sealed class StubProyeccionRepository : IProyeccionRepository
 {
-    public Task<IReadOnlyList<ProyeccionListItem>> ConsultaAsync(long apsaId, int anno, int mes, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<ProyeccionListItem>> ConsultaAsync(long apsaId, CancellationToken cancellationToken)
     {
         if (apsaId == 9999) return Task.FromResult<IReadOnlyList<ProyeccionListItem>>([]);
         return Task.FromResult<IReadOnlyList<ProyeccionListItem>>([
-            new ProyeccionListItem { ProyId = 1, ApsaId = apsaId, ProyNombre = "Proyección Test", ProyAnnoDes = anno, ProyMesDes = mes, ProyAnnoHas = anno + 1, ProyMesHas = mes }
+            new ProyeccionListItem { ProyId = 1, ApsaId = apsaId, ProyNombre = "Proyección Test", ProyAnnoDes = 2025, ProyMesDes = 1, ProyAnnoHas = 2026, ProyMesHas = 12 }
         ]);
     }
 

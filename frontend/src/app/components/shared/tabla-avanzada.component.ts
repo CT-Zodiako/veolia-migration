@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, Input, OnInit, TemplateRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -209,6 +209,7 @@ export class TablaAvanzadaComponent implements OnInit {
   compacta = false;
   mostrarExport = false;
   mostrarGuardarVista = false;
+  pantallaCompleta = signal(false);
 
   ngOnInit(): void {
     this.columnasState = new ColumnasState(this.columnas, `veolia:tabla-presets:${this.storageKey}`);
@@ -224,5 +225,20 @@ export class TablaAvanzadaComponent implements OnInit {
 
   confirmarGuardarVista(nombre: string): void {
     this.columnasState.guardarPreset(nombre);
+  }
+
+  togglePantallaCompleta(): void {
+    this.pantallaCompleta.update(valor => !valor);
+  }
+
+  get scrollHeightEfectivo(): string {
+    return this.pantallaCompleta() ? 'calc(100vh - 260px)' : this.scrollHeight;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.pantallaCompleta()) {
+      this.pantallaCompleta.set(false);
+    }
   }
 }

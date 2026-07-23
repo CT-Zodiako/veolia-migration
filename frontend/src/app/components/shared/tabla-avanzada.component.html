@@ -1,4 +1,4 @@
-<div class="tabla-avanzada">
+<div class="tabla-avanzada" [class.pantalla-completa]="pantallaCompleta()">
   <div class="densidad-toolbar">
     <span class="densidad-label">Densidad de la tabla</span>
     <div class="densidad-switch">
@@ -21,12 +21,19 @@
         Compacta
       </button>
     </div>
+    <p-button
+      [icon]="pantallaCompleta() ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+      [label]="pantallaCompleta() ? 'Salir de pantalla completa' : 'Pantalla completa'"
+      severity="secondary"
+      [text]="true"
+      (click)="togglePantallaCompleta()"
+    ></p-button>
   </div>
 
   <p-table
     [value]="rows"
     [scrollable]="true"
-    [scrollHeight]="scrollHeight"
+    [scrollHeight]="scrollHeightEfectivo"
     [paginator]="true"
     [rows]="filasPorPagina"
     [rowsPerPageOptions]="[10, 20, 50]"

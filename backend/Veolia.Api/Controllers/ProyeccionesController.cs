@@ -22,7 +22,7 @@ public sealed class ProyeccionesController(
 
         try
         {
-            var data = await repository.ConsultaAsync(request.ApsaId, request.Anno, request.Mes, cancellationToken);
+            var data = await repository.ConsultaAsync(request.ApsaId, cancellationToken);
             return Ok(Envelope(true, data, "OK"));
         }
         catch (Exception ex)

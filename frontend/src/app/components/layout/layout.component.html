@@ -17,21 +17,10 @@
 
     <nav class="sidebar-nav">
       <div *ngFor="let group of menuGroups" class="menu-group">
-        <!-- Padre -->
-        <button
-          *ngIf="group.children.length > 1"
-          class="nav-item menu-parent"
-          [class.expanded]="group.expanded"
-          (click)="toggleExpand(group)"
-        >
-          <span class="nav-icon">{{ group.icon }}</span>
-          <span class="nav-label">{{ group.label }}</span>
-          <span class="nav-arrow">{{ group.expanded ? '−' : '+' }}</span>
-        </button>
-
-        <!-- Si solo tiene un hijo, mostrar como link directo -->
+        <!-- Ítem realmente suelto (sin agrupación real: el nodo hoja se envuelve
+             como "grupo" de un solo hijo con el mismo label) -> link directo -->
         <a
-          *ngIf="group.children.length === 1"
+          *ngIf="group.children.length === 1 && group.label === group.children[0].label"
           [routerLink]="group.children[0].path"
           class="nav-item"
           [class.active]="isActive(group.children[0].path)"
@@ -40,18 +29,31 @@
           <span class="nav-label">{{ group.children[0].label }}</span>
         </a>
 
-        <!-- Hijos (submenú) -->
-        <div *ngIf="group.expanded && group.children.length > 1" class="submenu">
-          <a
-            *ngFor="let item of group.children"
-            [routerLink]="item.path"
-            class="submenu-item"
-            [class.active]="isActive(item.path)"
+        <!-- Grupo real (label de grupo distinto al del hijo, o más de un hijo):
+             siempre mostrar el padre con sus hijos adentro, sin importar la cantidad -->
+        <ng-container *ngIf="!(group.children.length === 1 && group.label === group.children[0].label)">
+          <button
+            class="nav-item menu-parent"
+            [class.expanded]="group.expanded"
+            (click)="toggleExpand(group)"
           >
-            <span class="submenu-icon">{{ item.icon }}</span>
-            <span class="submenu-label">{{ item.label }}</span>
-          </a>
-        </div>
+            <span class="nav-icon">{{ group.icon }}</span>
+            <span class="nav-label">{{ group.label }}</span>
+            <span class="nav-arrow">{{ group.expanded ? '−' : '+' }}</span>
+          </button>
+
+          <div *ngIf="group.expanded" class="submenu">
+            <a
+              *ngFor="let item of group.children"
+              [routerLink]="item.path"
+              class="submenu-item"
+              [class.active]="isActive(item.path)"
+            >
+              <span class="submenu-icon">{{ item.icon }}</span>
+              <span class="submenu-label">{{ item.label }}</span>
+            </a>
+          </div>
+        </ng-container>
       </div>
     </nav>
   </aside>

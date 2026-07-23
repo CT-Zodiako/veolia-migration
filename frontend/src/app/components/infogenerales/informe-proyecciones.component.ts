@@ -1,37 +1,146 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { TabsModule } from 'primeng/tabs';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { MessageService } from 'primeng/api';
 import { InfoGeneralesService } from '../../services/infogenerales.service';
 import { ProyeccionesService } from '../../services/proyecciones.service';
-import { ApsOption } from '../../models/proyecciones.models';
+import { Proyeccion } from '../../models/proyecciones.models';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
+import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 
-interface ProyeccionOption {
-  proyId: number;
-  proyNombre: string;
-  apsaId: number;
-}
+const MESES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+const COLUMNAS_ENERGIA: TablaColumn[] = [
+  { field: 'CLAS_NOMBRE', header: 'Clase', filtrable: true },
+  { field: 'FACTOR_PROD', header: 'Factor Prod' },
+  { field: 'TIPOTAR', header: 'Tipo Tar' },
+  { field: 'FAEN_ANNO', header: 'Año' },
+  { field: 'FAEN_MES', header: 'Mes' },
+  { field: 'FAEN_SUBCON', header: 'Subcon', numero: true },
+  { field: 'FAEN_USUARIOS', header: 'Usuarios', numero: true },
+  { field: 'FAEN_TCPROP', header: 'TC Prop', numero: true },
+  { field: 'FAEN_TCTERC', header: 'TC Terc', numero: true },
+  { field: 'FAEN_TCAPRO', header: 'TC Apro', numero: true },
+  { field: 'FAEN_TBL', header: 'TBL', numero: true },
+  { field: 'FAEN_TLU', header: 'TLU', numero: true },
+  { field: 'FAEN_TRT', header: 'TRT', numero: true },
+  { field: 'FAEN_TDF', header: 'TDF', numero: true },
+  { field: 'FAEN_TINC', header: 'TInc', numero: true },
+  { field: 'FAEN_TIAT', header: 'TIAT', numero: true },
+  { field: 'FAEN_TTL', header: 'TTL', numero: true },
+  { field: 'FAEN_TA', header: 'TA', numero: true },
+  { field: 'FAEN_TOTAL', header: 'Total', numero: true },
+  { field: 'FAEN_TOTSC', header: 'Tot SC', numero: true },
+  { field: 'FAEN_TOTPROPLENO', header: 'Tot Prop Leno', numero: true },
+  { field: 'FAEN_TOTPROSUBCON', header: 'Tot Prop Subcon', numero: true }
+];
+
+const COLUMNAS_ACUEDUCTO: TablaColumn[] = [
+  { field: 'CLAS_NOMBRE', header: 'Clase', filtrable: true },
+  { field: 'FACTOR_PROD', header: 'Factor Prod' },
+  { field: 'TIPOTAR', header: 'Tipo Tar' },
+  { field: 'FACU_ANNO', header: 'Año' },
+  { field: 'FACU_MES', header: 'Mes' },
+  { field: 'FACU_SUBCON', header: 'Subcon', numero: true },
+  { field: 'FACU_USUARIOS', header: 'Usuarios', numero: true },
+  { field: 'FACU_TCPROP', header: 'TC Prop', numero: true },
+  { field: 'FACU_TCTERC', header: 'TC Terc', numero: true },
+  { field: 'FACU_TCAPRO', header: 'TC Apro', numero: true },
+  { field: 'FACU_TBL', header: 'TBL', numero: true },
+  { field: 'FACU_TLU', header: 'TLU', numero: true },
+  { field: 'FACU_TRT', header: 'TRT', numero: true },
+  { field: 'FACU_TDF', header: 'TDF', numero: true },
+  { field: 'FACU_TINC', header: 'TInc', numero: true },
+  { field: 'FACU_TIAT', header: 'TIAT', numero: true },
+  { field: 'FACU_TTL', header: 'TTL', numero: true },
+  { field: 'FACU_TA', header: 'TA', numero: true },
+  { field: 'FACU_TOTAL', header: 'Total', numero: true },
+  { field: 'FACU_TOTSC', header: 'Tot SC', numero: true },
+  { field: 'FACU_TOTPROPLENO', header: 'Tot Prop Leno', numero: true },
+  { field: 'FACU_TOTPROSUBCON', header: 'Tot Prop Subcon', numero: true }
+];
+
+const COLUMNAS_COSTOS: TablaColumn[] = [
+  { field: 'TIPO_FACT', header: 'Tipo Fact', filtrable: true },
+  { field: 'COST_ANNO', header: 'Año' },
+  { field: 'COST_MES', header: 'Mes' },
+  { field: 'COST_CCS', header: 'CCS', numero: true },
+  { field: 'COST_CCSAPRO', header: 'CCS Apro', numero: true },
+  { field: 'COST_CBL', header: 'CBL', numero: true },
+  { field: 'COST_CLUS', header: 'CLUS', numero: true },
+  { field: 'COST_CRT', header: 'CRT', numero: true },
+  { field: 'COST_CDF', header: 'CDF', numero: true },
+  { field: 'COST_INC', header: 'Inc', numero: true },
+  { field: 'COST_IAT', header: 'IAT', numero: true },
+  { field: 'COST_CTL', header: 'CTL', numero: true },
+  { field: 'COST_VBA', header: 'VBA', numero: true }
+];
+
+const COLUMNAS_TARIFAS: TablaColumn[] = [
+  { field: 'PROY_ID', header: 'Proy ID' },
+  { field: 'APSA_ID', header: 'APS ID' },
+  { field: 'CLAS_NOMBRE', header: 'Clase', filtrable: true },
+  { field: 'TIPO_TAR', header: 'Tipo Tar' },
+  { field: 'TIPO_FACT', header: 'Tipo Fact' },
+  { field: 'TARI_ANNO', header: 'Año' },
+  { field: 'TARI_MES', header: 'Mes' },
+  { field: 'TARI_SUBCON', header: 'Subcon', numero: true },
+  { field: 'TARI_TCPROP', header: 'TC Prop', numero: true },
+  { field: 'TARI_TCTERC', header: 'TC Terc', numero: true },
+  { field: 'TARI_TCAPRO', header: 'TC Apro', numero: true },
+  { field: 'TARI_TBL', header: 'TBL', numero: true },
+  { field: 'TARI_TLU', header: 'TLU', numero: true },
+  { field: 'TARI_TRT', header: 'TRT', numero: true },
+  { field: 'TARI_TDF', header: 'TDF', numero: true },
+  { field: 'TARI_INC', header: 'Inc', numero: true },
+  { field: 'TARI_TIAT', header: 'TIAT', numero: true },
+  { field: 'TARI_TTL', header: 'TTL', numero: true },
+  { field: 'TARI_TA', header: 'TA', numero: true },
+  { field: 'TARI_TOTAL', header: 'Total', numero: true },
+  { field: 'TARI_TOTSC', header: 'Tot SC', numero: true }
+];
 
 @Component({
   selector: 'app-informe-proyecciones',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, ToastModule, TabsModule],
+  imports: [
+    CommonModule, FormsModule, SelectModule,
+    ToastModule, TabsModule, InputTextModule, TextareaModule, ApsSelectorComponent, TablaAvanzadaComponent
+  ],
   providers: [MessageService],
   templateUrl: './informe-proyecciones.component.html',
   styleUrls: ['./informe-proyecciones.component.css']
 })
 export class InformeProyeccionesComponent {
+  readonly columnasEnergia = COLUMNAS_ENERGIA;
+  readonly columnasAcueducto = COLUMNAS_ACUEDUCTO;
+  readonly columnasCostos = COLUMNAS_COSTOS;
+  readonly columnasTarifas = COLUMNAS_TARIFAS;
+
   aps = signal<number | null>(null);
-  apsOptions = signal<ApsOption[]>([]);
-  proyecciones = signal<ProyeccionOption[]>([]);
+  proyecciones = signal<Proyeccion[]>([]);
   proyId = signal<number | null>(null);
   activeTab = signal(0);
+
+  proyeccionSeleccionada = computed(() => this.proyecciones().find(p => p.proyId === this.proyId()) ?? null);
+
+  horizonteDesde = computed(() => {
+    const p = this.proyeccionSeleccionada();
+    return p ? `${MESES[p.proyMesDes - 1] ?? p.proyMesDes} ${p.proyAnnoDes}` : '';
+  });
+
+  horizonteHasta = computed(() => {
+    const p = this.proyeccionSeleccionada();
+    return p ? `${MESES[p.proyMesHas - 1] ?? p.proyMesHas} ${p.proyAnnoHas}` : '';
+  });
 
   // Estados por pestaña
   energiaLoading = signal(false);
@@ -54,34 +163,25 @@ export class InformeProyeccionesComponent {
     private readonly service: InfoGeneralesService,
     private readonly proyService: ProyeccionesService,
     private readonly messages: MessageService
-  ) {
-    this.proyService.listarAps().subscribe({
-      next: (data) => this.apsOptions.set(data || [])
-    });
-  }
+  ) {}
 
-  onApsChange(): void {
-    const apsId = this.aps();
-    if (!apsId) {
-      this.proyecciones.set([]);
-      this.proyId.set(null);
-      return;
-    }
+  onApsChange(apsId: number | null): void {
+    this.aps.set(apsId);
+    this.proyId.set(null);
+    this.proyecciones.set([]);
+    if (!apsId) return;
+
     this.proyService.consulta(apsId).subscribe({
-      next: (res) => {
-        const opts = (res.data || []).map((p) => ({
-          proyId: p.proyId,
-          proyNombre: p.proyNombre,
-          apsaId: p.apsaId
-        }));
-        this.proyecciones.set(opts);
-      },
+      next: (res) => this.proyecciones.set(res.data || []),
       error: () => this.proyecciones.set([])
     });
   }
 
-  onProyChange(): void {
-    this.loadTabData(this.activeTab());
+  onProyChange(proyId: number | null): void {
+    this.proyId.set(proyId);
+    if (proyId) {
+      this.loadTabData(this.activeTab());
+    }
   }
 
   onTabChange(index: number | string | undefined): void {

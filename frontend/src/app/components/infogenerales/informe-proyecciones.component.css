@@ -11,3 +11,36 @@
   background: var(--red-50);
   border-radius: 4px;
 }
+
+.infogenerales-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.infogenerales-header h2 {
+  color: var(--color-brand-strong);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Mismo estilo de label que app-aps-selector, para que "APS" no se vea
+   distinto de "Proyección"/"Horizonte Desde"/"Horizonte Hasta". */
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-body);
+}

@@ -81,7 +81,7 @@ export class SidebarMenuService {
     { label: 'Reliquidación - Comparar Tarifas', path: '/reliquidacion/comparar-tarifas', icon: '💹', keywords: ['comparar tarifas reliquidacion', 'reliq comparar tarifas'], menuId: 6004 },
     { label: 'Reliquidación - Tarificador', path: '/reliquidacion/tarificador', icon: '🧮', keywords: ['tarificador reliquidacion', 'reliq tarificador'], menuId: 6005 },
     { label: 'Índices CRA', path: '/cra', icon: '📌', keywords: ['indices cra', 'indice cra', 'cra indices'] },
-    { label: 'Información Generales', path: '/generales', icon: '📈', keywords: ['informacion generales', 'generales', 'infogenerales'] },
+    { label: 'Información Generales', path: '/generales', icon: '📈', keywords: ['informacion generales', 'generales', 'infogenerales'], menuId: 1001 },
     { label: 'Gerencial - Detalle Costos', path: '/gerencial/costos', icon: '💰', keywords: ['gerencial costos', 'detalle costos gerencial', 'infogerencial costos'] },
     { label: 'Gerencial - Sub Aporte', path: '/gerencial/sub-aporte', icon: '🧾', keywords: ['gerencial sub aporte', 'sub aporte gerencial', 'infogerencial sub aporte'] },
     { label: 'Gerencial - Dashboard', path: '/gerencial/dashboard', icon: '📊', keywords: ['dashboard gerencial', 'infogerencial dashboard'], menuId: 604 },
