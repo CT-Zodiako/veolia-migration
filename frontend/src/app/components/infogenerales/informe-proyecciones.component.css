@@ -12,19 +12,6 @@
   border-radius: 4px;
 }
 
-.infogenerales-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--color-border);
-}
-
-.infogenerales-header h2 {
-  color: var(--color-brand-strong);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-}
-
 .card-section {
   background: var(--color-bg-card);
   border-radius: 12px;

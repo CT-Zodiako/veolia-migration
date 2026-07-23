@@ -5,25 +5,28 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { ProyeccionesService } from '../../services/proyecciones.service';
-import { ApsOption, Proyeccion } from '../../models/proyecciones.models';
+import { Proyeccion } from '../../models/proyecciones.models';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 
 @Component({
   selector: 'app-ejecutar-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, ApsSelectorComponent],
   templateUrl: './ejecutar-page.component.html',
   styleUrls: ['./proyecciones-page.component.css']
 })
 export class EjecutarPageComponent {
   apsaId = signal<number | null>(null);
   proyId = signal<number | null>(null);
-  apsOptions = signal<ApsOption[]>([]);
   proyecciones = signal<Proyeccion[]>([]);
   loading = signal(false);
   resultado = signal<string>('');
 
-  constructor(private readonly service: ProyeccionesService) {
-    this.service.listarAps().subscribe({ next: (x) => this.apsOptions.set(x || []) });
+  constructor(private readonly service: ProyeccionesService) {}
+
+  onApsChange(apsaId: number | null): void {
+    this.apsaId.set(apsaId);
+    this.cargarProyecciones();
   }
 
   cargarProyecciones(): void {

@@ -376,9 +376,9 @@ internal sealed class StubProyeccionRepository : IProyeccionRepository
         ]);
     }
 
-    public Task<IReadOnlyList<ProyeccionListItem>> ConsultaGeneralAsync(int anno, int mes, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<ProyeccionListItem>> ConsultaGeneralAsync(long sisuId, CancellationToken cancellationToken)
         => Task.FromResult<IReadOnlyList<ProyeccionListItem>>([
-            new ProyeccionListItem { ProyId = 1, ApsaId = 1, ProyNombre = "Proyección General", ProyAnnoDes = anno, ProyMesDes = mes, ProyAnnoHas = anno + 1, ProyMesHas = mes }
+            new ProyeccionListItem { ProyId = 1, ApsaId = 1, ProyNombre = "Proyección General", ProyAnnoDes = 2025, ProyMesDes = 1, ProyAnnoHas = 2026, ProyMesHas = 12 }
         ]);
 
     public Task<ProyeccionDetail?> ConsultaProyAsync(long proyId, CancellationToken cancellationToken)

@@ -1,4 +1,23 @@
 .page-wrap { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
 .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.toolbar app-aps-selector { min-width: 220px; }
+.toolbar app-aps-selector ::ng-deep .form-group { margin-bottom: 0; }
 .actions { display: flex; gap: .5rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; align-items: center; }
+
+.form-grid app-aps-selector { grid-column: 1 / -1; }
+
+.filter-row th {
+  padding: 4px 8px;
+}
+
+.column-filter-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}

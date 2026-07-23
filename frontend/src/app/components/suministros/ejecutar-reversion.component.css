@@ -4,19 +4,6 @@
   padding: 24px;
 }
 
-.reversion-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--color-border);
-}
-
-.reversion-header h2 {
-  color: var(--color-brand-strong);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-}
-
 .warning-message {
   display: flex;
   align-items: center;

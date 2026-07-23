@@ -8,6 +8,10 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
 {
     public async Task<IReadOnlyList<ProyeccionListItem>> ConsultaAsync(long apsaId, CancellationToken cancellationToken)
     {
+        // Legacy real (proyeccionescontroller.consulta) es "SELECT * FROM proy_proyeccion WHERE APS = :1
+        // ORDER BY PROYNOMBRE" sin joins -- se usa como poblador liviano del selector de Proyección en
+        // otras pantallas (Líneas de Tiempo, Crecimiento, Proyectar, Subsidios). Los joins a APS/Tipo/Usuario
+        // solo aparecen en consultageneral (ver ConsultaGeneralAsync), que alimenta la grilla de Crear Proyección.
         const string sql = @"
             SELECT P.PROYID AS ProyId,
                    P.APS AS ApsaId,
@@ -32,29 +36,36 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
         return rows.ToList();
     }
 
-    public async Task<IReadOnlyList<ProyeccionListItem>> ConsultaGeneralAsync(int anno, int mes, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ProyeccionListItem>> ConsultaGeneralAsync(long sisuId, CancellationToken cancellationToken)
     {
+        // El legacy real (proyeccionescontroller.consultageneral en back-tarificador) no filtra
+        // por año/mes: lista las proyecciones de todos los APS que el usuario tiene autorizados
+        // (auco_apsusuarios), sin filtro de PROYESTADO. El backend nuevo filtraba antes por
+        // anno/mes (nunca enviados por el frontend -> 0 -> lista siempre vacía).
         const string sql = @"
             SELECT P.PROYID AS ProyId,
                    P.APS AS ApsaId,
+                   AA.APSA_NOMAPS AS ApsaNombre,
                    P.PROYNOMBRE AS ProyNombre,
                    P.PROYDESCRIPCION AS ProyDescripcion,
                    P.PROYTIPO100 AS ProyTipo100,
+                   PA.PARA_NOMBRE AS ProyTipoNombre,
                    P.PROYANNODES AS ProyAnnoDes,
                    P.PROYMESDES AS ProyMesDes,
                    P.PROYANNOHAS AS ProyAnnoHas,
                    P.PROYMESHAS AS ProyMesHas,
                    P.PROYESTADO AS ProyEstado,
-                   P.PROYFECHA AS ProyFecha
+                   P.PROYFECHA AS ProyFecha,
+                   S.SISU_CORREO AS SisuCorreo
               FROM PROY_PROYECCION P
-             WHERE :1 BETWEEN P.PROYANNODES AND P.PROYANNOHAS
-               AND :2 BETWEEN 1 AND 12
-               AND P.PROYESTADO = 1
-             ORDER BY P.PROYID DESC";
+              JOIN AUCO_APSASEO AA ON AA.APSA_ID = P.APS
+              JOIN AUGE_PARAMETROS PA ON (PA.PARA_PARA = P.PROYTIPO100 AND PA.CLAS_CLAS = 100)
+              JOIN AUGE_SISUSUARIO S ON S.SISU_ID = P.USUARIO
+             WHERE P.APS IN (SELECT AU.APSA_ID FROM AUCO_APSUSUARIOS AU WHERE AU.SISU_ID = :1)
+             ORDER BY S.SISU_CORREO";
 
         var parameters = new DynamicParameters();
-        parameters.Add("1", anno);
-        parameters.Add("2", mes);
+        parameters.Add("1", sisuId);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<ProyeccionListItem>(sql, parameters);
@@ -73,7 +84,7 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
                    P.PROYANNOHAS AS ProyAnnoHas,
                    P.PROYMESHAS AS ProyMesHas,
                    P.PROYESTADO AS ProyEstado,
-                   P.USUA_USUA AS UsuaUsua,
+                   P.USUARIO AS UsuaUsua,
                    P.PROYFECHA AS ProyFecha
               FROM PROY_PROYECCION P
              WHERE P.PROYID = :1";
@@ -89,7 +100,7 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
     {
         const string insertSql = @"
             INSERT INTO PROY_PROYECCION
-            (PROYID, APS, PROYNOMBRE, PROYTIPO100, PROYANNODES, PROYMESDES, PROYANNOHAS, PROYMESHAS, PROYESTADO, USUA_USUA, PROYFECHA)
+            (PROYID, APS, PROYNOMBRE, PROYTIPO100, PROYANNODES, PROYMESDES, PROYANNOHAS, PROYMESHAS, PROYESTADO, USUARIO, PROYFECHA)
             VALUES (SPROY_PROYECCION.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, 1, :8, SYSDATE)
             RETURNING PROYID INTO :9";
 

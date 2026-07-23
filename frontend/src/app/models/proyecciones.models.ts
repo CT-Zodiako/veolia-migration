@@ -19,15 +19,18 @@ export interface ApsOption {
 export interface Proyeccion {
   proyId: number;
   apsaId: number;
+  apsaNombre?: string | null;
   proyNombre: string;
   proyDescripcion?: string | null;
   proyTipo100: number;
+  proyTipoNombre?: string | null;
   proyAnnoDes: number;
   proyMesDes: number;
   proyAnnoHas: number;
   proyMesHas: number;
   proyEstado: number;
   proyFecha?: string | null;
+  sisuCorreo?: string | null;
 }
 
 export interface ProyeccionCreate {

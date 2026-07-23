@@ -7,19 +7,19 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { ProyeccionesService } from '../../services/proyecciones.service';
-import { ApsOption, Proyeccion, CrecimientoUsuariosItem, CrecimientoPropiaItem, CrecimientoTercerosItem, DescuentoItem } from '../../models/proyecciones.models';
+import { Proyeccion, CrecimientoUsuariosItem, CrecimientoPropiaItem, CrecimientoTercerosItem, DescuentoItem } from '../../models/proyecciones.models';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 
 @Component({
   selector: 'app-crecimiento-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, TabsModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, TabsModule, ApsSelectorComponent],
   templateUrl: './crecimiento-page.component.html',
   styleUrls: ['./proyecciones-page.component.css']
 })
 export class CrecimientoPageComponent {
   apsaId = signal<number | null>(null);
   proyId = signal<number | null>(null);
-  apsOptions = signal<ApsOption[]>([]);
   proyecciones = signal<Proyeccion[]>([]);
 
   usuarios: CrecimientoUsuariosItem[] = [];
@@ -27,8 +27,11 @@ export class CrecimientoPageComponent {
   terceros: CrecimientoTercerosItem[] = [];
   descuentos: DescuentoItem[] = [];
 
-  constructor(private readonly service: ProyeccionesService) {
-    this.service.listarAps().subscribe({ next: (x) => this.apsOptions.set(x || []) });
+  constructor(private readonly service: ProyeccionesService) {}
+
+  onApsChange(apsaId: number | null): void {
+    this.apsaId.set(apsaId);
+    this.cargarProyecciones();
   }
 
   cargarProyecciones(): void {

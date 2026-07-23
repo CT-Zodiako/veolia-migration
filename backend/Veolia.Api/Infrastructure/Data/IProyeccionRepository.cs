@@ -5,7 +5,7 @@ namespace Veolia.Api.Infrastructure.Data;
 public interface IProyeccionRepository
 {
     Task<IReadOnlyList<ProyeccionListItem>> ConsultaAsync(long apsaId, CancellationToken cancellationToken);
-    Task<IReadOnlyList<ProyeccionListItem>> ConsultaGeneralAsync(int anno, int mes, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ProyeccionListItem>> ConsultaGeneralAsync(long sisuId, CancellationToken cancellationToken);
     Task<ProyeccionDetail?> ConsultaProyAsync(long proyId, CancellationToken cancellationToken);
     Task<MutationResponse> CrearAsync(ProyeccionCreateRequest request, long usuarioId, CancellationToken cancellationToken);
     Task<MutationResponse> EditarAsync(long proyId, ProyeccionUpdateRequest request, CancellationToken cancellationToken);

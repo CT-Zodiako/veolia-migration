@@ -9,12 +9,13 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ProyeccionesService } from '../../services/proyecciones.service';
-import { ApsOption, LineaTiempoRow, Proyeccion } from '../../models/proyecciones.models';
+import { LineaTiempoRow, Proyeccion } from '../../models/proyecciones.models';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 
 @Component({
   selector: 'app-linea-tiempo-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, InputNumberModule, ToastModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, InputNumberModule, ToastModule, ApsSelectorComponent],
   providers: [MessageService],
   templateUrl: './linea-tiempo-page.component.html',
   styleUrls: ['./proyecciones-page.component.css']
@@ -22,13 +23,15 @@ import { ApsOption, LineaTiempoRow, Proyeccion } from '../../models/proyecciones
 export class LineaTiempoPageComponent {
   apsaId = signal<number | null>(null);
   proyId = signal<number | null>(null);
-  apsOptions = signal<ApsOption[]>([]);
   proyecciones = signal<Proyeccion[]>([]);
   rows: LineaTiempoRow[] = [];
   loading = signal(false);
 
-  constructor(private readonly service: ProyeccionesService, private readonly messages: MessageService) {
-    this.service.listarAps().subscribe({ next: (x) => this.apsOptions.set(x || []) });
+  constructor(private readonly service: ProyeccionesService, private readonly messages: MessageService) {}
+
+  onApsChange(apsaId: number | null): void {
+    this.apsaId.set(apsaId);
+    this.cargarProyecciones();
   }
 
   cargarProyecciones(): void {

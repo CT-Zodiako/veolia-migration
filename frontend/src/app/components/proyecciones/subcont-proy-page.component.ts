@@ -7,12 +7,13 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ProyeccionesService } from '../../services/proyecciones.service';
-import { ApsOption, Proyeccion, SubcontItem } from '../../models/proyecciones.models';
+import { Proyeccion, SubcontItem } from '../../models/proyecciones.models';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 
 @Component({
   selector: 'app-subcont-proy-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, InputNumberModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, InputNumberModule, ApsSelectorComponent],
   templateUrl: './subcont-proy-page.component.html',
   styleUrls: ['./proyecciones-page.component.css']
 })
@@ -21,12 +22,14 @@ export class SubcontProyPageComponent {
   proyId = signal<number | null>(null);
   anno = new Date().getFullYear();
   mes = 1;
-  apsOptions = signal<ApsOption[]>([]);
   proyecciones = signal<Proyeccion[]>([]);
   items: SubcontItem[] = [];
 
-  constructor(private readonly service: ProyeccionesService) {
-    this.service.listarAps().subscribe({ next: (x) => this.apsOptions.set(x || []) });
+  constructor(private readonly service: ProyeccionesService) {}
+
+  onApsChange(apsaId: number | null): void {
+    this.apsaId.set(apsaId);
+    this.cargarProyecciones();
   }
 
   cargarProyecciones(): void {

@@ -11,24 +11,26 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ProyeccionesService } from '../../services/proyecciones.service';
-import { ApsOption, Proyeccion, ProyeccionCreate } from '../../models/proyecciones.models';
+import { Proyeccion, ProyeccionCreate } from '../../models/proyecciones.models';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 
 @Component({
   selector: 'app-proyecciones-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, DialogModule, InputTextModule, InputNumberModule, ToastModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, DialogModule, InputTextModule, InputNumberModule, ToastModule, ApsSelectorComponent],
   providers: [MessageService],
   templateUrl: './proyecciones-page.component.html',
   styleUrls: ['./proyecciones-page.component.css']
 })
 export class ProyeccionesPageComponent {
-  aps = signal<number | null>(null);
-  apsOptions = signal<ApsOption[]>([]);
   rows = signal<Proyeccion[]>([]);
   loading = signal(false);
   showDialog = signal(false);
   editingId = signal<number | null>(null);
   saving = signal(false);
+
+  nombreFilter = '';
+  apsFilter = '';
 
   form: ProyeccionCreate = {
     apsaId: 0,
@@ -41,8 +43,21 @@ export class ProyeccionesPageComponent {
   };
 
   constructor(private readonly service: ProyeccionesService, private readonly messages: MessageService) {
-    this.service.listarAps().subscribe({ next: (data) => this.apsOptions.set(data || []) });
     this.consultaGeneral();
+  }
+
+  onApsChange(apsaId: number | null): void {
+    this.form.apsaId = apsaId || 0;
+  }
+
+  get filteredRows(): Proyeccion[] {
+    const nombre = this.nombreFilter.toLowerCase();
+    const aps = this.apsFilter.toLowerCase();
+
+    return this.rows().filter(row =>
+      String(row.proyNombre ?? '').toLowerCase().includes(nombre)
+      && String(row.apsaNombre ?? '').toLowerCase().includes(aps)
+    );
   }
 
   consultaGeneral(): void {
@@ -56,21 +71,9 @@ export class ProyeccionesPageComponent {
     });
   }
 
-  consultar(): void {
-    if (!this.aps()) return this.consultaGeneral();
-    this.loading.set(true);
-    this.service.consulta(this.aps()!).subscribe({
-      next: (res) => {
-        this.rows.set(res.data || []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
-    });
-  }
-
   nueva(): void {
     this.editingId.set(null);
-    this.form = { ...this.form, apsaId: this.aps() || 0, proyNombre: '' };
+    this.form = { ...this.form, apsaId: 0, proyNombre: '' };
     this.showDialog.set(true);
   }
 
@@ -98,14 +101,9 @@ export class ProyeccionesPageComponent {
         this.messages.add({ severity: res.status ? 'success' : 'error', summary: 'Proyecciones', detail: res.message });
         this.saving.set(false);
         this.showDialog.set(false);
-        this.consultar();
+        this.consultaGeneral();
       },
       error: () => this.saving.set(false)
     });
-  }
-
-  eliminar(row: Proyeccion): void {
-    if (!window.confirm(`¿Eliminar ${row.proyNombre}?`)) return;
-    this.service.eliminar(row.proyId).subscribe({ next: () => this.consultar() });
   }
 }

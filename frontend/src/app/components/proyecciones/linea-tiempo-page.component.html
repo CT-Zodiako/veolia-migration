@@ -2,7 +2,7 @@
 <div class="page-wrap">
   <p-card>
     <div class="toolbar">
-      <p-select [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" [(ngModel)]="apsaId" placeholder="APS" (onChange)="cargarProyecciones()"></p-select>
+      <app-aps-selector [selectedAps]="apsaId()" (selectedApsChange)="onApsChange($event)" label=""></app-aps-selector>
       <p-select [options]="proyecciones()" optionLabel="proyNombre" optionValue="proyId" [(ngModel)]="proyId" placeholder="Proyección"></p-select>
       <div class="actions"><p-button label="Consultar" icon="pi pi-search" (onClick)="consultar()"></p-button></div>
     </div>

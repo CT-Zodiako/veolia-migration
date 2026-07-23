@@ -32,14 +32,14 @@ public sealed class ProyeccionesController(
     }
 
     [HttpPost("consultageneral")]
-    public async Task<IActionResult> ConsultaGeneral([FromBody] ProyeccionConsultaRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> ConsultaGeneral(CancellationToken cancellationToken)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
         try
         {
-            var data = await repository.ConsultaGeneralAsync(request.Anno, request.Mes, cancellationToken);
+            var data = await repository.ConsultaGeneralAsync(tokenContext.SisuId, cancellationToken);
             return Ok(Envelope(true, data, "OK"));
         }
         catch (Exception ex)

@@ -139,12 +139,16 @@ export class LayoutComponent implements OnInit {
       case '/menu-usuario': return 'Asignación de Menú';
       case '/cambiar-clave': return 'Cambiar Contraseña';
       case '/sui-reversiones': return 'SUI Reversiones';
+      case '/reversion_auth': return 'Autorización Reversiones';
+      case '/detautorizacion': return 'Detallado Autorización';
+      case '/suministros/reversion': return 'Ejecutar Reversión';
+      case '/suministros/historico': return 'Histórico Reversión';
       case '/sui/integracion': return 'SUI Integración';
       case '/facturacion': return 'Facturación';
       case '/rellenos': return 'Configuración de Rellenos';
       case '/validaciones': return 'Validaciones';
       case '/subcont': return 'Subsidios y Contribuciones';
-      case '/proyecciones': return 'Proyecciones';
+      case '/proyecciones': return 'Crear Proyección';
       case '/proyecciones/linea-tiempo': return 'Proyecciones - Línea de Tiempo';
       case '/proyecciones/crecimiento': return 'Proyecciones - Crecimiento';
       case '/proyecciones/subcont': return 'Proyecciones - Subsidios/Contribuciones';
