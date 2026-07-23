@@ -161,10 +161,9 @@ export class LayoutComponent implements OnInit {
       case '/gerencial/poda': return 'Gerencial - Costo Poda';
       case '/gerencial/verificacion': return 'Gerencial - Verificación APS';
       case '/gerencial/poda-simple': return 'Gerencial - Poda';
-      case '/pgirs/informe': return 'PGIRS - Informe';
       case '/pgirs/resumen': return 'PGIRS - Resumen';
       case '/pgirs/informe-variables': return 'PGIRS - Informe Variables';
-      case '/pgirs/variables': return 'PGIRS - Variables';
+      case '/pgirs/variables': return 'Variables PGIRS';
       case '/suministros/cargue-certificacion': return 'Cargue y Certificación';
       case '/costos/calculo-tarifas': return 'Cálculo de Tarifas';
       case '/cra': return 'Índices CRA';

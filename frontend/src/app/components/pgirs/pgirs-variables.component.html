@@ -1,285 +1,189 @@
 <p-toast></p-toast>
 
-<p-card header="Variables PGIRS">
-  <div class="grid mb-3">
-    <div class="col-12 md:col-4">
-      <label class="block mb-1">APS</label>
-      <p-select
-        [options]="apsOptions()"
-        optionLabel="apsaNombre"
-        optionValue="apsaId"
-        placeholder="Seleccione APS"
-        [ngModel]="aps()"
-        (ngModelChange)="aps.set($event)"
-        styleClass="w-full"
-      ></p-select>
-    </div>
-    <div class="col-12 md:col-2">
-      <label class="block mb-1">Año</label>
-      <input
-        type="number"
-        class="w-full"
-        [ngModel]="anno()"
-        (ngModelChange)="anno.set($event)"
-      />
-    </div>
-    <div class="col-12 md:col-2">
-      <label class="block mb-1">Mes</label>
-      <input
-        type="number"
-        min="1"
-        max="12"
-        class="w-full"
-        [ngModel]="mes()"
-        (ngModelChange)="mes.set($event)"
-      />
-    </div>
-    <div class="col-12 md:col-2 flex align-items-end">
-      <p-button
-        label="Consultar"
-        icon="pi pi-search"
-        (onClick)="consultar()"
-      ></p-button>
-    </div>
+<div class="pgirs-header">
+  <h2>Variables PGIRS</h2>
+</div>
+
+<div class="card-section">
+    <app-parametros-consulta
+      [wrapInCard]="false"
+      [mostrarBoton]="false"
+      [autoConsultar]="true"
+      [aps]="aps()"
+      (apsChange)="aps.set($event)"
+      [anno]="anno()"
+      (annoChange)="anno.set($event)"
+      [mes]="mes()"
+      (mesChange)="mes.set($event)"
+      [loading]="consultaLoading()"
+      (consultar)="consultar()"
+    ></app-parametros-consulta>
   </div>
 
-  <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
-    <p-tablist>
-      <p-tab [value]="0">Consulta</p-tab>
-      <p-tab [value]="1">Detalle</p-tab>
-      <p-tab [value]="2">Resumen</p-tab>
-    </p-tablist>
+  <div class="card-section">
+    <div class="mb-3 flex justify-content-end">
+      <p-button
+        label="Nueva Variable"
+        icon="pi pi-plus"
+        (onClick)="abrirNuevaVariable()"
+      ></p-button>
+    </div>
 
-    <p-tabpanels>
-      <p-tabpanel [value]="0">
-        <div class="mb-3 flex justify-content-end">
+    <div *ngIf="consultaLoading()" class="text-center py-4">
+      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+      <p>Cargando...</p>
+    </div>
+
+    <div *ngIf="consultaError()" class="p-error p-3">
+      <i class="pi pi-exclamation-circle"></i> {{ consultaError() }}
+    </div>
+
+    <div
+      *ngIf="
+        !consultaLoading() &&
+        !consultaError() &&
+        consultaData().length === 0
+      "
+      class="text-center py-4 text-secondary"
+    >
+      <i class="pi pi-inbox" style="font-size: 2rem"></i>
+      <p>Sin datos</p>
+    </div>
+
+    <app-tabla-avanzada
+      *ngIf="consultaData().length > 0"
+      [columnas]="columnasVariables"
+      [rows]="consultaData()"
+      storageKey="pgirs-variables"
+      nombreExportar="VariablesPGIRS"
+      [cellTemplate]="celda"
+      [accionesTemplate]="acciones"
+    ></app-tabla-avanzada>
+
+    <ng-template #celda let-value let-row="row" let-col="col">
+      <ng-container [ngSwitch]="col.field">
+        <span *ngSwitchCase="'PGRIVARIABLE'">{{ traducirVariable(value) }}</span>
+
+        <ng-container *ngSwitchCase="'PGRIVALOR'">
+          <input
+            *ngIf="editingKey() === rowKey(row); else valorReadonly"
+            pInputText
+            type="number"
+            class="w-full text-right"
+            [ngModel]="editingValor()"
+            (ngModelChange)="editingValor.set($event)"
+          />
+          <ng-template #valorReadonly>{{ value ?? 0 }}</ng-template>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'PGRIFRECUENCIA'">
+          <p-select
+            *ngIf="editingKey() === rowKey(row); else frecuenciaReadonly"
+            [options]="frecuenciaOptions"
+            optionLabel="label"
+            optionValue="value"
+            [ngModel]="editingFrecuencia()"
+            (ngModelChange)="editingFrecuencia.set($event)"
+            styleClass="w-full"
+          ></p-select>
+          <ng-template #frecuenciaReadonly>{{ traducirFrecuencia(value) }}</ng-template>
+        </ng-container>
+
+        <span *ngSwitchDefault>{{ value ?? '' }}</span>
+      </ng-container>
+    </ng-template>
+
+    <ng-template #acciones let-row>
+      <div class="actions-cell">
+        <ng-container *ngIf="editingKey() === rowKey(row); else accionEditar">
+          <p-button icon="pi pi-check" severity="success" size="small" (onClick)="guardarFila(row)"></p-button>
+          <p-button icon="pi pi-times" severity="secondary" size="small" (onClick)="cancelarEdicionFila()"></p-button>
+        </ng-container>
+        <ng-template #accionEditar>
+          <p-button icon="pi pi-pencil" severity="info" size="small" (onClick)="iniciarEdicionFila(row)"></p-button>
+        </ng-template>
+      </div>
+    </ng-template>
+
+    <p-dialog
+      header="Nueva variable"
+      [modal]="true"
+      [closable]="true"
+      [style]="{ width: '36rem' }"
+      [visible]="newDialogVisible()"
+      (visibleChange)="newDialogVisible.set($event)"
+    >
+      <div class="grid">
+        <div class="col-12 md:col-4">
+          <label class="block mb-1">APS ID</label>
+          <input
+            pInputText
+            class="w-full"
+            [ngModel]="newForm().apsId"
+            (ngModelChange)="newForm.set({ ...newForm(), apsId: $event })"
+          />
+        </div>
+        <div class="col-12 md:col-4">
+          <label class="block mb-1">Año</label>
+          <input
+            pInputText
+            class="w-full"
+            [ngModel]="newForm().anno"
+            (ngModelChange)="newForm.set({ ...newForm(), anno: $event })"
+          />
+        </div>
+        <div class="col-12 md:col-4">
+          <label class="block mb-1">Mes</label>
+          <input
+            pInputText
+            class="w-full"
+            [ngModel]="newForm().mes"
+            (ngModelChange)="newForm.set({ ...newForm(), mes: $event })"
+          />
+        </div>
+        <div class="col-12">
+          <label class="block mb-1">Variable</label>
+          <p-select
+            [options]="variableOptions"
+            optionLabel="label"
+            optionValue="label"
+            placeholder="Seleccione variable"
+            [ngModel]="newForm().variable"
+            (ngModelChange)="newForm.set({ ...newForm(), variable: $event })"
+            styleClass="w-full"
+          ></p-select>
+        </div>
+        <div class="col-12 md:col-6">
+          <label class="block mb-1">Valor</label>
+          <input
+            pInputText
+            class="w-full"
+            [ngModel]="newForm().valor"
+            (ngModelChange)="newForm.set({ ...newForm(), valor: $event })"
+          />
+        </div>
+        <div class="col-12 md:col-6">
+          <label class="block mb-1">Frecuencia</label>
+          <input
+            pInputText
+            class="w-full"
+            [ngModel]="newForm().frecuencia"
+            (ngModelChange)="
+              newForm.set({ ...newForm(), frecuencia: $event })
+            "
+          />
+        </div>
+        <div class="col-12 flex justify-content-end gap-2 mt-2">
           <p-button
-            label="Nueva Variable"
-            icon="pi pi-plus"
-            (onClick)="abrirNuevaVariable()"
+            label="Cancelar"
+            severity="secondary"
+            (onClick)="newDialogVisible.set(false)"
+          ></p-button>
+          <p-button
+            label="Guardar"
+            (onClick)="guardarNuevaVariable()"
           ></p-button>
         </div>
-
-        <div *ngIf="consultaLoading()" class="text-center py-4">
-          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-          <p>Cargando...</p>
-        </div>
-
-        <div *ngIf="consultaError()" class="p-error p-3">
-          <i class="pi pi-exclamation-circle"></i> {{ consultaError() }}
-        </div>
-
-        <div
-          *ngIf="
-            !consultaLoading() &&
-            !consultaError() &&
-            consultaData().length === 0
-          "
-          class="text-center py-4 text-secondary"
-        >
-          <i class="pi pi-inbox" style="font-size: 2rem"></i>
-          <p>Sin datos</p>
-        </div>
-
-        <p-table
-          *ngIf="consultaData().length > 0"
-          [value]="consultaData()"
-          [scrollable]="true"
-          scrollHeight="400px"
-          [tableStyle]="{ 'min-width': '50rem' }"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>APS ID</th>
-              <th>Año</th>
-              <th>Mes</th>
-              <th>Variable ID</th>
-              <th>Variable</th>
-              <th>Valor</th>
-              <th>Frecuencia</th>
-              <th>Fecha</th>
-              <th>Usuario</th>
-              <th>Ingreso</th>
-              <th>Acciones</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-row>
-            <tr>
-              <td>{{ row.APSAID || row.apsaid }}</td>
-              <td>{{ row.PGRIANNO || row.pgrianno }}</td>
-              <td>{{ row.PGRIMES || row.pgrimes }}</td>
-              <td>{{ row.PGRIVARIABLE || row.pgrivariable }}</td>
-              <td>{{ row.NOMBRE_VARIABLE || row.nombre_variable }}</td>
-              <td>{{ row.PGRIVALOR || row.pgrivalor }}</td>
-              <td>{{ row.PGRIFRECUENCIA || row.pgrifrecuencia }}</td>
-              <td>{{ row.PGRIFECHA || row.pgrifecha }}</td>
-              <td>{{ row.PGRIUSUARIO || row.pgriusuario }}</td>
-              <td>{{ row.PGRINGRESO || row.pgringreso }}</td>
-              <td class="flex gap-2">
-                <p-button
-                  icon="pi pi-pencil"
-                  label="Editar"
-                  size="small"
-                  (onClick)="abrirEditar(row)"
-                ></p-button>
-                <p-button
-                  icon="pi pi-trash"
-                  label="Eliminar"
-                  size="small"
-                  severity="danger"
-                  (onClick)="eliminarVariable(row)"
-                ></p-button>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-
-        <p-dialog
-          header="Editar variable"
-          [modal]="true"
-          [closable]="true"
-          [style]="{ width: '32rem' }"
-          [visible]="editDialogVisible()"
-          (visibleChange)="editDialogVisible.set($event)"
-        >
-          <div class="flex flex-column gap-3">
-            <div>
-              <label class="block mb-1">Variable</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="editForm().variable"
-                (ngModelChange)="
-                  editForm.set({ ...editForm(), variable: $event })
-                "
-              />
-            </div>
-            <div>
-              <label class="block mb-1">Valor</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="editForm().valor"
-                (ngModelChange)="editForm.set({ ...editForm(), valor: $event })"
-              />
-            </div>
-            <div>
-              <label class="block mb-1">Frecuencia</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="editForm().frecuencia"
-                (ngModelChange)="
-                  editForm.set({ ...editForm(), frecuencia: $event })
-                "
-              />
-            </div>
-            <div class="flex justify-content-end gap-2 mt-2">
-              <p-button
-                label="Cancelar"
-                severity="secondary"
-                (onClick)="editDialogVisible.set(false)"
-              ></p-button>
-              <p-button label="Guardar" (onClick)="guardarEdicion()"></p-button>
-            </div>
-          </div>
-        </p-dialog>
-
-        <p-dialog
-          header="Nueva variable"
-          [modal]="true"
-          [closable]="true"
-          [style]="{ width: '36rem' }"
-          [visible]="newDialogVisible()"
-          (visibleChange)="newDialogVisible.set($event)"
-        >
-          <div class="grid">
-            <div class="col-12 md:col-4">
-              <label class="block mb-1">APS ID</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="newForm().apsId"
-                (ngModelChange)="newForm.set({ ...newForm(), apsId: $event })"
-              />
-            </div>
-            <div class="col-12 md:col-4">
-              <label class="block mb-1">Año</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="newForm().anno"
-                (ngModelChange)="newForm.set({ ...newForm(), anno: $event })"
-              />
-            </div>
-            <div class="col-12 md:col-4">
-              <label class="block mb-1">Mes</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="newForm().mes"
-                (ngModelChange)="newForm.set({ ...newForm(), mes: $event })"
-              />
-            </div>
-            <div class="col-12">
-              <label class="block mb-1">Variable</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="newForm().variable"
-                (ngModelChange)="
-                  newForm.set({ ...newForm(), variable: $event })
-                "
-              />
-            </div>
-            <div class="col-12 md:col-6">
-              <label class="block mb-1">Valor</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="newForm().valor"
-                (ngModelChange)="newForm.set({ ...newForm(), valor: $event })"
-              />
-            </div>
-            <div class="col-12 md:col-6">
-              <label class="block mb-1">Frecuencia</label>
-              <input
-                pInputText
-                class="w-full"
-                [ngModel]="newForm().frecuencia"
-                (ngModelChange)="
-                  newForm.set({ ...newForm(), frecuencia: $event })
-                "
-              />
-            </div>
-            <div class="col-12 flex justify-content-end gap-2 mt-2">
-              <p-button
-                label="Cancelar"
-                severity="secondary"
-                (onClick)="newDialogVisible.set(false)"
-              ></p-button>
-              <p-button
-                label="Guardar"
-                (onClick)="guardarNuevaVariable()"
-              ></p-button>
-            </div>
-          </div>
-        </p-dialog>
-      </p-tabpanel>
-
-      <p-tabpanel [value]="1">
-        <div class="text-center py-4 text-secondary">
-          <i class="pi pi-info-circle" style="font-size: 1.5rem"></i>
-          <p>Detalle de variables PGIRS disponible próximamente.</p>
-        </div>
-      </p-tabpanel>
-
-      <p-tabpanel [value]="2">
-        <div class="text-center py-4 text-secondary">
-          <i class="pi pi-chart-bar" style="font-size: 1.5rem"></i>
-          <p>Resumen de variables PGIRS disponible próximamente.</p>
-        </div>
-      </p-tabpanel>
-    </p-tabpanels>
-  </p-tabs>
-</p-card>
+      </div>
+    </p-dialog>
+  </div>

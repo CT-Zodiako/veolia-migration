@@ -1,44 +1,74 @@
 <p-toast></p-toast>
 
-<p-card header="Resumen PGIRS">
+<div class="pgirs-header">
+  <h2>Informe Variables PGIRS</h2>
+</div>
+
+<div class="card-section">
   <div class="grid mb-3">
     <div class="col-12 md:col-4">
-      <label class="block mb-1">APS</label>
-      <p-select [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" placeholder="Seleccione APS"
-        [ngModel]="aps()" (ngModelChange)="aps.set($event)" styleClass="w-full"></p-select>
+      <app-aps-selector
+        [selectedAps]="aps()"
+        (selectedApsChange)="onApsChange($event)"
+        label="APS"
+      ></app-aps-selector>
     </div>
-    <div class="col-12 md:col-2 flex align-items-end">
-      <p-button label="Consultar" icon="pi pi-search" (onClick)="consultar()"></p-button>
-    </div>
   </div>
+</div>
 
-  <div *ngIf="loading()" class="text-center py-4">
-    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i><p>Cargando...</p>
-  </div>
+<div class="card-section">
+  <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab [value]="0">Clus</p-tab>
+      <p-tab [value]="1">Barrido</p-tab>
+    </p-tablist>
 
-  <div *ngIf="error()" class="p-error p-3">
-    <i class="pi pi-exclamation-circle"></i> {{ error() }}
-  </div>
+    <p-tabpanels>
+      <p-tabpanel [value]="0">
+        <div *ngIf="loading()" class="text-center py-4">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i><p>Cargando...</p>
+        </div>
 
-  <div *ngIf="!loading() && !error() && data().length === 0" class="text-center py-4 text-secondary">
-    <i class="pi pi-inbox" style="font-size: 2rem"></i><p>Sin datos</p>
-  </div>
+        <div *ngIf="error()" class="p-error p-3">
+          <i class="pi pi-exclamation-circle"></i> {{ error() }}
+        </div>
 
-  <p-table *ngIf="data().length > 0" [value]="data()" [scrollable]="true" scrollHeight="400px"
-    [tableStyle]="{ 'min-width': '50rem' }">
-    <ng-template pTemplate="header"><tr>
-      <th>APS ID</th><th>Nombre</th><th>Año</th><th>Mes</th>
-      <th>Tipo Residuo</th><th>Cantidad (t)</th><th>Frecuencia</th><th>Observación</th>
-    </tr></ng-template>
-    <ng-template pTemplate="body" let-row><tr>
-      <td>{{ row.APSID || row.apsid }}</td>
-      <td>{{ row.APS_NOMBRE || row.aps_nombre }}</td>
-      <td>{{ row.ANNO || row.anno }}</td>
-      <td>{{ row.MES || row.mes }}</td>
-      <td>{{ row.TIPO_RESIDUO || row.tipo_residuo }}</td>
-      <td>{{ row.CANTIDAD_TONELADAS || row.cantidad_toneladas }}</td>
-      <td>{{ row.FRECUENCIA || row.frecuencia }}</td>
-      <td>{{ row.OBSERVACION || row.observacion }}</td>
-    </tr></ng-template>
-  </p-table>
-</p-card>
+        <div *ngIf="!loading() && !error() && data().length === 0" class="text-center py-4 text-secondary">
+          <i class="pi pi-inbox" style="font-size: 2rem"></i><p>Sin datos</p>
+        </div>
+
+        <app-tabla-avanzada
+          *ngIf="data().length > 0"
+          [columnas]="columnasClus"
+          [rows]="data()"
+          storageKey="pgirs-informe-variables-clus"
+          nombreExportar="InformeVariablesPGIRS-Clus"
+          [cellClass]="cellClassMedido"
+        ></app-tabla-avanzada>
+      </p-tabpanel>
+
+      <p-tabpanel [value]="1">
+        <div *ngIf="loadingBarrido()" class="text-center py-4">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i><p>Cargando...</p>
+        </div>
+
+        <div *ngIf="errorBarrido()" class="p-error p-3">
+          <i class="pi pi-exclamation-circle"></i> {{ errorBarrido() }}
+        </div>
+
+        <div *ngIf="!loadingBarrido() && !errorBarrido() && dataBarrido().length === 0" class="text-center py-4 text-secondary">
+          <i class="pi pi-inbox" style="font-size: 2rem"></i><p>Sin datos</p>
+        </div>
+
+        <app-tabla-avanzada
+          *ngIf="dataBarrido().length > 0"
+          [columnas]="columnasBarrido"
+          [rows]="dataBarrido()"
+          storageKey="pgirs-informe-variables-barrido"
+          nombreExportar="InformeVariablesPGIRS-Barrido"
+          [cellClass]="cellClassMedido"
+        ></app-tabla-avanzada>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</div>

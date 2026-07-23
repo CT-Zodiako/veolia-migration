@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 
 interface AnnoOption {
   label: string;
@@ -32,14 +33,26 @@ interface AnnoOption {
     label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--color-text-body); }
   `]
 })
-export class AnnoSelectorComponent {
+export class AnnoSelectorComponent implements OnInit {
   @Input() label = 'Año';
   @Input() placeholder = 'Seleccione año';
   @Input() selectedAnno: number | null = null;
   @Input() rangoInicio = 2020;
   @Input() rangoFin = 2026;
-  
+
   @Output() selectedAnnoChange = new EventEmitter<number | null>();
+
+  constructor(private parametrosState: ParametrosConsultaStateService) {}
+
+  ngOnInit(): void {
+    if (this.selectedAnno === null) {
+      const guardado = this.parametrosState.getAnno();
+      if (guardado !== null) {
+        this.selectedAnno = guardado;
+        this.selectedAnnoChange.emit(guardado);
+      }
+    }
+  }
 
   get annoOptions(): AnnoOption[] {
     const options: AnnoOption[] = [];
@@ -53,5 +66,6 @@ export class AnnoSelectorComponent {
     const anno = value ? Number(value) : null;
     this.selectedAnno = anno;
     this.selectedAnnoChange.emit(anno);
+    this.parametrosState.setAnno(anno);
   }
 }

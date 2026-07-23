@@ -2,6 +2,32 @@
   text-align: right;
 }
 
+/* Clases de estado disponibles para [cellClass] — mismos colores que el
+   legacy PGIRS (definirColor: rojo/azul/verde, y naranja para ingreso manual) */
+.color-red {
+  background-color: rgb(250, 124, 115);
+  color: rgb(3, 3, 3);
+  text-align: right;
+}
+
+.color-green {
+  background-color: rgb(191, 252, 184);
+  color: rgb(0, 0, 0);
+  text-align: right;
+}
+
+.color-blue {
+  background-color: rgb(152, 190, 243);
+  color: rgb(0, 0, 0);
+  text-align: right;
+}
+
+.color-orange {
+  background-color: rgb(236, 167, 16);
+  color: rgb(3, 3, 3);
+  text-align: left;
+}
+
 .tabla-toolbar {
   display: flex;
   align-items: center;

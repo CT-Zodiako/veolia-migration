@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 
 interface MesOption {
   value: number;
@@ -33,12 +34,24 @@ interface MesOption {
     label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--color-text-body); }
   `]
 })
-export class MesSelectorComponent {
+export class MesSelectorComponent implements OnInit {
   @Input() label = 'Mes';
   @Input() placeholder = 'Seleccione mes';
   @Input() selectedMes: number | null = null;
-  
+
   @Output() selectedMesChange = new EventEmitter<number | null>();
+
+  constructor(private parametrosState: ParametrosConsultaStateService) {}
+
+  ngOnInit(): void {
+    if (this.selectedMes === null) {
+      const guardado = this.parametrosState.getMes();
+      if (guardado !== null) {
+        this.selectedMes = guardado;
+        this.selectedMesChange.emit(guardado);
+      }
+    }
+  }
 
   readonly meses: MesOption[] = [
     { value: 1, label: 'Enero' },
@@ -59,5 +72,6 @@ export class MesSelectorComponent {
     const mes = value ? Number(value) : null;
     this.selectedMes = mes;
     this.selectedMesChange.emit(mes);
+    this.parametrosState.setMes(mes);
   }
 }

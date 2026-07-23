@@ -45,7 +45,6 @@ import { DashboardGerencialComponent } from './components/infogerenciales/dashbo
 import { CostoPodaComponent } from './components/infogerenciales/costo-poda.component';
 import { VerificacionApsComponent } from './components/infogerenciales/verificacion-aps.component';
 import { PodaComponent } from './components/infogerenciales/poda.component';
-import { InformePgirsComponent } from './components/infogerenciales/informe-pgirs.component';
 import { PgirsResumenComponent } from './components/pgirs/pgirs-resumen.component';
 import { PgirsInformeVariablesComponent } from './components/pgirs/pgirs-informe-variables.component';
 import { PgirsVariablesComponent } from './components/pgirs/pgirs-variables.component';
@@ -101,9 +100,8 @@ export const routes: Routes = [
       { path: 'gerencial/poda', component: CostoPodaComponent },
       { path: 'gerencial/verificacion', component: VerificacionApsComponent },
       { path: 'gerencial/poda-simple', component: PodaComponent },
-      { path: 'pgirs/informe', component: InformePgirsComponent },
-      { path: 'pgirs/resumen', component: PgirsResumenComponent },
-      { path: 'pgirs/informe-variables', component: PgirsInformeVariablesComponent },
+      { path: 'pgirs/resumen', component: PgirsInformeVariablesComponent },
+      { path: 'pgirs/informe-variables', component: PgirsResumenComponent },
       { path: 'pgirs/variables', component: PgirsVariablesComponent },
       { path: 'cra', component: IndicesCraComponent },
       {

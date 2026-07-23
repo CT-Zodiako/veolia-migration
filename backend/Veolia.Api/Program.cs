@@ -313,6 +313,18 @@ app.UseWhen(
     },
     branch => { branch.UseMiddleware<AuthJwtParityMiddleware>(); });
 
+app.UseWhen(
+    context =>
+    {
+        if (!context.Request.Path.StartsWithSegments("/api/v1/pgirs", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    },
+    branch => { branch.UseMiddleware<AuthJwtParityMiddleware>(); });
+
 app.MapControllers();
 
 app.Run();

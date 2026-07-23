@@ -120,6 +120,7 @@
             </span>
           </span>
         </th>
+        <th *ngIf="accionesTemplate">{{ accionesHeader }}</th>
       </tr>
       <tr>
         <th *ngFor="let col of columnasState.visibles" pFrozenColumn [frozen]="columnasState.esFija(col.field)">
@@ -131,6 +132,7 @@
             [showMenu]="false"
           ></p-columnFilter>
         </th>
+        <th *ngIf="accionesTemplate"></th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-row>
@@ -140,7 +142,20 @@
           pFrozenColumn
           [frozen]="columnasState.esFija(col.field)"
           [class.celda-numero]="col.numero"
-        >{{ row[col.field] }}</td>
+          [ngClass]="cellClass ? cellClass(row, col) : ''"
+        >
+          <ng-container *ngIf="cellTemplate; else celdaDefault"
+            [ngTemplateOutlet]="cellTemplate"
+            [ngTemplateOutletContext]="{ $implicit: row[col.field], row: row, col: col }"
+          ></ng-container>
+          <ng-template #celdaDefault>{{ row[col.field] }}</ng-template>
+        </td>
+        <td *ngIf="accionesTemplate">
+          <ng-container
+            [ngTemplateOutlet]="accionesTemplate"
+            [ngTemplateOutletContext]="{ $implicit: row }"
+          ></ng-container>
+        </td>
       </tr>
     </ng-template>
   </p-table>

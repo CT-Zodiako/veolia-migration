@@ -1,46 +1,77 @@
 import { Component, signal, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
-import { TabsModule } from 'primeng/tabs';
 import { PgirsService } from '../../services/pgirs.service';
-import { ProyeccionesService } from '../../services/proyecciones.service';
-import type { ApsOption } from '../../models/proyecciones.models';
+import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
+import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+
+const PGIRS_VARIABLE_CATALOGO: { codVariable: number; label: string; valorKey: string; frecuenciaKey: string }[] = [
+  { codVariable: 11, label: 'LBL', valorKey: 'lbl', frecuenciaKey: 'lblFrecuencia' },
+  { codVariable: 21, label: 'CESPED', valorKey: 'cesped', frecuenciaKey: 'cespedFrecuencia' },
+  { codVariable: 22, label: 'PODA', valorKey: 'poda', frecuenciaKey: 'podaFrecuencia' },
+  { codVariable: 23, label: 'LAVADO', valorKey: 'lavado', frecuenciaKey: 'lavadoFrecuencia' },
+  { codVariable: 24, label: 'PLAYAS', valorKey: 'playas', frecuenciaKey: 'playasFrecuencia' },
+  { codVariable: 25, label: 'INSCESTAS', valorKey: 'inscestas', frecuenciaKey: 'inscestasFrecuencia' },
+  { codVariable: 26, label: 'MANCESTAS', valorKey: 'mancestas', frecuenciaKey: 'mancestasFrecuencia' }
+];
+
+// Mismas traducciones que el legacy (traducirValor/traducirFrecuencia en tableVariablesPGRIS.vue)
+const FRECUENCIA_LABELS: Record<number, string> = {
+  1: 'Mensual',
+  2: 'Semestral',
+  3: 'Anual'
+};
+
+const FRECUENCIA_OPTIONS = [
+  { value: 1, label: 'Mensual' },
+  { value: 2, label: 'Semestral' },
+  { value: 3, label: 'Anual' }
+];
+
+const COLUMNAS_VARIABLES: TablaColumn[] = [
+  { field: 'APSAID', header: 'APS ID' },
+  { field: 'PGRIANNO', header: 'Año' },
+  { field: 'PGRIMES', header: 'Mes' },
+  { field: 'PGRIVARIABLE', header: 'Variable', filtrable: true },
+  { field: 'PGRIVALOR', header: 'Valor', numero: true },
+  { field: 'PGRIFRECUENCIA', header: 'Frecuencia' },
+  { field: 'PGRIFECHA', header: 'Fecha' },
+  { field: 'PGRIUSUARIO', header: 'Usuario' },
+  { field: 'PGRINGRESO', header: 'Ingreso' }
+];
 
 @Component({
   selector: 'app-pgirs-variables',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, ToastModule, TabsModule, DialogModule, InputTextModule],
+  imports: [CommonModule, FormsModule, ButtonModule, SelectModule, ToastModule, DialogModule, InputTextModule, ParametrosConsultaComponent, TablaAvanzadaComponent],
   providers: [MessageService],
   templateUrl: './pgirs-variables.component.html',
   styleUrls: ['./pgirs-variables.component.css']
 })
 export class PgirsVariablesComponent {
+  readonly variableOptions = PGIRS_VARIABLE_CATALOGO;
+  readonly frecuenciaOptions = FRECUENCIA_OPTIONS;
+  readonly columnasVariables = COLUMNAS_VARIABLES;
+
   aps = signal<number | null>(null);
-  apsOptions = signal<ApsOption[]>([]);
-  anno = signal<number>(new Date().getFullYear());
-  mes = signal<number>(new Date().getMonth() + 1);
-  activeTab = signal(0);
+  anno = signal<number | null>(null);
+  mes = signal<number | null>(null);
 
   consultaLoading = signal(false);
   consultaData = signal<any[]>([]);
   consultaError = signal<string | null>(null);
 
-  editDialogVisible = signal(false);
+  editingKey = signal<string | null>(null);
+  editingValor = signal<number | string>(0);
+  editingFrecuencia = signal<number>(1);
+
   newDialogVisible = signal(false);
-  selectedVariable = signal<any | null>(null);
-  editForm = signal<{ variable: string; valor: string | number; frecuencia: string | number }>({
-    variable: '',
-    valor: '',
-    frecuencia: ''
-  });
   newForm = signal<{ apsId: number | null; anno: number | null; mes: number | null; variable: string; valor: string | number; frecuencia: string | number }>({
     apsId: null,
     anno: null,
@@ -52,20 +83,25 @@ export class PgirsVariablesComponent {
 
   constructor(
     @Inject(PgirsService) private readonly service: PgirsService,
-    @Inject(ProyeccionesService) private readonly proyService: ProyeccionesService,
     private readonly messages: MessageService
-  ) {
-    this.proyService.listarAps().subscribe({
-      next: (data: any) => this.apsOptions.set(data || [])
-    });
+  ) {}
+
+  traducirVariable(codVariable: number | string | null | undefined): string {
+    const codigo = Number(codVariable);
+    return this.variableOptions.find(v => v.codVariable === codigo)?.label ?? String(codVariable ?? '0');
+  }
+
+  traducirFrecuencia(frecuencia: number | string | null | undefined): string {
+    const codigo = Number(frecuencia);
+    return FRECUENCIA_LABELS[codigo] ?? String(frecuencia ?? '0');
   }
 
   consultar(): void {
     const apsId = this.aps();
     const year = this.anno();
     const month = this.mes();
-    if (!apsId) {
-      this.messages.add({ severity: 'warn', summary: 'PGIRS', detail: 'Seleccione un APS' });
+    if (!apsId || !year || !month) {
+      this.messages.add({ severity: 'warn', summary: 'PGIRS', detail: 'Seleccione APS, año y mes' });
       return;
     }
     this.consultaLoading.set(true);
@@ -82,32 +118,38 @@ export class PgirsVariablesComponent {
     });
   }
 
-  abrirEditar(row: any): void {
-    this.selectedVariable.set(row);
-    this.editForm.set({
-      variable: row.NOMBRE_VARIABLE || row.nombre_variable || '',
-      valor: row.PGRIVALOR || row.pgrivalor || '',
-      frecuencia: row.PGRIFRECUENCIA || row.pgrifrecuencia || ''
-    });
-    this.editDialogVisible.set(true);
+  rowKey(row: any): string {
+    const apsId = row.APSAID ?? row.apsaid;
+    const anno = row.PGRIANNO ?? row.pgrianno;
+    const mes = row.PGRIMES ?? row.pgrimes;
+    const codVariable = row.PGRIVARIABLE ?? row.pgrivariable;
+    return `${apsId}-${anno}-${mes}-${codVariable}`;
   }
 
-  guardarEdicion(): void {
-    const selected = this.selectedVariable();
-    const form = this.editForm();
-    if (!selected) return;
+  iniciarEdicionFila(row: any): void {
+    this.editingKey.set(this.rowKey(row));
+    this.editingValor.set(row.PGRIVALOR ?? row.pgrivalor ?? 0);
+    this.editingFrecuencia.set(Number(row.PGRIFRECUENCIA ?? row.pgrifrecuencia ?? 1));
+  }
 
+  cancelarEdicionFila(): void {
+    this.editingKey.set(null);
+  }
+
+  guardarFila(row: any): void {
     const payload = {
-      ...selected,
-      NOMBRE_VARIABLE: form.variable,
-      PGRIVALOR: form.valor,
-      PGRIFRECUENCIA: form.frecuencia
+      apsId: row.APSAID ?? row.apsaid,
+      anno: row.PGRIANNO ?? row.pgrianno,
+      mes: row.PGRIMES ?? row.pgrimes,
+      codVariable: row.PGRIVARIABLE ?? row.pgrivariable,
+      valor: Number(this.editingValor()),
+      frecuencia: String(this.editingFrecuencia())
     };
 
     this.service.actualizarVariable([payload]).subscribe({
       next: () => {
         this.messages.add({ severity: 'success', summary: 'PGIRS', detail: 'Variable actualizada correctamente' });
-        this.editDialogVisible.set(false);
+        this.editingKey.set(null);
         this.consultar();
       },
       error: () => {
@@ -130,14 +172,26 @@ export class PgirsVariablesComponent {
 
   guardarNuevaVariable(): void {
     const form = this.newForm();
-    this.service.guardarVariables({
+    if (!form.apsId || !form.anno || !form.mes || !form.variable || form.valor === '' || form.valor === null) {
+      this.messages.add({ severity: 'warn', summary: 'PGIRS', detail: 'Complete todos los campos' });
+      return;
+    }
+
+    const catalogo = this.variableOptions.find(v => v.label === form.variable);
+    if (!catalogo) {
+      this.messages.add({ severity: 'error', summary: 'PGIRS', detail: 'Variable no reconocida' });
+      return;
+    }
+
+    const payload: Record<string, unknown> = {
       apsId: form.apsId,
       anno: form.anno,
       mes: form.mes,
-      variable: form.variable,
-      valor: form.valor,
-      frecuencia: form.frecuencia
-    }).subscribe({
+      [catalogo.valorKey]: Number(form.valor),
+      [catalogo.frecuenciaKey]: String(form.frecuencia)
+    };
+
+    this.service.guardarVariables(payload).subscribe({
       next: () => {
         this.messages.add({ severity: 'success', summary: 'PGIRS', detail: 'Variable creada correctamente' });
         this.newDialogVisible.set(false);
@@ -147,14 +201,5 @@ export class PgirsVariablesComponent {
         this.messages.add({ severity: 'error', summary: 'PGIRS', detail: 'No se pudo crear la variable' });
       }
     });
-  }
-
-  onTabChange(val: any): void {
-    this.activeTab.set(Number(val));
-  }
-
-  eliminarVariable(row: any): void {
-    const variable = row?.NOMBRE_VARIABLE || row?.nombre_variable || 'seleccionada';
-    this.messages.add({ severity: 'warn', summary: 'PGIRS', detail: `Eliminar ${variable} pendiente de implementación.` });
   }
 }

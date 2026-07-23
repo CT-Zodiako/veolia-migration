@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -192,6 +192,18 @@ export class TablaAvanzadaComponent implements OnInit {
   @Input() nombreExportar = 'exportar';
   @Input() scrollHeight = '390px';
   @Input() filasPorPagina = 10;
+
+  /** Si se pasa, reemplaza el contenido default (`{{ row[col.field] }}`) de cada celda.
+   *  Contexto: `$implicit` = valor de la celda, `row` = fila completa, `col` = columna actual. */
+  @Input() cellTemplate?: TemplateRef<{ $implicit: unknown; row: Record<string, unknown>; col: TablaColumn }>;
+
+  /** Clase CSS adicional por celda (ej. resaltado de color según el dato de la fila). */
+  @Input() cellClass?: (row: Record<string, unknown>, col: TablaColumn) => string;
+
+  /** Si se pasa, agrega una columna final de acciones renderizando este template por fila.
+   *  Contexto: `$implicit` = fila completa. */
+  @Input() accionesTemplate?: TemplateRef<{ $implicit: Record<string, unknown> }>;
+  @Input() accionesHeader = 'Acciones';
 
   columnasState!: ColumnasState;
   compacta = false;

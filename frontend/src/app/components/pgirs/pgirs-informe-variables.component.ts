@@ -1,47 +1,56 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PgirsService } from '../../services/pgirs.service';
-import { ProyeccionesService } from '../../services/proyecciones.service';
-import { ApsOption } from '../../models/proyecciones.models';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
+import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+
+const COLUMNAS_RESUMEN: TablaColumn[] = [
+  { field: 'APSA_NOMAPS', header: 'APS', filtrable: true },
+  { field: 'PERIODO', header: 'Ingreso', filtrable: true },
+  { field: 'PGRINGRESO', header: 'Tipo Ingreso', filtrable: true },
+  { field: 'PGRIFECHA', header: 'Fecha Ingreso' },
+  { field: 'SISU_CORREO', header: 'Usuario' }
+];
 
 @Component({
   selector: 'app-pgirs-informe-variables',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, ToastModule],
+  imports: [CommonModule, FormsModule, ToastModule, ApsSelectorComponent, TablaAvanzadaComponent],
   providers: [MessageService],
   templateUrl: './pgirs-informe-variables.component.html',
   styleUrls: ['./pgirs-informe-variables.component.css']
 })
 export class PgirsInformeVariablesComponent {
+  readonly columnasResumen = COLUMNAS_RESUMEN;
+
   aps = signal<number | null>(null);
-  apsOptions = signal<ApsOption[]>([]);
   loading = signal(false);
   data = signal<any[]>([]);
   error = signal<string | null>(null);
 
-  constructor(
-    private readonly service: PgirsService,
-    private readonly proyService: ProyeccionesService,
-    private readonly messages: MessageService
-  ) {
-    this.proyService.listarAps().subscribe({
-      next: (data: any) => this.apsOptions.set(data || [])
-    });
+  constructor(private readonly service: PgirsService) {}
+
+  // Mismo criterio que definirColor() en el legacy ResumenPgirs.vue
+  cellClassResumen = (row: Record<string, unknown>, col: TablaColumn): string => {
+    if (col.field !== 'PGRINGRESO') return '';
+    const value = (row['PGRINGRESO'] ?? row['pgringreso']) as string;
+    return value === 'MANUAL' ? 'color-orange' : '';
+  };
+
+  onApsChange(apsId: number | null): void {
+    this.aps.set(apsId);
+    if (apsId) {
+      this.consultar();
+    }
   }
 
   consultar(): void {
     const apsId = this.aps();
-    if (!apsId) {
-      this.messages.add({ severity: 'warn', summary: 'PGIRS', detail: 'Seleccione un APS' });
-      return;
-    }
+    if (!apsId) return;
+
     this.loading.set(true);
     this.error.set(null);
     this.service.getInformeVariables(apsId).subscribe({

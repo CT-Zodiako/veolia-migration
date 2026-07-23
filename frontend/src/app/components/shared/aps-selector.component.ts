@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AuthService, ApsItem } from '../../services/auth.service';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 
 @Component({
   selector: 'app-aps-selector',
@@ -48,10 +49,18 @@ export class ApsSelectorComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private parametrosState: ParametrosConsultaStateService
   ) {}
 
   ngOnInit(): void {
+    if (this.selectedAps === null) {
+      const guardado = this.parametrosState.getAps();
+      if (guardado !== null) {
+        this.selectedAps = guardado;
+        this.selectedApsChange.emit(guardado);
+      }
+    }
     this.loadAps();
   }
 
@@ -91,5 +100,6 @@ export class ApsSelectorComponent implements OnInit {
     const apsId = value ? Number(value) : null;
     this.selectedAps = apsId;
     this.selectedApsChange.emit(apsId);
+    this.parametrosState.setAps(apsId);
   }
 }
