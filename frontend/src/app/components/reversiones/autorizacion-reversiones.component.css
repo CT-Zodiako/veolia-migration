@@ -1,0 +1,60 @@
+.reversion-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.reversion-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.reversion-header h2 {
+  color: var(--color-brand-strong);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.error-message {
+  background: var(--color-bg-danger-soft);
+  border: 1px solid var(--color-border-danger-soft);
+  color: var(--color-brand-accent);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.success-message {
+  background: var(--color-bg-success-soft);
+  border: 1px solid var(--color-border-success-soft);
+  color: var(--color-text-success);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: var(--color-text-body);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

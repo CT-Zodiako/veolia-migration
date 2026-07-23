@@ -1,0 +1,8 @@
+.filter-row th {
+  padding: 4px 8px;
+}
+
+.column-filter-input {
+  width: 100%;
+  box-sizing: border-box;
+}

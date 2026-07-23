@@ -9,7 +9,8 @@ import { ReversionesService } from '../../services/reversiones.service';
   selector: 'app-autorizacion-reversiones',
   standalone: true,
   imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ParametrosConsultaComponent],
-  templateUrl: './autorizacion-reversiones.component.html'
+  templateUrl: './autorizacion-reversiones.component.html',
+  styleUrl: './autorizacion-reversiones.component.css'
 })
 export class AutorizacionReversionesComponent implements OnInit {
   aps: number | null = null;

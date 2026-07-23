@@ -1,4 +1,4 @@
-<p-card header="Detallado Autorización Reversiones">
+<p-card header="Histórico de Reversiones">
   <p-table
     [value]="filteredRows"
     [loading]="loading"
@@ -8,14 +8,18 @@
   >
     <ng-template pTemplate="header">
       <tr>
-        <th>APS</th>
+        <th>ID</th>
+        <th>APS ID</th>
+        <th>APS Nombre</th>
         <th>Año</th>
         <th>Mes</th>
-        <th>Descripción</th>
-        <th>Fecha creación</th>
+        <th>Motivo</th>
+        <th>Fecha</th>
         <th>Usuario</th>
       </tr>
       <tr class="filter-row">
+        <th></th>
+        <th></th>
         <th>
           <input pInputText type="text" class="column-filter-input" placeholder="Buscar"
             (input)="apsFilter = $any($event.target).value" />
@@ -41,12 +45,14 @@
     </ng-template>
     <ng-template pTemplate="body" let-row>
       <tr>
-        <td>{{ row['APSA_NOMAPS'] }}</td>
-        <td>{{ row['AUTO_ANNO'] }}</td>
-        <td>{{ row['AUTO_MES'] }}</td>
-        <td>{{ row['AUTO_DESCRIPCION'] }}</td>
-        <td>{{ row['AUTO_FECCREA'] | date: 'dd/MM/yyyy' }}</td>
-        <td>{{ row['SISU_CORREO'] }}</td>
+        <td>{{ row.id }}</td>
+        <td>{{ row.aps }}</td>
+        <td>{{ row.nombreAps }}</td>
+        <td>{{ row.anno }}</td>
+        <td>{{ row.mes }}</td>
+        <td>{{ row.motivo }}</td>
+        <td>{{ row.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ row.usuario }}</td>
       </tr>
     </ng-template>
   </p-table>

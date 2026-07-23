@@ -1,0 +1,37 @@
+<div class="reversion-container">
+  <div class="reversion-header">
+    <h2>Ejecutar Reversión</h2>
+  </div>
+
+  <div class="warning-message">
+    <i class="pi pi-exclamation-triangle"></i>
+    Esta operación es destructiva: elimina y resguarda la información certificada del período seleccionado. No se puede deshacer desde la interfaz.
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <div class="card-section">
+    <div class="filters">
+      <div class="form-group"><app-aps-selector [(selectedAps)]="aps"></app-aps-selector></div>
+      <div class="form-group"><app-anno-selector [(selectedAnno)]="anno"></app-anno-selector></div>
+      <div class="form-group"><app-mes-selector [(selectedMes)]="mes"></app-mes-selector></div>
+    </div>
+  </div>
+
+  <div class="card-section">
+    <div class="form-group">
+      <label>Motivo</label>
+      <textarea pTextarea [(ngModel)]="motivo" name="motivo" rows="4" required style="width: 100%"></textarea>
+    </div>
+
+    <p-button
+      icon="pi pi-replay"
+      label="{{ loading ? 'Procesando...' : 'Ejecutar Reversión' }}"
+      severity="danger"
+      [loading]="loading"
+      (click)="ejecutar()"
+      styleClass="w-full"
+    ></p-button>
+  </div>
+</div>

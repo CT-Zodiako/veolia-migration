@@ -7,14 +7,13 @@ using Veolia.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Sin esto, System.Text.Json aplica camelCase por defecto y mangla los nombres
-// de columna Oracle en mayúsculas (ej. "RELL_ID" -> "relL_ID"), rompiendo el
-// binding con el frontend, que espera el nombre exacto de columna.
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = null;
-    });
+// IMPORTANTE: no tocar PropertyNamingPolicy acá. La gran mayoría de los
+// endpoints devuelven filas dinámicas de Dapper (columna Oracle preservada
+// tal cual, no afectadas por esta policy) o DTOs PascalCase pensados para el
+// camelCase por defecto que el frontend ya consume. Los pocos DTOs que
+// exponen el nombre de columna Oracle en mayúsculas (ej. RellenoResponse)
+// fijan su propio contrato con [JsonPropertyName] en vez de cambiar esto acá.
+builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>
 {

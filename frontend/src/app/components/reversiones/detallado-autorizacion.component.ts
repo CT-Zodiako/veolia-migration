@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ReversionDetalleRow, ReversionesService } from '../../services/reversiones.service';
 
@@ -7,24 +7,34 @@ import { ReversionDetalleRow, ReversionesService } from '../../services/reversio
   selector: 'app-detallado-autorizacion',
   standalone: true,
   imports: [CommonModule, ...CommonPrimeNgModules],
-  templateUrl: './detallado-autorizacion.component.html'
+  providers: [DatePipe],
+  templateUrl: './detallado-autorizacion.component.html',
+  styleUrl: './detallado-autorizacion.component.css'
 })
 export class DetalladoAutorizacionComponent implements OnInit {
   rows: ReversionDetalleRow[] = [];
   loading = false;
   error = '';
 
-  readonly columns = [
-    'APSA_NOMAPS',
-    'AUTO_ANNO',
-    'AUTO_MES',
-    'AUTO_DESCRIPCION',
-    'AUTO_FECCREA',
-    'SISU_CORREO'
-  ];
+  apsFilter = '';
+  annoFilter = '';
+  mesFilter = '';
+  fechaFilter = '';
+  usuarioFilter = '';
+
+  get filteredRows(): ReversionDetalleRow[] {
+    return this.rows.filter(row =>
+      this.coincide(row['APSA_NOMAPS'], this.apsFilter) &&
+      this.coincide(row['AUTO_ANNO'], this.annoFilter) &&
+      this.coincide(row['AUTO_MES'], this.mesFilter) &&
+      this.coincide(this.datePipe.transform(row['AUTO_FECCREA'] as string, 'dd/MM/yyyy'), this.fechaFilter) &&
+      this.coincide(row['SISU_CORREO'], this.usuarioFilter)
+    );
+  }
 
   constructor(
     private readonly reversionesService: ReversionesService,
+    private readonly datePipe: DatePipe,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -48,5 +58,11 @@ export class DetalladoAutorizacionComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private coincide(valor: unknown, filtro: string): boolean {
+    const term = filtro.trim().toLowerCase();
+    if (!term) return true;
+    return String(valor ?? '').toLowerCase().includes(term);
   }
 }

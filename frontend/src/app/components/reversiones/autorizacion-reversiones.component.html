@@ -1,5 +1,12 @@
-<p-card header="Autorización Reversiones">
-  <div class="p-fluid">
+<div class="reversion-container">
+  <div class="reversion-header">
+    <h2>Autorización Reversiones</h2>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <div class="card-section">
     <app-parametros-consulta
       [wrapInCard]="false"
       [mostrarBoton]="false"
@@ -7,27 +14,20 @@
       [(anno)]="anno"
       [(mes)]="mes"
     ></app-parametros-consulta>
+  </div>
 
-    <div class="field" style="margin-bottom: 12px;">
-      <label for="descripcion">Descripción</label>
-      <textarea
-        id="descripcion"
-        pInputTextarea
-        [(ngModel)]="descripcion"
-        rows="4"
-        [autoResize]="true"
-        style="width: 100%;">
-      </textarea>
+  <div class="card-section">
+    <div class="form-group">
+      <label>Descripción</label>
+      <textarea pTextarea [(ngModel)]="descripcion" name="descripcion" rows="4" required style="width: 100%"></textarea>
     </div>
 
     <p-button
-      label="Autorizar"
+      icon="pi pi-check"
+      label="{{ loading ? 'Procesando...' : 'Autorizar' }}"
       [loading]="loading"
-      [disabled]="loading"
-      (onClick)="autorizar()">
-    </p-button>
-
-    <p *ngIf="success" style="color: var(--color-text-success); margin-top: 12px;">{{ success }}</p>
-    <p *ngIf="error" style="color: var(--color-brand-accent); margin-top: 12px;">{{ error }}</p>
+      (click)="autorizar()"
+      styleClass="w-full"
+    ></p-button>
   </div>
-</p-card>
+</div>

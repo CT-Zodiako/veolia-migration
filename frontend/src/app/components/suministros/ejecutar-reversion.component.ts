@@ -1,45 +1,26 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ConfirmationService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { SuministrosService } from '../../services/suministros.service';
+import { ValidacionesService } from '../../services/validaciones.service';
 
 @Component({
   selector: 'app-ejecutar-reversion',
   standalone: true,
   imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ApsSelectorComponent, AnnoSelectorComponent, MesSelectorComponent],
-  template: `
-    <div class="card">
-      <h3>Ejecutar Reversión</h3>
-      <div class="grid">
-        <div class="col-12 md:col-4"><app-aps-selector [(selectedAps)]="aps"></app-aps-selector></div>
-        <div class="col-12 md:col-4"><app-anno-selector [(selectedAnno)]="anno"></app-anno-selector></div>
-        <div class="col-12 md:col-4"><app-mes-selector [(selectedMes)]="mes"></app-mes-selector></div>
-      </div>
-      <div class="field mt-3">
-        <label>Motivo</label>
-        <textarea pTextarea rows="4" class="w-full" [(ngModel)]="motivo"></textarea>
-      </div>
-      <div class="field-checkbox mt-2">
-        <p-checkbox [(ngModel)]="confirmado" [binary]="true" inputId="confirmReversion"></p-checkbox>
-        <label for="confirmReversion" class="ml-2">Confirmo que esta reversión es destructiva</label>
-      </div>
-      <button pButton type="button" [disabled]="loading" (click)="ejecutar()" label="Ejecutar"></button>
-
-      <p class="mt-2" *ngIf="success" style="color: var(--color-text-success)">{{ success }}</p>
-      <p class="mt-2" *ngIf="error" style="color: var(--color-brand-medium)">{{ error }}</p>
-    </div>
-  `
+  templateUrl: './ejecutar-reversion.component.html',
+  styleUrl: './ejecutar-reversion.component.css'
 })
-export class EjecutarReversionComponent implements OnInit {
+export class EjecutarReversionComponent {
   aps: number | null = null;
   anno: number | null = null;
   mes: number | null = null;
   motivo = '';
-  confirmado = false;
 
   loading = false;
   success = '';
@@ -47,10 +28,10 @@ export class EjecutarReversionComponent implements OnInit {
 
   constructor(
     private readonly suministrosService: SuministrosService,
+    private readonly validacionesService: ValidacionesService,
+    private readonly confirmationService: ConfirmationService,
     private readonly cdr: ChangeDetectorRef
-  ) {}
-
-  ngOnInit(): void {
+  ) {
     const date = new Date();
     date.setMonth(date.getMonth() - 1);
     this.anno = date.getFullYear();
@@ -58,21 +39,61 @@ export class EjecutarReversionComponent implements OnInit {
   }
 
   ejecutar(): void {
-    if (this.aps === null || this.anno === null || this.mes === null || !this.motivo.trim() || !this.confirmado) {
-      this.error = 'Debe seleccionar APS, año, mes, motivo y confirmar la reversión';
+    if (this.aps === null || this.anno === null || this.mes === null || !this.motivo.trim()) {
+      this.error = 'Debe seleccionar APS, año, mes y motivo';
       this.success = '';
       this.cdr.detectChanges();
       return;
     }
 
-    this.loading = true;
     this.error = '';
     this.success = '';
+    this.loading = true;
+    this.cdr.detectChanges();
+
+    // Paridad AS-IS: antes de reversar, el sistema viejo exige que el gate
+    // fauco_integracion devuelva OK; si no, bloquea la reversión.
+    this.validacionesService.faucoIntegracion({ aps: this.aps, anno: this.anno, mes: this.mes }).subscribe({
+      next: (validacion) => {
+        if (!validacion.ok) {
+          this.loading = false;
+          this.error = validacion.message || 'El período no está en condiciones de ser reversado';
+          this.cdr.detectChanges();
+          return;
+        }
+        this.loading = false;
+        this.cdr.detectChanges();
+        this.confirmarYEjecutar();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.message || err?.error?.data || 'Error al validar el período';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private confirmarYEjecutar(): void {
+    this.confirmationService.confirm({
+      header: 'Ejecutar reversión',
+      message: `Esta acción es DESTRUCTIVA: va a borrar y resguardar la información certificada de la APS seleccionada para ${this.mes}/${this.anno}. ¿Confirmás que querés continuar?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Reversar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => this.ejecutarReversion()
+    });
+  }
+
+  private ejecutarReversion(): void {
+    this.loading = true;
+    this.cdr.detectChanges();
 
     this.suministrosService.setReversion({
-      aps: this.aps,
-      anno: this.anno,
-      mes: this.mes,
+      aps: this.aps!,
+      anno: this.anno!,
+      mes: this.mes!,
       motivo: this.motivo.trim()
     }).subscribe({
       next: (data) => {
@@ -80,7 +101,6 @@ export class EjecutarReversionComponent implements OnInit {
         if (data?.ok) {
           this.success = `Reversión ejecutada correctamente (ID: ${data.reversionId ?? 'N/A'})`;
           this.motivo = '';
-          this.confirmado = false;
         } else {
           this.error = data?.message || 'No fue posible ejecutar la reversión';
         }

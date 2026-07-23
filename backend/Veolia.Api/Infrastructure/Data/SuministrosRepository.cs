@@ -53,7 +53,7 @@ FROM AUCO_REVERSIONES ar
 JOIN AUGE_SISUSUARIO su ON su.SISU_ID = ar.USUA_USUA
 JOIN AUCO_APSASEO aa ON aa.APSA_ID = ar.APSA_ID
 WHERE su.SISU_ID NOT IN (9,4)
-ORDER BY ar.REVE_ANNO DESC, ar.REVE_MES DESC";
+ORDER BY ar.REVE_ANNO DESC, ar.REVE_MES DESC, aa.APSA_NOMAPS";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<ReversionHistoryItem>(new CommandDefinition(sql, cancellationToken: cancellationToken));

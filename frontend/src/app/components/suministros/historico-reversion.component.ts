@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ReversionHistoryItem, SuministrosService } from '../../services/suministros.service';
 
@@ -7,39 +7,34 @@ import { ReversionHistoryItem, SuministrosService } from '../../services/suminis
   selector: 'app-historico-reversion',
   standalone: true,
   imports: [CommonModule, ...CommonPrimeNgModules],
-  template: `
-    <div class="card">
-      <h3>Histórico Reversiones</h3>
-      <p-table [value]="rows" [loading]="loading" [paginator]="true" [rows]="10" responsiveLayout="scroll">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>ID</th><th>APS</th><th>Año</th><th>Mes</th><th>Motivo</th><th>Fecha</th><th>Usuario</th><th>APS Nombre</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-row>
-          <tr>
-            <td>{{ row.id }}</td>
-            <td>{{ row.aps }}</td>
-            <td>{{ row.anno }}</td>
-            <td>{{ row.mes }}</td>
-            <td>{{ row.motivo }}</td>
-            <td>{{ row.fecha }}</td>
-            <td>{{ row.usuario }}</td>
-            <td>{{ row.nombreAps }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-      <p class="mt-2" *ngIf="error" style="color: var(--color-brand-medium)">{{ error }}</p>
-    </div>
-  `
+  providers: [DatePipe],
+  templateUrl: './historico-reversion.component.html',
+  styleUrl: './historico-reversion.component.css'
 })
 export class HistoricoReversionComponent implements OnInit {
   rows: ReversionHistoryItem[] = [];
   loading = false;
   error = '';
 
+  apsFilter = '';
+  annoFilter = '';
+  mesFilter = '';
+  fechaFilter = '';
+  usuarioFilter = '';
+
+  get filteredRows(): ReversionHistoryItem[] {
+    return this.rows.filter(row =>
+      this.coincide(row.nombreAps, this.apsFilter) &&
+      this.coincide(row.anno, this.annoFilter) &&
+      this.coincide(row.mes, this.mesFilter) &&
+      this.coincide(this.datePipe.transform(row.fecha, 'dd/MM/yyyy HH:mm'), this.fechaFilter) &&
+      this.coincide(row.usuario, this.usuarioFilter)
+    );
+  }
+
   constructor(
     private readonly suministrosService: SuministrosService,
+    private readonly datePipe: DatePipe,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -63,5 +58,11 @@ export class HistoricoReversionComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private coincide(valor: unknown, filtro: string): boolean {
+    const term = filtro.trim().toLowerCase();
+    if (!term) return true;
+    return String(valor ?? '').toLowerCase().includes(term);
   }
 }
