@@ -418,11 +418,11 @@ internal sealed class StubLineaTiempoRepository : ILineaTiempoRepository
     {
         if (proyId == 9999) return Task.FromResult<IReadOnlyList<LineaTiempoRow>>([]);
         return Task.FromResult<IReadOnlyList<LineaTiempoRow>>([
-            new LineaTiempoRow { DetlId = 1, ProyId = proyId, ApsaId = 1, Anno = 2025, Mes = 1, Deltipc = 5.2m, Deltipcc = 4.8m }
+            new LineaTiempoRow { ProyId = proyId, ApsaId = 1, Anno = 2025, Mes = 1, Deltipc = 5.2m, Deltipcc = 4.8m }
         ]);
     }
 
-    public Task<MutationResponse> UpsertAsync(LineaTiempoUpsertRequest request, CancellationToken cancellationToken)
+    public Task<MutationResponse> UpsertAsync(LineaTiempoUpsertRequest request, long usuarioId, CancellationToken cancellationToken)
         => Task.FromResult(new MutationResponse { Success = true, Message = "Línea de tiempo guardada", Id = request.ProyId });
 }
 

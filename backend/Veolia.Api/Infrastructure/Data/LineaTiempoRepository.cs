@@ -8,12 +8,14 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
 {
     public async Task<IReadOnlyList<LineaTiempoRow>> GetByProyeccionAsync(long proyId, CancellationToken cancellationToken)
     {
+        // Legacy real (proyeccionescontroller.consultan) es "SELECT * FROM PROY_DETLINEATIEMPO
+        // WHERE PROYID = :1 ORDER BY PROYANNO, PROYMES" -- la tabla no tiene ID sustituto
+        // (DETL_ID no existe); la clave natural es (PROYID, APS, PROYANNO, PROYMES).
         const string sql = @"
-            SELECT DETL_ID AS DetlId,
-                   PROYID AS ProyId,
-                   APSA_ID AS ApsaId,
-                   ANNO AS Anno,
-                   MES AS Mes,
+            SELECT PROYID AS ProyId,
+                   APS AS ApsaId,
+                   PROYANNO AS Anno,
+                   PROYMES AS Mes,
                    DELTIPC AS Deltipc,
                    DELTIPCC AS Deltipcc,
                    DELTSMLV AS Deltsmlv,
@@ -23,7 +25,7 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
                    DELTIPCCS AS Deltipccs
               FROM PROY_DETLINEATIEMPO
              WHERE PROYID = :1
-             ORDER BY ANNO, MES";
+             ORDER BY PROYANNO, PROYMES";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", proyId);
@@ -33,7 +35,7 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
         return rows.ToList();
     }
 
-    public async Task<MutationResponse> UpsertAsync(LineaTiempoUpsertRequest request, CancellationToken cancellationToken)
+    public async Task<MutationResponse> UpsertAsync(LineaTiempoUpsertRequest request, long usuarioId, CancellationToken cancellationToken)
     {
         using var connection = await OpenConnectionAsync(cancellationToken);
         using var transaction = connection.BeginTransaction();
@@ -44,26 +46,22 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
             {
                 const string insertSql = @"
                     INSERT INTO PROY_DETLINEATIEMPO
-                    (DETL_ID, PROYID, APSA_ID, ANNO, MES, DELTIPC, DELTIPCC, DELTSMLV, DELTIOEXP, DELTFACPRODUC, DELTINDIPCC, DELTIPCCS)
-                    VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12)";
+                    (PROYID, APS, PROYANNO, PROYMES, DELTIPC, DELTIPCC, DELTSMLV, DELTIOEXP, DELTFACPRODUC, DELTFECHA, USUARIO, DELTINDIPCC, DELTIPCCS)
+                    VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, SYSDATE, :10, :11, :12)";
 
                 foreach (var row in request.Rows)
                 {
-                    var detlId = row.DetlId > 0
-                        ? row.DetlId
-                        : await GetNextIdAsync(connection, transaction, "PROY_DETLINEATIEMPO", "DETL_ID", cancellationToken);
-
                     var parameters = new DynamicParameters();
-                    parameters.Add("1", detlId);
-                    parameters.Add("2", request.ProyId);
-                    parameters.Add("3", request.ApsaId);
-                    parameters.Add("4", row.Anno);
-                    parameters.Add("5", row.Mes);
-                    parameters.Add("6", row.Deltipc);
-                    parameters.Add("7", row.Deltipcc);
-                    parameters.Add("8", row.Deltsmlv);
-                    parameters.Add("9", row.Deltioexp);
-                    parameters.Add("10", row.Deltfacproduc);
+                    parameters.Add("1", request.ProyId);
+                    parameters.Add("2", request.ApsaId);
+                    parameters.Add("3", row.Anno);
+                    parameters.Add("4", row.Mes);
+                    parameters.Add("5", row.Deltipc);
+                    parameters.Add("6", row.Deltipcc);
+                    parameters.Add("7", row.Deltsmlv);
+                    parameters.Add("8", row.Deltioexp);
+                    parameters.Add("9", row.Deltfacproduc);
+                    parameters.Add("10", usuarioId);
                     parameters.Add("11", row.Deltindipcc);
                     parameters.Add("12", row.Deltipccs);
 
@@ -79,9 +77,14 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
                            DELTSMLV = :3,
                            DELTIOEXP = :4,
                            DELTFACPRODUC = :5,
-                           DELTINDIPCC = :6,
-                           DELTIPCCS = :7
-                     WHERE DETL_ID = :8";
+                           DELTFECHA = SYSDATE,
+                           USUARIO = :6,
+                           DELTINDIPCC = :7,
+                           DELTIPCCS = :8
+                     WHERE PROYID = :9
+                       AND APS = :10
+                       AND PROYANNO = :11
+                       AND PROYMES = :12";
 
                 foreach (var row in request.Rows)
                 {
@@ -91,9 +94,13 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
                     parameters.Add("3", row.Deltsmlv);
                     parameters.Add("4", row.Deltioexp);
                     parameters.Add("5", row.Deltfacproduc);
-                    parameters.Add("6", row.Deltindipcc);
-                    parameters.Add("7", row.Deltipccs);
-                    parameters.Add("8", row.DetlId);
+                    parameters.Add("6", usuarioId);
+                    parameters.Add("7", row.Deltindipcc);
+                    parameters.Add("8", row.Deltipccs);
+                    parameters.Add("9", request.ProyId);
+                    parameters.Add("10", request.ApsaId);
+                    parameters.Add("11", row.Anno);
+                    parameters.Add("12", row.Mes);
 
                     await connection.ExecuteAsync(new CommandDefinition(updateSql, parameters, transaction: transaction, cancellationToken: cancellationToken));
                 }
@@ -107,12 +114,6 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
             transaction.Rollback();
             return new MutationResponse { Success = false, Message = $"Error al guardar línea de tiempo: {ex.Message}", Id = request.ProyId };
         }
-    }
-
-    private static async Task<long> GetNextIdAsync(System.Data.IDbConnection connection, System.Data.IDbTransaction transaction, string tableName, string columnName, CancellationToken cancellationToken)
-    {
-        var sql = $"SELECT NVL(MAX({columnName}), 0) + 1 FROM {tableName}";
-        return await connection.ExecuteScalarAsync<long>(new CommandDefinition(sql, transaction: transaction, cancellationToken: cancellationToken));
     }
 
     private async Task<System.Data.IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)

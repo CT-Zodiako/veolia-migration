@@ -46,7 +46,6 @@ export interface ProyeccionCreate {
 export type ProyeccionUpdate = ProyeccionCreate;
 
 export interface LineaTiempoRow {
-  detlId?: number;
   proyId: number;
   apsaId: number;
   anno: number;

@@ -162,7 +162,7 @@ public sealed class ProyeccionesController(
     [HttpPost("registrarlineatiempo")]
     public async Task<IActionResult> RegistrarLineaTiempo([FromBody] LineaTiempoUpsertRequest request, CancellationToken cancellationToken)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
         if (request.ProyId <= 0)
@@ -173,7 +173,7 @@ public sealed class ProyeccionesController(
 
         try
         {
-            var result = await lineaTiempoRepository.UpsertAsync(request, cancellationToken);
+            var result = await lineaTiempoRepository.UpsertAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
         }
         catch (Exception ex)
