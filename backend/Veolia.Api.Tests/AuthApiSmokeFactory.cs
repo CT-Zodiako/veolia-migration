@@ -10,6 +10,7 @@ using Veolia.Api.Contracts.Proyecciones;
 using Veolia.Api.Infrastructure.Aps;
 using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Infrastructure.Sui853;
+using Veolia.Api.Services;
 
 namespace Veolia.Api.Tests;
 
@@ -45,6 +46,9 @@ public sealed class AuthApiSmokeFactory : WebApplicationFactory<Program>
 
             services.RemoveAll<ICrecimientoRepository>();
             services.AddSingleton<ICrecimientoRepository>(new StubCrecimientoRepository());
+
+            services.RemoveAll<ICrecimientoDriveService>();
+            services.AddSingleton<ICrecimientoDriveService>(new StubCrecimientoDriveService());
 
             services.RemoveAll<ISubcontProyRepository>();
             services.AddSingleton<ISubcontProyRepository>(new StubSubcontProyRepository());
@@ -426,21 +430,30 @@ internal sealed class StubLineaTiempoRepository : ILineaTiempoRepository
         => Task.FromResult(new MutationResponse { Success = true, Message = "Línea de tiempo guardada", Id = request.ProyId });
 }
 
+internal sealed class StubCrecimientoDriveService : ICrecimientoDriveService
+{
+    public Task<IReadOnlyList<CrecimientoDriveTabResponse>> CargarDesdeDriveAsync(long apsaId, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<CrecimientoDriveTabResponse>>([]);
+}
+
 internal sealed class StubCrecimientoRepository : ICrecimientoRepository
 {
+    public Task<CrecimientoDriveConfig?> GetDriveConfigAsync(long apsaId, CancellationToken cancellationToken)
+        => Task.FromResult<CrecimientoDriveConfig?>(null);
+
     public Task<CrecimientoPayload> ConsultarAsync(long proyId, CancellationToken cancellationToken)
         => Task.FromResult(new CrecimientoPayload { Usuarios = [], Propia = [], Terceros = [], Descuentos = [] });
 
-    public Task<MutationResponse> RegistrarUsuariosAsync(CrecimientoUsuariosRequest request, CancellationToken cancellationToken)
+    public Task<MutationResponse> RegistrarUsuariosAsync(CrecimientoUsuariosRequest request, long usuarioId, CancellationToken cancellationToken)
         => Task.FromResult(new MutationResponse { Success = true, Message = "Usuarios registrados", Id = request.ProyId });
 
-    public Task<MutationResponse> RegistrarPropiaAsync(CrecimientoPropiaRequest request, CancellationToken cancellationToken)
+    public Task<MutationResponse> RegistrarPropiaAsync(CrecimientoPropiaRequest request, long usuarioId, CancellationToken cancellationToken)
         => Task.FromResult(new MutationResponse { Success = true, Message = "Info propia registrada", Id = request.ProyId });
 
-    public Task<MutationResponse> RegistrarTercerosAsync(CrecimientoTercerosRequest request, CancellationToken cancellationToken)
+    public Task<MutationResponse> RegistrarTercerosAsync(CrecimientoTercerosRequest request, long usuarioId, CancellationToken cancellationToken)
         => Task.FromResult(new MutationResponse { Success = true, Message = "Info terceros registrada", Id = request.ProyId });
 
-    public Task<MutationResponse> RegistrarDescuentosAsync(DescuentosRequest request, CancellationToken cancellationToken)
+    public Task<MutationResponse> RegistrarDescuentosAsync(DescuentosRequest request, long usuarioId, CancellationToken cancellationToken)
         => Task.FromResult(new MutationResponse { Success = true, Message = "Descuentos registrados", Id = request.ProyId });
 }
 
@@ -456,14 +469,17 @@ internal sealed class StubSubcontProyRepository : ISubcontProyRepository
 
     public Task<MutationResponse> UpsertSubcontAsync(SubcontUpsertRequest request, long usuarioId, CancellationToken cancellationToken)
         => Task.FromResult(new MutationResponse { Success = true, Message = "Subcont actualizado", Id = request.ProyId });
+
+    public Task<IReadOnlyList<ClaseUsoItem>> GetClasesUsoAsync(CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<ClaseUsoItem>>([new ClaseUsoItem { ClasClase = 1, ClasNombre = "Estrato 1" }]);
 }
 
 internal sealed class StubEjecucionProyeccionRepository : IEjecucionProyeccionRepository
 {
-    public Task<string> EjecutarProyectarAsync(long proyId, long apsaId, long usuarioId, CancellationToken cancellationToken)
+    public Task<int> EjecutarProyectarAsync(long proyId, long apsaId, long usuarioId, CancellationToken cancellationToken)
     {
         if (proyId == 5000) throw new InvalidOperationException("Simulated ejecutar proyeccion failure");
-        return Task.FromResult("STUB_OK");
+        return Task.FromResult(1);
     }
 }
 

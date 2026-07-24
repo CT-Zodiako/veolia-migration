@@ -96,6 +96,7 @@
           *ngFor="let col of columnasState.visibles"
           draggable="true"
           class="columna-movible"
+          [class.text-right]="col.numero"
           pSortableColumn="{{ col.field }}"
           pFrozenColumn
           [frozen]="columnasState.esFija(col.field)"
@@ -130,7 +131,7 @@
         <th *ngIf="accionesTemplate">{{ accionesHeader }}</th>
       </tr>
       <tr>
-        <th *ngFor="let col of columnasState.visibles" pFrozenColumn [frozen]="columnasState.esFija(col.field)">
+        <th *ngFor="let col of columnasState.visibles" pFrozenColumn [frozen]="columnasState.esFija(col.field)" [class.text-right]="col.numero">
           <p-columnFilter
             *ngIf="col.filtrable"
             type="text"

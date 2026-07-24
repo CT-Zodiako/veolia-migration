@@ -1,16 +1,15 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { TabsModule } from 'primeng/tabs';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 import { InfoGeneralesService } from '../../services/infogenerales.service';
-import { ProyeccionesService } from '../../services/proyecciones.service';
 import { Proyeccion } from '../../models/proyecciones.models';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
+import { ProyeccionSelectorComponent } from '../shared/proyeccion-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 
 const MESES = [
@@ -112,8 +111,8 @@ const COLUMNAS_TARIFAS: TablaColumn[] = [
   selector: 'app-informe-proyecciones',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, SelectModule,
-    ToastModule, TabsModule, InputTextModule, TextareaModule, ApsSelectorComponent, TablaAvanzadaComponent
+    CommonModule, FormsModule,
+    ToastModule, TabsModule, InputTextModule, TextareaModule, ApsSelectorComponent, ProyeccionSelectorComponent, TablaAvanzadaComponent
   ],
   providers: [MessageService],
   templateUrl: './informe-proyecciones.component.html',
@@ -126,11 +125,9 @@ export class InformeProyeccionesComponent {
   readonly columnasTarifas = COLUMNAS_TARIFAS;
 
   aps = signal<number | null>(null);
-  proyecciones = signal<Proyeccion[]>([]);
   proyId = signal<number | null>(null);
+  proyeccionSeleccionada = signal<Proyeccion | null>(null);
   activeTab = signal(0);
-
-  proyeccionSeleccionada = computed(() => this.proyecciones().find(p => p.proyId === this.proyId()) ?? null);
 
   horizonteDesde = computed(() => {
     const p = this.proyeccionSeleccionada();
@@ -161,20 +158,13 @@ export class InformeProyeccionesComponent {
 
   constructor(
     private readonly service: InfoGeneralesService,
-    private readonly proyService: ProyeccionesService,
     private readonly messages: MessageService
   ) {}
 
   onApsChange(apsId: number | null): void {
     this.aps.set(apsId);
     this.proyId.set(null);
-    this.proyecciones.set([]);
-    if (!apsId) return;
-
-    this.proyService.consulta(apsId).subscribe({
-      next: (res) => this.proyecciones.set(res.data || []),
-      error: () => this.proyecciones.set([])
-    });
+    this.proyeccionSeleccionada.set(null);
   }
 
   onProyChange(proyId: number | null): void {

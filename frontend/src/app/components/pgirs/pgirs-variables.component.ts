@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { PgirsService } from '../../services/pgirs.service';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 const PGIRS_VARIABLE_CATALOGO: { codVariable: number; label: string; valorKey: string; frecuenciaKey: string }[] = [
   { codVariable: 11, label: 'LBL', valorKey: 'lbl', frecuenciaKey: 'lblFrecuencia' },
@@ -106,7 +107,8 @@ export class PgirsVariablesComponent {
     }
     this.consultaLoading.set(true);
     this.consultaError.set(null);
-    this.service.getVariables(apsId, year, month).subscribe({
+    const periodo = periodoAnterior(year, month);
+    this.service.getVariables(apsId, periodo.anno, periodo.mes).subscribe({
       next: (res: any) => {
         this.consultaData.set(res.data || []);
         this.consultaLoading.set(false);
@@ -183,10 +185,11 @@ export class PgirsVariablesComponent {
       return;
     }
 
+    const periodo = periodoAnterior(form.anno, form.mes);
     const payload: Record<string, unknown> = {
       apsId: form.apsId,
-      anno: form.anno,
-      mes: form.mes,
+      anno: periodo.anno,
+      mes: periodo.mes,
       [catalogo.valorKey]: Number(form.valor),
       [catalogo.frecuenciaKey]: String(form.frecuencia)
     };

@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, OnInit, TemplateRef, signal } from '@angular/core';
+import { Component, HostListener, Input, OnInit, OnChanges, SimpleChanges, TemplateRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -185,7 +185,7 @@ export class ColumnasState {
   templateUrl: './tabla-avanzada.component.html',
   styleUrl: './tabla-avanzada.component.css'
 })
-export class TablaAvanzadaComponent implements OnInit {
+export class TablaAvanzadaComponent implements OnInit, OnChanges {
   @Input({ required: true }) columnas: TablaColumn[] = [];
   @Input() rows: Record<string, unknown>[] = [];
   @Input({ required: true }) storageKey = '';
@@ -213,6 +213,12 @@ export class TablaAvanzadaComponent implements OnInit {
 
   ngOnInit(): void {
     this.columnasState = new ColumnasState(this.columnas, `veolia:tabla-presets:${this.storageKey}`);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['columnas'] && this.columnasState) {
+      this.columnasState = new ColumnasState(this.columnas, `veolia:tabla-presets:${this.storageKey}`);
+    }
   }
 
   onColumnasChange(seleccionadas: TablaColumn[]): void {

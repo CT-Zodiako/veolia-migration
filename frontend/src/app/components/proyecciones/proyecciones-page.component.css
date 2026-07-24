@@ -21,3 +21,6 @@
   gap: 4px;
   flex-wrap: nowrap;
 }
+
+.text-secondary { color: var(--text-color-secondary); }
+.p-error { color: var(--red-500); background: var(--red-50); border-radius: 4px; }

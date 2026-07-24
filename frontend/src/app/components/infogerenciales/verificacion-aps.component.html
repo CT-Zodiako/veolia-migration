@@ -8,12 +8,10 @@
         [ngModel]="aps()" (ngModelChange)="aps.set($event)" styleClass="w-full"></p-select>
     </div>
     <div class="col-12 md:col-2">
-      <label class="block mb-1">Año</label>
-      <input type="number" pInputText [(ngModel)]="anno" class="w-full" />
+      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="anno.set($event)" label="Año"></app-anno-selector>
     </div>
     <div class="col-12 md:col-2">
-      <label class="block mb-1">Mes</label>
-      <input type="number" pInputText [(ngModel)]="mes" min="1" max="12" class="w-full" />
+      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="mes.set($event)" label="Mes"></app-mes-selector>
     </div>
     <div class="col-12 md:col-2 flex align-items-end">
       <p-button label="Consultar" icon="pi pi-search" (onClick)="consultar()"></p-button>

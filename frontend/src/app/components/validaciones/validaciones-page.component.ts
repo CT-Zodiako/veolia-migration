@@ -11,6 +11,8 @@ import { MessageService } from 'primeng/api';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import { ValidacionesService, ValidacionRequest, ValidacionResponse } from '../../services/validaciones.service';
+import { AnnoSelectorComponent } from '../shared/anno-selector.component';
+import { MesSelectorComponent } from '../shared/mes-selector.component';
 
 interface ValidacionItem {
   id: string;
@@ -21,7 +23,6 @@ interface ValidacionItem {
 }
 
 interface ApsOption { label: string; value: number; }
-interface MesOption { label: string; value: number; }
 
 @Component({
   selector: 'app-validaciones-page',
@@ -34,7 +35,9 @@ interface MesOption { label: string; value: number; }
     SelectModule,
     ProgressSpinnerModule,
     TagModule,
-    ToastModule
+    ToastModule,
+    AnnoSelectorComponent,
+    MesSelectorComponent
   ],
   providers: [MessageService],
   templateUrl: './validaciones-page.component.html',
@@ -43,21 +46,14 @@ interface MesOption { label: string; value: number; }
 export class ValidacionesPageComponent {
   // Filtros
   aps = signal<number>(1);
-  anno = signal<number>(2025);
-  mes = signal<number>(4);
+  anno = signal<number | null>(2025);
+  mes = signal<number | null>(4);
 
   readonly apsOptions: ApsOption[] = [
     { label: 'CVA', value: 1 },
     { label: 'CVNA', value: 2 },
     { label: 'San Pedro', value: 1031 }
   ];
-
-  readonly mesOptions: MesOption[] = Array.from({ length: 12 }, (_, i) => ({
-    label: new Date(2000, i, 1).toLocaleString('es-CO', { month: 'long' }),
-    value: i + 1
-  }));
-
-  readonly annoOptions: number[] = [2023, 2024, 2025, 2026];
 
   // Validaciones
   readonly validaciones = signal<ValidacionItem[]>([
@@ -119,17 +115,21 @@ export class ValidacionesPageComponent {
     private readonly messageService: MessageService
   ) {}
 
-  private getRequest(): ValidacionRequest {
-    return {
-      aps: this.aps(),
-      anno: this.anno(),
-      mes: this.mes()
-    };
+  private getRequest(): ValidacionRequest | null {
+    const anno = this.anno();
+    const mes = this.mes();
+    if (!anno || !mes) return null;
+    return { aps: this.aps(), anno, mes };
   }
 
   ejecutarTodas(): void {
-    this.ejecutandoTodas.set(true);
     const req = this.getRequest();
+    if (!req) {
+      this.messageService.add({ severity: 'warn', summary: 'Validaciones', detail: 'Seleccione año y mes' });
+      return;
+    }
+
+    this.ejecutandoTodas.set(true);
     const items = this.validaciones();
 
     // Ejecutar todas en paralelo
@@ -170,12 +170,17 @@ export class ValidacionesPageComponent {
     const item = items[index];
     if (!item) return;
 
+    const req = this.getRequest();
+    if (!req) {
+      this.messageService.add({ severity: 'warn', summary: 'Validaciones', detail: 'Seleccione año y mes' });
+      return;
+    }
+
     // Marcar como ejecutando
     const updated = [...items];
     updated[index] = { ...item, ejecutando: true, resultado: null };
     this.validaciones.set(updated);
 
-    const req = this.getRequest();
     let call;
 
     switch (item.id) {

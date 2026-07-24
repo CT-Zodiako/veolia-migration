@@ -151,8 +151,8 @@ export class LayoutComponent implements OnInit {
       case '/proyecciones': return 'Crear Proyección';
       case '/proyecciones/linea-tiempo': return 'Proyecciones - Línea de Tiempo';
       case '/proyecciones/crecimiento': return 'Proyecciones - Crecimiento';
-      case '/proyecciones/subcont': return 'Proyecciones - Subsidios/Contribuciones';
-      case '/proyecciones/ejecutar': return 'Proyecciones - Ejecutar';
+      case '/proyecciones/subcont': return 'Subsidios y Contribuciones';
+      case '/proyecciones/ejecutar': return 'Proyectar';
       case '/reliquidacion/crear': return 'Reliquidación - Crear';
       case '/reliquidacion/cargue': return 'Reliquidación - Cargue';
       case '/reliquidacion/comparar-costo': return 'Reliquidación - Comparar Costo';

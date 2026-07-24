@@ -9,6 +9,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SubContService, SubContItem, SubContAps } from '../../services/subcont.service';
+import { AnnoSelectorComponent } from '../shared/anno-selector.component';
+import { MesSelectorComponent } from '../shared/mes-selector.component';
 
 interface ClaseItem {
   clase: number;
@@ -29,7 +31,9 @@ interface ClaseItem {
     SelectModule,
     TableModule,
     InputNumberModule,
-    ToastModule
+    ToastModule,
+    AnnoSelectorComponent,
+    MesSelectorComponent
   ],
   providers: [MessageService],
   templateUrl: './subcont-page.component.html',
@@ -37,20 +41,13 @@ interface ClaseItem {
 })
 export class SubContPageComponent {
   aps = signal<number | null>(1);
-  anno = signal<number>(2025);
-  mes = signal<number>(4);
+  anno = signal<number | null>(2025);
+  mes = signal<number | null>(4);
 
   apsOptions = signal<SubContAps[]>([]);
   clases = signal<ClaseItem[]>([]);
   loading = signal(false);
   guardando = signal(false);
-
-  readonly mesOptions = Array.from({ length: 12 }, (_, i) => ({
-    label: new Date(2000, i, 1).toLocaleString('es-CO', { month: 'long' }),
-    value: i + 1
-  }));
-
-  readonly annoOptions = [2023, 2024, 2025, 2026];
 
   private readonly claseNombres: Record<number, string> = {
     1: 'Residencial',
@@ -83,13 +80,15 @@ export class SubContPageComponent {
 
   consultar(): void {
     const apsValue = this.aps();
-    if (!apsValue) return;
+    const anno = this.anno();
+    const mes = this.mes();
+    if (!apsValue || !anno || !mes) return;
 
     this.loading.set(true);
     this.subContService.consultar({
       aps: apsValue,
-      anno: this.anno(),
-      mes: this.mes()
+      anno,
+      mes
     }).subscribe({
       next: (data) => {
         // Mapear a clases (1-9)
@@ -120,7 +119,9 @@ export class SubContPageComponent {
 
   guardar(): void {
     const apsValue = this.aps();
-    if (!apsValue) return;
+    const anno = this.anno();
+    const mes = this.mes();
+    if (!apsValue || !anno || !mes) return;
 
     const valores = this.clases()
       .filter(c => c.valor !== null && c.valor !== undefined)
@@ -139,8 +140,8 @@ export class SubContPageComponent {
 
     const request = {
       aps: apsValue,
-      anno: this.anno(),
-      mes: this.mes(),
+      anno,
+      mes,
       valores
     };
 

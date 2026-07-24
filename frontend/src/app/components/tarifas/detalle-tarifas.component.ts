@@ -5,6 +5,7 @@ import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TarifaRow, TarifasService } from '../../services/tarifas.service';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 @Component({
   selector: 'app-detalle-tarifas',
@@ -70,7 +71,8 @@ export class DetalleTarifasComponent {
     this.loading = true;
     this.error = '';
 
-    this.tarifasService.getTarxCos(this.aps, this.anno, this.mes).subscribe({
+    const periodo = periodoAnterior(this.anno, this.mes);
+    this.tarifasService.getTarxCos(this.aps, periodo.anno, periodo.mes).subscribe({
       next: data => {
         this.rows = data || [];
         this.loading = false;

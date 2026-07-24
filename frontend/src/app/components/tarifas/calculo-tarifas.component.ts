@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TarifaChartPoint, TarifaRow, TarifasService } from '../../services/tarifas.service';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 @Component({
   selector: 'app-calculo-tarifas',
@@ -37,7 +38,9 @@ export class CalculoTarifasComponent {
     this.loading = true;
     this.error = '';
 
-    this.tarifasService.getTarifa(this.aps, this.anno, this.mes).subscribe({
+    const periodo = periodoAnterior(this.anno, this.mes);
+
+    this.tarifasService.getTarifa(this.aps, periodo.anno, periodo.mes).subscribe({
       next: data => {
         this.rows = data || [];
         this.loading = false;
@@ -50,7 +53,7 @@ export class CalculoTarifasComponent {
       }
     });
 
-    this.tarifasService.getchartTarifas(this.aps, this.anno, this.mes).subscribe({
+    this.tarifasService.getchartTarifas(this.aps, periodo.anno, periodo.mes).subscribe({
       next: data => {
         this.chartData = data || [];
         this.cdr.detectChanges();

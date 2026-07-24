@@ -10,3 +10,4 @@ frontend/dist/
 
 # Local development secrets
 **/appsettings.Development.json
+backend/Veolia.Api/Credentials/

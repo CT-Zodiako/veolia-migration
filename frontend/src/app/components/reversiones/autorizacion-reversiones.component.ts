@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { ReversionesService } from '../../services/reversiones.service';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 @Component({
   selector: 'app-autorizacion-reversiones',
@@ -29,7 +30,6 @@ export class AutorizacionReversionesComponent implements OnInit {
 
   ngOnInit(): void {
     const date = new Date();
-    date.setMonth(date.getMonth() - 1);
     this.anno = date.getFullYear();
     this.mes = date.getMonth() + 1;
   }
@@ -46,11 +46,12 @@ export class AutorizacionReversionesComponent implements OnInit {
     this.error = '';
     this.success = '';
 
+    const periodo = periodoAnterior(this.anno, this.mes);
     this.reversionesService
       .autorizarReversion({
         aps: this.aps,
-        anno: this.anno,
-        mes: this.mes,
+        anno: periodo.anno,
+        mes: periodo.mes,
         descripcion: this.descripcion.trim()
       })
       .subscribe({

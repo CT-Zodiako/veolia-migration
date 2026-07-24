@@ -8,9 +8,11 @@ public sealed class SubcontProyRepository(IOracleConnectionFactory connectionFac
 {
     public async Task<IReadOnlyList<SubcontItem>> GetSubcontAsync(SubcontConsultaRequest request, CancellationToken cancellationToken)
     {
+        // Legacy real (proyeccionescontroller.consultasubcont): "SELECT CLAS_CLASE, SUCO_VALOR
+        // FROM PROY_APSSUBSCONT WHERE APSA_ID = :1 AND PROY_ID = :2 AND SUCO_ANNO = :3 AND SUCO_MES = :4".
         const string sql = @"SELECT CLAS_CLASE AS ClasClase, SUCO_VALOR AS SucoValor
                                FROM PROY_APSSUBSCONT
-                              WHERE APSA_ID = :1 AND PROYID = :2 AND SUCO_ANNO = :3 AND SUCO_MES = :4";
+                              WHERE APSA_ID = :1 AND PROY_ID = :2 AND SUCO_ANNO = :3 AND SUCO_MES = :4";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", request.ApsaId);
@@ -37,13 +39,16 @@ public sealed class SubcontProyRepository(IOracleConnectionFactory connectionFac
             deleteParams.Add("4", request.Mes);
 
             await connection.ExecuteAsync(new CommandDefinition(
-                "DELETE FROM PROY_SUBSCONTEMP WHERE PROYID = :1 AND APSA_ID = :2 AND SUCO_ANNO = :3 AND SUCO_MES = :4",
+                "DELETE FROM PROY_SUBSCONTEMP WHERE PROY_ID = :1 AND APSA_ID = :2 AND SUCO_ANNO = :3 AND SUCO_MES = :4",
                 deleteParams,
                 transaction: transaction,
                 cancellationToken: cancellationToken));
 
-            const string insertSql = @"INSERT INTO PROY_SUBSCONTEMP (SUCO_ID, PROYID, APSA_ID, CLAS_CLASE, SUCO_VALOR, SUCO_ANNO, SUCO_MES, USUA_USUA, FECHA)
-                                       VALUES (SPROY_SUBSCONTEMP.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, SYSDATE)";
+            // Legacy real (proyeccionescontroller.editarPorcSubCon): inserta en PROY_SUBSCONTEMP
+            // (staging de ediciones pendientes -- SUCO_ESTADO=1, no en PROY_APSSUBSCONT
+            // directamente). SUCO_FECHA, no FECHA.
+            const string insertSql = @"INSERT INTO PROY_SUBSCONTEMP (SUCO_ID, PROY_ID, APSA_ID, CLAS_CLASE, SUCO_ANNO, SUCO_MES, SUCO_VALOR, SUCO_ESTADO, SUCO_FECHA, USUA_USUA)
+                                       VALUES (SPROY_SUBSCONTEMP.NEXTVAL, :1, :2, :3, :4, :5, :6, 1, SYSDATE, :7)";
 
             foreach (var item in request.Items)
             {
@@ -51,9 +56,9 @@ public sealed class SubcontProyRepository(IOracleConnectionFactory connectionFac
                 parameters.Add("1", request.ProyId);
                 parameters.Add("2", request.ApsaId);
                 parameters.Add("3", item.ClasClase);
-                parameters.Add("4", item.SucoValor);
-                parameters.Add("5", request.Anno);
-                parameters.Add("6", request.Mes);
+                parameters.Add("4", request.Anno);
+                parameters.Add("5", request.Mes);
+                parameters.Add("6", item.SucoValor);
                 parameters.Add("7", usuarioId);
 
                 await connection.ExecuteAsync(new CommandDefinition(insertSql, parameters, transaction: transaction, cancellationToken: cancellationToken));
@@ -67,6 +72,16 @@ public sealed class SubcontProyRepository(IOracleConnectionFactory connectionFac
             transaction.Rollback();
             return new MutationResponse { Success = false, Message = $"Error al guardar subcont: {ex.Message}", Id = request.ProyId };
         }
+    }
+
+    public async Task<IReadOnlyList<ClaseUsoItem>> GetClasesUsoAsync(CancellationToken cancellationToken)
+    {
+        // Legacy real (apscontroller.consuluso): "SELECT * FROM auco_clasesuso".
+        const string sql = "SELECT CLAS_CLASE AS ClasClase, CLAS_NOMBRE AS ClasNombre FROM AUCO_CLASESUSO ORDER BY CLAS_CLASE";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var rows = await connection.QueryAsync<ClaseUsoItem>(sql);
+        return rows.ToList();
     }
 
     private async Task<System.Data.IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)

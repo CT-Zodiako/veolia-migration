@@ -1,13 +1,46 @@
-<div class="page-wrap">
-  <p-card>
-    <div class="toolbar">
-      <app-aps-selector [selectedAps]="apsaId()" (selectedApsChange)="onApsChange($event)" label=""></app-aps-selector>
-      <p-select [options]="proyecciones()" optionLabel="proyNombre" optionValue="proyId" [(ngModel)]="proyId" placeholder="Proyección"></p-select>
-      <p-button label="Consultar" icon="pi pi-search" (onClick)="consultar()"></p-button>
-    </div>
-  </p-card>
+<p-toast></p-toast>
 
-  <p-card styleClass="mt-3">
+<div class="card-section">
+  <div class="grid">
+    <div class="col-12 md:col-3">
+      <app-aps-selector [selectedAps]="apsaId()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+    </div>
+    <div class="col-12 md:col-3">
+      <app-proyeccion-selector
+        [aps]="apsaId()"
+        [selectedProyeccion]="proyId()"
+        (selectedProyeccionChange)="proyId.set($event)"
+        (proyeccionChange)="proyeccionSeleccionada.set($event)"
+        label="Proyección"
+      ></app-proyeccion-selector>
+    </div>
+    <div class="col-12 md:col-6 flex align-items-end justify-content-end">
+      <p-button
+        label="Cargar Información desde Drive"
+        icon="pi pi-cloud-download"
+        severity="warn"
+        [loading]="cargandoDrive()"
+        [disabled]="!apsaId()"
+        (onClick)="cargarDesdeDrive()"
+      ></p-button>
+    </div>
+    <div class="col-12">
+      <label class="block mb-1">Descripción</label>
+      <textarea
+        pTextarea
+        class="w-full"
+        rows="3"
+        [ngModel]="proyeccionSeleccionada()?.proyDescripcion || ''"
+        disabled
+      ></textarea>
+    </div>
+  </div>
+  <div *ngIf="driveError()" class="p-error p-3 mt-2">
+    <i class="pi pi-exclamation-circle"></i> {{ driveError() }}
+  </div>
+</div>
+
+<div class="card-section">
     <p-tabs value="0">
       <p-tablist>
         <p-tab value="0">Usuarios</p-tab>
@@ -16,11 +49,62 @@
         <p-tab value="3">Descuentos</p-tab>
       </p-tablist>
       <p-tabpanels>
-        <p-tabpanel value="0"><p-table [value]="usuarios"></p-table><p-button class="mt-2" label="Guardar" (onClick)="guardarUsuarios()"></p-button></p-tabpanel>
-        <p-tabpanel value="1"><p-table [value]="propia"></p-table><p-button class="mt-2" label="Guardar" (onClick)="guardarPropia()"></p-button></p-tabpanel>
-        <p-tabpanel value="2"><p-table [value]="terceros"></p-table><p-button class="mt-2" label="Guardar" (onClick)="guardarTerceros()"></p-button></p-tabpanel>
-        <p-tabpanel value="3"><p-table [value]="descuentos"></p-table><p-button class="mt-2" label="Guardar" (onClick)="guardarDescuentos()"></p-button></p-tabpanel>
+        <p-tabpanel value="0">
+          <div *ngIf="usuarios().length === 0" class="text-center py-4 text-secondary">
+            <i class="pi pi-inbox" style="font-size: 2rem"></i>
+            <p>Sin datos. Cargá información desde Drive.</p>
+          </div>
+          <app-tabla-avanzada
+            *ngIf="usuarios().length > 0"
+            [columnas]="columnasUsuarios()"
+            [rows]="usuarios()"
+            storageKey="crecimiento-usuarios"
+            nombreExportar="CrecimientoUsuarios"
+          ></app-tabla-avanzada>
+          <p-button class="mt-2" label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" [disabled]="usuarios().length === 0" (onClick)="guardarUsuarios()"></p-button>
+        </p-tabpanel>
+        <p-tabpanel value="1">
+          <div *ngIf="propia().length === 0" class="text-center py-4 text-secondary">
+            <i class="pi pi-inbox" style="font-size: 2rem"></i>
+            <p>Sin datos. Cargá información desde Drive.</p>
+          </div>
+          <app-tabla-avanzada
+            *ngIf="propia().length > 0"
+            [columnas]="columnasPropia()"
+            [rows]="propia()"
+            storageKey="crecimiento-propia"
+            nombreExportar="CrecimientoInfPropia"
+          ></app-tabla-avanzada>
+          <p-button class="mt-2" label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" [disabled]="propia().length === 0" (onClick)="guardarPropia()"></p-button>
+        </p-tabpanel>
+        <p-tabpanel value="2">
+          <div *ngIf="terceros().length === 0" class="text-center py-4 text-secondary">
+            <i class="pi pi-inbox" style="font-size: 2rem"></i>
+            <p>Sin datos. Cargá información desde Drive.</p>
+          </div>
+          <app-tabla-avanzada
+            *ngIf="terceros().length > 0"
+            [columnas]="columnasTerceros()"
+            [rows]="terceros()"
+            storageKey="crecimiento-terceros"
+            nombreExportar="CrecimientoInfTerceros"
+          ></app-tabla-avanzada>
+          <p-button class="mt-2" label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" [disabled]="terceros().length === 0" (onClick)="guardarTerceros()"></p-button>
+        </p-tabpanel>
+        <p-tabpanel value="3">
+          <div *ngIf="descuentos().length === 0" class="text-center py-4 text-secondary">
+            <i class="pi pi-inbox" style="font-size: 2rem"></i>
+            <p>Sin datos. Cargá información desde Drive.</p>
+          </div>
+          <app-tabla-avanzada
+            *ngIf="descuentos().length > 0"
+            [columnas]="columnasDescuentos()"
+            [rows]="descuentos()"
+            storageKey="crecimiento-descuentos"
+            nombreExportar="CrecimientoDescuentos"
+          ></app-tabla-avanzada>
+          <p-button class="mt-2" label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" [disabled]="descuentos().length === 0" (onClick)="guardarDescuentos()"></p-button>
+        </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
-  </p-card>
 </div>

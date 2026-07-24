@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Veolia.Api.Contracts.Proyecciones;
 using Veolia.Api.Infrastructure.Auth;
 using Veolia.Api.Infrastructure.Data;
+using Veolia.Api.Services;
 
 namespace Veolia.Api.Controllers;
 
@@ -11,6 +12,7 @@ public sealed class ProyeccionesController(
     IProyeccionRepository repository,
     ILineaTiempoRepository lineaTiempoRepository,
     ICrecimientoRepository crecimientoRepository,
+    ICrecimientoDriveService crecimientoDriveService,
     ISubcontProyRepository subcontProyRepository,
     IEjecucionProyeccionRepository ejecucionProyeccionRepository) : ControllerBase
 {
@@ -199,15 +201,39 @@ public sealed class ProyeccionesController(
         }
     }
 
-    [HttpPost("registrarcrecimientousuarios")]
-    public async Task<IActionResult> RegistrarCrecimientoUsuarios([FromBody] CrecimientoUsuariosRequest request, CancellationToken cancellationToken)
+    [HttpPost("cargardesdedrive")]
+    public async Task<IActionResult> CargarDesdeDrive([FromBody] CrecimientoDriveRequest request, CancellationToken cancellationToken)
     {
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
+        if (request.ApsaId <= 0)
+            return BadRequest(Envelope(false, null, "El APS es obligatorio."));
+
         try
         {
-            var result = await crecimientoRepository.RegistrarUsuariosAsync(request, cancellationToken);
+            var data = await crecimientoDriveService.CargarDesdeDriveAsync(request.ApsaId, cancellationToken);
+            return Ok(Envelope(true, data, "OK"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(Envelope(false, null, ex.Message));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
+        }
+    }
+
+    [HttpPost("registrarcrecimientousuarios")]
+    public async Task<IActionResult> RegistrarCrecimientoUsuarios([FromBody] CrecimientoUsuariosRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+            return Unauthorized(Envelope(false, null, "No Autorizado!"));
+
+        try
+        {
+            var result = await crecimientoRepository.RegistrarUsuariosAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
         }
         catch (Exception ex)
@@ -219,12 +245,12 @@ public sealed class ProyeccionesController(
     [HttpPost("registrarcrecimientoinfpropia")]
     public async Task<IActionResult> RegistrarCrecimientoPropia([FromBody] CrecimientoPropiaRequest request, CancellationToken cancellationToken)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
         try
         {
-            var result = await crecimientoRepository.RegistrarPropiaAsync(request, cancellationToken);
+            var result = await crecimientoRepository.RegistrarPropiaAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
         }
         catch (Exception ex)
@@ -236,12 +262,12 @@ public sealed class ProyeccionesController(
     [HttpPost("registrarcrecimientoinfterceros")]
     public async Task<IActionResult> RegistrarCrecimientoTerceros([FromBody] CrecimientoTercerosRequest request, CancellationToken cancellationToken)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
         try
         {
-            var result = await crecimientoRepository.RegistrarTercerosAsync(request, cancellationToken);
+            var result = await crecimientoRepository.RegistrarTercerosAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
         }
         catch (Exception ex)
@@ -253,12 +279,12 @@ public sealed class ProyeccionesController(
     [HttpPost("registrardescuento")]
     public async Task<IActionResult> RegistrarDescuento([FromBody] DescuentosRequest request, CancellationToken cancellationToken)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
         try
         {
-            var result = await crecimientoRepository.RegistrarDescuentosAsync(request, cancellationToken);
+            var result = await crecimientoRepository.RegistrarDescuentosAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
         }
         catch (Exception ex)
@@ -276,6 +302,23 @@ public sealed class ProyeccionesController(
         try
         {
             var data = await subcontProyRepository.GetSubcontAsync(request, cancellationToken);
+            return Ok(Envelope(true, data, "OK"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
+        }
+    }
+
+    [HttpPost("consultarclasesuso")]
+    public async Task<IActionResult> ConsultarClasesUso(CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+            return Unauthorized(Envelope(false, null, "No Autorizado!"));
+
+        try
+        {
+            var data = await subcontProyRepository.GetClasesUsoAsync(cancellationToken);
             return Ok(Envelope(true, data, "OK"));
         }
         catch (Exception ex)
@@ -318,11 +361,11 @@ public sealed class ProyeccionesController(
             var resultado = await ejecucionProyeccionRepository.EjecutarProyectarAsync(request.ProyId, request.ApsaId, tokenContext.SisuId, cancellationToken);
             var response = new EjecutarProyeccionResponse
             {
-                Success = string.Equals(resultado, "STUB_OK", StringComparison.OrdinalIgnoreCase),
+                Success = resultado == 1,
                 Resultado = resultado
             };
 
-            return Ok(Envelope(response.Success, response, response.Success ? "OK" : "Ejecución finalizada con observaciones."));
+            return Ok(Envelope(response.Success, response, response.Success ? "Proceso ejecutado correctamente." : "Ejecución finalizada con observaciones."));
         }
         catch (Exception ex)
         {

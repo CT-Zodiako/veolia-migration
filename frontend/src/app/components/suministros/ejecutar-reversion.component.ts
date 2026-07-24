@@ -8,6 +8,7 @@ import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { SuministrosService } from '../../services/suministros.service';
 import { ValidacionesService } from '../../services/validaciones.service';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 @Component({
   selector: 'app-ejecutar-reversion',
@@ -26,6 +27,8 @@ export class EjecutarReversionComponent {
   success = '';
   error = '';
 
+  private periodoReversion: { anno: number; mes: number } | null = null;
+
   constructor(
     private readonly suministrosService: SuministrosService,
     private readonly validacionesService: ValidacionesService,
@@ -33,7 +36,6 @@ export class EjecutarReversionComponent {
     private readonly cdr: ChangeDetectorRef
   ) {
     const date = new Date();
-    date.setMonth(date.getMonth() - 1);
     this.anno = date.getFullYear();
     this.mes = date.getMonth() + 1;
   }
@@ -52,8 +54,11 @@ export class EjecutarReversionComponent {
     this.cdr.detectChanges();
 
     // Paridad AS-IS: antes de reversar, el sistema viejo exige que el gate
-    // fauco_integracion devuelva OK; si no, bloquea la reversión.
-    this.validacionesService.faucoIntegracion({ aps: this.aps, anno: this.anno, mes: this.mes }).subscribe({
+    // fauco_integracion devuelva OK; si no, bloquea la reversión. El mes que
+    // se selecciona en pantalla es el "mes actual" -- la reversión real
+    // siempre opera sobre el mes YA CERRADO (mes anterior).
+    this.periodoReversion = periodoAnterior(this.anno, this.mes);
+    this.validacionesService.faucoIntegracion({ aps: this.aps, anno: this.periodoReversion.anno, mes: this.periodoReversion.mes }).subscribe({
       next: (validacion) => {
         if (!validacion.ok) {
           this.loading = false;
@@ -74,9 +79,10 @@ export class EjecutarReversionComponent {
   }
 
   private confirmarYEjecutar(): void {
+    const periodo = this.periodoReversion!;
     this.confirmationService.confirm({
       header: 'Ejecutar reversión',
-      message: `Esta acción es DESTRUCTIVA: va a borrar y resguardar la información certificada de la APS seleccionada para ${this.mes}/${this.anno}. ¿Confirmás que querés continuar?`,
+      message: `Esta acción es DESTRUCTIVA: va a borrar y resguardar la información certificada de la APS seleccionada para ${periodo.mes}/${periodo.anno}. ¿Confirmás que querés continuar?`,
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Reversar',
       rejectLabel: 'Cancelar',
@@ -90,10 +96,11 @@ export class EjecutarReversionComponent {
     this.loading = true;
     this.cdr.detectChanges();
 
+    const periodo = this.periodoReversion!;
     this.suministrosService.setReversion({
       aps: this.aps!,
-      anno: this.anno!,
-      mes: this.mes!,
+      anno: periodo.anno,
+      mes: periodo.mes,
       motivo: this.motivo.trim()
     }).subscribe({
       next: (data) => {

@@ -9,5 +9,5 @@ public sealed class EjecutarProyeccionRequest
 public sealed class EjecutarProyeccionResponse
 {
     public bool Success { get; set; }
-    public string Resultado { get; set; } = string.Empty;
+    public int Resultado { get; set; }
 }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TarifaRow, TarifasService } from '../../services/tarifas.service';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 @Component({
   selector: 'app-detalle-tarifas-gen',
@@ -34,7 +35,8 @@ export class DetalleTarifasGenComponent {
     this.loading = true;
     this.error = '';
 
-    this.tarifasService.getTarxCosGeneral(this.anno, this.mes).subscribe({
+    const periodo = periodoAnterior(this.anno, this.mes);
+    this.tarifasService.getTarxCosGeneral(periodo.anno, periodo.mes).subscribe({
       next: data => {
         this.rows = data || [];
         this.loading = false;

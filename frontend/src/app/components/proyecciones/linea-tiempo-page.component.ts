@@ -1,7 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -11,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { ProyeccionesService } from '../../services/proyecciones.service';
 import { LineaTiempoRow, Proyeccion } from '../../models/proyecciones.models';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
+import { ProyeccionSelectorComponent } from '../shared/proyeccion-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 
 const MESES = [
@@ -34,8 +34,8 @@ const COLUMNAS_LINEA_TIEMPO: TablaColumn[] = [
   selector: 'app-linea-tiempo-page',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, SelectModule, ButtonModule, InputTextModule,
-    InputNumberModule, TextareaModule, ToastModule, ApsSelectorComponent, TablaAvanzadaComponent
+    CommonModule, FormsModule, ButtonModule, InputTextModule,
+    InputNumberModule, TextareaModule, ToastModule, ApsSelectorComponent, ProyeccionSelectorComponent, TablaAvanzadaComponent
   ],
   providers: [MessageService],
   templateUrl: './linea-tiempo-page.component.html',
@@ -45,8 +45,8 @@ export class LineaTiempoPageComponent {
   readonly columnas = COLUMNAS_LINEA_TIEMPO;
 
   aps = signal<number | null>(null);
-  proyecciones = signal<Proyeccion[]>([]);
   proyId = signal<number | null>(null);
+  proyeccionSeleccionada = signal<Proyeccion | null>(null);
   rows = signal<LineaTiempoRow[]>([]);
   loading = signal(false);
   saving = signal(false);
@@ -54,8 +54,6 @@ export class LineaTiempoPageComponent {
 
   editingKey = signal<string | null>(null);
   editDraft = signal<LineaTiempoRow | null>(null);
-
-  proyeccionSeleccionada = computed(() => this.proyecciones().find(p => p.proyId === this.proyId()) ?? null);
 
   horizonteDesde = computed(() => {
     const p = this.proyeccionSeleccionada();
@@ -72,15 +70,9 @@ export class LineaTiempoPageComponent {
   onApsChange(apsaId: number | null): void {
     this.aps.set(apsaId);
     this.proyId.set(null);
-    this.proyecciones.set([]);
+    this.proyeccionSeleccionada.set(null);
     this.rows.set([]);
     this.editingKey.set(null);
-    if (!apsaId) return;
-
-    this.service.consulta(apsaId).subscribe({
-      next: (res) => this.proyecciones.set(res.data || []),
-      error: () => this.proyecciones.set([])
-    });
   }
 
   onProyChange(proyId: number | null): void {
@@ -91,6 +83,10 @@ export class LineaTiempoPageComponent {
     } else {
       this.rows.set([]);
     }
+  }
+
+  onProyeccionChange(proyeccion: Proyeccion | null): void {
+    this.proyeccionSeleccionada.set(proyeccion);
   }
 
   rowKey(row: any): string {

@@ -6,18 +6,21 @@ import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { IndicesCraService, IndicesPayload } from '../../services/indices-cra.service';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { AnnoSelectorComponent } from '../shared/anno-selector.component';
+import { MesSelectorComponent } from '../shared/mes-selector.component';
 
 @Component({
   selector: 'app-indices-cra',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ToastModule, DialogModule],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ToastModule, DialogModule, AnnoSelectorComponent, MesSelectorComponent],
   providers: [MessageService],
   templateUrl: './indices-cra.component.html',
   styleUrls: ['./indices-cra.component.css']
 })
 export class IndicesCraComponent implements OnInit {
-  anno = signal(new Date().getFullYear());
-  mes = signal(new Date().getMonth() + 1);
+  anno = signal<number | null>(new Date().getFullYear());
+  mes = signal<number | null>(new Date().getMonth() + 1);
   loading = signal(false);
   rows = signal<any[]>([]);
   dialogVisible = signal(false);
@@ -45,8 +48,13 @@ export class IndicesCraComponent implements OnInit {
   }
 
   consultar(): void {
+    const anno = this.anno();
+    const mes = this.mes();
+    if (!anno || !mes) return;
+
     this.loading.set(true);
-    this.service.consultar(this.anno(), this.mes()).subscribe({
+    const periodo = periodoAnterior(anno, mes);
+    this.service.consultar(periodo.anno, periodo.mes).subscribe({
       next: (res) => {
         this.rows.set(res.data || []);
         this.loading.set(false);
@@ -61,8 +69,13 @@ export class IndicesCraComponent implements OnInit {
   abrirNuevo(): void {
     this.isEdit.set(false);
     this.selectedRow.set(null);
-    this.formAnno.set(this.anno());
-    this.formMes.set(this.mes());
+    // formAnno/formMes representan el período REAL a crear (mes anterior al
+    // seleccionado en el filtro de arriba) -- ver periodo-anterior.util.ts.
+    const anno = this.anno();
+    const mes = this.mes();
+    const periodo = anno && mes ? periodoAnterior(anno, mes) : { anno: new Date().getFullYear(), mes: new Date().getMonth() + 1 };
+    this.formAnno.set(periodo.anno);
+    this.formMes.set(periodo.mes);
     this.ipc.set(null);
     this.smlv.set(null);
     this.ipcc.set(null);
@@ -108,8 +121,6 @@ export class IndicesCraComponent implements OnInit {
         this.loading.set(false);
         this.dialogVisible.set(false);
         this.messages.add({ severity: 'success', summary: 'Índices CRA', detail: this.isEdit() ? 'Índices actualizados.' : 'Índices creados.' });
-        this.anno.set(this.formAnno());
-        this.mes.set(this.formMes());
         this.consultar();
       },
       error: (err: any) => {

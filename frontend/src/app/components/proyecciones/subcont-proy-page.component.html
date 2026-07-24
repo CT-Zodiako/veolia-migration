@@ -1,17 +1,62 @@
-<div class="page-wrap">
-  <p-card>
-    <div class="toolbar">
-      <app-aps-selector [selectedAps]="apsaId()" (selectedApsChange)="onApsChange($event)" label=""></app-aps-selector>
-      <p-select [options]="proyecciones()" optionLabel="proyNombre" optionValue="proyId" [(ngModel)]="proyId" placeholder="Proyección"></p-select>
-      <p-inputNumber [(ngModel)]="anno"></p-inputNumber>
-      <p-inputNumber [(ngModel)]="mes" [min]="1" [max]="12"></p-inputNumber>
-      <div class="actions"><p-button label="Consultar" (onClick)="consultar()"></p-button><p-button label="Guardar" severity="success" (onClick)="guardar()"></p-button></div>
+<p-toast></p-toast>
+
+<div class="card-section">
+  <div class="grid">
+    <div class="col-12 md:col-3">
+      <app-aps-selector [selectedAps]="apsaId()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
     </div>
-  </p-card>
-  <p-card styleClass="mt-3">
-    <p-table [value]="items">
-      <ng-template pTemplate="header"><tr><th>Clase</th><th>Valor</th></tr></ng-template>
-      <ng-template pTemplate="body" let-item let-i="rowIndex"><tr><td>{{item.clasClase}}</td><td><p-inputNumber [(ngModel)]="items[i].sucoValor"></p-inputNumber></td></tr></ng-template>
-    </p-table>
-  </p-card>
+    <div class="col-12 md:col-3">
+      <app-proyeccion-selector [aps]="apsaId()" [selectedProyeccion]="proyId()" (selectedProyeccionChange)="onProyChange($event)" label="Proyección"></app-proyeccion-selector>
+    </div>
+    <div class="col-12 md:col-3">
+      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
+    </div>
+    <div class="col-12 md:col-3">
+      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
+    </div>
+  </div>
+  <div *ngIf="consultando()" class="text-secondary mt-2"><i class="pi pi-spin pi-spinner"></i> Consultando...</div>
+</div>
+
+<div class="card-section">
+  <div *ngIf="items().length === 0" class="text-center py-4 text-secondary">
+    <i class="pi pi-inbox" style="font-size: 2rem"></i>
+    <p>Sin datos. Seleccioná APS, proyección, año y mes, y consultá.</p>
+  </div>
+
+  <p-table *ngIf="items().length > 0" [value]="itemsConNombre()" styleClass="p-datatable-sm">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Clase</th>
+        <th class="text-right">Valor</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item let-i="rowIndex">
+      <tr>
+        <td>{{ item.nombreClase }}</td>
+        <td class="text-right">
+          <p-inputNumber
+            *ngIf="editando(); else valorReadonly"
+            [ngModel]="item.sucoValor"
+            (ngModelChange)="actualizarValor(i, $event)"
+            mode="decimal"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="4"
+            class="w-full"
+          ></p-inputNumber>
+          <ng-template #valorReadonly>{{ item.sucoValor ?? 0 }}</ng-template>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <div *ngIf="items().length > 0" class="actions mt-3">
+    <ng-container *ngIf="!editando(); else accionesEdicion">
+      <p-button label="Editar" icon="pi pi-pencil" severity="info" (onClick)="activarEdicion()"></p-button>
+    </ng-container>
+    <ng-template #accionesEdicion>
+      <p-button label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" (onClick)="guardar()"></p-button>
+      <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [disabled]="guardando()" (onClick)="cancelarEdicion()"></p-button>
+    </ng-template>
+  </div>
 </div>

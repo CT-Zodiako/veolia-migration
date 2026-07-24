@@ -12,6 +12,7 @@ import { FormatoTableComponent } from './formato-table.component';
 import { SuiApplicability, SuiComplementoItemRequest, SuiFormato, SuiPrecheckResponse } from '../../models/sui-integracion.models';
 import { SuiIntegracionService } from '../../services/sui-integracion.service';
 import { ApsService } from '../../services/aps.service';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 @Component({
   selector: 'app-sui-integracion-page',
@@ -138,7 +139,8 @@ export class SuiIntegracionPageComponent {
     if (!this.filtrosValidos()) return;
     this.loading.set(true);
     this.error.set('');
-    const payload = { aps: this.aps()!, mes: this.mes()!, anno: this.anno()! };
+    const periodo = periodoAnterior(this.anno()!, this.mes()!);
+    const payload = { aps: this.aps()!, mes: periodo.mes, anno: periodo.anno };
     this.loadApsApplicability(payload.aps);
     forkJoin({
       F19: this.service.consuformu19(payload),
@@ -161,7 +163,8 @@ export class SuiIntegracionPageComponent {
   prevalidar(): void {
     if (!this.filtrosValidos()) return;
     this.loading.set(true);
-    this.service.getcanCertificate({ aps: this.aps()!, mes: this.mes()!, anno: this.anno()! }).subscribe({
+    const periodo = periodoAnterior(this.anno()!, this.mes()!);
+    this.service.getcanCertificate({ aps: this.aps()!, mes: periodo.mes, anno: periodo.anno }).subscribe({
       next: (res: SuiPrecheckResponse) => {
         this.puedeProcesar.set(res.puedeProcesar);
         this.estado.set(res.mensajes.join(' | ') || 'Prevalidación sin observaciones');
@@ -178,7 +181,8 @@ export class SuiIntegracionPageComponent {
     if (!this.filtrosValidos()) return;
     const usuario = Number(JSON.parse(localStorage.getItem('usuario') || '{}')?.SISU_ID || 0);
     this.loading.set(true);
-    this.service.procesar({ aps: this.aps()!, mes: this.mes()!, anno: this.anno()!, usuario }).subscribe({
+    const periodo = periodoAnterior(this.anno()!, this.mes()!);
+    this.service.procesar({ aps: this.aps()!, mes: periodo.mes, anno: periodo.anno, usuario }).subscribe({
       next: (res) => {
         this.estado.set(`Estado: ${res.estado}. Formatos: ${res.formatosProcesados.join(', ')}`);
         this.loading.set(false);
@@ -200,7 +204,8 @@ export class SuiIntegracionPageComponent {
   guardarComplemento(items: SuiComplementoItemRequest[]): void {
     if (!this.canEditComplemento() || !this.filtrosValidos()) return;
     this.loading.set(true);
-    this.service.setCargueInfComplemento({ aps: this.aps()!, mes: this.mes()!, anno: this.anno()!, formato: this.currentTab() as 'F24'|'F35'|'F36', complementoData: items }).subscribe({
+    const periodo = periodoAnterior(this.anno()!, this.mes()!);
+    this.service.setCargueInfComplemento({ aps: this.aps()!, mes: periodo.mes, anno: periodo.anno, formato: this.currentTab() as 'F24'|'F35'|'F36', complementoData: items }).subscribe({
       next: (res) => {
         this.estado.set(`Complemento guardado: ${res.filasAfectadas} filas afectadas.`);
         this.showComplemento.set(false);

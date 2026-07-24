@@ -22,3 +22,10 @@ public sealed class SubcontItem
     public long ClasClase { get; set; }
     public decimal? SucoValor { get; set; }
 }
+
+// AUCO_CLASESUSO -- catálogo real de clase de uso (Estratos 1-6 + Comercial/Industrial/Oficial).
+public sealed class ClaseUsoItem
+{
+    public long ClasClase { get; set; }
+    public string ClasNombre { get; set; } = string.Empty;
+}

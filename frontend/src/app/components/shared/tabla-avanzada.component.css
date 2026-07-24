@@ -2,6 +2,10 @@
   text-align: right;
 }
 
+.text-right {
+  text-align: right;
+}
+
 .tabla-avanzada.pantalla-completa {
   position: fixed;
   inset: 0;

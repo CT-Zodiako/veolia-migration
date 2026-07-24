@@ -3,6 +3,7 @@ using Veolia.Api.Infrastructure.Auth;
 using Veolia.Api.Infrastructure.Aps;
 using Veolia.Api.Infrastructure.Sui853;
 using Veolia.Api.Infrastructure.Data.Interfaces;
+using Veolia.Api.Infrastructure.GoogleDrive;
 using Veolia.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +63,10 @@ builder.Services.AddScoped<IInfoGerencialRepository, InfoGerencialRepository>();
 builder.Services.AddScoped<IPgirsRepository, PgirsRepository>();
 builder.Services.AddScoped<IIndicesRepository, IndicesRepository>();
 builder.Services.AddScoped<FileParserService>();
+
+builder.Services.Configure<GoogleDriveOptions>(builder.Configuration.GetSection(GoogleDriveOptions.SectionName));
+builder.Services.AddSingleton<IGoogleSheetsService, GoogleSheetsService>();
+builder.Services.AddScoped<ICrecimientoDriveService, CrecimientoDriveService>();
 
 var app = builder.Build();
 

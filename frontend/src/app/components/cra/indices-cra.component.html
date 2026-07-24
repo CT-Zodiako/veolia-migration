@@ -3,8 +3,8 @@
 <p-card header="Índices CRA">
   <div class="toolbar">
     <div class="filters">
-      <input pInputText type="number" [ngModel]="anno()" (ngModelChange)="anno.set(+$event)" placeholder="Año" />
-      <p-select [options]="meses" optionLabel="label" optionValue="value" [ngModel]="mes()" (ngModelChange)="mes.set($event)"></p-select>
+      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="anno.set($event)" label=""></app-anno-selector>
+      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="mes.set($event)" label=""></app-mes-selector>
       <p-button label="Consultar" icon="pi pi-search" (click)="consultar()"></p-button>
     </div>
     <p-button label="Nuevo" icon="pi pi-plus" (click)="abrirNuevo()"></p-button>

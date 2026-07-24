@@ -11,11 +11,13 @@ import { TabsModule } from 'primeng/tabs';
 import { InfoGerencialService } from '../../services/infogerenciales.service';
 import { ApsOption } from '../../models/proyecciones.models';
 import { ProyeccionesService } from '../../services/proyecciones.service';
+import { AnnoSelectorComponent } from '../shared/anno-selector.component';
+import { MesSelectorComponent } from '../shared/mes-selector.component';
 
 @Component({
   selector: 'app-verificacion-aps',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, ToastModule, TabsModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, SelectModule, TableModule, ToastModule, TabsModule, AnnoSelectorComponent, MesSelectorComponent],
   providers: [MessageService],
   templateUrl: './verificacion-aps.component.html',
   styleUrls: ['./verificacion-aps.component.css']
@@ -23,8 +25,8 @@ import { ProyeccionesService } from '../../services/proyecciones.service';
 export class VerificacionApsComponent {
   aps = signal<number | null>(null);
   apsOptions = signal<ApsOption[]>([]);
-  anno = signal<number>(new Date().getFullYear());
-  mes = signal<number>(new Date().getMonth() + 1);
+  anno = signal<number | null>(new Date().getFullYear());
+  mes = signal<number | null>(new Date().getMonth() + 1);
   activeTab = signal(0);
 
   // Estados por pestaña
@@ -54,8 +56,8 @@ export class VerificacionApsComponent {
     const apsId = this.aps();
     const year = this.anno();
     const month = this.mes();
-    if (!apsId) {
-      this.messages.add({ severity: 'warn', summary: 'Verificación', detail: 'Seleccione un APS' });
+    if (!apsId || !year || !month) {
+      this.messages.add({ severity: 'warn', summary: 'Verificación', detail: 'Seleccione APS, año y mes' });
       return;
     }
     this.loadTabData(this.activeTab(), apsId, year, month);
@@ -66,8 +68,10 @@ export class VerificacionApsComponent {
     const idx = typeof index === 'string' ? parseInt(index, 10) : index;
     this.activeTab.set(idx);
     const apsId = this.aps();
-    if (apsId) {
-      this.loadTabData(idx, apsId, this.anno(), this.mes());
+    const year = this.anno();
+    const month = this.mes();
+    if (apsId && year && month) {
+      this.loadTabData(idx, apsId, year, month);
     }
   }
 

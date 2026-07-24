@@ -15,6 +15,7 @@ import { ToneladasPanelComponent } from './toneladas-panel.component';
 import { KilometrosPanelComponent } from './kilometros-panel.component';
 import { CostosConsultaPanelComponent } from './costos-consulta-panel.component';
 import { CalculartarifasResponse, CertificarTarifasResponse, ValidapreactualizaResponse } from '../../models/costos.models';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 @Component({
   selector: 'app-costos-calculo-page',
@@ -72,8 +73,8 @@ import { CalculartarifasResponse, CertificarTarifasResponse, ValidapreactualizaR
               <div class="col-12 lg:col-6">
                 <app-verificacion-panel
                   [aps]="aps()"
-                  [mes]="mes()"
-                  [anno]="anno()"
+                  [mes]="periodoConsulta()?.mes ?? null"
+                  [anno]="periodoConsulta()?.anno ?? null"
                   [enabled]="true"
                   [blocked]="globalLoading()"
                   [showSkeleton]="false"
@@ -85,8 +86,8 @@ import { CalculartarifasResponse, CertificarTarifasResponse, ValidapreactualizaR
               <div class="col-12 lg:col-6">
                 <app-prechecks-panel
                   [aps]="aps()"
-                  [mes]="mes()"
-                  [anno]="anno()"
+                  [mes]="periodoConsulta()?.mes ?? null"
+                  [anno]="periodoConsulta()?.anno ?? null"
                   [enabled]="isPrecheckEnabled()"
                   [blocked]="globalLoading()"
                   [showSkeleton]="!isPrecheckEnabled()"
@@ -103,8 +104,8 @@ import { CalculartarifasResponse, CertificarTarifasResponse, ValidapreactualizaR
                   [blocked]="globalLoading()"
                   [showSkeleton]="!isExecutionEnabled()"
                   [aps]="aps()"
-                  [mes]="mes()"
-                  [anno]="anno()"
+                  [mes]="periodoConsulta()?.mes ?? null"
+                  [anno]="periodoConsulta()?.anno ?? null"
                   [isAps1031]="isAps1031()"
                   [pipelineSteps]="pipelineSteps()"
                   (calculated)="onCalculated($event)"
@@ -118,8 +119,8 @@ import { CalculartarifasResponse, CertificarTarifasResponse, ValidapreactualizaR
                   [blocked]="globalLoading()"
                   [showSkeleton]="!isCertEnabled()"
                   [aps]="aps()"
-                  [mes]="mes()"
-                  [anno]="anno()"
+                  [mes]="periodoConsulta()?.mes ?? null"
+                  [anno]="periodoConsulta()?.anno ?? null"
                   [calculoResultado]="calculoResultado()"
                   (certified)="onCertified($event)"
                   (loadingChange)="setPanelLoading('cert', $event)"
@@ -128,14 +129,14 @@ import { CalculartarifasResponse, CertificarTarifasResponse, ValidapreactualizaR
             </div>
           </p-tabpanel>
           <p-tabpanel value="toneladas">
-            <app-toneladas-panel [aps]="aps()" [anno]="anno()" [mes]="mes()" />
+            <app-toneladas-panel [aps]="aps()" [anno]="periodoConsulta()?.anno ?? null" [mes]="periodoConsulta()?.mes ?? null" />
           </p-tabpanel>
           <p-tabpanel value="kilometros">
-            <app-kilometros-panel [aps]="aps()" [anno]="anno()" [mes]="mes()" />
+            <app-kilometros-panel [aps]="aps()" [anno]="periodoConsulta()?.anno ?? null" [mes]="periodoConsulta()?.mes ?? null" />
           </p-tabpanel>
           <p-tabpanel value="consultas">
-            @if (aps() && anno() && mes()) {
-              <app-costos-consulta-panel [aps]="aps()!" [anno]="anno()!" [mes]="mes()!" />
+            @if (aps() && periodoConsulta()) {
+              <app-costos-consulta-panel [aps]="aps()!" [anno]="periodoConsulta()!.anno" [mes]="periodoConsulta()!.mes" />
             } @else {
               <p>Seleccioná APS, año y mes para ver las consultas.</p>
             }
@@ -151,6 +152,16 @@ export class CostosCalculoPageComponent {
   readonly mes = signal<number | null>(null);
   readonly anno = signal<number | null>(new Date().getFullYear());
   readonly currentStep = signal<'idle' | 'verified' | 'prechecked' | 'calculated' | 'certified'>('idle');
+
+  // Regla de negocio legacy (Calculo.vue): el año/mes que se selecciona en
+  // pantalla es el "mes actual", pero todo el pipeline (verificar, prechecks,
+  // ejecutar, certificar, consultas) opera sobre el mes YA CERRADO -- el
+  // anterior. Se calcula una sola vez acá y se pasa ya corregido a los 8 paneles hijos.
+  readonly periodoConsulta = computed(() => {
+    const anno = this.anno();
+    const mes = this.mes();
+    return anno && mes ? periodoAnterior(anno, mes) : null;
+  });
 
   readonly verificationResult = signal<ValidapreactualizaResponse | null>(null);
   readonly prechecksResult = signal<PrecheckUiItem[]>([]);

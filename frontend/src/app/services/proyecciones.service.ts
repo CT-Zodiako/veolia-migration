@@ -5,6 +5,8 @@ import { environment } from '../../environments/environment';
 import {
   ApiEnvelope,
   ApsOption,
+  ClaseUso,
+  CrecimientoDriveTab,
   CrecimientoPayload,
   LineaTiempoRow,
   LineaTiempoUpsert,
@@ -71,6 +73,10 @@ export class ProyeccionesService {
     return this.envelope(this.http.post<ApiEnvelope<CrecimientoPayload>>(`${this.baseUrl}/consultarcrecimiento`, { apsaId, proyId }, { headers: this.getHeaders() }));
   }
 
+  cargarCrecimientoDesdeDrive(apsaId: number): Observable<ApiEnvelope<CrecimientoDriveTab[]>> {
+    return this.envelope(this.http.post<ApiEnvelope<CrecimientoDriveTab[]>>(`${this.baseUrl}/cargardesdedrive`, { apsaId }, { headers: this.getHeaders() }));
+  }
+
   registrarCrecimientoUsuarios(data: any): Observable<ApiEnvelope<MutationResponse>> {
     return this.envelope(this.http.post<ApiEnvelope<MutationResponse>>(`${this.baseUrl}/registrarcrecimientousuarios`, data, { headers: this.getHeaders() }));
   }
@@ -95,8 +101,12 @@ export class ProyeccionesService {
     return this.envelope(this.http.post<ApiEnvelope<MutationResponse>>(`${this.baseUrl}/editarPorcSubCon`, data, { headers: this.getHeaders() }));
   }
 
-  ejecutarProyectar(apsaId: number, proyId: number): Observable<ApiEnvelope<{ success: boolean; resultado: string }>> {
-    return this.envelope(this.http.post<ApiEnvelope<{ success: boolean; resultado: string }>>(`${this.baseUrl}/ejecutarproyectar`, { apsaId, proyId }, { headers: this.getHeaders() }));
+  consultarClasesUso(): Observable<ApiEnvelope<ClaseUso[]>> {
+    return this.envelope(this.http.post<ApiEnvelope<ClaseUso[]>>(`${this.baseUrl}/consultarclasesuso`, {}, { headers: this.getHeaders() }));
+  }
+
+  ejecutarProyectar(apsaId: number, proyId: number): Observable<ApiEnvelope<{ success: boolean; resultado: number }>> {
+    return this.envelope(this.http.post<ApiEnvelope<{ success: boolean; resultado: number }>>(`${this.baseUrl}/ejecutarproyectar`, { apsaId, proyId }, { headers: this.getHeaders() }));
   }
 
   listarAps(): Observable<ApsOption[]> {

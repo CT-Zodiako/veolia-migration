@@ -22,24 +22,10 @@
         </p-select>
       </div>
       <div class="filtro-item">
-        <label>Año</label>
-        <p-select
-          [options]="annoOptions"
-          [(ngModel)]="anno"
-          placeholder="Seleccione año"
-          styleClass="w-full">
-        </p-select>
+        <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="anno.set($event)" label="Año"></app-anno-selector>
       </div>
       <div class="filtro-item">
-        <label>Mes</label>
-        <p-select
-          [options]="mesOptions"
-          [(ngModel)]="mes"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Seleccione mes"
-          styleClass="w-full">
-        </p-select>
+        <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="mes.set($event)" label="Mes"></app-mes-selector>
       </div>
     </div>
   </p-card>
