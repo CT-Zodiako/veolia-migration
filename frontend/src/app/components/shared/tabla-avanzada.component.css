@@ -23,6 +23,17 @@
   text-align: right;
 }
 
+/* Auto-width: cada columna ocupa solo el ancho mínimo necesario para su contenido más ancho. */
+.auto-width ::ng-deep .p-datatable-table {
+  table-layout: auto !important;
+}
+
+.auto-width ::ng-deep .p-datatable-table th,
+.auto-width ::ng-deep .p-datatable-table td {
+  white-space: nowrap;
+  width: max-content;
+}
+
 .color-green {
   background-color: rgb(191, 252, 184);
   color: rgb(0, 0, 0);
@@ -39,6 +50,12 @@
   background-color: rgb(236, 167, 16);
   color: rgb(3, 3, 3);
   text-align: left;
+}
+
+.color-gray {
+  background-color: rgb(184, 186, 184);
+  color: rgb(3, 3, 3);
+  text-align: center;
 }
 
 .tabla-toolbar {

@@ -12,6 +12,20 @@ namespace Veolia.Api.Controllers;
 [Route("api/v1/sui")]
 public sealed class SuiController(ISuiRepository repository, ILogger<SuiController> logger) : ControllerBase
 {
+    [HttpPost("dashboard")]
+    public async Task<IActionResult> Dashboard([FromBody] SuiDashboardRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            var unauthorized = new ApiEnvelopeResponse<object>("error", new { }, "No autorizado.", HttpContext.TraceIdentifier, null);
+            return Unauthorized(unauthorized);
+        }
+
+        return await ExecuteAsync(
+            async () => await repository.DashboardAsync(request.Anno, request.Mes, tokenContext.SisuId, cancellationToken),
+            "Dashboard SUI consultado correctamente.");
+    }
+
     [HttpPost("consuformu19")]
     public Task<IActionResult> Consuformu19([FromBody] SuiConsultaRequest request, CancellationToken cancellationToken)
         => ConsultarFormatoAsync("F19", request, cancellationToken);
@@ -31,6 +45,26 @@ public sealed class SuiController(ISuiRepository repository, ILogger<SuiControll
     [HttpPost("consuforma36")]
     public Task<IActionResult> Consuforma36([FromBody] SuiConsultaRequest request, CancellationToken cancellationToken)
         => ConsultarFormatoAsync("F36", request, cancellationToken);
+
+    [HttpPost("resumenF19")]
+    public Task<IActionResult> ResumenF19([FromBody] SuiResumenRequest? request, CancellationToken cancellationToken)
+        => ResumenFormatoAsync("F19", request, cancellationToken);
+
+    [HttpPost("resumenF23")]
+    public Task<IActionResult> ResumenF23([FromBody] SuiResumenRequest? request, CancellationToken cancellationToken)
+        => ResumenFormatoAsync("F23", request, cancellationToken);
+
+    [HttpPost("resumenF24")]
+    public Task<IActionResult> ResumenF24([FromBody] SuiResumenRequest? request, CancellationToken cancellationToken)
+        => ResumenFormatoAsync("F24", request, cancellationToken);
+
+    [HttpPost("resumenF35")]
+    public Task<IActionResult> ResumenF35([FromBody] SuiResumenRequest? request, CancellationToken cancellationToken)
+        => ResumenFormatoAsync("F35", request, cancellationToken);
+
+    [HttpPost("resumenF36")]
+    public Task<IActionResult> ResumenF36([FromBody] SuiResumenRequest? request, CancellationToken cancellationToken)
+        => ResumenFormatoAsync("F36", request, cancellationToken);
 
     [HttpPost("getcanCertificate")]
     public async Task<IActionResult> GetcanCertificate([FromBody] SuiConsultaRequest request, CancellationToken cancellationToken)
@@ -65,6 +99,23 @@ public sealed class SuiController(ISuiRepository repository, ILogger<SuiControll
                 return new SuiFormatoResponse(formato, normalizadas);
             },
             $"Consulta {formato} ejecutada correctamente.");
+
+    private async Task<IActionResult> ResumenFormatoAsync(string formato, SuiResumenRequest? request, CancellationToken cancellationToken)
+    {
+        if (request is null || request.Aps <= 0)
+        {
+            var envelope = new ApiEnvelopeResponse<object>("error", new { }, "El APS es obligatorio.", HttpContext.TraceIdentifier, null);
+            return BadRequest(envelope);
+        }
+
+        return await ExecuteAsync(
+            async () =>
+            {
+                var filas = await repository.ResumenFormatosAsync(formato, request.Aps, cancellationToken);
+                return new SuiResumenFormatosResponse(formato, filas);
+            },
+            $"Resumen {formato} ejecutado correctamente.");
+    }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
     {

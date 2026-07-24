@@ -7,6 +7,7 @@ export interface ApiResponseEnvelope<T = unknown> {
 }
 
 export type SuiFormato = 'F19' | 'F23' | 'F24' | 'F35' | 'F36';
+export type SuiTab = SuiFormato | 'RESUMEN';
 export type SuiApplicability = 'APLICA' | 'NO APLICA' | 'DESCONOCIDO';
 
 export interface SuiConsultaRequest {
@@ -25,8 +26,19 @@ export interface SuiComplementoItemRequest {
 }
 
 export interface SuiComplementoRequest extends SuiConsultaRequest {
-  formato: Extract<SuiFormato, 'F24' | 'F35' | 'F36'>;
+  formato: SuiFormato;
   complementoData: SuiComplementoItemRequest[];
+}
+
+export interface InformeDatasetItem {
+  nombre: string;
+  columns: string[];
+  data: unknown[][];
+}
+
+export interface InformeCostosResponse {
+  semestre: string;
+  dataset: InformeDatasetItem[];
 }
 
 export interface SuiFormatoResponse {

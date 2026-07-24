@@ -192,6 +192,7 @@ export class TablaAvanzadaComponent implements OnInit, OnChanges {
   @Input() nombreExportar = 'exportar';
   @Input() scrollHeight = '390px';
   @Input() filasPorPagina = 10;
+  @Input() autoWidth = false;
 
   /** Si se pasa, reemplaza el contenido default (`{{ row[col.field] }}`) de cada celda.
    *  Contexto: `$implicit` = valor de la celda, `row` = fila completa, `col` = columna actual. */

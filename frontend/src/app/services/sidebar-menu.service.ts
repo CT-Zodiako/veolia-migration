@@ -68,8 +68,11 @@ export class SidebarMenuService {
       keywords: ['cargue certificacion', 'suministros certificacion'],
       menuId: 3007
     },
-    { label: 'SUI Reversiones', path: '/sui-reversiones', icon: '🌐', keywords: ['sui reversiones', 'reversiones sui'] },
-    { label: 'SUI Integración', path: '/sui/integracion', icon: '🧩', keywords: ['sui integracion', 'integracion sui'] },
+    { label: 'Formatos y Formularios', path: '/sui/integracion', icon: '🧩', keywords: ['sui integracion', 'integracion sui', 'formatos y formularios'], menuId: 801 },
+    { label: 'Cargue Complementario', path: '/sui/integracion', icon: '📥', keywords: ['cargue complementario', 'cargue complemento'], menuId: 802 },
+    { label: 'SUI Dashboard', path: '/sui/dashboard', icon: '📊', keywords: ['sui dashboard', 'dashboard sui'], menuId: 803 },
+    { label: 'Resumen Formatos y Formularios', path: '/sui/resumen-formatos', icon: '📋', keywords: ['resumen formatos', 'resumen formularios', 'formatos y formularios'], menuId: 804 },
+    { label: 'SUI Reversiones', path: '/sui-reversiones', icon: '🌐', keywords: ['sui reversiones', 'reversiones sui'], menuId: 805 },
     { label: 'Detallado Facturación', path: '/facturacion', icon: '🧾', keywords: ['facturacion', 'facturación', 'billing', 'detallado facturacion'], menuId: 502 },
     { label: 'Historial de Certificación', path: '/histCertificacion', icon: '📋', keywords: ['historial certificacion', 'historia de certificacion'], menuId: 503 },
     { label: 'Historial de Productividad', path: '/histProductividad', icon: '📈', keywords: ['historial productividad'], menuId: 504 },

@@ -41,6 +41,7 @@ builder.Services.AddScoped<ISuministrosRepository, SuministrosRepository>();
 builder.Services.AddScoped<ICertificacionRepository, CertificacionRepository>();
 builder.Services.AddScoped<ISuiReversionesRepository, SuiReversionesRepository>();
 builder.Services.AddScoped<ISuiRepository, SuiRepository>();
+builder.Services.AddScoped<IInformesRepository, InformesRepository>();
 builder.Services.AddScoped<ISui853ReadmodelsRepository, Sui853ReadmodelsRepository>();
 builder.Services.AddScoped<Sui853ContractMapper>();
 builder.Services.AddScoped<IValidacionesRepository, ValidacionesRepository>();
@@ -193,6 +194,18 @@ app.UseWhen(
     context =>
     {
         if (!context.Request.Path.StartsWithSegments("/api/v1/sui", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    },
+    branch => { branch.UseMiddleware<AuthJwtParityMiddleware>(); });
+
+app.UseWhen(
+    context =>
+    {
+        if (!context.Request.Path.StartsWithSegments("/api/v1/informes", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

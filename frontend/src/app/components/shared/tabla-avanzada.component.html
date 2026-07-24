@@ -1,4 +1,4 @@
-<div class="tabla-avanzada" [class.pantalla-completa]="pantallaCompleta()">
+<div class="tabla-avanzada" [class.pantalla-completa]="pantallaCompleta()" [class.auto-width]="autoWidth">
   <div class="densidad-toolbar">
     <span class="densidad-label">Densidad de la tabla</span>
     <div class="densidad-switch">
@@ -37,7 +37,7 @@
     [paginator]="true"
     [rows]="filasPorPagina"
     [rowsPerPageOptions]="[10, 20, 50]"
-    [tableStyle]="{ 'min-width': '50rem' }"
+    [tableStyle]="autoWidth ? { 'min-width': 'max-content' } : { 'min-width': '50rem' }"
     [stripedRows]="true"
     [rowHover]="true"
     [showGridlines]="true"

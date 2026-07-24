@@ -12,10 +12,10 @@ export class SuiReversionesService {
   constructor(private readonly http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('jwtOken') || '';
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'x-access-token': token || ''
+      'x-access-token': token
     });
   }
 

@@ -5,10 +5,10 @@ import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
-import { SuiReversionRow, SuiReversionesService } from '../../services/sui-reversiones.service';
+import { SuiResumenFormatosRow, SuiResumenFormatosService } from '../../services/sui-resumen-formatos.service';
 
 interface FormatoData {
-  rows: SuiReversionRow[];
+  rows: SuiResumenFormatosRow[];
   columnas: TablaColumn[];
   storageKey: string;
   nombreExportar: string;
@@ -24,8 +24,7 @@ interface FormatoConfig {
   headers: Record<string, string>;
 }
 
-const REVERSIONES_F19_HEADERS: Record<string, string> = {
-  'REVE_ID': 'REVE ID',
+const RESUMEN_F19_HEADERS: Record<string, string> = {
   'F19_ANNO': 'AÑO',
   'F19_MES': 'MES',
   'F19_NJ': 'NJ',
@@ -40,8 +39,7 @@ const REVERSIONES_F19_HEADERS: Record<string, string> = {
   'F19_QAJ': 'QAJ',
 };
 
-const REVERSIONES_F23_HEADERS: Record<string, string> = {
-  'REVE_ID': 'REVE ID',
+const RESUMEN_F23_HEADERS: Record<string, string> = {
   'F23_ANNO': 'AÑO',
   'F23_MES': 'MES',
   'EMPR_EMPR': 'Empresas',
@@ -68,8 +66,7 @@ const REVERSIONES_F23_HEADERS: Record<string, string> = {
   'F23_ABC': 'ABC',
 };
 
-const REVERSIONES_F24_HEADERS: Record<string, string> = {
-  'REVE_ID': 'REVE ID',
+const RESUMEN_F24_HEADERS: Record<string, string> = {
   'F24_ANNO': 'AÑO',
   'F24_MES': 'MES',
   'F24_NUAP': 'NUAP',
@@ -97,8 +94,7 @@ const REVERSIONES_F24_HEADERS: Record<string, string> = {
   'F24_FACCS': 'FACCS',
 };
 
-const REVERSIONES_F35_HEADERS: Record<string, string> = {
-  'REVE_ID': 'REVE ID',
+const RESUMEN_F35_HEADERS: Record<string, string> = {
   'F35_ANNO': 'AÑO',
   'F35_MES': 'MES',
   'F35_NUSD': 'NUSD',
@@ -127,8 +123,7 @@ const REVERSIONES_F35_HEADERS: Record<string, string> = {
   'F35_CAPREMDF': 'CAPREMDF',
 };
 
-const REVERSIONES_F36_HEADERS: Record<string, string> = {
-  'REVE_ID': 'REVE ID',
+const RESUMEN_F36_HEADERS: Record<string, string> = {
   'F36_ANNO': 'AÑO',
   'F36_MES': 'MES',
   'F36_NUSD': 'NUSD',
@@ -152,13 +147,13 @@ const REVERSIONES_F36_HEADERS: Record<string, string> = {
 };
 
 @Component({
-  selector: 'app-sui-reversiones',
+  selector: 'app-sui-resumen-formatos',
   standalone: true,
   imports: [CommonModule, ...CommonPrimeNgModules, ApsSelectorComponent, TablaAvanzadaComponent],
-  templateUrl: './sui-reversiones.component.html',
-  styleUrl: './sui-reversiones.component.css'
+  templateUrl: './sui-resumen-formatos.component.html',
+  styleUrl: './sui-resumen-formatos.component.css'
 })
-export class SuiReversionesComponent implements OnInit, AfterViewInit {
+export class SuiResumenFormatosComponent implements OnInit, AfterViewInit {
   aps: number | null = null;
   loading = false;
   error = '';
@@ -167,49 +162,49 @@ export class SuiReversionesComponent implements OnInit, AfterViewInit {
     {
       key: 'f19',
       label: 'Formato 19',
-      storageKey: 'sui-reversiones-f19',
-      nombreExportar: 'SUI_Reversiones_F19',
+      storageKey: 'sui-resumen-f19',
+      nombreExportar: 'SUI_Resumen_F19',
       titulo: 'Variable para el cálculo de la tarifa de aprovechamiento y toneladas conjuntas',
-      headers: REVERSIONES_F19_HEADERS
+      headers: RESUMEN_F19_HEADERS
     },
     {
       key: 'f23',
       label: 'Formulario 23',
-      storageKey: 'sui-reversiones-f23',
-      nombreExportar: 'SUI_Reversiones_F23',
+      storageKey: 'sui-resumen-f23',
+      nombreExportar: 'SUI_Resumen_F23',
       titulo: 'Costo de limpieza urbana y costo de barrido y limpieza de vías y áreas públicas',
-      headers: REVERSIONES_F23_HEADERS
+      headers: RESUMEN_F23_HEADERS
     },
     {
       key: 'f24',
       label: 'Formulario 24',
-      storageKey: 'sui-reversiones-f24',
-      nombreExportar: 'SUI_Reversiones_F24',
+      storageKey: 'sui-resumen-f24',
+      nombreExportar: 'SUI_Resumen_F24',
       titulo: 'Costo de recolección y transporte',
-      headers: REVERSIONES_F24_HEADERS
+      headers: RESUMEN_F24_HEADERS
     },
     {
       key: 'f35',
       label: 'Formulario 35',
-      storageKey: 'sui-reversiones-f35',
-      nombreExportar: 'SUI_Reversiones_F35',
+      storageKey: 'sui-resumen-f35',
+      nombreExportar: 'SUI_Resumen_F35',
       titulo: 'Costo de disposición final operador sitio de disposición final - este aplica solo relleno',
-      headers: REVERSIONES_F35_HEADERS
+      headers: RESUMEN_F35_HEADERS
     },
     {
       key: 'f36',
       label: 'Formulario 36',
-      storageKey: 'sui-reversiones-f36',
-      nombreExportar: 'SUI_Reversiones_F36',
+      storageKey: 'sui-resumen-f36',
+      nombreExportar: 'SUI_Resumen_F36',
       titulo: 'Costo de tratamiento de lixiviados - operador sitio de disposición final',
-      headers: REVERSIONES_F36_HEADERS
+      headers: RESUMEN_F36_HEADERS
     }
   ];
 
   data: Record<string, FormatoData> = {};
 
   constructor(
-    private readonly service: SuiReversionesService,
+    private readonly service: SuiResumenFormatosService,
     private readonly parametrosState: ParametrosConsultaStateService,
     private readonly cdr: ChangeDetectorRef
   ) {}
@@ -241,8 +236,6 @@ export class SuiReversionesComponent implements OnInit, AfterViewInit {
 
     this.aps = apsId;
     if (apsId && apsId > 0) {
-      // Posponer para evitar NG0100 si el cambio se dispara sincrónicamente
-      // durante un ciclo de detección de Angular.
       setTimeout(() => this.cargar(), 0);
     } else {
       this.error = apsId === null ? '' : 'Ingresá un APS válido';
@@ -260,11 +253,11 @@ export class SuiReversionesComponent implements OnInit, AfterViewInit {
     this.cdr.markForCheck();
 
     forkJoin({
-      f19: this.service.getReversionesF19(this.aps),
-      f23: this.service.getReversionesF23(this.aps),
-      f24: this.service.getReversionesF24(this.aps),
-      f35: this.service.getReversionesF35(this.aps),
-      f36: this.service.getReversionesF36(this.aps)
+      f19: this.service.getResumenF19(this.aps),
+      f23: this.service.getResumenF23(this.aps),
+      f24: this.service.getResumenF24(this.aps),
+      f35: this.service.getResumenF35(this.aps),
+      f36: this.service.getResumenF36(this.aps)
     }).subscribe({
       next: (response) => {
         for (const f of this.formatos) {
@@ -276,7 +269,7 @@ export class SuiReversionesComponent implements OnInit, AfterViewInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.error = err?.error?.message || err?.error?.data || 'Error consultando reversiones SUI';
+        this.error = err?.error?.message || err?.error?.data || 'Error consultando resumen de formatos y formularios SUI';
         this.loading = false;
         this.limpiar();
         this.cdr.markForCheck();
@@ -292,7 +285,7 @@ export class SuiReversionesComponent implements OnInit, AfterViewInit {
     this.cdr.markForCheck();
   }
 
-  private buildColumnas(formatoKey: string, rows: SuiReversionRow[]): TablaColumn[] {
+  private buildColumnas(formatoKey: string, rows: SuiResumenFormatosRow[]): TablaColumn[] {
     if (!rows || rows.length === 0) {
       return [];
     }

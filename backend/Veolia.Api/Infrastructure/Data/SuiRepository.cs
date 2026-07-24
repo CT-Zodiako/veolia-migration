@@ -1,7 +1,5 @@
 using Dapper;
 using Microsoft.Extensions.Logging;
-using Oracle.ManagedDataAccess.Client;
-using Oracle.ManagedDataAccess.Types;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Common;
@@ -14,20 +12,72 @@ namespace Veolia.Api.Infrastructure.Data;
 
 public sealed class SuiRepository(IOracleConnectionFactory connectionFactory, ILogger<SuiRepository> logger) : ISuiRepository
 {
+    public async Task<SuiDashboardResponse> DashboardAsync(int anno, int mes, long usuario, CancellationToken cancellationToken)
+    {
+        const string sql = @"SELECT * FROM TABLE(PK_SUI.fsui_estado(:anno, :mes)) p
+    INNER JOIN auco_apsusuarios u ON p.apsid = u.apsa_id
+    WHERE u.SISU_ID = :usuario and u.apsi_estado = 1";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("anno", anno);
+        parameters.Add("mes", mes);
+        parameters.Add("usuario", usuario);
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var rows = await connection.QueryAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+        var filas = rows.Select(ToDictionaryObject).ToList();
+        return new SuiDashboardResponse(filas);
+    }
+
     public async Task<IReadOnlyList<dynamic>> ConsultarFormatoAsync(string formato, int aps, int mes, int anno, CancellationToken cancellationToken)
     {
-        var functionName = formato.ToUpperInvariant() switch
+        var sql = formato.ToUpperInvariant() switch
         {
-            "F19" => "PK_SUI.fsui_f19",
-            "F23" => "PK_SUI.fsui_f23",
-            "F24" => "PK_SUI.fsui_f24",
-            "F35" => "PK_SUI.fsui_f35",
-            "F36" => "PK_SUI.fsui_f36",
+            "F19" => @"
+                SELECT APSA_ID, F19_ANNO, F19_MES, F19_NJ, F19_NDJ, F19_CRTJ, F19_CDFJ, F19_QRTJ, F19_QRJ, F19_QBLJ, F19_QLUJ, F19_QNAZ, F19_QAJ, F19_FECHA, USUARIO
+                FROM TARIFICADOR.SUI_F19
+                WHERE apsa_id = :aps AND f19_anno = :anno AND f19_mes = :mes",
+            "F23" => @"
+                SELECT APSA_ID, EMPR_EMPR, F23_ANNO, F23_MES, F23_ID, F23_NUAP, F23_N, F23_CP, F23_CCC, F23_M2CCJ, F23_CLAVJ, F23_M3AGUAJ, F23_M2LAVJ, F23_CLPJ, F23_KLPJ, F23_CCEI, F23_TIJ, F23_CCEMJ, F23_TMJ, F23_CLUS, F23_CBLJ, F23_LBLJ, F23_CBLS, F23_FACBLCLUS, F23_ABC, F23_FECHA, USUARIO
+                FROM TARIFICADOR.SUI_F23
+                WHERE apsa_id = :aps AND f23_anno = :anno AND f23_mes = :mes",
+            "F24" => @"
+                SELECT APSA_ID, F24_ANNO, F24_MES, F24_NUAP, F24_NUSD, F24_CENTROIDE, F24_QRT, F24_F1, F24_F2, F24_CPE, F24_PRTZ, F24_DET, F24_F1ET, F24_CPEET, F24_PRTZET, F24_CEG, F24_CRTP, F24_SALINIDAD, F24_VACRTABC, F24_VACRT, F24_FCK, F24_T, F24_CRTZ, F24_CRT, F24_FACRT, F24_FACCS, F24_FECHA, USUARIO
+                FROM TARIFICADOR.SUI_F24
+                WHERE apsa_id = :aps AND f24_anno = :anno AND f24_mes = :mes",
+            "F35" => @"
+                SELECT APSA_ID, F35_ANNO, F35_MES, F35_NUSD, F35_NOMDF, F35_CAMRERS, F35_QRSMES, F35_QRSPROM, F35_CDFVU, F35_PERADDT, F35_CDFPC, F35_INCENTIVO, F35_DISPALT9, F35_INCCDFALT9, F35_VACDFABC, F35_VACDF, F35_PRCTCRRCP, F35_CDF, F35_CDFP, F35_FACCDF, F35_V0, F35_VM, F35_MCRS, F35_ICRSM, F35_ICCRS, F35_FREIN, F35_CAPREMDF, F35_FECHA, USUARIO
+                FROM TARIFICADOR.SUI_F35
+                WHERE apsa_id = :aps AND f35_anno = :anno AND f35_mes = :mes",
+            "F36" => @"
+                SELECT APSA_ID, F36_ANNO, F36_MES, F36_NUSD, F36_NOMDPTO, F36_NOMMPIO, F36_NOMDF, F36_VLMES, F36_VLMPROM, F36_ESCENA, F36_CTLMVU, F36_ANNOPOSCLA, F36_CTLMPC, F36_CTLM, F36_CTLMX, F36_VACTLABC, F36_VACTL, F36_FCKCTL, F36_QRS, F36_CTL, F36_FACCTL, F36_FECHA, USUARIO
+                FROM TARIFICADOR.SUI_F36
+                WHERE apsa_id = :aps AND f36_anno = :anno AND f36_mes = :mes",
             _ => throw new ValidationException("Formato no soportado para consulta SUI.")
         };
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        return await QueryCursorAsync(connection, functionName, aps, mes, anno, cancellationToken);
+        var rows = await connection.QueryAsync(new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken));
+        return rows.Select(ToDictionaryObject).ToList();
+    }
+
+    public async Task<IReadOnlyList<object>> ResumenFormatosAsync(string formato, int aps, CancellationToken cancellationToken)
+    {
+        var tableName = formato.ToUpperInvariant() switch
+        {
+            "F19" => "TARIFICADOR.SUI_F19",
+            "F23" => "TARIFICADOR.SUI_F23",
+            "F24" => "TARIFICADOR.SUI_F24",
+            "F35" => "TARIFICADOR.SUI_F35",
+            "F36" => "TARIFICADOR.SUI_F36",
+            _ => throw new ValidationException("Formato no soportado para resumen de formatos SUI.")
+        };
+
+        var sql = $"SELECT * FROM {tableName} WHERE apsa_id = :aps";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var rows = await connection.QueryAsync(new CommandDefinition(sql, new { aps }, cancellationToken: cancellationToken));
+        return rows.Select(ToDictionaryObject).ToList();
     }
 
     public async Task<SuiProcesarResponse> ProcesarAsync(SuiProcesarRequest request, CancellationToken cancellationToken)
@@ -149,41 +199,6 @@ WHEN NOT MATCHED THEN
         return new SuiPrecheckResponse(puedeProcesar, mensajes);
     }
 
-    private static async Task<IReadOnlyList<dynamic>> QueryCursorAsync(IDbConnection connection, string functionName, int aps, int mes, int anno, CancellationToken cancellationToken)
-    {
-        if (connection is not OracleConnection oracleConnection)
-        {
-            throw new InvalidOperationException("La conexión Oracle no está disponible para consultar cursores SUI.");
-        }
-
-        await using var command = oracleConnection.CreateCommand();
-        command.BindByName = false;
-        command.CommandText = $"BEGIN :res := {functionName}(:1,:2,:3); END;";
-        command.CommandType = CommandType.Text;
-
-        command.Parameters.Add(new OracleParameter("res", OracleDbType.RefCursor, ParameterDirection.ReturnValue));
-        command.Parameters.Add(new OracleParameter("1", OracleDbType.Int32, aps, ParameterDirection.Input));
-        command.Parameters.Add(new OracleParameter("2", OracleDbType.Int32, mes, ParameterDirection.Input));
-        command.Parameters.Add(new OracleParameter("3", OracleDbType.Int32, anno, ParameterDirection.Input));
-
-        await command.ExecuteNonQueryAsync(cancellationToken);
-
-        var rows = new List<dynamic>();
-        using var reader = ((OracleRefCursor)command.Parameters[0].Value).GetDataReader();
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            var row = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < reader.FieldCount; i++)
-            {
-                row[reader.GetName(i)] = await reader.IsDBNullAsync(i, cancellationToken) ? null : reader.GetValue(i);
-            }
-
-            rows.Add(row);
-        }
-
-        return rows;
-    }
-
     private static async Task<IReadOnlyList<string>> InferirFormatosProcesadosAsync(IDbConnection connection, IDbTransaction transaction, int aps, int mes, int anno, CancellationToken cancellationToken)
     {
         const string sql = @"SELECT 'F19' AS FORMATO FROM SUI_F19 WHERE APS_ID = :aps AND MES = :mes AND ANNO = :anno
@@ -215,6 +230,17 @@ VALUES (:usuario, SYSDATE, :aps, :mes, :anno, :resultado)";
         }
 
         logger.LogInformation("SUI ejecución auditada. usuario={Usuario} fecha={Fecha} aps={Aps} mes={Mes} anno={Anno} resultado={Resultado}", usuario, DateTime.UtcNow, aps, mes, anno, resultado);
+    }
+
+    private static object ToDictionaryObject(dynamic row)
+    {
+        if (row is IDictionary<string, object> dictionary)
+        {
+            return new Dictionary<string, object>(dictionary, StringComparer.OrdinalIgnoreCase);
+        }
+
+        var objectDictionary = (IDictionary<string, object>)row;
+        return new Dictionary<string, object>(objectDictionary, StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task<IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)

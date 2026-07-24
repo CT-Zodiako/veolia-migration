@@ -1,0 +1,30 @@
+<section>
+  <div class="card-section">
+    <app-parametros-consulta
+      [wrapInCard]="false"
+      [mostrarAps]="false"
+      [mostrarBoton]="false"
+      [autoConsultar]="true"
+      [anno]="anno()"
+      (annoChange)="anno.set($event)"
+      [mes]="mes()"
+      (mesChange)="mes.set($event)"
+      (consultar)="consultar()"
+      (parametrosIncompletos)="limpiar()">
+    </app-parametros-consulta>
+  </div>
+
+  <div class="card-section">
+    <p *ngIf="loading()" class="loading-text">Cargando...</p>
+    <p *ngIf="error()" class="error-message">{{ error() }}</p>
+
+    <app-tabla-avanzada
+      [columnas]="columnas"
+      [rows]="rows()"
+      [cellClass]="cellClass"
+      [autoWidth]="true"
+          storageKey="sui-dashboard"
+      nombreExportar="SUI_Dashboard">
+    </app-tabla-avanzada>
+  </div>
+</section>
