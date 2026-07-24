@@ -18,6 +18,8 @@ import { InformesGeneradosMesComponent } from './components/sui853-configuracion
 import { CalculoTarifasComponent } from './components/tarifas/calculo-tarifas.component';
 import { DetalleTarifasComponent } from './components/tarifas/detalle-tarifas.component';
 import { DetalleTarifasGenComponent } from './components/tarifas/detalle-tarifas-gen.component';
+import { HistorialCertificacionComponent } from './components/tarifas/historial-certificacion.component';
+import { HistorialProductividadComponent } from './components/tarifas/historial-productividad.component';
 import { AutorizacionReversionesComponent } from './components/reversiones/autorizacion-reversiones.component';
 import { DetalladoAutorizacionComponent } from './components/reversiones/detallado-autorizacion.component';
 import { EjecutarReversionComponent } from './components/suministros/ejecutar-reversion.component';
@@ -73,6 +75,8 @@ export const routes: Routes = [
       { path: 'calculo', component: CalculoTarifasComponent },
       { path: 'tarifas', component: DetalleTarifasComponent },
       { path: 'tarifas-general', component: DetalleTarifasGenComponent },
+      { path: 'histCertificacion', component: HistorialCertificacionComponent },
+      { path: 'histProductividad', component: HistorialProductividadComponent },
       { path: 'reversion_auth', component: AutorizacionReversionesComponent },
       { path: 'detautorizacion', component: DetalladoAutorizacionComponent },
       { path: 'suministros/reversion', component: EjecutarReversionComponent },

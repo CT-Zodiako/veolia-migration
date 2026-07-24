@@ -1,0 +1,22 @@
+<section>
+  <app-parametros-consulta
+    [mostrarAps]="false"
+    [(anno)]="anno"
+    [(mes)]="mes"
+    [loading]="loading()"
+    [autoConsultar]="true"
+    (consultar)="consultar()"
+    (parametrosIncompletos)="limpiar()"
+  ></app-parametros-consulta>
+
+  <p *ngIf="error()" class="error">{{ error() }}</p>
+
+  <div class="table-wrapper table-scroll">
+    <app-tabla-avanzada
+      [columnas]="columnas"
+      [rows]="rows()"
+      storageKey="historial-certificacion"
+      nombreExportar="HistorialCertificacion"
+    ></app-tabla-avanzada>
+  </div>
+</section>

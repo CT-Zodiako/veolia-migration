@@ -129,7 +129,7 @@ export class LayoutComponent implements OnInit {
   }
 
   getPageTitle(): string {
-    const url = this.router.url;
+    const url = this.router.url.split('?')[0];
     switch (url) {
       case '/': return 'Dashboard';
       case '/usuarios': return 'Gestión de Usuarios';
@@ -144,7 +144,9 @@ export class LayoutComponent implements OnInit {
       case '/suministros/reversion': return 'Ejecutar Reversión';
       case '/suministros/historico': return 'Histórico Reversión';
       case '/sui/integracion': return 'SUI Integración';
-      case '/facturacion': return 'Facturación';
+      case '/facturacion': return 'Detallado Facturación';
+      case '/histCertificacion': return 'Historial de Certificación';
+      case '/histProductividad': return 'Historial de Productividad';
       case '/rellenos': return 'Configuración de Rellenos';
       case '/validaciones': return 'Validaciones';
       case '/subcont': return 'Subsidios y Contribuciones';

@@ -1,0 +1,20 @@
+<section>
+  <app-parametros-consulta
+    [mostrarAps]="false"
+    [(anno)]="anno"
+    [(mes)]="mes"
+    [loading]="loading()"
+    [autoConsultar]="true"
+    (consultar)="consultar()"
+    (parametrosIncompletos)="limpiar()"
+  ></app-parametros-consulta>
+
+  <div class="table-wrapper table-scroll">
+    <app-tabla-avanzada
+      [columnas]="columnas"
+      [rows]="rows()"
+      storageKey="historial-productividad"
+      nombreExportar="HistorialProductividad"
+    ></app-tabla-avanzada>
+  </div>
+</section>
