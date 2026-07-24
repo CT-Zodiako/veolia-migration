@@ -60,4 +60,8 @@ export class IndicesCraService {
       headers: this.getHeaders()
     });
   }
+
+  catalogo(): Observable<ApiEnvelope<{ paraPara: number; paraNombre: string }[]>> {
+    return this.http.get<ApiEnvelope<{ paraPara: number; paraNombre: string }[]>>(`${this.baseUrl}/catalogo`, { headers: this.getHeaders() });
+  }
 }

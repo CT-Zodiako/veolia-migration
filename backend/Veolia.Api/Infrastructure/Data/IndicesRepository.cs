@@ -19,13 +19,13 @@ SELECT
     INDI_FECHACREACION AS IndiFechaCreacion,
     USUA_USUA AS UsuaUsua
 FROM AUCO_INDICESCRA
-WHERE INDI_ANNO = :1
-  AND INDI_MES = :2
+WHERE INDI_ANNO = :anno
+  AND INDI_MES = :mes
   AND INDI_ESTADO = 1
 ORDER BY PARA_INDICE20011";
 
         using var connection = connectionFactory.CreateConnection();
-        var rows = await connection.QueryAsync<IndicesResponseDto>(new CommandDefinition(sql, new { p1 = anno, p2 = mes }, cancellationToken: cancellationToken));
+        var rows = await connection.QueryAsync<IndicesResponseDto>(new CommandDefinition(sql, new { anno, mes }, cancellationToken: cancellationToken));
         return rows.AsList();
     }
 
@@ -65,11 +65,11 @@ SELECT
     INDI_FECHACREACION AS IndiFechaCreacion,
     USUA_USUA AS UsuaUsua
 FROM AUCO_INDICESCRA
-WHERE INDI_ID = :1
+WHERE INDI_ID = :id
   AND INDI_ESTADO = 1";
 
         using var connection = connectionFactory.CreateConnection();
-        return await connection.QueryFirstOrDefaultAsync<IndicesResponseDto>(new CommandDefinition(sql, new { p1 = id }, cancellationToken: cancellationToken));
+        return await connection.QueryFirstOrDefaultAsync<IndicesResponseDto>(new CommandDefinition(sql, new { id }, cancellationToken: cancellationToken));
     }
 
     public async Task<long> CrearAsync(IndicesCrearRequestDto dto, long usuarioId, CancellationToken cancellationToken = default)
@@ -77,8 +77,8 @@ WHERE INDI_ID = :1
         const string dupSql = @"
 SELECT COUNT(1)
 FROM AUCO_INDICESCRA
-WHERE INDI_ANNO = :1
-  AND INDI_MES = :2
+WHERE INDI_ANNO = :anno
+  AND INDI_MES = :mes
   AND INDI_ESTADO = 1";
 
         const string insertSql = @"
@@ -97,27 +97,27 @@ INSERT INTO AUCO_INDICESCRA
 VALUES
 (
     SAUCO_INDICESCRA.NEXTVAL,
-    :1,
-    :2,
-    :3,
+    :paraId,
+    :anno,
+    :mes,
     1,
-    :4,
-    :5,
+    :valor,
+    :mitadValor,
     SYSDATE,
-    :6
+    :usuario
 )";
 
         const string firstIdSql = @"
 SELECT MIN(INDI_ID)
 FROM AUCO_INDICESCRA
-WHERE INDI_ANNO = :1
-  AND INDI_MES = :2
+WHERE INDI_ANNO = :anno
+  AND INDI_MES = :mes
   AND INDI_ESTADO = 1";
 
         using var connection = connectionFactory.CreateConnection();
         using var transaction = connection.BeginTransaction();
 
-        var existing = await connection.ExecuteScalarAsync<int>(new CommandDefinition(dupSql, new { p1 = dto.Anno, p2 = dto.Mes }, transaction, cancellationToken: cancellationToken));
+        var existing = await connection.ExecuteScalarAsync<int>(new CommandDefinition(dupSql, new { anno = dto.Anno, mes = dto.Mes }, transaction, cancellationToken: cancellationToken));
         if (existing > 0)
         {
             throw new InvalidOperationException("DUPLICATE_PERIOD");
@@ -125,18 +125,20 @@ WHERE INDI_ANNO = :1
 
         foreach (var item in dto.Valores)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("p1", item.Id);
-            parameters.Add("p2", dto.Anno);
-            parameters.Add("p3", dto.Mes);
-            parameters.Add("p4", item.Val);
-            parameters.Add("p5", item.Val / 2m);
-            parameters.Add("p6", usuarioId);
+            var parameters = new
+            {
+                paraId = item.Id,
+                anno = dto.Anno,
+                mes = dto.Mes,
+                valor = item.Val,
+                mitadValor = item.Val / 2m,
+                usuario = usuarioId
+            };
 
             await connection.ExecuteAsync(new CommandDefinition(insertSql, parameters, transaction, cancellationToken: cancellationToken));
         }
 
-        var firstId = await connection.ExecuteScalarAsync<long>(new CommandDefinition(firstIdSql, new { p1 = dto.Anno, p2 = dto.Mes }, transaction, cancellationToken: cancellationToken));
+        var firstId = await connection.ExecuteScalarAsync<long>(new CommandDefinition(firstIdSql, new { anno = dto.Anno, mes = dto.Mes }, transaction, cancellationToken: cancellationToken));
         transaction.Commit();
         return firstId;
     }
@@ -145,11 +147,11 @@ WHERE INDI_ANNO = :1
     {
         const string sql = @"
 UPDATE AUCO_INDICESCRA
-SET INDI_VALOR = :1,
-    INDI_MITADVALOR = :2
-WHERE PARA_INDICE20011 = :3
-  AND INDI_ANNO = :4
-  AND INDI_MES = :5
+SET INDI_VALOR = :valor,
+    INDI_MITADVALOR = :mitadValor
+WHERE PARA_INDICE20011 = :paraId
+  AND INDI_ANNO = :anno
+  AND INDI_MES = :mes
   AND INDI_ESTADO = 1";
 
         using var connection = connectionFactory.CreateConnection();
@@ -158,12 +160,14 @@ WHERE PARA_INDICE20011 = :3
         var affected = 0;
         foreach (var item in dto.Valores)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("p1", item.Val);
-            parameters.Add("p2", item.Val / 2m);
-            parameters.Add("p3", item.Id);
-            parameters.Add("p4", dto.Anno);
-            parameters.Add("p5", dto.Mes);
+            var parameters = new
+            {
+                valor = item.Val,
+                mitadValor = item.Val / 2m,
+                paraId = item.Id,
+                anno = dto.Anno,
+                mes = dto.Mes
+            };
 
             affected += await connection.ExecuteAsync(new CommandDefinition(sql, parameters, transaction, cancellationToken: cancellationToken));
         }
@@ -177,13 +181,27 @@ WHERE PARA_INDICE20011 = :3
         const string sql = @"
 UPDATE AUCO_INDICESCRA
 SET INDI_ESTADO = 0
-WHERE PARA_INDICE20011 = :1
-  AND INDI_ANNO = :2
-  AND INDI_MES = :3
+WHERE PARA_INDICE20011 = :paraId
+  AND INDI_ANNO = :anno
+  AND INDI_MES = :mes
   AND INDI_ESTADO = 1";
 
         using var connection = connectionFactory.CreateConnection();
-        var affected = await connection.ExecuteAsync(new CommandDefinition(sql, new { p1 = indiceTipoId, p2 = anno, p3 = mes }, cancellationToken: cancellationToken));
+        var affected = await connection.ExecuteAsync(new CommandDefinition(sql, new { paraId = indiceTipoId, anno, mes }, cancellationToken: cancellationToken));
         return affected > 0;
+    }
+
+    public async Task<IReadOnlyList<IndiceCatalogoDto>> GetCatalogoAsync(CancellationToken cancellationToken = default)
+    {
+        const string sql = @"
+SELECT PARA_PARA AS ParaPara, PARA_NOMBRE AS ParaNombre
+FROM AUGE_PARAMETROS
+WHERE CLAS_CLAS = 20011
+  AND PARA_ESTADO = 'A'
+ORDER BY PARA_PARA";
+
+        using var connection = connectionFactory.CreateConnection();
+        var rows = await connection.QueryAsync<IndiceCatalogoDto>(new CommandDefinition(sql, cancellationToken: cancellationToken));
+        return rows.AsList();
     }
 }

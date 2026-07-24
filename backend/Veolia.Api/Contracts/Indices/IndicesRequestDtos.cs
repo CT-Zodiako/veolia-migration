@@ -44,3 +44,9 @@ public sealed class IndicesResponseDto
     public DateTime? IndiFechaCreacion { get; set; }
     public long? UsuaUsua { get; set; }
 }
+
+public sealed class IndiceCatalogoDto
+{
+    public long ParaPara { get; set; }
+    public string ParaNombre { get; set; } = string.Empty;
+}

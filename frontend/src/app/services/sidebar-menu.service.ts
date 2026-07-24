@@ -86,7 +86,7 @@ export class SidebarMenuService {
     { label: 'Reliquidación - Comparar Costo', path: '/reliquidacion/comparar-costo', icon: '📊', keywords: ['comparar costo reliquidacion', 'reliq comparar costo'], menuId: 6003 },
     { label: 'Reliquidación - Comparar Tarifas', path: '/reliquidacion/comparar-tarifas', icon: '💹', keywords: ['comparar tarifas reliquidacion', 'reliq comparar tarifas'], menuId: 6004 },
     { label: 'Reliquidación - Tarificador', path: '/reliquidacion/tarificador', icon: '🧮', keywords: ['tarificador reliquidacion', 'reliq tarificador'], menuId: 6005 },
-    { label: 'Índices CRA', path: '/cra', icon: '📌', keywords: ['indices cra', 'indice cra', 'cra indices'] },
+    { label: 'Índices CRA', path: '/cra', icon: '📌', keywords: ['indices cra', 'indice cra', 'cra indices'], menuId: 301 },
     { label: 'Información Generales', path: '/generales', icon: '📈', keywords: ['informacion generales', 'generales', 'infogenerales'], menuId: 1001 },
     { label: 'Detallado de Costos', path: '/gerencial/costos', icon: '💰', keywords: ['gerencial costos', 'detalle costos gerencial', 'infogerencial costos', 'detallado de costos'], menuId: 602 },
     { label: 'Detallado Sub y Aportes', path: '/gerencial/sub-aporte', icon: '🧾', keywords: ['gerencial sub aporte', 'sub aporte gerencial', 'infogerencial sub aporte', 'detallado sub y aportes'], menuId: 603 },

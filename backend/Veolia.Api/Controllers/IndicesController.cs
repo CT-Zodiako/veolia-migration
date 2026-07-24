@@ -141,6 +141,23 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         }
     }
 
+    [HttpGet("catalogo")]
+    public async Task<IActionResult> Catalogo(CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+            return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
+
+        try
+        {
+            var rows = await repository.GetCatalogoAsync(cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
+        }
+    }
+
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
     {
         var token = Request.Headers["x-access-token"].FirstOrDefault();
