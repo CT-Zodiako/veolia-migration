@@ -43,9 +43,7 @@ export class TarifasService {
   }
 
   getTarxCosGeneral(anno: number, mes: number): Observable<TarifaRow[]> {
-    return this.http
-      .post<TarifaRow[]>(`${this.baseUrl}/tarxcomgeneral`, { anno, mes }, { headers: this.getHeaders() })
-      .pipe(map(rows => rows.map(row => this.roundNumericFields(row))));
+    return this.http.post<TarifaRow[]>(`${this.baseUrl}/tarxcomgeneral`, { anno, mes }, { headers: this.getHeaders() });
   }
 
   private roundNumericFields(row: TarifaRow): TarifaRow {

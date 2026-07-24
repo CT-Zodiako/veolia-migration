@@ -179,6 +179,102 @@ public sealed class InfoGerencialController(IInfoGerencialRepository repository)
         }
     }
 
+    [HttpPost("getapsDesCost")]
+    public async Task<IActionResult> GetApsDesCost([FromBody] ApsPeriodoRequestDto request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+            return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
+
+        if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
+            return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
+
+        try
+        {
+            var rows = await repository.GetDescuentosAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
+        }
+        catch (OracleException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
+        }
+    }
+
+    [HttpPost("getapsDesCostUnico")]
+    public async Task<IActionResult> GetApsDesCostUnico([FromBody] DescuentoCatalogoRequestDto request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+            return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
+
+        if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
+            return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
+
+        try
+        {
+            var rows = await repository.GetCatalogoDescuentoAsync(request.Id, request.Aps, request.Anno, request.Mes, request.IsNew, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
+        }
+        catch (OracleException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
+        }
+    }
+
+    [HttpPost("setapsDesCost")]
+    public async Task<IActionResult> SetApsDesCost([FromBody] DescuentoGuardarRequestDto request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+            return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
+
+        if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12 || request.Id <= 0)
+            return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno, mes e id son obligatorios. mes debe estar entre 1 y 12."));
+
+        try
+        {
+            await repository.InsertDescuentoAsync(request.Aps, request.Anno, request.Mes, request.Id, request.Valor, tokenContext.SisuId, cancellationToken);
+            return Ok(Envelope("success", new { }, "Descuento registrado correctamente."));
+        }
+        catch (OracleException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
+        }
+    }
+
+    [HttpPost("uptapsDesCost")]
+    public async Task<IActionResult> UptApsDesCost([FromBody] DescuentoGuardarRequestDto request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+            return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
+
+        if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12 || request.Id <= 0)
+            return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno, mes e id son obligatorios. mes debe estar entre 1 y 12."));
+
+        try
+        {
+            await repository.UpdateDescuentoAsync(request.Aps, request.Anno, request.Mes, request.Id, request.Valor, cancellationToken);
+            return Ok(Envelope("success", new { }, "Descuento actualizado correctamente."));
+        }
+        catch (OracleException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
+        }
+    }
+
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
     {
         var token = Request.Headers["x-access-token"].FirstOrDefault();

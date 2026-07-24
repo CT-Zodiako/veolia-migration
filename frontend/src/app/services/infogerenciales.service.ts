@@ -49,4 +49,20 @@ export class InfoGerencialService {
   costoPoda(aps: number): Observable<ApiEnvelope<any[]>> {
     return this.envelope(this.http.post<ApiEnvelope<any[]>>(`${this.baseUrl}/costoPoda`, { aps }, { headers: this.getHeaders() }));
   }
+
+  getApsDesCost(aps: number, anno: number, mes: number): Observable<ApiEnvelope<any[]>> {
+    return this.envelope(this.http.post<ApiEnvelope<any[]>>(`${this.baseUrl}/getapsDesCost`, { aps, anno, mes }, { headers: this.getHeaders() }));
+  }
+
+  getApsDesCostUnico(id: number, aps: number, anno: number, mes: number, isNew: boolean): Observable<ApiEnvelope<any[]>> {
+    return this.envelope(this.http.post<ApiEnvelope<any[]>>(`${this.baseUrl}/getapsDesCostUnico`, { id, aps, anno, mes, isNew }, { headers: this.getHeaders() }));
+  }
+
+  setApsDesCost(aps: number, anno: number, mes: number, id: number, valor: number): Observable<ApiEnvelope<unknown>> {
+    return this.envelope(this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/setapsDesCost`, { aps, anno, mes, id, valor }, { headers: this.getHeaders() }));
+  }
+
+  uptApsDesCost(aps: number, anno: number, mes: number, id: number, valor: number): Observable<ApiEnvelope<unknown>> {
+    return this.envelope(this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/uptapsDesCost`, { aps, anno, mes, id, valor }, { headers: this.getHeaders() }));
+  }
 }

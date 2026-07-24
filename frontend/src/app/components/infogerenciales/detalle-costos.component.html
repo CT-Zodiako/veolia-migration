@@ -1,58 +1,18 @@
-<p-toast></p-toast>
-
-<p-card header="Detalle de Costos">
-  <div class="grid mb-3">
-    <div class="col-12 md:col-3">
-      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="anno.set($event)" label="Año"></app-anno-selector>
-    </div>
-    <div class="col-12 md:col-3">
-      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="mes.set($event)" label="Mes"></app-mes-selector>
-    </div>
-    <div class="col-12 md:col-3 flex align-items-end">
-      <button pButton type="button" label="Consultar" icon="pi pi-search" (click)="consultar()"></button>
+<section>
+  <div class="card-section">
+    <div class="parametros-row">
+      <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="aps.set($event)" label="APS"></app-aps-selector>
+      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
+      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
     </div>
   </div>
 
-  <div *ngIf="loading()" class="text-center py-4"><i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i><p>Cargando...</p></div>
-  <div *ngIf="error()" class="p-error p-3"><i class="pi pi-exclamation-circle"></i> {{ error() }}</div>
-  <div *ngIf="!loading() && !error() && data().length === 0" class="text-center py-4 text-secondary"><i class="pi pi-inbox" style="font-size: 2rem"></i><p>Sin datos para mostrar</p></div>
-
-  <p-table *ngIf="data().length > 0" [value]="data()" [scrollable]="true" scrollHeight="430px" [tableStyle]="{ 'min-width': '60rem' }">
-    <ng-template pTemplate="header">
-      <tr>
-        <th>APS</th>
-        <th>Año</th>
-        <th>Mes</th>
-        <th>Tipo Fact</th>
-        <th>CCS</th>
-        <th>CCS Aprox</th>
-        <th>CBL</th>
-        <th>CLUS</th>
-        <th>CRT</th>
-        <th>CDF</th>
-        <th>INC</th>
-        <th>IAT</th>
-        <th>CTL</th>
-        <th>VBA</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-row>
-      <tr>
-        <td>{{ row.APSA_NOMAPS || row.apsa_nomaps }}</td>
-        <td>{{ row.ANNOCOSTO || row.annocosto }}</td>
-        <td>{{ row.MESCOSTO || row.mescosto }}</td>
-        <td>{{ row.TIPO_FACT || row.tipo_fact }}</td>
-        <td>{{ row.COST_CCS || row.cost_ccs }}</td>
-        <td>{{ row.COST_CCSAPRO || row.cost_ccsapro }}</td>
-        <td>{{ row.COST_CBL || row.cost_cbl }}</td>
-        <td>{{ row.COST_CLUS || row.cost_clus }}</td>
-        <td>{{ row.COST_CRT || row.cost_crt }}</td>
-        <td>{{ row.COST_CDF || row.cost_cdf }}</td>
-        <td>{{ row.COST_INC || row.cost_inc }}</td>
-        <td>{{ row.COST_IAT || row.cost_iat }}</td>
-        <td>{{ row.COST_CTL || row.cost_ctl }}</td>
-        <td>{{ row.COST_VBA || row.cost_vba }}</td>
-      </tr>
-    </ng-template>
-  </p-table>
-</p-card>
+  <div class="table-wrapper table-scroll">
+    <app-tabla-avanzada
+      [columnas]="columnas"
+      [rows]="filteredRows()"
+      storageKey="detalle-costos"
+      nombreExportar="DetalleCosto"
+    ></app-tabla-avanzada>
+  </div>
+</section>

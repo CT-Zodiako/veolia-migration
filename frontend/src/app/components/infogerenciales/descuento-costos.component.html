@@ -1,0 +1,74 @@
+<p-toast></p-toast>
+
+<section>
+  <div class="card-section">
+    <div class="parametros-row">
+      <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
+      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
+    </div>
+  </div>
+
+  <div class="card-section">
+    <div class="mb-3 flex justify-content-end">
+      <p-button label="Agregar" icon="pi pi-plus" [disabled]="aps() === null || anno() === null || mes() === null" (onClick)="abrirNuevo()"></p-button>
+    </div>
+
+    <div class="table-wrapper table-scroll">
+      <app-tabla-avanzada
+        [columnas]="columnas"
+        [rows]="rows()"
+        [accionesTemplate]="acciones"
+        storageKey="descuento-costos"
+        nombreExportar="DescuentoCostos"
+      ></app-tabla-avanzada>
+    </div>
+
+    <ng-template #acciones let-row>
+      <p-button icon="pi pi-pencil" severity="info" size="small" (onClick)="abrirEdicion(row)"></p-button>
+    </ng-template>
+  </div>
+</section>
+
+<p-dialog
+  [header]="dialogEsNuevo() ? 'Nuevo descuento' : 'Editar descuento'"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '30rem' }"
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+>
+  <div class="form-group">
+    <label>Descuento</label>
+    <p-select
+      [options]="catalogoOptions()"
+      optionLabel="PARA_NOMBRE"
+      optionValue="PARA_PARA"
+      placeholder="Seleccionar descuento"
+      [ngModel]="dialogSeleccion()"
+      (ngModelChange)="dialogSeleccion.set($event)"
+      [loading]="dialogLoading()"
+      [appendTo]="'body'"
+      [filter]="true"
+      filterBy="PARA_NOMBRE"
+      styleClass="w-full"
+    ></p-select>
+  </div>
+
+  <div class="form-group">
+    <label>Valor</label>
+    <p-inputNumber
+      [ngModel]="dialogValor()"
+      (ngModelChange)="dialogValor.set($event)"
+      mode="decimal"
+      [minFractionDigits]="0"
+      [maxFractionDigits]="4"
+      class="w-full"
+    ></p-inputNumber>
+  </div>
+
+  <div class="flex justify-content-end gap-2 mt-3">
+    <p-button label="Cancelar" severity="secondary" (onClick)="cerrarDialog()"></p-button>
+    <p-button label="Guardar" [loading]="dialogGuardando()" (onClick)="guardar()"></p-button>
+  </div>
+</p-dialog>

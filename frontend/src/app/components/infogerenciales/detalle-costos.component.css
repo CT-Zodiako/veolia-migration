@@ -1,3 +1,25 @@
-:host { display: block; }
-.text-secondary { color: var(--text-color-secondary); }
-.p-error { color: var(--red-500); background: var(--red-50); border-radius: 4px; }
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.parametros-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.parametros-row app-aps-selector {
+  flex: 0 1 220px;
+  min-width: 180px;
+}
+
+.parametros-row app-anno-selector,
+.parametros-row app-mes-selector {
+  flex: 0 1 130px;
+  min-width: 110px;
+}

@@ -1,59 +1,73 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { InfoGerencialService } from '../../services/infogerenciales.service';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { redondearFilas } from '../../shared/redondeo.util';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
+import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 
 @Component({
   selector: 'app-detalle-sub-aporte',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, TableModule, ToastModule, AnnoSelectorComponent, MesSelectorComponent],
-  providers: [MessageService],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ApsSelectorComponent, AnnoSelectorComponent, MesSelectorComponent, TablaAvanzadaComponent],
   templateUrl: './detalle-sub-aporte.component.html',
-  styleUrls: ['./detalle-sub-aporte.component.css']
+  styleUrl: './detalle-sub-aporte.component.css'
 })
 export class DetalleSubAporteComponent {
-  anno = signal<number | null>(new Date().getFullYear());
-  mes = signal<number | null>(new Date().getMonth() + 1);
+  readonly aps = signal<number | null>(null);
+  readonly anno = signal<number | null>(null);
+  readonly mes = signal<number | null>(null);
 
-  loading = signal(false);
-  error = signal<string | null>(null);
-  data = signal<any[]>([]);
+  readonly loading = signal(false);
+  readonly rows = signal<Record<string, unknown>[]>([]);
+  readonly filteredRows = computed(() => {
+    const apsSel = this.aps();
+    const rows = this.rows();
+    return apsSel === null ? rows : rows.filter((row) => Number(row['APSA_ID']) === apsSel);
+  });
 
-  constructor(
-    private readonly service: InfoGerencialService,
-    private readonly messages: MessageService
-  ) {}
+  readonly columnas: TablaColumn[] = [
+    { field: 'APSA_NOMAPS', header: 'APS', filtrable: true },
+    { field: 'CLAS_NOMBRE', header: 'Clase Uso', filtrable: true },
+    { field: 'PARA_NOMBRE', header: 'Tipo Predio', filtrable: true },
+    { field: 'SUCO_VALOR', header: 'Valor', numero: true }
+  ];
 
-  consultar(): void {
+  private readonly decimales: Record<string, number> = { SUCO_VALOR: 6 };
+
+  constructor(private readonly service: InfoGerencialService) {}
+
+  onAnnoChange(value: number | null): void {
+    this.anno.set(value);
+    this.consultarSiCompleto();
+  }
+
+  onMesChange(value: number | null): void {
+    this.mes.set(value);
+    this.consultarSiCompleto();
+  }
+
+  private consultarSiCompleto(): void {
     const anno = this.anno();
     const mes = this.mes();
-    if (!anno || !mes) {
-      this.error.set('Debe seleccionar año y mes.');
+    if (anno === null || mes === null) {
+      this.rows.set([]);
       return;
     }
 
     this.loading.set(true);
-    this.error.set(null);
-    this.data.set([]);
-
     const periodo = periodoAnterior(anno, mes);
     this.service.detsubaporte(periodo.anno, periodo.mes).subscribe({
-      next: (res) => {
-        this.data.set(res?.data || []);
+      next: (r) => {
+        this.rows.set(redondearFilas(r.data || [], this.decimales));
         this.loading.set(false);
       },
-      error: (err) => {
-        const msg = err?.error?.message || err?.message || 'Error al consultar detalle de subsidios/aportes';
-        this.error.set(msg);
-        this.messages.add({ severity: 'error', summary: 'Detalle sub/aporte', detail: msg });
+      error: () => {
+        this.rows.set([]);
         this.loading.set(false);
       }
     });

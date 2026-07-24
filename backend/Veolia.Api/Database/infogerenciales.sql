@@ -24,21 +24,31 @@ CREATE INDEX IDX_DIVIPOLI_NOMBRE ON AUGE_DIVIPOLI(DIVI_NOMBRE);
 -- -----------------------------------------------------------
 -- 2. VAUCO_SUBSAPORT - Vista de subsidios y aportes
 -- -----------------------------------------------------------
+-- El legacy consume APSA_NOMAPS y CLAS_NOMBRE ya resueltos desde esta
+-- vista (confirmado en DetalleSubAporte.vue), por lo que la vista real de
+-- producción ya trae estos joins embebidos. Replicamos con AUCO_APSASEO
+-- (APS) y AUCO_CLASESUSO (clase de uso, misma tabla catálogo confirmada
+-- en el módulo Subsidios y Contribuciones de Proyecciones).
 CREATE OR REPLACE VIEW VAUCO_SUBSAPORT AS
 SELECT
-    SUCO_ID,
-    SUCO_ANNO,
-    SUCO_MES,
-    APSA_ID,
-    EMPR_EMPR,
-    DIVI_DIVI,
-    PARA_TIPPRED20016,
-    SUCO_VALOR,
-    SUCO_ESTADO,
-    SUCO_FECHACREACION,
-    USUA_USUA
-FROM AUCO_APSSUBSCONT
-WHERE SUCO_ESTADO = 1;
+    S.SUCO_ID,
+    S.SUCO_ANNO,
+    S.SUCO_MES,
+    S.APSA_ID,
+    A.APSA_NOMAPS,
+    S.CLAS_CLASE,
+    CU.CLAS_NOMBRE,
+    S.EMPR_EMPR,
+    S.DIVI_DIVI,
+    S.PARA_TIPPRED20016,
+    S.SUCO_VALOR,
+    S.SUCO_ESTADO,
+    S.SUCO_FECHACREACION,
+    S.USUA_USUA
+FROM AUCO_APSSUBSCONT S
+JOIN AUCO_APSASEO A ON A.APSA_ID = S.APSA_ID
+LEFT JOIN AUCO_CLASESUSO CU ON CU.CLAS_CLASE = S.CLAS_CLASE
+WHERE S.SUCO_ESTADO = 1;
 
 COMMENT ON VIEW VAUCO_SUBSAPORT IS 'Vista de subsidios y aportes activos';
 
@@ -68,23 +78,21 @@ COMMENT ON VIEW VPODA_REPORTE IS 'Vista de reporte de costos de poda';
 -- -----------------------------------------------------------
 -- Nota: En algunos ambientes VAUCO_COSTOS existe como tabla.
 -- Si es tabla, omitir esta vista. Si no existe, crear vista:
+-- Columnas confirmadas contra el legacy real (DetalleCostos.vue +
+-- controller.js): la vista es "formato largo" (una fila por concepto de
+-- costo vía NOMCOSTO), NO tiene columnas anchas por concepto como
+-- COST_CCS/COST_CBL/etc (esas no existen, eran una versión inventada).
 /*
 CREATE OR REPLACE VIEW VAUCO_COSTOS AS
 SELECT
     COST_ID,
-    APSCOSTO AS APSA_ID,
-    ANNOCOSTO AS COST_ANNO,
-    MESCOSTO AS COST_MES,
-    COST_CCS,
-    COST_CCSAPRO,
-    COST_CBL,
-    COST_CLUS,
-    COST_CRT,
-    COST_CDF,
-    COST_INC,
-    COST_IAT,
-    COST_CTL,
-    COST_VBA
+    APSCOSTO,
+    ANNOCOSTO,
+    MESCOSTO,
+    NOMCOSTO,
+    ACOBRAR,
+    VALOR,
+    VARIACION
 FROM AUCO_COSTOS_DETALLE
 WHERE COST_ESTADO = 1;
 */

@@ -96,7 +96,7 @@ export class ParametrosConsultaComponent {
   @Input() labelBoton = 'Consultar';
   @Input() loading = false;
   @Input() wrapInCard = true;
-  @Input() headerCard = 'Parámetros de Consulta';
+  @Input() headerCard = '';
 
   @Output() consultar = new EventEmitter<void>();
   @Output() parametrosIncompletos = new EventEmitter<void>();

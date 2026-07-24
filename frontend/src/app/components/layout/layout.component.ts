@@ -161,12 +161,12 @@ export class LayoutComponent implements OnInit {
       case '/reliquidacion/comparar-tarifas': return 'Reliquidación - Comparar Tarifas';
       case '/reliquidacion/tarificador': return 'Reliquidación - Tarificador';
       case '/generales': return 'Información Generales';
-      case '/gerencial/costos': return 'Gerencial - Detalle Costos';
-      case '/gerencial/sub-aporte': return 'Gerencial - Sub Aporte';
-      case '/gerencial/dashboard': return 'Gerencial - Dashboard';
-      case '/gerencial/poda': return 'Gerencial - Costo Poda';
+      case '/gerencial/costos': return 'Detallado de Costos';
+      case '/gerencial/sub-aporte': return 'Detallado Sub y Aportes';
+      case '/gerencial/dashboard': return 'Dashboard';
+      case '/gerencial/poda': return 'Costo de Poda';
+      case '/gerencial/descuento-costos': return 'Act. Descuento Costos';
       case '/gerencial/verificacion': return 'Gerencial - Verificación APS';
-      case '/gerencial/poda-simple': return 'Gerencial - Poda';
       case '/pgirs/resumen': return 'PGIRS - Resumen';
       case '/pgirs/informe-variables': return 'PGIRS - Informe Variables';
       case '/pgirs/variables': return 'Variables PGIRS';
@@ -174,6 +174,7 @@ export class LayoutComponent implements OnInit {
       case '/costos/calculo-tarifas': return 'Cálculo de Tarifas';
       case '/cra': return 'Índices CRA';
       case '/tarifas': return 'Detallado Tarifas';
+      case '/tarifas-general': return 'Detallado Tarifas';
       default: return '';
     }
   }
