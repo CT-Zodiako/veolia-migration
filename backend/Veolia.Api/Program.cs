@@ -41,6 +41,7 @@ builder.Services.AddScoped<ISuministrosRepository, SuministrosRepository>();
 builder.Services.AddScoped<ICertificacionRepository, CertificacionRepository>();
 builder.Services.AddScoped<ISuiReversionesRepository, SuiReversionesRepository>();
 builder.Services.AddScoped<ISuiRepository, SuiRepository>();
+builder.Services.AddScoped<IInformesRepository, InformesRepository>();
 builder.Services.AddScoped<ISui853ReadmodelsRepository, Sui853ReadmodelsRepository>();
 builder.Services.AddScoped<Sui853ContractMapper>();
 builder.Services.AddScoped<IValidacionesRepository, ValidacionesRepository>();
@@ -62,11 +63,14 @@ builder.Services.AddScoped<IInfoGeneralesRepository, InfoGeneralesRepository>();
 builder.Services.AddScoped<IInfoGerencialRepository, InfoGerencialRepository>();
 builder.Services.AddScoped<IPgirsRepository, PgirsRepository>();
 builder.Services.AddScoped<IIndicesRepository, IndicesRepository>();
+builder.Services.AddScoped<IProductividadRepository, ProductividadRepository>();
+builder.Services.AddScoped<IAprovechamientoRepository, AprovechamientoRepository>();
 builder.Services.AddScoped<FileParserService>();
 
 builder.Services.Configure<GoogleDriveOptions>(builder.Configuration.GetSection(GoogleDriveOptions.SectionName));
 builder.Services.AddSingleton<IGoogleSheetsService, GoogleSheetsService>();
 builder.Services.AddScoped<ICrecimientoDriveService, CrecimientoDriveService>();
+builder.Services.AddScoped<ICargueProductividadService, CargueProductividadService>();
 
 var app = builder.Build();
 
@@ -297,6 +301,30 @@ app.UseWhen(
 app.UseWhen(
     context =>
     {
+        if (!context.Request.Path.StartsWithSegments("/api/v1/productividad", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    },
+    branch => { branch.UseMiddleware<AuthJwtParityMiddleware>(); });
+
+app.UseWhen(
+    context =>
+    {
+        if (!context.Request.Path.StartsWithSegments("/api/v1/aprovechamiento", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    },
+    branch => { branch.UseMiddleware<AuthJwtParityMiddleware>(); });
+
+app.UseWhen(
+    context =>
+    {
         if (!context.Request.Path.StartsWithSegments("/api/v1/infogenerales", StringComparison.OrdinalIgnoreCase))
         {
             return false;
@@ -322,6 +350,18 @@ app.UseWhen(
     context =>
     {
         if (!context.Request.Path.StartsWithSegments("/api/v1/pgirs", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    },
+    branch => { branch.UseMiddleware<AuthJwtParityMiddleware>(); });
+
+app.UseWhen(
+    context =>
+    {
+        if (!context.Request.Path.StartsWithSegments("/api/v1/informes", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

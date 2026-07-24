@@ -1,0 +1,39 @@
+<p-toast></p-toast>
+
+<div class="card-section">
+  <div class="toolbar">
+    <div class="filters">
+      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
+      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
+    </div>
+    <p-button label="Cargar" icon="pi pi-cloud-download" [loading]="cargando()" (onClick)="cargar()"></p-button>
+  </div>
+</div>
+
+<div class="card-section" *ngIf="cargado()">
+  <p-tabs value="0">
+    <p-tablist>
+      <p-tab value="0">Propios</p-tab>
+      <p-tab value="1">Terceros</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="0">
+        <app-pivot-tabla [datos]="propios()" [columnas]="columnas"></app-pivot-tabla>
+      </p-tabpanel>
+      <p-tabpanel value="1">
+        <app-pivot-tabla [datos]="terceros()" [columnas]="columnas"></app-pivot-tabla>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+
+  <div class="guardar-row">
+    <p-button
+      label="Guardar"
+      icon="pi pi-save"
+      severity="success"
+      [loading]="guardando()"
+      [disabled]="propios().length === 0 && terceros().length === 0"
+      (onClick)="confirmarGuardar()"
+    ></p-button>
+  </div>
+</div>

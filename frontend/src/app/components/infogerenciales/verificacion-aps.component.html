@@ -1,129 +1,48 @@
 <p-toast></p-toast>
 
-<p-card header="Verificación APS">
-  <div class="grid mb-3">
-    <div class="col-12 md:col-3">
-      <label class="block mb-1">APS</label>
-      <p-select [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" placeholder="Seleccione APS"
-        [ngModel]="aps()" (ngModelChange)="aps.set($event)" styleClass="w-full"></p-select>
-    </div>
-    <div class="col-12 md:col-2">
-      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="anno.set($event)" label="Año"></app-anno-selector>
-    </div>
-    <div class="col-12 md:col-2">
-      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="mes.set($event)" label="Mes"></app-mes-selector>
-    </div>
-    <div class="col-12 md:col-2 flex align-items-end">
-      <p-button label="Consultar" icon="pi pi-search" (onClick)="consultar()"></p-button>
-    </div>
+<div class="card-section">
+  <div class="parametros-row">
+    <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+    <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
+    <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
   </div>
+</div>
 
-  <p-tabs [(value)]="activeTab" (valueChange)="onTabChange($event)">
-    <p-tablist>
-      <p-tab [value]="0">Empresa/División</p-tab>
-      <p-tab [value]="1">APS/Empresa/División</p-tab>
-      <p-tab [value]="2">Rellenos</p-tab>
-    </p-tablist>
-    <p-tabpanels>
-      <!-- Empresa/División -->
-      <p-tabpanel [value]="0">
-        <div *ngIf="emprLoading()" class="text-center py-4"><i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i><p>Cargando...</p></div>
-        <div *ngIf="emprError()" class="p-error p-3"><i class="pi pi-exclamation-circle"></i> {{ emprError() }}</div>
-        <div *ngIf="!emprLoading() && !emprError() && emprData().length === 0" class="text-center py-4 text-secondary">
-          <i class="pi pi-inbox" style="font-size: 2rem"></i><p>Sin datos</p>
-        </div>
-        <p-table *ngIf="emprData().length > 0" [value]="emprData()" [scrollable]="true" scrollHeight="400px"
-          [tableStyle]="{ 'min-width': '50rem' }">
-          <ng-template pTemplate="header"><tr>
-            <th>Empresa</th><th>Año</th><th>Mes</th><th>CBLJ</th><th>LBLJ</th><th>N</th>
-            <th>M3 Agua</th><th>CP</th><th>M2 CCJ</th><th>M2 LAVJ</th><th>TIJ</th><th>KLPJ</th><th>TMJ</th>
-            <th>CLAVJ</th><th>QRTJ</th><th>QRSJ</th>
-          </tr></ng-template>
-          <ng-template pTemplate="body" let-row><tr>
-            <td>{{ row.EMPR_NOMBRE || row.empr_nombre }}</td>
-            <td>{{ row.INED_ANNO || row.ined_anno }}</td>
-            <td>{{ row.INED_MES || row.ined_mes }}</td>
-            <td>{{ row.INED_CBLJ || row.ined_cblj }}</td>
-            <td>{{ row.INED_LBLJ || row.ined_lblj }}</td>
-            <td>{{ row.INED_N || row.ined_n }}</td>
-            <td>{{ row.INED_M3AGUA || row.ined_m3agua }}</td>
-            <td>{{ row.INED_CP || row.ined_cp }}</td>
-            <td>{{ row.INED_M2CCJ || row.ined_m2ccj }}</td>
-            <td>{{ row.INED_M2LAVJ || row.ined_m2lavj }}</td>
-            <td>{{ row.INED_TIJ || row.ined_tij }}</td>
-            <td>{{ row.INED_KLPJ || row.ined_klpj }}</td>
-            <td>{{ row.INED_TMJ || row.ined_tmj }}</td>
-            <td>{{ row.INED_CLAVJ || row.ined_clavj }}</td>
-            <td>{{ row.INED_QRTJ || row.ined_qrtj }}</td>
-            <td>{{ row.INED_QRSJ || row.ined_qrsj }}</td>
-          </tr></ng-template>
-        </p-table>
-      </p-tabpanel>
+<!-- Resumen Empresa -->
+<div class="card-section">
+  <h3 class="table-title">Resumen Empresa</h3>
+  <div class="table-wrapper table-scroll">
+    <app-tabla-avanzada
+      [columnas]="columnasEmpresa"
+      [rows]="emprData()"
+      storageKey="verificacion-empresa"
+      nombreExportar="ResumenEmpresa"
+    ></app-tabla-avanzada>
+  </div>
+</div>
 
-      <!-- APS/Empresa/División -->
-      <p-tabpanel [value]="1">
-        <div *ngIf="apsEmprLoading()" class="text-center py-4"><i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i><p>Cargando...</p></div>
-        <div *ngIf="apsEmprError()" class="p-error p-3"><i class="pi pi-exclamation-circle"></i> {{ apsEmprError() }}</div>
-        <div *ngIf="!apsEmprLoading() && !apsEmprError() && apsEmprData().length === 0" class="text-center py-4 text-secondary">
-          <i class="pi pi-inbox" style="font-size: 2rem"></i><p>Sin datos</p>
-        </div>
-        <p-table *ngIf="apsEmprData().length > 0" [value]="apsEmprData()" [scrollable]="true" scrollHeight="400px"
-          [tableStyle]="{ 'min-width': '50rem' }">
-          <ng-template pTemplate="header"><tr>
-            <th>Empresa</th><th>División</th><th>Año</th><th>Mes</th>
-            <th>QRTZ</th><th>CPE</th><th>T</th><th>VACRT</th><th>CRTZ</th>
-            <th>QBL</th><th>QLU</th><th>QR</th><th>TAFA</th><th>ND</th><th>NA</th>
-          </tr></ng-template>
-          <ng-template pTemplate="body" let-row><tr>
-            <td>{{ row.EMPR_NOMBRE || row.empr_nombre }}</td>
-            <td>{{ row.DIVI_NOMBRE || row.divi_nombre }}</td>
-            <td>{{ row.IAED_ANNO || row.iaed_anno }}</td>
-            <td>{{ row.IAED_MES || row.iaed_mes }}</td>
-            <td>{{ row.IAED_QRTZ || row.iaed_qrtz }}</td>
-            <td>{{ row.IAED_CPE || row.iaed_cpe }}</td>
-            <td>{{ row.IAED_T || row.iaed_t }}</td>
-            <td>{{ row.IAED_VACRT || row.iaed_vacrt }}</td>
-            <td>{{ row.IAED_CRTZ || row.iaed_crtz }}</td>
-            <td>{{ row.IAED_QBL || row.iaed_qbl }}</td>
-            <td>{{ row.IAED_QLU || row.iaed_qlu }}</td>
-            <td>{{ row.IAED_QR || row.iaed_qr }}</td>
-            <td>{{ row.IAED_TAFA || row.iaed_tafa }}</td>
-            <td>{{ row.IAED_ND || row.iaed_nd }}</td>
-            <td>{{ row.IAED_NA || row.iaed_na }}</td>
-          </tr></ng-template>
-        </p-table>
-      </p-tabpanel>
+<!-- Resumen APS -->
+<div class="card-section">
+  <h3 class="table-title">Resumen APS</h3>
+  <div class="table-wrapper table-scroll">
+    <app-tabla-avanzada
+      [columnas]="columnasAps"
+      [rows]="apsEmprData()"
+      storageKey="verificacion-aps"
+      nombreExportar="ResumenAPS"
+    ></app-tabla-avanzada>
+  </div>
+</div>
 
-      <!-- Rellenos -->
-      <p-tabpanel [value]="2">
-        <div *ngIf="rellenoLoading()" class="text-center py-4"><i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i><p>Cargando...</p></div>
-        <div *ngIf="rellenoError()" class="p-error p-3"><i class="pi pi-exclamation-circle"></i> {{ rellenoError() }}</div>
-        <div *ngIf="!rellenoLoading() && !rellenoError() && rellenoData().length === 0" class="text-center py-4 text-secondary">
-          <i class="pi pi-inbox" style="font-size: 2rem"></i><p>Sin datos</p>
-        </div>
-        <p-table *ngIf="rellenoData().length > 0" [value]="rellenoData()" [scrollable]="true" scrollHeight="400px"
-          [tableStyle]="{ 'min-width': '50rem' }">
-          <ng-template pTemplate="header"><tr>
-            <th>Relleno</th><th>Año</th><th>Mes</th><th>QRS</th><th>CDFK</th>
-            <th>VACDF</th><th>VL</th><th>CTMLX</th><th>CTLK</th><th>VACTL</th>
-            <th>Escenario</th><th>C</th>
-          </tr></ng-template>
-          <ng-template pTemplate="body" let-row><tr>
-            <td>{{ row.RELL_NOMRELLENO || row.rell_nomrelleno }}</td>
-            <td>{{ row.IARE_ANNO || row.iare_anno }}</td>
-            <td>{{ row.IARE_MES || row.iare_mes }}</td>
-            <td>{{ row.IARE_QRS || row.iare_qrs }}</td>
-            <td>{{ row.IARE_CDFK || row.iare_cdfk }}</td>
-            <td>{{ row.IARE_VACDF || row.iare_vacdf }}</td>
-            <td>{{ row.IARE_VL || row.iare_vl }}</td>
-            <td>{{ row.IARE_CTMLX || row.iare_ctmlx }}</td>
-            <td>{{ row.IARE_CTLK || row.iare_ctlk }}</td>
-            <td>{{ row.IARE_VACTL || row.iare_vactl }}</td>
-            <td>{{ row.IARE_ESCENARIO || row.iare_escenario }}</td>
-            <td>{{ row.IARE_C || row.iare_c }}</td>
-          </tr></ng-template>
-        </p-table>
-      </p-tabpanel>
-    </p-tabpanels>
-  </p-tabs>
-</p-card>
+<!-- Resumen Relleno -->
+<div class="card-section">
+  <h3 class="table-title">Resumen Relleno</h3>
+  <div class="table-wrapper table-scroll">
+    <app-tabla-avanzada
+      [columnas]="columnasRelleno"
+      [rows]="rellenoData()"
+      storageKey="verificacion-relleno"
+      nombreExportar="ResumenRelleno"
+    ></app-tabla-avanzada>
+  </div>
+</div>

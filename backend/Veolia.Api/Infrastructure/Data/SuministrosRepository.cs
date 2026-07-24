@@ -115,34 +115,74 @@ VALUES (:aps, :anno, :mes, :cdf, :ctl, :incentivo)";
         return await connection.ExecuteAsync(new CommandDefinition(sql, request, cancellationToken: cancellationToken));
     }
 
-    public async Task<int> GuardarProductividadAsync(ProductividadRequest request, CancellationToken cancellationToken)
+    public async Task ReemplazarProductividadAsync(int anno, int mes, IReadOnlyList<ProductividadCargueRow> propios, IReadOnlyList<ProductividadCargueRow> terceros, CancellationToken cancellationToken)
     {
-        const string sql = @"INSERT INTO PORD_PROPIA (APSA_ID, PORP_ANNO, PORP_MES, PORP_DATA)
-VALUES (:aps, :anno, :mes, :propia);
-INSERT INTO PORD_TERCERO (APSA_ID, PORT_ANNO, PORT_MES, PORT_DATA)
-VALUES (:aps, :anno, :mes, :terceros);";
-        var parameters = new
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        using var transaction = connection.BeginTransaction();
+
+        try
         {
-            request.aps,
-            request.anno,
-            request.mes,
-            propia = System.Text.Json.JsonSerializer.Serialize(request.propia ?? []),
-            terceros = System.Text.Json.JsonSerializer.Serialize(request.terceros ?? [])
-        };
+            await connection.ExecuteAsync(new CommandDefinition(
+                "DELETE FROM PORD_PROPIA WHERE PRODANNO = :anno AND PRODMES = :mes",
+                new { anno, mes }, transaction: transaction, cancellationToken: cancellationToken));
 
-        using var connection = await OpenConnectionAsync(cancellationToken);
-        return await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
-    }
+            await connection.ExecuteAsync(new CommandDefinition(
+                "DELETE FROM PORD_TERCERO WHERE TERCANNO = :anno AND TERCMES = :mes",
+                new { anno, mes }, transaction: transaction, cancellationToken: cancellationToken));
 
-    public async Task<IReadOnlyList<dynamic>> CargueProductividadAsync(ProductividadRequest request, CancellationToken cancellationToken)
-    {
-        const string sql = @"SELECT APSA_ID AS ""aps"", PORP_ANNO AS ""anno"", PORP_MES AS ""mes"", PORP_DATA AS ""data""
-FROM PORD_PROPIA
-WHERE APSA_ID = :aps AND PORP_ANNO = :anno AND PORP_MES = :mes";
+            const string insertPropiaSql = @"
+INSERT INTO PORD_PROPIA (CODAPS, NOMAPS, CODEMPRESA, NOMEMPRESA, PRODANNO, PRODMES, PRODCCS, PRODCBLS, PRODCLUS, PRODCRT, PRODCDF, PRODCTL)
+VALUES (:codAps, :aps, :codEmpresa, :empresa, :anno, :mes, :ccs, :cbls, :clus, :crt, :cdf, :ctl)";
 
-        using var connection = await OpenConnectionAsync(cancellationToken);
-        var rows = await connection.QueryAsync(sql, new { request.aps, request.anno, request.mes });
-        return rows.ToList();
+            foreach (var row in propios)
+            {
+                await connection.ExecuteAsync(new CommandDefinition(insertPropiaSql, new
+                {
+                    codAps = row.COD_APS,
+                    aps = row.APS,
+                    codEmpresa = row.COD_EMPRESA,
+                    empresa = row.EMPRESA,
+                    anno = row.ANNO,
+                    mes = row.MES,
+                    ccs = row.CCS,
+                    cbls = row.CBLS,
+                    clus = row.CLUS,
+                    crt = row.CRT,
+                    cdf = row.CDF,
+                    ctl = row.CTL
+                }, transaction: transaction, cancellationToken: cancellationToken));
+            }
+
+            const string insertTerceroSql = @"
+INSERT INTO PORD_TERCERO (CODAPS, NOMAPS, CODEMPRESA, NOMEMPRESA, TERCANNO, TERCMES, TERCCCS, TERCCBLS, TERCCLUS, TERCCRT, TERCCDF, TERCCTL)
+VALUES (:codAps, :aps, :codEmpresa, :empresa, :anno, :mes, :ccs, :cbls, :clus, :crt, :cdf, :ctl)";
+
+            foreach (var row in terceros)
+            {
+                await connection.ExecuteAsync(new CommandDefinition(insertTerceroSql, new
+                {
+                    codAps = row.COD_APS,
+                    aps = row.APS,
+                    codEmpresa = row.COD_EMPRESA,
+                    empresa = row.EMPRESA,
+                    anno = row.ANNO,
+                    mes = row.MES,
+                    ccs = row.CCS,
+                    cbls = row.CBLS,
+                    clus = row.CLUS,
+                    crt = row.CRT,
+                    cdf = row.CDF,
+                    ctl = row.CTL
+                }, transaction: transaction, cancellationToken: cancellationToken));
+            }
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     public async Task<int> GuardarQrtRuralAsync(QRTRuralRequest request, CancellationToken cancellationToken)
@@ -322,6 +362,73 @@ VALUES
         using var connection = await OpenConnectionAsync(cancellationToken);
         await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
         return parameters.Get<int?>("res") ?? 0;
+    }
+
+    public async Task<IReadOnlyList<dynamic>> GetPodaAsync(PodaConsultaRequest request, CancellationToken cancellationToken)
+    {
+        const string sql = @"
+            SELECT EMPS.EMPR_NOMBRE, PODA.CPTE_VALORSUI, PODA.CPTE_VALORFACT, PODA.CPTE_TIPINGRESO, EMPS.EMPR_EMPR
+              FROM AUCO_PODATECHO PODA
+              INNER JOIN AUCO_APSEMPRDIVI EPRD ON PODA.EMPR_EMPR = EPRD.EMPR_EMPR AND PODA.APSA_ID = EPRD.APSA_ID
+              INNER JOIN AUGE_EMPRESAS EMPS ON EMPS.EMPR_EMPR = EPRD.EMPR_EMPR
+             WHERE PODA.APSA_ID = :aps
+               AND PODA.CPTE_ANNO = :anno
+               AND PODA.CPTE_MES = :mes
+               AND EMPS.EMPR_ESTADO = 1";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var rows = await connection.QueryAsync(sql, request);
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<dynamic>> ConsultaCostoPodaAsync(PodaCatalogoRequest request, CancellationToken cancellationToken)
+    {
+        const string sql = @"
+            SELECT E.*
+              FROM AUGE_EMPRESAS E
+              JOIN AUCO_APSEMPRDIVI AE ON E.EMPR_EMPR = AE.EMPR_EMPR
+             WHERE AE.APSA_ID = :aps
+               AND E.EMPR_ESTADO = 1";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var rows = await connection.QueryAsync(sql, request);
+        return rows.ToList();
+    }
+
+    public async Task NewCostoPodaAsync(PodaNuevoRequest request, long usuarioId, CancellationToken cancellationToken)
+    {
+        const string sql = @"
+            INSERT INTO AUCO_PODATECHO
+            (APSA_ID, EMPR_EMPR, CPTE_ANNO, CPTE_MES, CPTE_VALORSUI, CPTE_VALORFACT, CPTE_VARIACION, CPTE_TIPINGRESO, CPTE_FECCREA, USUA_USUA)
+            VALUES (:aps, :emprEmpr, :anno, :mes, :valor, 0, 0, 1, SYSDATE, :usuario)";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        foreach (var item in request.datos)
+        {
+            await connection.ExecuteAsync(new CommandDefinition(
+                sql,
+                new { aps = request.aps, emprEmpr = item.EMPR_EMPR, anno = request.anno, mes = request.mes, valor = item.valor, usuario = usuarioId },
+                cancellationToken: cancellationToken));
+        }
+    }
+
+    public async Task RegistrarPodaAsync(PodaEditarRequest request, long usuarioId, CancellationToken cancellationToken)
+    {
+        const string sql = @"
+            UPDATE AUCO_PODATECHO
+               SET CPTE_VALORSUI = :valor,
+                   CPTE_TIPINGRESO = 1,
+                   USUA_USUA = :usuario
+             WHERE APSA_ID = :aps
+               AND EMPR_EMPR = :emprEmpr
+               AND CPTE_ANNO = :anno
+               AND CPTE_MES = :mes";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        await connection.ExecuteAsync(new CommandDefinition(
+            sql,
+            new { valor = request.CPTE_VALORSUI, aps = request.apsa_id, emprEmpr = request.EMPR_EMPR, anno = request.cpte_anno, mes = request.cpte_mes, usuario = usuarioId },
+            cancellationToken: cancellationToken));
     }
 
     private async Task<string?> ExecutePackageStringAsync(string functionName, int aps, int anno, int mes, CancellationToken cancellationToken)

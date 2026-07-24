@@ -1,0 +1,67 @@
+<div class="pivot-toolbar">
+  <p-button label="Pivotar" icon="pi pi-sitemap" [disabled]="!datos.length" (onClick)="abrirDialog()"></p-button>
+  <p-button *ngIf="filasPivotadas()" label="Restaurar" icon="pi pi-undo" severity="secondary" (onClick)="restaurar()"></p-button>
+</div>
+
+<app-pivot-nivel [filas]="filasMostradas" [columnas]="columnas" [agrupaciones]="agrupacionesActivas" [nivel]="0"></app-pivot-nivel>
+
+<p-dialog header="Configuración de Pivoteo" [(visible)]="dialogVisible" [modal]="true" [style]="{ width: '40rem' }">
+  <div class="pivot-config-section">
+    <label>Agrupación (en orden)</label>
+    <div class="pivot-config-row">
+      <p-select
+        [options]="columnasAgrupables"
+        optionLabel="headerName"
+        optionValue="field"
+        [ngModel]="campoAgrupacionSeleccionado"
+        (ngModelChange)="campoAgrupacionSeleccionado = $event"
+        placeholder="-- Elegir campo --"
+        styleClass="w-full"
+      ></p-select>
+      <p-button icon="pi pi-plus" [disabled]="!campoAgrupacionSeleccionado" (onClick)="agregarAgrupacion()"></p-button>
+    </div>
+    <div class="pivot-tags">
+      <span class="pivot-tag" *ngFor="let campo of agrupaciones(); let i = index">
+        {{ campo }} <i class="pi pi-times" (click)="quitarAgrupacion(i)"></i>
+      </span>
+    </div>
+  </div>
+
+  <div class="pivot-config-section">
+    <label>Función de agregación</label>
+    <p-select
+      [options]="funciones"
+      optionLabel="label"
+      optionValue="value"
+      [ngModel]="funcionAgregacion()"
+      (ngModelChange)="funcionAgregacion.set($event)"
+      styleClass="w-full"
+    ></p-select>
+  </div>
+
+  <div class="pivot-config-section">
+    <label>Columna operación</label>
+    <div class="pivot-config-row">
+      <p-select
+        [options]="columnasMedibles"
+        optionLabel="headerName"
+        optionValue="field"
+        [ngModel]="campoOperacionSeleccionado"
+        (ngModelChange)="campoOperacionSeleccionado = $event"
+        placeholder="-- Elegir campo --"
+        styleClass="w-full"
+      ></p-select>
+      <p-button icon="pi pi-plus" [disabled]="!campoOperacionSeleccionado" (onClick)="agregarCampoOperacion()"></p-button>
+    </div>
+    <div class="pivot-tags">
+      <span class="pivot-tag" *ngFor="let campo of camposOperacion(); let i = index">
+        {{ campo }} <i class="pi pi-times" (click)="quitarCampoOperacion(i)"></i>
+      </span>
+    </div>
+  </div>
+
+  <div class="pivot-dialog-actions">
+    <p-button label="Restaurar" severity="secondary" icon="pi pi-undo" (onClick)="restaurar()"></p-button>
+    <p-button label="Pivotar" icon="pi pi-sitemap" (onClick)="pivotar()"></p-button>
+  </div>
+</p-dialog>

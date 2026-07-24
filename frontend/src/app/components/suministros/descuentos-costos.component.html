@@ -1,0 +1,18 @@
+<section>
+  <div class="card-section">
+    <div class="parametros-row">
+      <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+      <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
+      <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
+    </div>
+  </div>
+
+  <div class="table-wrapper table-scroll">
+    <app-tabla-avanzada
+      [columnas]="columnas"
+      [rows]="rows()"
+      storageKey="descuentos-costos"
+      nombreExportar="DescuentosCostos"
+    ></app-tabla-avanzada>
+  </div>
+</section>

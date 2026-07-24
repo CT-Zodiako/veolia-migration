@@ -1,0 +1,75 @@
+<p-toast></p-toast>
+
+<div class="card-section">
+  <div class="filters">
+    <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+    <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
+    <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
+  </div>
+</div>
+
+<div class="card-section">
+  <div class="toolbar" *ngIf="items().length === 0 && aps()">
+    <p-button label="Nuevo" icon="pi pi-plus-circle" severity="success" [disabled]="!!bloqueado()" (onClick)="abrirNuevo()"></p-button>
+  </div>
+
+  <p-table [value]="items()" [loading]="loading()" [tableStyle]="{ 'min-width': '40rem' }">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Empresa</th>
+        <th class="text-right">Costo Techo SUI</th>
+        <th class="text-right">Costo Facturación</th>
+        <th>Tipo Ingreso</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>{{ item.EMPR_NOMBRE }}</td>
+        <td class="text-right">
+          <p-inputnumber
+            *ngIf="editingEmprEmpr() === item.EMPR_EMPR; else valorReadonly"
+            [ngModel]="editingValor()"
+            (ngModelChange)="editingValor.set($event)"
+            mode="decimal"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="4"
+          ></p-inputnumber>
+          <ng-template #valorReadonly>{{ item.CPTE_VALORSUI }}</ng-template>
+        </td>
+        <td class="text-right" [class.valor-excedido]="item.CPTE_VALORFACT > item.CPTE_VALORSUI">
+          {{ item.CPTE_VALORFACT }}
+        </td>
+        <td>{{ item.CPTE_TIPINGRESO === 1 ? 'Manual' : 'Automático' }}</td>
+        <td class="actions">
+          <ng-container *ngIf="editingEmprEmpr() === item.EMPR_EMPR; else accionEditar">
+            <p-button icon="pi pi-check" severity="success" size="small" (click)="confirmarGuardar(item)"></p-button>
+            <p-button icon="pi pi-times" severity="secondary" size="small" (click)="cancelarEdicion()"></p-button>
+          </ng-container>
+          <ng-template #accionEditar>
+            <p-button icon="pi pi-pencil" severity="info" size="small" [disabled]="!!bloqueado()" (click)="iniciarEdicion(item)"></p-button>
+          </ng-template>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5">
+          <span *ngIf="aps(); else seleccioneAps">No hay costos de poda registrados para este período.</span>
+          <ng-template #seleccioneAps>Seleccione APS, año y mes para ver los costos de poda.</ng-template>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog header="Registrar costos de poda" [(visible)]="modalVisible" [modal]="true" [style]="{ width: '30rem' }" [closable]="!modalGuardando()">
+  <div class="modal-item" *ngFor="let item of modalItems()">
+    <label>{{ item.EMPR_NOMBRE }}</label>
+    <p-inputnumber [ngModel]="item.valor" (ngModelChange)="item.valor = $event" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4"></p-inputnumber>
+  </div>
+  <div class="modal-actions">
+    <p-button label="Cancelar" severity="secondary" [disabled]="modalGuardando()" (onClick)="cerrarModal()"></p-button>
+    <p-button label="Guardar" [loading]="modalGuardando()" (onClick)="confirmarNuevo()"></p-button>
+  </div>
+</p-dialog>

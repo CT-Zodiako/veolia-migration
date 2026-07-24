@@ -1,0 +1,8 @@
+.text-right {
+  text-align: right;
+}
+
+.nested-cell {
+  padding: 8px 0 8px 24px !important;
+  background: var(--color-bg-soft);
+}

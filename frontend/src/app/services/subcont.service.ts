@@ -43,11 +43,6 @@ export interface SubContItem {
   usuaUsua: number;
 }
 
-export interface SubContAps {
-  apsaId: number;
-  apsaNombre: string;
-}
-
 export interface SubContResponse {
   success: boolean;
   message: string | null;
@@ -69,13 +64,5 @@ export class SubContService {
 
   editar(req: SubContEditarRequest): Observable<SubContResponse> {
     return this.http.put<SubContResponse>(`${this.baseUrl}/editar`, req);
-  }
-
-  listarAps(): Observable<SubContAps[]> {
-    return this.http.get<SubContAps[]>(this.baseUrl);
-  }
-
-  eliminar(id: number): Observable<SubContResponse> {
-    return this.http.delete<SubContResponse>(`${this.baseUrl}/eliminar/${id}`);
   }
 }

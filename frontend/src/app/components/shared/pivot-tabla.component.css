@@ -1,0 +1,55 @@
+.pivot-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pivot-config-section {
+  margin-bottom: 20px;
+}
+
+.pivot-config-section label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-body);
+  margin-bottom: 6px;
+}
+
+.pivot-config-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pivot-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  min-height: 24px;
+}
+
+.pivot-tag {
+  background: var(--color-bg-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pivot-tag .pi-times {
+  cursor: pointer;
+  color: var(--color-brand-accent);
+  font-size: 11px;
+}
+
+.pivot-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}

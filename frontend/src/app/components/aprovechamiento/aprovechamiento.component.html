@@ -1,0 +1,20 @@
+<p-toast></p-toast>
+
+<div class="card-section">
+  <div class="filters">
+    <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+    <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
+    <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
+  </div>
+</div>
+
+<div class="card-section" *ngIf="consultado()">
+  <div class="switch-row">
+    <div class="switch-label">
+      <span class="switch-title">Cobro de aprovechamiento sin tener QA</span>
+      <span class="switch-estado">{{ activar() ? 'Activado' : 'Desactivado' }}</span>
+    </div>
+    <p-toggleswitch [(ngModel)]="activar" [disabled]="loading()"></p-toggleswitch>
+  </div>
+  <p-button label="Aplicar" icon="pi pi-check" [loading]="loading()" (onClick)="confirmarAplicar()"></p-button>
+</div>

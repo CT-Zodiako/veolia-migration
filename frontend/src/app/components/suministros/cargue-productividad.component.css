@@ -6,17 +6,21 @@
   margin-bottom: 20px;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
 .filters {
   display: flex;
   gap: 0.75rem;
   align-items: center;
 }
 
-.actions {
+.guardar-row {
   display: flex;
-  gap: 0.4rem;
-}
-
-.text-right {
-  text-align: right;
+  justify-content: flex-end;
+  margin-top: 16px;
 }

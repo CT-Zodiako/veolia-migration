@@ -14,8 +14,7 @@ public interface ISuministrosRepository
     Task<int> SetCargueInfCompetidorAsync(CargueCompetidorRequest request, CancellationToken cancellationToken);
     Task<int> SetCargueInfCompetidorSemestralAsync(CargueCompetidorSemRequest request, CancellationToken cancellationToken);
     Task<int> SetTercerosAsync(TercerosRequest request, CancellationToken cancellationToken);
-    Task<int> GuardarProductividadAsync(ProductividadRequest request, CancellationToken cancellationToken);
-    Task<IReadOnlyList<dynamic>> CargueProductividadAsync(ProductividadRequest request, CancellationToken cancellationToken);
+    Task ReemplazarProductividadAsync(int anno, int mes, IReadOnlyList<ProductividadCargueRow> propios, IReadOnlyList<ProductividadCargueRow> terceros, CancellationToken cancellationToken);
     Task<int> GuardarQrtRuralAsync(QRTRuralRequest request, CancellationToken cancellationToken);
     Task<IReadOnlyList<dynamic>> GetCanCertificateAsync(PrevalidarRequest request, CancellationToken cancellationToken);
     Task<IReadOnlyList<dynamic>> GetCanCertificateSemestralAsync(PrevalidarRequest request, CancellationToken cancellationToken);
@@ -26,4 +25,8 @@ public interface ISuministrosRepository
     Task<string?> CenrtificarEditarAsync(CertificarRequest request, CancellationToken cancellationToken);
     Task<int> InsertCargueComercialBatchAsync(IReadOnlyList<Veolia.Api.Services.ComercialRow> rows, int anno, int mes, CancellationToken cancellationToken);
     Task<int> InsertCargueUsuSemBatchAsync(IReadOnlyList<Veolia.Api.Services.ComercialSemRow> rows, CancellationToken cancellationToken);
+    Task<IReadOnlyList<dynamic>> GetPodaAsync(PodaConsultaRequest request, CancellationToken cancellationToken);
+    Task<IReadOnlyList<dynamic>> ConsultaCostoPodaAsync(PodaCatalogoRequest request, CancellationToken cancellationToken);
+    Task NewCostoPodaAsync(PodaNuevoRequest request, long usuarioId, CancellationToken cancellationToken);
+    Task RegistrarPodaAsync(PodaEditarRequest request, long usuarioId, CancellationToken cancellationToken);
 }

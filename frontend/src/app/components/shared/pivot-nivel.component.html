@@ -1,0 +1,50 @@
+<p-table
+  [value]="filas"
+  dataKey="id"
+  [expandedRowKeys]="expandedRowKeys"
+  [tableStyle]="{ 'min-width': '40rem' }"
+  [scrollable]="true"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th style="width: 3rem"></th>
+      <th *ngFor="let col of columnasVisibles">{{ col.headerName }}</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-row let-expanded="expanded">
+    <tr>
+      <td>
+        <p-button
+          *ngIf="tieneHijos(row)"
+          type="button"
+          [text]="true"
+          [rounded]="true"
+          size="small"
+          [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+          (onClick)="toggleFila(row)"
+        ></p-button>
+      </td>
+      <td *ngFor="let col of columnasVisibles" [class.text-right]="esNumerico(row[col.field])">
+        {{ row[col.field] }}
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="expandedrow" let-row>
+    <tr>
+      <td [attr.colspan]="columnasVisibles.length + 1" class="nested-cell">
+        <app-pivot-nivel
+          *ngIf="row.children?.length"
+          [filas]="row.children"
+          [columnas]="columnas"
+          [agrupaciones]="agrupaciones"
+          [nivel]="nivel + 1"
+        ></app-pivot-nivel>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td [attr.colspan]="columnasVisibles.length + 1">Sin datos.</td>
+    </tr>
+  </ng-template>
+</p-table>

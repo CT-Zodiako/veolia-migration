@@ -25,6 +25,8 @@ import { DetalladoAutorizacionComponent } from './components/reversiones/detalla
 import { EjecutarReversionComponent } from './components/suministros/ejecutar-reversion.component';
 import { HistoricoReversionComponent } from './components/suministros/historico-reversion.component';
 import { SuiReversionesComponent } from './components/sui-reversiones/sui-reversiones.component';
+import { SuiResumenFormatosComponent } from './components/sui-resumen-formatos/sui-resumen-formatos.component';
+import { SuiDashboardComponent } from './components/sui-dashboard/sui-dashboard.component';
 import { SuiIntegracionPageComponent } from './components/sui-integracion/sui-integracion-page.component';
 import { FacturacionPageComponent } from './components/facturacion/facturacion-page.component';
 import { RellenosConfigPageComponent } from './components/rellenos/rellenos-config-page.component';
@@ -51,6 +53,11 @@ import { PgirsResumenComponent } from './components/pgirs/pgirs-resumen.componen
 import { PgirsInformeVariablesComponent } from './components/pgirs/pgirs-informe-variables.component';
 import { PgirsVariablesComponent } from './components/pgirs/pgirs-variables.component';
 import { IndicesCraComponent } from './components/cra/indices-cra.component';
+import { AjusteProductividadComponent } from './components/productividad/ajuste-productividad.component';
+import { DescuentosCostosComponent } from './components/suministros/descuentos-costos.component';
+import { AprovechamientoComponent } from './components/aprovechamiento/aprovechamiento.component';
+import { CostoPodaComponent as SuministrosCostoPodaComponent } from './components/suministros/costo-poda.component';
+import { CargueProductividadComponent } from './components/suministros/cargue-productividad.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -82,11 +89,13 @@ export const routes: Routes = [
       { path: 'suministros/reversion', component: EjecutarReversionComponent },
       { path: 'suministros/historico', component: HistoricoReversionComponent },
       { path: 'sui-reversiones', component: SuiReversionesComponent },
+      { path: 'sui/resumen-formatos', component: SuiResumenFormatosComponent },
+      { path: 'sui/dashboard', component: SuiDashboardComponent },
       { path: 'sui/integracion', component: SuiIntegracionPageComponent },
       { path: 'facturacion', component: FacturacionPageComponent },
       { path: 'rellenos', component: RellenosConfigPageComponent },
       { path: 'validaciones', component: ValidacionesPageComponent },
-      { path: 'subcont', component: SubContPageComponent },
+      { path: 'subcon', component: SubContPageComponent },
       { path: 'proyecciones', component: ProyeccionesPageComponent },
       { path: 'proyecciones/linea-tiempo', component: LineaTiempoPageComponent },
       { path: 'proyecciones/crecimiento', component: CrecimientoPageComponent },
@@ -103,11 +112,16 @@ export const routes: Routes = [
       { path: 'gerencial/dashboard', component: DashboardGerencialComponent },
       { path: 'gerencial/poda', component: CostoPodaComponent },
       { path: 'gerencial/descuento-costos', component: DescuentoCostosComponent },
-      { path: 'gerencial/verificacion', component: VerificacionApsComponent },
+      { path: 'suministros/verificacion', component: VerificacionApsComponent },
       { path: 'pgirs/resumen', component: PgirsInformeVariablesComponent },
       { path: 'pgirs/informe-variables', component: PgirsResumenComponent },
       { path: 'pgirs/variables', component: PgirsVariablesComponent },
       { path: 'cra', component: IndicesCraComponent },
+      { path: 'productividad', component: AjusteProductividadComponent },
+      { path: 'suministros/descuento-costos', component: DescuentosCostosComponent },
+      { path: 'suministros/aprovechamiento', component: AprovechamientoComponent },
+      { path: 'suministros/costo-poda', component: SuministrosCostoPodaComponent },
+      { path: 'suministros/cargue-productividad', component: CargueProductividadComponent },
       {
         path: 'suministros/cargue-certificacion',
         canActivate: [AuthGuard],

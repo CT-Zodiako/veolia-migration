@@ -1,14 +1,16 @@
-import { Component, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
-import { InputNumberModule } from 'primeng/inputnumber';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
-import { SubContService, SubContItem, SubContAps } from '../../services/subcont.service';
+import { EMPTY, Subject } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { SubContService, SubContItem } from '../../services/subcont.service';
+import { ProyeccionesService } from '../../services/proyecciones.service';
+import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 
@@ -26,12 +28,9 @@ interface ClaseItem {
   imports: [
     CommonModule,
     FormsModule,
-    CardModule,
-    ButtonModule,
-    SelectModule,
-    TableModule,
-    InputNumberModule,
+    ...CommonPrimeNgModules,
     ToastModule,
+    ApsSelectorComponent,
     AnnoSelectorComponent,
     MesSelectorComponent
   ],
@@ -39,176 +38,164 @@ interface ClaseItem {
   templateUrl: './subcont-page.component.html',
   styleUrls: ['./subcont-page.component.css']
 })
-export class SubContPageComponent {
-  aps = signal<number | null>(1);
-  anno = signal<number | null>(2025);
-  mes = signal<number | null>(4);
+export class SubContPageComponent implements OnInit {
+  aps = signal<number | null>(null);
+  anno = signal<number | null>(new Date().getFullYear());
+  mes = signal<number | null>(new Date().getMonth() + 1);
 
-  apsOptions = signal<SubContAps[]>([]);
-  clases = signal<ClaseItem[]>([]);
   loading = signal(false);
-  guardando = signal(false);
+  clases = signal<ClaseItem[]>([]);
+  catalogo = signal<Map<number, string>>(new Map());
 
-  private readonly claseNombres: Record<number, string> = {
-    1: 'Residencial',
-    2: 'Comercial',
-    3: 'Industrial',
-    4: 'Oficial',
-    5: 'Especial',
-    6: 'Otros',
-    7: 'Estatal',
-    8: 'Municipal',
-    9: 'Social'
-  };
+  editingClase = signal<number | null>(null);
+  editingValor = signal<number | null>(null);
+
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly consultarTrigger$ = new Subject<void>();
 
   constructor(
     private readonly subContService: SubContService,
-    private readonly messageService: MessageService
+    private readonly proyeccionesService: ProyeccionesService,
+    private readonly messages: MessageService,
+    private readonly confirmation: ConfirmationService
   ) {
-    this.cargarAps();
+    // switchMap cancela la consulta anterior si todavía está en vuelo cuando el
+    // usuario cambia de selector de nuevo -- evita que una respuesta vieja pise
+    // el resultado del período correcto.
+    this.consultarTrigger$
+      .pipe(
+        switchMap(() => {
+          const aps = this.aps();
+          const anno = this.anno();
+          const mes = this.mes();
+          if (!aps || !anno || !mes) return EMPTY;
+
+          this.editingClase.set(null);
+          this.loading.set(true);
+          const periodo = periodoAnterior(anno, mes);
+          return this.subContService.consultar({ aps, anno: periodo.anno, mes: periodo.mes }).pipe(
+            catchError((err) => {
+              this.loading.set(false);
+              this.messages.add({ severity: 'error', summary: 'Subsidios y Contribuciones', detail: err?.error?.data || 'Error al consultar.' });
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        this.clases.set(this.mapearClases(data));
+        this.loading.set(false);
+      });
   }
 
-  private cargarAps(): void {
-    this.subContService.listarAps().subscribe({
-      next: (data) => this.apsOptions.set(data),
-      error: () => this.apsOptions.set([
-        { apsaId: 1, apsaNombre: 'CVA' },
-        { apsaId: 2, apsaNombre: 'CVNA' }
-      ])
+  ngOnInit(): void {
+    this.cargarCatalogo();
+  }
+
+  onApsChange(value: number | null): void {
+    this.aps.set(value);
+    this.consultar();
+  }
+
+  onAnnoChange(value: number | null): void {
+    this.anno.set(value);
+    this.consultar();
+  }
+
+  onMesChange(value: number | null): void {
+    this.mes.set(value);
+    this.consultar();
+  }
+
+  nombreClase(clase: number): string {
+    return this.catalogo().get(clase) ?? `Clase ${clase}`;
+  }
+
+  private cargarCatalogo(): void {
+    this.proyeccionesService.consultarClasesUso().subscribe({
+      next: (res) => {
+        const mapa = new Map<number, string>();
+        for (const item of res.data || []) {
+          mapa.set(item.clasClase, item.clasNombre);
+        }
+        this.catalogo.set(mapa);
+      }
     });
   }
 
   consultar(): void {
-    const apsValue = this.aps();
-    const anno = this.anno();
-    const mes = this.mes();
-    if (!apsValue || !anno || !mes) return;
+    if (!this.aps() || !this.anno() || !this.mes()) return;
+    this.consultarTrigger$.next();
+  }
 
-    this.loading.set(true);
-    this.subContService.consultar({
-      aps: apsValue,
-      anno,
-      mes
-    }).subscribe({
-      next: (data) => {
-        // Mapear a clases (1-9)
-        const clasesArr: ClaseItem[] = [];
-        for (let i = 1; i <= 9; i++) {
-          const encontrado = data.find(d => d.clasClase === i);
-          clasesArr.push({
-            clase: i,
-            nombre: this.claseNombres[i] || `Clase ${i}`,
-            valor: encontrado ? encontrado.sucoValor : null,
-            sucoId: encontrado?.sucoId,
-            existe: !!encontrado
-          });
-        }
-        this.clases.set(clasesArr);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.error?.data || 'Error al consultar'
-        });
-        this.loading.set(false);
-      }
+  private mapearClases(data: SubContItem[]): ClaseItem[] {
+    const nombres = this.catalogo();
+    const clasesOrdenadas = nombres.size > 0 ? Array.from(nombres.keys()).sort((a, b) => a - b) : Array.from({ length: 9 }, (_, i) => i + 1);
+
+    return clasesOrdenadas.map((clase) => {
+      const encontrado = data.find((d) => d.clasClase === clase);
+      return {
+        clase,
+        nombre: this.nombreClase(clase),
+        valor: encontrado ? encontrado.sucoValor : null,
+        sucoId: encontrado?.sucoId,
+        existe: !!encontrado
+      };
     });
   }
 
-  guardar(): void {
-    const apsValue = this.aps();
+  iniciarEdicion(item: ClaseItem): void {
+    this.editingClase.set(item.clase);
+    this.editingValor.set(item.valor);
+  }
+
+  cancelarEdicion(): void {
+    this.editingClase.set(null);
+  }
+
+  confirmarGuardar(item: ClaseItem): void {
+    this.confirmation.confirm({
+      header: 'Guardar valor',
+      message: `¿Confirmás guardar el nuevo valor de "${item.nombre}"?`,
+      icon: 'pi pi-question-circle',
+      acceptLabel: 'Guardar',
+      rejectLabel: 'Cancelar',
+      accept: () => this.guardarValor(item)
+    });
+  }
+
+  private guardarValor(item: ClaseItem): void {
+    const aps = this.aps();
     const anno = this.anno();
     const mes = this.mes();
-    if (!apsValue || !anno || !mes) return;
+    const valor = this.editingValor();
+    if (!aps || anno === null || mes === null || valor === null) return;
 
-    const valores = this.clases()
-      .filter(c => c.valor !== null && c.valor !== undefined)
-      .map(c => ({ id: c.clase, val: c.valor! }));
-
-    if (valores.length === 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'No hay valores para guardar'
-      });
-      return;
-    }
-
-    this.guardando.set(true);
-
+    const periodo = periodoAnterior(anno, mes);
     const request = {
-      aps: apsValue,
-      anno,
-      mes,
-      valores
+      aps,
+      anno: periodo.anno,
+      mes: periodo.mes,
+      valores: [{ id: item.clase, val: valor }]
     };
 
-    // Si todos son nuevos (no existen), crear; si no, editar
-    const todosNuevos = this.clases().every(c => !c.existe);
-    const call = todosNuevos
-      ? this.subContService.crear(request)
-      : this.subContService.editar(request);
-
+    this.loading.set(true);
+    const call = item.existe ? this.subContService.editar(request) : this.subContService.crear(request);
     call.subscribe({
       next: (result) => {
+        this.loading.set(false);
         if (result.success) {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Datos guardados correctamente'
-          });
+          this.editingClase.set(null);
+          this.messages.add({ severity: 'success', summary: 'Subsidios y Contribuciones', detail: 'Valor guardado correctamente.' });
           this.consultar();
         } else {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: result.message || 'Error al guardar'
-          });
-        }
-        this.guardando.set(false);
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.error?.data || 'Error al guardar'
-        });
-        this.guardando.set(false);
-      }
-    });
-  }
-
-  eliminar(item: ClaseItem): void {
-    if (!item.sucoId) return;
-
-    const accepted = window.confirm(`¿Seguro que querés eliminar la clase ${item.nombre}?`);
-    if (!accepted) return;
-
-    this.subContService.eliminar(item.sucoId).subscribe({
-      next: (result) => {
-        if (result.success) {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Eliminado correctamente'
-          });
-          this.consultar();
-        } else {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: result.message || 'Error al eliminar'
-          });
+          this.messages.add({ severity: 'error', summary: 'Subsidios y Contribuciones', detail: result.message || 'No se pudo guardar.' });
         }
       },
       error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.error?.data || 'Error al eliminar'
-        });
+        this.loading.set(false);
+        this.messages.add({ severity: 'error', summary: 'Subsidios y Contribuciones', detail: err?.error?.data || 'No se pudo guardar.' });
       }
     });
   }

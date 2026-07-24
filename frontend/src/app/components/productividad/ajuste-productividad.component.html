@@ -9,43 +9,40 @@
 </div>
 
 <div class="card-section">
-  <p-table [value]="clases()" [loading]="loading()" [tableStyle]="{ 'min-width': '30rem' }">
+  <p-table [value]="consultado() ? [{}] : []" [loading]="loading()" [tableStyle]="{ 'min-width': '20rem' }">
     <ng-template pTemplate="header">
       <tr>
-        <th>Clase de Uso</th>
-        <th class="text-right">Valor (%)</th>
+        <th class="text-right">Valor</th>
         <th>Acciones</th>
       </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-item>
+    <ng-template pTemplate="body">
       <tr>
-        <td>{{ item.nombre }}</td>
         <td class="text-right">
           <p-inputnumber
-            *ngIf="editingClase() === item.clase; else valorReadonly"
+            *ngIf="editando(); else valorReadonly"
             [ngModel]="editingValor()"
             (ngModelChange)="editingValor.set($event)"
             mode="decimal"
-            suffix="%"
             [minFractionDigits]="0"
-            [maxFractionDigits]="4"
+            [maxFractionDigits]="6"
           ></p-inputnumber>
-          <ng-template #valorReadonly>{{ item.valor !== null ? (item.valor + '%') : '-' }}</ng-template>
+          <ng-template #valorReadonly>{{ item() !== null ? item()!.prodValor : '-' }}</ng-template>
         </td>
         <td class="actions">
-          <ng-container *ngIf="editingClase() === item.clase; else accionEditar">
-            <p-button icon="pi pi-check" severity="success" size="small" (click)="confirmarGuardar(item)"></p-button>
+          <ng-container *ngIf="editando(); else accionEditar">
+            <p-button icon="pi pi-check" severity="success" size="small" (click)="confirmarGuardar()"></p-button>
             <p-button icon="pi pi-times" severity="secondary" size="small" (click)="cancelarEdicion()"></p-button>
           </ng-container>
           <ng-template #accionEditar>
-            <p-button icon="pi pi-pencil" severity="info" size="small" (click)="iniciarEdicion(item)"></p-button>
+            <p-button icon="pi pi-pencil" severity="info" size="small" (click)="iniciarEdicion()"></p-button>
           </ng-template>
         </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="3">Seleccione APS, año y mes para ver los valores.</td>
+        <td colspan="2">Seleccione APS, año y mes para ver el valor de productividad.</td>
       </tr>
     </ng-template>
   </p-table>

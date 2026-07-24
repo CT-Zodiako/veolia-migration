@@ -48,14 +48,19 @@ public sealed class InfoGerencialRepository(IOracleConnectionFactory connectionF
 
     public Task<IReadOnlyList<object>> GetInfoEmprDiviAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
     {
+        // CORRECCIÓN: el join/filtro/columnas previos (AEDI_ID, I.APSA_ID, IEDI_ANNO/IEDI_MES)
+        // eran esquema fabricado que no coincide con Oracle real. Legacy AS-IS
+        // (infogerenciales/controller.js:31) usa join compuesto EMPR_EMPR+DIVI_DIVI,
+        // filtra APSA_ID a través de la tabla unida, y las columnas son INED_ANNO/INED_MES
+        // (confirmado también en CostosRepository.cs:403-409 sobre la misma familia de columnas).
         const string sql = @"
             SELECT E.EMPR_NOMBRE, I.*
               FROM AUCO_INFOEMPRDIVI I
-              INNER JOIN AUCO_APSEMPRDIVI D ON D.AEDI_ID = I.AEDI_ID
-              INNER JOIN AUGE_EMPRESAS E ON E.EMPR_EMPR = D.EMPR_EMPR
-             WHERE I.APSA_ID = :1
-               AND I.IEDI_ANNO = :2
-               AND I.IEDI_MES = :3
+              INNER JOIN AUCO_APSEMPRDIVI D ON D.EMPR_EMPR = I.EMPR_EMPR AND I.DIVI_DIVI = D.DIVI_DIVI
+              INNER JOIN AUGE_EMPRESAS E ON E.EMPR_EMPR = I.EMPR_EMPR
+             WHERE D.APSA_ID = :1
+               AND I.INED_ANNO = :2
+               AND I.INED_MES = :3
              ORDER BY E.EMPR_NOMBRE";
 
         return QueryRowsAsync(sql, [aps, anno, mes], cancellationToken);
@@ -63,15 +68,18 @@ public sealed class InfoGerencialRepository(IOracleConnectionFactory connectionF
 
     public Task<IReadOnlyList<object>> GetInfoApsRellenoAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
     {
+        // CORRECCIÓN: columnas previas (RELL_RELL, RELL_NOMBRE) eran esquema fabricado.
+        // Legacy AS-IS (infogerenciales/controller.js:37) y RellenosRepository.cs (ya
+        // verificado) confirman las columnas reales: RELL_ID, RELL_NOMRELLENO.
         const string sql = @"
-            SELECT R.RELL_NOMBRE, I.*
+            SELECT R.RELL_NOMRELLENO, I.*
               FROM AUCO_INFOAPSRELLENO I
-              INNER JOIN AUCO_RELLENOS R ON R.RELL_RELL = I.RELL_RELL
+              INNER JOIN AUCO_RELLENOS R ON R.RELL_ID = I.RELL_ID
              WHERE I.APSA_ID = :1
                AND I.IARE_ANNO = :2
                AND I.IARE_MES = :3
                AND R.RELL_ESTADO = 1
-             ORDER BY R.RELL_NOMBRE";
+             ORDER BY R.RELL_NOMRELLENO";
 
         return QueryRowsAsync(sql, [aps, anno, mes], cancellationToken);
     }

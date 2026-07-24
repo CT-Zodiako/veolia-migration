@@ -15,6 +15,9 @@ public sealed class SubContController(ISubContRepository repository) : Controlle
         if (!TryReadTokenContext(out _))
             return Unauthorized(new { message = "No Autorizado!" });
 
+        if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
+            return BadRequest(new { data = "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12." });
+
         try
         {
             var data = await repository.ConsultarAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
@@ -31,6 +34,9 @@ public sealed class SubContController(ISubContRepository repository) : Controlle
     {
         if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(new { message = "No Autorizado!" });
+
+        if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12 || request.Valores is not { Count: > 0 })
+            return BadRequest(new { data = "aps, anno, mes y valores son obligatorios. mes debe estar entre 1 y 12." });
 
         try
         {
@@ -49,6 +55,9 @@ public sealed class SubContController(ISubContRepository repository) : Controlle
     {
         if (!TryReadTokenContext(out _))
             return Unauthorized(new { message = "No Autorizado!" });
+
+        if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12 || request.Valores is not { Count: > 0 })
+            return BadRequest(new { data = "aps, anno, mes y valores son obligatorios. mes debe estar entre 1 y 12." });
 
         try
         {
@@ -84,6 +93,9 @@ public sealed class SubContController(ISubContRepository repository) : Controlle
     {
         if (!TryReadTokenContext(out _))
             return Unauthorized(new { message = "No Autorizado!" });
+
+        if (id <= 0)
+            return BadRequest(new { data = "id inválido." });
 
         try
         {

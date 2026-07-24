@@ -10,7 +10,7 @@ namespace Veolia.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/suministros")]
-public sealed class SuministrosController(ISuministrosRepository suministrosRepository, FileParserService fileParserService) : ControllerBase
+public sealed class SuministrosController(ISuministrosRepository suministrosRepository, FileParserService fileParserService, ICargueProductividadService cargueProductividadService) : ControllerBase
 {
     [HttpPost("filecarguecomercial")]
     public async Task<IActionResult> FileCargueComercial([FromForm] int aps, [FromForm] int anno, [FromForm] int mes, [FromForm] IFormFile file, CancellationToken cancellationToken)
@@ -85,12 +85,46 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
         ExecuteIntAsync(() => suministrosRepository.SetTercerosAsync(request, cancellationToken));
 
     [HttpPost("guardarProductividad")]
-    public Task<IActionResult> GuardarProductividad([FromBody] ProductividadRequest request, CancellationToken cancellationToken) =>
-        ExecuteIntAsync(() => suministrosRepository.GuardarProductividadAsync(request, cancellationToken));
+    public async Task<IActionResult> GuardarProductividad([FromBody] CargueProductividadGuardarRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            await cargueProductividadService.GuardarAsync(request, cancellationToken);
+            return Ok(new { data = "Guardado productividad correctamente" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Ok(new { data = ex.Message });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("cargueProductividad")]
-    public Task<IActionResult> CargueProductividad([FromBody] ProductividadRequest request, CancellationToken cancellationToken) =>
-        ExecuteDataAsync(() => suministrosRepository.CargueProductividadAsync(request, cancellationToken));
+    public async Task<IActionResult> CargueProductividad([FromBody] CargueProductividadConsultaRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var (propios, terceros) = await cargueProductividadService.ConsultarAsync(request.anno, request.mes, cancellationToken);
+            return Ok(new { data = new { propios, terceros } });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("guardarQRTRural")]
     public Task<IActionResult> GuardarQrtRural([FromBody] QRTRuralRequest request, CancellationToken cancellationToken) =>
@@ -123,6 +157,52 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
     [HttpPost("cenrtificarEditar")]
     public Task<IActionResult> CenrtificarEditar([FromBody] CertificarRequest request, CancellationToken cancellationToken) =>
         ExecuteDataAsync(() => suministrosRepository.CenrtificarEditarAsync(request, cancellationToken));
+
+    [HttpPost("getPoda")]
+    public Task<IActionResult> GetPoda([FromBody] PodaConsultaRequest request, CancellationToken cancellationToken) =>
+        ExecuteDataAsync(() => suministrosRepository.GetPodaAsync(request, cancellationToken));
+
+    [HttpPost("consultaCostoPoda")]
+    public Task<IActionResult> ConsultaCostoPoda([FromBody] PodaCatalogoRequest request, CancellationToken cancellationToken) =>
+        ExecuteDataAsync(() => suministrosRepository.ConsultaCostoPodaAsync(request, cancellationToken));
+
+    [HttpPost("newCostoPoda")]
+    public async Task<IActionResult> NewCostoPoda([FromBody] PodaNuevoRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            await suministrosRepository.NewCostoPodaAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = "OK" });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
+
+    [HttpPost("registrarPoda")]
+    public async Task<IActionResult> RegistrarPoda([FromBody] PodaEditarRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            await suministrosRepository.RegistrarPodaAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = "OK" });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("setReversion")]
     public async Task<IActionResult> SetReversion([FromBody] SetReversionRequest request, CancellationToken cancellationToken)

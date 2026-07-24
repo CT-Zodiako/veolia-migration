@@ -1,9 +1,12 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ToastModule } from 'primeng/toast';
+import { EMPTY, Subject } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IndicesCraService } from '../../services/indices-cra.service';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
@@ -27,11 +30,42 @@ export class IndicesCraComponent implements OnInit {
   editingParaId = signal<number | null>(null);
   editingValor = signal<number | null>(null);
 
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly consultarTrigger$ = new Subject<void>();
+
   constructor(
     private readonly service: IndicesCraService,
     private readonly messages: MessageService,
     private readonly confirmation: ConfirmationService
-  ) {}
+  ) {
+    // switchMap cancela la consulta anterior si todavía está en vuelo cuando el
+    // usuario cambia de selector de nuevo -- evita que una respuesta vieja pise
+    // el resultado del período correcto.
+    this.consultarTrigger$
+      .pipe(
+        switchMap(() => {
+          const anno = this.anno();
+          const mes = this.mes();
+          if (!anno || !mes) return EMPTY;
+
+          this.editingParaId.set(null);
+          this.loading.set(true);
+          const periodo = periodoAnterior(anno, mes);
+          return this.service.consultar(periodo.anno, periodo.mes).pipe(
+            catchError((err: any) => {
+              this.loading.set(false);
+              this.messages.add({ severity: 'error', summary: 'Índices CRA', detail: err?.error?.message || 'Error al consultar índices.' });
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((res) => {
+        this.rows.set(res.data || []);
+        this.loading.set(false);
+      });
+  }
 
   ngOnInit(): void {
     this.cargarCatalogo();
@@ -65,23 +99,8 @@ export class IndicesCraComponent implements OnInit {
   }
 
   consultar(): void {
-    const anno = this.anno();
-    const mes = this.mes();
-    if (!anno || !mes) return;
-
-    this.editingParaId.set(null);
-    this.loading.set(true);
-    const periodo = periodoAnterior(anno, mes);
-    this.service.consultar(periodo.anno, periodo.mes).subscribe({
-      next: (res) => {
-        this.rows.set(res.data || []);
-        this.loading.set(false);
-      },
-      error: (err: any) => {
-        this.loading.set(false);
-        this.messages.add({ severity: 'error', summary: 'Índices CRA', detail: err?.error?.message || 'Error al consultar índices.' });
-      }
-    });
+    if (!this.anno() || !this.mes()) return;
+    this.consultarTrigger$.next();
   }
 
   iniciarEdicion(row: any): void {
