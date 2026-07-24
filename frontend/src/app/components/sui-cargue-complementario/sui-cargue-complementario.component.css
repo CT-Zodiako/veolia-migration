@@ -1,0 +1,63 @@
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.cargue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cargue-header h3 {
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+.descarga-plano {
+  color: var(--color-brand-accent);
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.descarga-plano:hover {
+  color: var(--color-brand-medium);
+  text-decoration: underline;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.file-name {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.errores-box {
+  margin-bottom: 16px;
+}
+
+h4 {
+  color: var(--color-text-body);
+  margin: 0 0 12px;
+}
+
+.guardar-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.loading-text {
+  color: var(--color-text-muted);
+  margin: 0;
+}

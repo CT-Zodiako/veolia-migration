@@ -11,3 +11,5 @@ public sealed record SuiProcesarResponse(bool Exitoso, IReadOnlyList<string> For
 public sealed record SuiComplementoResponse(bool Guardado, int FilasAfectadas);
 
 public sealed record SuiPrecheckResponse(bool PuedeProcesar, IReadOnlyList<string> Mensajes);
+
+public sealed record SuiExistenArchivosResponse(bool Existen, int Cantidad);

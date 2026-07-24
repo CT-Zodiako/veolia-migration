@@ -69,7 +69,7 @@ export class SidebarMenuService {
       menuId: 3007
     },
     { label: 'Formatos y Formularios', path: '/sui/integracion', icon: '🧩', keywords: ['sui integracion', 'integracion sui', 'formatos y formularios'], menuId: 801 },
-    { label: 'Cargue Complementario', path: '/sui/integracion', icon: '📥', keywords: ['cargue complementario', 'cargue complemento'], menuId: 802 },
+    { label: 'Cargue Complementario', path: '/sui/cargue-complementario', icon: '📥', keywords: ['cargue complementario', 'cargue complemento'], menuId: 802 },
     { label: 'SUI Dashboard', path: '/sui/dashboard', icon: '📊', keywords: ['sui dashboard', 'dashboard sui'], menuId: 803 },
     { label: 'Resumen Formatos y Formularios', path: '/sui/resumen-formatos', icon: '📋', keywords: ['resumen formatos', 'resumen formularios', 'formatos y formularios'], menuId: 804 },
     { label: 'SUI Reversiones', path: '/sui-reversiones', icon: '🌐', keywords: ['sui reversiones', 'reversiones sui'], menuId: 805 },

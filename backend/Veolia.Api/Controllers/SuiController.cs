@@ -88,6 +88,12 @@ public sealed class SuiController(ISuiRepository repository, ILogger<SuiControll
             async () => await repository.GuardarComplementoAsync(request, cancellationToken),
             "Complemento SUI guardado correctamente.");
 
+    [HttpPost("existenArchivosGenerados")]
+    public async Task<IActionResult> ExistenArchivosGenerados([FromBody] SuiConsultaRequest request, CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.ExistenArchivosGeneradosAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
+            "Verificación de archivos generados ejecutada correctamente.");
+
     private async Task<IActionResult> ConsultarFormatoAsync(string formato, SuiConsultaRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
             async () =>

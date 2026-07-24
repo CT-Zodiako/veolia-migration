@@ -8,7 +8,6 @@ export interface ApiResponseEnvelope<T = unknown> {
 
 export type SuiFormato = 'F19' | 'F23' | 'F24' | 'F35' | 'F36';
 export type SuiTab = SuiFormato | 'RESUMEN';
-export type SuiApplicability = 'APLICA' | 'NO APLICA' | 'DESCONOCIDO';
 
 export interface SuiConsultaRequest {
   aps: number;
@@ -20,14 +19,39 @@ export interface SuiProcesarRequest extends SuiConsultaRequest {
   usuario: number;
 }
 
-export interface SuiComplementoItemRequest {
-  item: number;
-  valor: string;
+export interface SuiComplementoFilaRequest {
+  aps: number;
+  det: number | null;
+  f1et: number | null;
+  cpeet: number | null;
+  prtzet: number | null;
+  ceg: number | null;
+  camrers: number;
+  inccdfalt9: number;
+  prctcrrcp: number;
+  v0: number;
+  vm: number;
+  mcrs: number;
+  icrsm: number;
+  iccrs: number;
+  frein: number;
+  capperdf: number;
+  qrsMes: number;
+  dispalt9: number;
+  vlMes: number;
 }
 
-export interface SuiComplementoRequest extends SuiConsultaRequest {
-  formato: SuiFormato;
-  complementoData: SuiComplementoItemRequest[];
+export interface SuiComplementoRequest {
+  aps: number;
+  anno: number;
+  mes: number;
+  usuario: number;
+  filas: SuiComplementoFilaRequest[];
+}
+
+export interface SuiExistenArchivosResponse {
+  existen: boolean;
+  cantidad: number;
 }
 
 export interface InformeDatasetItem {

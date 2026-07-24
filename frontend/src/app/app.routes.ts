@@ -28,6 +28,7 @@ import { SuiReversionesComponent } from './components/sui-reversiones/sui-revers
 import { SuiDashboardComponent } from './components/sui-dashboard/sui-dashboard.component';
 import { SuiResumenFormatosComponent } from './components/sui-resumen-formatos/sui-resumen-formatos.component';
 import { SuiIntegracionPageComponent } from './components/sui-integracion/sui-integracion-page.component';
+import { SuiCargueComplementarioComponent } from './components/sui-cargue-complementario/sui-cargue-complementario.component';
 import { FacturacionPageComponent } from './components/facturacion/facturacion-page.component';
 import { RellenosConfigPageComponent } from './components/rellenos/rellenos-config-page.component';
 import { ValidacionesPageComponent } from './components/validaciones/validaciones-page.component';
@@ -92,6 +93,7 @@ export const routes: Routes = [
       { path: 'sui/dashboard', component: SuiDashboardComponent },
       { path: 'sui/resumen-formatos', component: SuiResumenFormatosComponent },
       { path: 'sui/integracion', component: SuiIntegracionPageComponent },
+      { path: 'sui/cargue-complementario', component: SuiCargueComplementarioComponent },
       { path: 'facturacion', component: FacturacionPageComponent },
       { path: 'rellenos', component: RellenosConfigPageComponent },
       { path: 'validaciones', component: ValidacionesPageComponent },

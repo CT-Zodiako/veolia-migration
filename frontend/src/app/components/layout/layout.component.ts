@@ -146,6 +146,7 @@ export class LayoutComponent implements OnInit {
       case '/suministros/reversion': return 'Ejecutar Reversión';
       case '/suministros/historico': return 'Histórico Reversión';
       case '/sui/integracion': return 'Formatos y Formularios';
+      case '/sui/cargue-complementario': return 'Cargue Complementario';
       case '/facturacion': return 'Detallado Facturación';
       case '/histCertificacion': return 'Historial de Certificación';
       case '/histProductividad': return 'Historial de Productividad';

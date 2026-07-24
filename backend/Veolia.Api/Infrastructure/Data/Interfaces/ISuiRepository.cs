@@ -11,4 +11,5 @@ public interface ISuiRepository
     Task<SuiProcesarResponse> ProcesarAsync(SuiProcesarRequest request, CancellationToken cancellationToken);
     Task<SuiComplementoResponse> GuardarComplementoAsync(SuiComplementoRequest request, CancellationToken cancellationToken);
     Task<SuiPrecheckResponse> GetCanCertificateAsync(int aps, int mes, int anno, CancellationToken cancellationToken);
+    Task<SuiExistenArchivosResponse> ExistenArchivosGeneradosAsync(int aps, int anno, int mes, CancellationToken cancellationToken);
 }

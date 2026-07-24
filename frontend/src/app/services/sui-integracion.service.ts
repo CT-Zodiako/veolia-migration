@@ -7,6 +7,7 @@ import {
   SuiComplementoRequest,
   SuiComplementoResponse,
   SuiConsultaRequest,
+  SuiExistenArchivosResponse,
   SuiFormatoResponse,
   SuiPrecheckResponse,
   SuiProcesarRequest,
@@ -76,6 +77,11 @@ export class SuiIntegracionService {
   setCargueInfComplemento(payload: SuiComplementoRequest): Observable<SuiComplementoResponse> {
     return this.unwrap<SuiComplementoResponse>('guardar complemento')(
       this.http.post<ApiResponseEnvelope<SuiComplementoResponse>>(`${this.baseUrl}/setCargueInfComplemento`, payload, { headers: this.getHeaders() })
+    );
+  }
+  existenArchivosGenerados(payload: SuiConsultaRequest): Observable<SuiExistenArchivosResponse> {
+    return this.unwrap<SuiExistenArchivosResponse>('verificar archivos generados')(
+      this.http.post<ApiResponseEnvelope<SuiExistenArchivosResponse>>(`${this.baseUrl}/existenArchivosGenerados`, payload, { headers: this.getHeaders() })
     );
   }
 }

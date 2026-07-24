@@ -135,41 +135,67 @@ public sealed class SuiRepository(IOracleConnectionFactory connectionFactory, IL
 
     public async Task<SuiComplementoResponse> GuardarComplementoAsync(SuiComplementoRequest request, CancellationToken cancellationToken)
     {
-        const string mergeSql = @"MERGE INTO SUI_COMPLEMENTO tgt
-USING (
-    SELECT :1 AS APS_ID, :2 AS MES, :3 AS ANNO, :4 AS FORMATO, :5 AS COMP_ITEM, :6 AS COMP_DATA, :7 AS USUA_USUA
-    FROM dual
-) src
-ON (tgt.APS_ID = src.APS_ID
-    AND tgt.MES = src.MES
-    AND tgt.ANNO = src.ANNO
-    AND tgt.FORMATO = src.FORMATO
-    AND tgt.COMP_ITEM = src.COMP_ITEM)
-WHEN MATCHED THEN
-    UPDATE SET tgt.COMP_DATA = src.COMP_DATA,
-               tgt.USUA_USUA = src.USUA_USUA,
-               tgt.COMP_FECHA = SYSDATE
-WHEN NOT MATCHED THEN
-    INSERT (COMP_ID, APS_ID, MES, ANNO, FORMATO, COMP_ITEM, COMP_DATA, COMP_FECHA, USUA_USUA)
-    VALUES (SSUI_COMPLEMENTO.NEXTVAL, src.APS_ID, src.MES, src.ANNO, src.FORMATO, src.COMP_ITEM, src.COMP_DATA, SYSDATE, src.USUA_USUA)";
+        const string deleteSql = "DELETE FROM SUI_COMPLEMENTO WHERE APSA_ID = :aps AND COM_ANNO = :anno AND COM_MES = :mes";
+
+        const string insertSql = @"INSERT INTO TARIFICADOR.SUI_COMPLEMENTO
+(APSA_ID, COM_ANNO, COM_MES, F24_DET, F24_F1ET, F24_CPEET, F24_PRTZET, F24_CEG, F35_CAMRERS, F35_INCCDFALT9, F35_PRCTCRRCP, F35_V0, F35_VM, F35_MCRS, F35_ICRSM, F35_ICCRS, F35_FREIN, F35_CAPPERDF, COM_FECHA, USUARIO, F35_QRS_MES, F35_DISPALT9, F36_VL_MES)
+VALUES (:aps, :anno, :mes, :det, :f1et, :cpeet, :prtzet, :ceg, :camrers, :inccdfalt9, :prctcrrcp, :v0, :vm, :mcrs, :icrsm, :iccrs, :frein, :capperdf, SYSDATE, :usuario, :qrsMes, :dispalt9, :vlMes)";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        var filasAfectadas = 0;
-        foreach (var item in request.ComplementoData)
+        using var transaction = connection.BeginTransaction();
+        try
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("1", request.Aps);
-            parameters.Add("2", request.Mes);
-            parameters.Add("3", request.Anno);
-            parameters.Add("4", request.Formato.ToUpperInvariant());
-            parameters.Add("5", item.Item);
-            parameters.Add("6", item.Valor);
-            parameters.Add("7", "SUI_INTEGRACION");
+            await connection.ExecuteAsync(new CommandDefinition(deleteSql, new { aps = request.Aps, anno = request.Anno, mes = request.Mes }, transaction: transaction, cancellationToken: cancellationToken));
 
-            filasAfectadas += await connection.ExecuteAsync(new CommandDefinition(mergeSql, parameters, cancellationToken: cancellationToken));
+            var filasAfectadas = 0;
+            foreach (var fila in request.Filas)
+            {
+                var parameters = new
+                {
+                    aps = fila.Aps,
+                    anno = request.Anno,
+                    mes = request.Mes,
+                    det = fila.Det,
+                    f1et = fila.F1et,
+                    cpeet = fila.Cpeet,
+                    prtzet = fila.Prtzet,
+                    ceg = fila.Ceg,
+                    camrers = fila.Camrers,
+                    inccdfalt9 = fila.Inccdfalt9,
+                    prctcrrcp = fila.Prctcrrcp,
+                    v0 = fila.V0,
+                    vm = fila.Vm,
+                    mcrs = fila.Mcrs,
+                    icrsm = fila.Icrsm,
+                    iccrs = fila.Iccrs,
+                    frein = fila.Frein,
+                    capperdf = fila.Capperdf,
+                    usuario = request.Usuario,
+                    qrsMes = fila.QrsMes,
+                    dispalt9 = fila.Dispalt9,
+                    vlMes = fila.VlMes
+                };
+
+                filasAfectadas += await connection.ExecuteAsync(new CommandDefinition(insertSql, parameters, transaction: transaction, cancellationToken: cancellationToken));
+            }
+
+            transaction.Commit();
+            return new SuiComplementoResponse(true, filasAfectadas);
         }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
 
-        return new SuiComplementoResponse(true, filasAfectadas);
+    public async Task<SuiExistenArchivosResponse> ExistenArchivosGeneradosAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
+    {
+        const string sql = "SELECT COUNT(1) AS CANTIDAD FROM SUI_F24 WHERE APSA_ID = :aps AND F24_ANNO = :anno AND F24_MES = :mes";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var cantidad = await connection.ExecuteScalarAsync<int>(new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken));
+        return new SuiExistenArchivosResponse(cantidad > 0, cantidad);
     }
 
     public async Task<SuiPrecheckResponse> GetCanCertificateAsync(int aps, int mes, int anno, CancellationToken cancellationToken)
