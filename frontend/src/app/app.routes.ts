@@ -25,8 +25,6 @@ import { DetalladoAutorizacionComponent } from './components/reversiones/detalla
 import { EjecutarReversionComponent } from './components/suministros/ejecutar-reversion.component';
 import { HistoricoReversionComponent } from './components/suministros/historico-reversion.component';
 import { SuiReversionesComponent } from './components/sui-reversiones/sui-reversiones.component';
-import { SuiResumenFormatosComponent } from './components/sui-resumen-formatos/sui-resumen-formatos.component';
-import { SuiDashboardComponent } from './components/sui-dashboard/sui-dashboard.component';
 import { SuiIntegracionPageComponent } from './components/sui-integracion/sui-integracion-page.component';
 import { FacturacionPageComponent } from './components/facturacion/facturacion-page.component';
 import { RellenosConfigPageComponent } from './components/rellenos/rellenos-config-page.component';
@@ -89,8 +87,6 @@ export const routes: Routes = [
       { path: 'suministros/reversion', component: EjecutarReversionComponent },
       { path: 'suministros/historico', component: HistoricoReversionComponent },
       { path: 'sui-reversiones', component: SuiReversionesComponent },
-      { path: 'sui/resumen-formatos', component: SuiResumenFormatosComponent },
-      { path: 'sui/dashboard', component: SuiDashboardComponent },
       { path: 'sui/integracion', component: SuiIntegracionPageComponent },
       { path: 'facturacion', component: FacturacionPageComponent },
       { path: 'rellenos', component: RellenosConfigPageComponent },
