@@ -1,0 +1,35 @@
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-section:last-child {
+  margin-bottom: 0;
+}
+
+.loading-text {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.celda-pgirs {
+  background: rgb(82, 138, 184);
+  color: #fff;
+}
+
+.custom-rojo-style {
+  background: rgb(211, 124, 124);
+}
+
+.custom-verde-style {
+  background: rgb(119, 192, 119);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}

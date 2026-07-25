@@ -2,6 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import {
+  CarguePropiaRequest,
+  CargueCompetidorRequest,
+  CargueComercialRequest,
+  TercerosRequest,
+  PrevalidarRequest,
+  CertificarRequest,
+  CertificarMensualItem
+} from '../models/cargue-mensual.models';
 
 export interface SetReversionRequest {
   aps: number;
@@ -135,5 +144,33 @@ export class SuministrosService {
       { dataPropios, dataTerceros },
       { headers: this.getHeaders() }
     );
+  }
+
+  setCargueInfPropia(payload: CarguePropiaRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/setCargueInfPropia`, payload, { headers: this.getHeaders() });
+  }
+
+  setCargueInfCompetidor(payload: CargueCompetidorRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/setCargueInfCompetidor`, payload, { headers: this.getHeaders() });
+  }
+
+  filecarguecomercial(payload: CargueComercialRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/filecarguecomercial`, payload, { headers: this.getHeaders() });
+  }
+
+  setTerceros(payload: TercerosRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/setTerceros`, payload, { headers: this.getHeaders() });
+  }
+
+  getcanCertificate(payload: PrevalidarRequest): Observable<DataEnvelope<unknown[]>> {
+    return this.http.post<DataEnvelope<unknown[]>>(`${this.baseUrl}/getcanCertificate`, payload, { headers: this.getHeaders() });
+  }
+
+  certificar(payload: CertificarRequest): Observable<DataEnvelope<string | null>> {
+    return this.http.post<DataEnvelope<string | null>>(`${this.baseUrl}/Certificar`, payload, { headers: this.getHeaders() });
+  }
+
+  certificarMensual(payload: CertificarRequest): Observable<DataEnvelope<string | null>> {
+    return this.http.post<DataEnvelope<string | null>>(`${this.baseUrl}/certificarMensual`, payload, { headers: this.getHeaders() });
   }
 }

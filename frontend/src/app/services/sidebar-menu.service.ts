@@ -62,11 +62,11 @@ export class SidebarMenuService {
     { label: 'Ejecutar Reversión', path: '/suministros/reversion', icon: '🔁', keywords: ['ejecutar reversion', 'suministros reversion'], menuId: 3001 },
     { label: 'Histórico Reversión', path: '/suministros/historico', icon: '🧾', keywords: ['historico reversion', 'suministros historico'], menuId: 3002 },
     {
-      label: 'Cargue y Certificación',
-      path: '/suministros/cargue-certificacion',
-      icon: '✅',
-      keywords: ['cargue certificacion', 'suministros certificacion'],
-      menuId: 3007
+      label: 'Cargue Mensual',
+      path: '/suministros/cargue-mensual',
+      icon: '📥',
+      keywords: ['cargue mensual', 'cargue de informacion', 'informacion mensual'],
+      menuId: 701
     },
     { label: 'Formatos y Formularios', path: '/sui/integracion', icon: '🧩', keywords: ['sui integracion', 'integracion sui', 'formatos y formularios'], menuId: 801 },
     { label: 'Cargue Complementario', path: '/sui/cargue-complementario', icon: '📥', keywords: ['cargue complementario', 'cargue complemento'], menuId: 802 },

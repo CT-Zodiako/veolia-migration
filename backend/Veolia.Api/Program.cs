@@ -38,7 +38,6 @@ builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
 builder.Services.AddScoped<ITarifasRepository, TarifasRepository>();
 builder.Services.AddScoped<IReversionesRepository, ReversionesRepository>();
 builder.Services.AddScoped<ISuministrosRepository, SuministrosRepository>();
-builder.Services.AddScoped<ICertificacionRepository, CertificacionRepository>();
 builder.Services.AddScoped<ISuiReversionesRepository, SuiReversionesRepository>();
 builder.Services.AddScoped<ISuiRepository, SuiRepository>();
 builder.Services.AddScoped<IInformesRepository, InformesRepository>();

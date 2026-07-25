@@ -59,6 +59,7 @@ import { DescuentosCostosComponent } from './components/suministros/descuentos-c
 import { AprovechamientoComponent } from './components/aprovechamiento/aprovechamiento.component';
 import { CostoPodaComponent as SuministrosCostoPodaComponent } from './components/suministros/costo-poda.component';
 import { CargueProductividadComponent } from './components/suministros/cargue-productividad.component';
+import { CargueMensualComponent } from './components/suministros/cargue-mensual/cargue-mensual.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -124,14 +125,7 @@ export const routes: Routes = [
       { path: 'suministros/aprovechamiento', component: AprovechamientoComponent },
       { path: 'suministros/costo-poda', component: SuministrosCostoPodaComponent },
       { path: 'suministros/cargue-productividad', component: CargueProductividadComponent },
-      {
-        path: 'suministros/cargue-certificacion',
-        canActivate: [AuthGuard],
-        loadComponent: () =>
-          import('./components/suministros/cargue-certificacion/cargue-certificacion.component').then(
-            (m) => m.CargueCertificacionComponent
-          )
-      },
+      { path: 'suministros/cargue-mensual', component: CargueMensualComponent },
       {
         path: 'costos/calculo-tarifas',
         canActivate: [AuthGuard],

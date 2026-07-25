@@ -4,43 +4,6 @@ namespace Veolia.Api.Services;
 
 public sealed class FileParserService
 {
-    public async Task<ParseResult<ComercialRow>> ParseComercialAsync(IFormFile file, CancellationToken cancellationToken)
-    {
-        if (!IsCsv(file.FileName))
-        {
-            return new ParseResult<ComercialRow>(0, [], ["Solo se soporta formato CSV en este momento."]);
-        }
-
-        var parsed = await ParseCsvAsync(file, 12, cancellationToken);
-        var valid = new List<ComercialRow>();
-        var errors = new List<string>(parsed.Errors);
-
-        foreach (var row in parsed.Rows)
-        {
-            if (!TryDecimal(row.Values[10], out var cantidad) || !TryDecimal(row.Values[11], out var toneladas))
-            {
-                errors.Add($"Fila {row.RowNumber}: cantidad/toneladas deben ser numéricos.");
-                continue;
-            }
-
-            valid.Add(new ComercialRow(
-                CodAps: ToInt(row.Values[0]),
-                ApsNom: row.Values[1],
-                Anno: ToInt(row.Values[2]),
-                Mes: ToInt(row.Values[3]),
-                CodCu: ToInt(row.Values[4]),
-                NomCu: row.Values[5],
-                CodFactor: ToInt(row.Values[6]),
-                CodTipo: ToInt(row.Values[7]),
-                Tipo: ToInt(row.Values[8]),
-                NomTipo: row.Values[9],
-                Cantidad: cantidad,
-                Toneladas: toneladas));
-        }
-
-        return new ParseResult<ComercialRow>(parsed.TotalRows, valid, errors);
-    }
-
     public async Task<ParseResult<ComercialSemRow>> ParseComercialSemAsync(IFormFile file, CancellationToken cancellationToken)
     {
         if (!IsCsv(file.FileName))
@@ -135,20 +98,6 @@ public sealed class FileParserService
 }
 
 public sealed record ParseResult<T>(int TotalRows, IReadOnlyList<T> ValidRows, IReadOnlyList<string> Errors);
-
-public sealed record ComercialRow(
-    int CodAps,
-    string ApsNom,
-    int Anno,
-    int Mes,
-    int CodCu,
-    string NomCu,
-    int CodFactor,
-    int CodTipo,
-    int Tipo,
-    string NomTipo,
-    decimal Cantidad,
-    decimal Toneladas);
 
 public sealed record ComercialSemRow(
     int CodAps,

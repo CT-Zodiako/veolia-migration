@@ -1,0 +1,83 @@
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.cargue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cargue-header h4 {
+  color: var(--color-text-body);
+  margin: 0;
+}
+
+.descarga-plano {
+  color: var(--color-brand-accent);
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.descarga-plano:hover {
+  color: var(--color-brand-medium);
+  text-decoration: underline;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.file-name {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.errores-box {
+  margin-bottom: 16px;
+}
+
+h4 {
+  color: var(--color-text-body);
+  margin: 0 0 12px;
+}
+
+.resumen-grid {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.resumen-card {
+  background: var(--color-bg-soft);
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex: 1 1 260px;
+}
+
+.resumen-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.resumen-table td, .resumen-table th {
+  padding: 4px 8px;
+  text-align: left;
+  color: var(--color-text-body);
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.guardar-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}

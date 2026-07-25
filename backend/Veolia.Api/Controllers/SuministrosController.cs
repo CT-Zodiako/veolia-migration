@@ -13,24 +13,17 @@ namespace Veolia.Api.Controllers;
 public sealed class SuministrosController(ISuministrosRepository suministrosRepository, FileParserService fileParserService, ICargueProductividadService cargueProductividadService) : ControllerBase
 {
     [HttpPost("filecarguecomercial")]
-    public async Task<IActionResult> FileCargueComercial([FromForm] int aps, [FromForm] int anno, [FromForm] int mes, [FromForm] IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> FileCargueComercial([FromBody] CargueComercialRequest request, CancellationToken cancellationToken)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
         {
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        if (file is null || file.Length == 0)
-        {
-            return BadRequest(new { message = "El archivo es obligatorio." });
-        }
-
         try
         {
-            var parsed = await fileParserService.ParseComercialAsync(file, cancellationToken);
-            var inserted = await suministrosRepository.InsertCargueComercialBatchAsync(parsed.ValidRows, anno, mes, cancellationToken);
-            var response = new FileUploadBatchResponse(parsed.TotalRows, parsed.ValidRows.Count, parsed.Errors.Count, inserted, parsed.Errors);
-            return Ok(new { data = response });
+            var inserted = await suministrosRepository.SetCargueComercialAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = inserted });
         }
         catch
         {
@@ -65,24 +58,69 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
     }
 
     [HttpPost("setCargueInfPropia")]
-    public Task<IActionResult> SetCargueInfPropia([FromBody] CarguePropiaRequest request, CancellationToken cancellationToken) =>
-        ExecuteIntAsync(() => suministrosRepository.SetCargueInfPropiaAsync(request, cancellationToken));
+    public async Task<IActionResult> SetCargueInfPropia([FromBody] CarguePropiaRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var result = await suministrosRepository.SetCargueInfPropiaAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = result });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("setCargueInfPropiaSem")]
     public Task<IActionResult> SetCargueInfPropiaSem([FromBody] CarguePropiaSemRequest request, CancellationToken cancellationToken) =>
         ExecuteIntAsync(() => suministrosRepository.SetCargueInfPropiaSemAsync(request, cancellationToken));
 
     [HttpPost("setCargueInfCompetidor")]
-    public Task<IActionResult> SetCargueInfCompetidor([FromBody] CargueCompetidorRequest request, CancellationToken cancellationToken) =>
-        ExecuteIntAsync(() => suministrosRepository.SetCargueInfCompetidorAsync(request, cancellationToken));
+    public async Task<IActionResult> SetCargueInfCompetidor([FromBody] CargueCompetidorRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var result = await suministrosRepository.SetCargueInfCompetidorAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = result });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("setCargueInfCompetidorSemestral")]
     public Task<IActionResult> SetCargueInfCompetidorSemestral([FromBody] CargueCompetidorSemRequest request, CancellationToken cancellationToken) =>
         ExecuteIntAsync(() => suministrosRepository.SetCargueInfCompetidorSemestralAsync(request, cancellationToken));
 
     [HttpPost("setTerceros")]
-    public Task<IActionResult> SetTerceros([FromBody] TercerosRequest request, CancellationToken cancellationToken) =>
-        ExecuteIntAsync(() => suministrosRepository.SetTercerosAsync(request, cancellationToken));
+    public async Task<IActionResult> SetTerceros([FromBody] TercerosRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var result = await suministrosRepository.SetTercerosAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = result });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("guardarProductividad")]
     public async Task<IActionResult> GuardarProductividad([FromBody] CargueProductividadGuardarRequest request, CancellationToken cancellationToken)

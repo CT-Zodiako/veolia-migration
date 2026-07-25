@@ -1,0 +1,61 @@
+<div class="card-section">
+  <p-message *ngIf="estado()" severity="info" [text]="estado()" styleClass="w-full mb-3"></p-message>
+
+  <div class="cargue-header">
+    <h4>Cargue de Información de Usuarios</h4>
+    <a class="descarga-plano" (click)="descargarPlano()">⚡ Descargar Plano Guía</a>
+  </div>
+
+  <div class="file-row">
+    <input type="file" accept=".csv" (change)="onArchivoSeleccionado($event)" #fileInput />
+    <span class="file-name" *ngIf="nombreArchivo()">{{ nombreArchivo() }}</span>
+    <button pButton label="Cancelar" severity="danger" [outlined]="true" [disabled]="!nombreArchivo()" (click)="cancelarCargue(); fileInput.value = ''"></button>
+  </div>
+
+  <div *ngIf="errores().length" class="errores-box">
+    <p-message *ngFor="let err of errores()" severity="error" [text]="err" styleClass="w-full mb-2"></p-message>
+  </div>
+
+  <div *ngIf="filas().length">
+    <div class="resumen-grid">
+      <div class="resumen-card">
+        <h4>Resumen x Variables</h4>
+        <table class="resumen-table">
+          <tbody>
+            <tr><td>N</td><td>{{ resumenVariables().n }}</td></tr>
+            <tr><td>ND</td><td>{{ resumenVariables().nd }}</td></tr>
+            <tr><td>NA</td><td>{{ resumenVariables().na }}</td></tr>
+            <tr><td>TAFNA</td><td>{{ resumenVariables().tafna }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="resumen-card">
+        <h4>Resumen x Estratos</h4>
+        <table class="resumen-table">
+          <thead><tr><th>Estrato</th><th>Cantidad</th><th>Toneladas</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let fila of resumenEstratos()">
+              <td>{{ fila.estrato }}</td>
+              <td>{{ fila.cantidad }}</td>
+              <td>{{ fila.toneladas }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h4>Vista Previa del Archivo</h4>
+    <app-tabla-avanzada
+      [columnas]="columnasPreview"
+      [rows]="filas()"
+      [autoWidth]="true"
+      storageKey="cargue-mensual-comercial"
+      nombreExportar="Inf_Usuarios_Mensual">
+    </app-tabla-avanzada>
+
+    <div class="guardar-row">
+      <button pButton label="Guardar Información de Usuarios" icon="pi pi-save" [loading]="guardando()" (click)="guardar()"></button>
+    </div>
+  </div>
+</div>
