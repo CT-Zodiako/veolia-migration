@@ -60,6 +60,7 @@ import { AprovechamientoComponent } from './components/aprovechamiento/aprovecha
 import { CostoPodaComponent as SuministrosCostoPodaComponent } from './components/suministros/costo-poda.component';
 import { CargueProductividadComponent } from './components/suministros/cargue-productividad.component';
 import { CargueMensualComponent } from './components/suministros/cargue-mensual/cargue-mensual.component';
+import { CargueSemestralComponent } from './components/suministros/cargue-semestral/cargue-semestral.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -126,6 +127,7 @@ export const routes: Routes = [
       { path: 'suministros/costo-poda', component: SuministrosCostoPodaComponent },
       { path: 'suministros/cargue-productividad', component: CargueProductividadComponent },
       { path: 'suministros/cargue-mensual', component: CargueMensualComponent },
+      { path: 'suministros/cargue-semestral', component: CargueSemestralComponent },
       {
         path: 'costos/calculo-tarifas',
         canActivate: [AuthGuard],

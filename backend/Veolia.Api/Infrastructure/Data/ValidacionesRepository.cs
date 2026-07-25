@@ -26,7 +26,7 @@ public sealed class ValidacionesRepository(IOracleConnectionFactory connectionFa
             throw new ArgumentException($"Oracle function not allowed: {oracleFunction}", nameof(oracleFunction));
         }
 
-        var plsql = $"BEGIN :res := VEOLIA_APP.PK_VALGRAL.{oracleFunction}(:1,:2,:3); END;";
+        var plsql = $"BEGIN :res := PK_VALGRAL.{oracleFunction}(:1,:2,:3); END;";
 
         var parameters = new DynamicParameters();
         parameters.Add("res", dbType: DbType.String, direction: ParameterDirection.Output, size: 4000);

@@ -11,6 +11,15 @@ import {
   CertificarRequest,
   CertificarMensualItem
 } from '../models/cargue-mensual.models';
+import {
+  CarguePropiaSemRequest,
+  CargueCompetidorSemRequest,
+  CargueComercialSemRequest,
+  QRTRuralRequest,
+  PrevalidarSemestralRequest,
+  CertificarSemestralRequest,
+  PlCertificarSemestralResponse
+} from '../models/cargue-semestral.models';
 
 export interface SetReversionRequest {
   aps: number;
@@ -172,5 +181,37 @@ export class SuministrosService {
 
   certificarMensual(payload: CertificarRequest): Observable<DataEnvelope<string | null>> {
     return this.http.post<DataEnvelope<string | null>>(`${this.baseUrl}/certificarMensual`, payload, { headers: this.getHeaders() });
+  }
+
+  setCargueInfPropiaSem(payload: CarguePropiaSemRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/setCargueInfPropiaSem`, payload, { headers: this.getHeaders() });
+  }
+
+  setCargueInfCompetidorSemestral(payload: CargueCompetidorSemRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/setCargueInfCompetidorSemestral`, payload, { headers: this.getHeaders() });
+  }
+
+  filecarguecomercialsemestral(payload: CargueComercialSemRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/filecarguecomercialsemestral`, payload, { headers: this.getHeaders() });
+  }
+
+  guardarQRTRural(payload: QRTRuralRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/guardarQRTRural`, payload, { headers: this.getHeaders() });
+  }
+
+  existeRelleno(payload: PrevalidarSemestralRequest): Observable<DataEnvelope<boolean>> {
+    return this.http.post<DataEnvelope<boolean>>(`${this.baseUrl}/existeRelleno`, payload, { headers: this.getHeaders() });
+  }
+
+  getcanCertificateSemestral(payload: PrevalidarSemestralRequest): Observable<DataEnvelope<number>> {
+    return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/getcanCertificateSemestral`, payload, { headers: this.getHeaders() });
+  }
+
+  certificarSemestral(payload: CertificarSemestralRequest): Observable<DataEnvelope<number | null>> {
+    return this.http.post<DataEnvelope<number | null>>(`${this.baseUrl}/Certificarsemestral`, payload, { headers: this.getHeaders() });
+  }
+
+  plcertificarSemestral(payload: CertificarSemestralRequest): Observable<DataEnvelope<PlCertificarSemestralResponse>> {
+    return this.http.post<DataEnvelope<PlCertificarSemestralResponse>>(`${this.baseUrl}/plcertificarSemestral`, payload, { headers: this.getHeaders() });
   }
 }

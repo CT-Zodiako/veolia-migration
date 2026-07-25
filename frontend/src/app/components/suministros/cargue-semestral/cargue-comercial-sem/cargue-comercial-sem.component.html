@@ -1,0 +1,33 @@
+<div class="card-section">
+  <p-message *ngIf="estado()" severity="info" [text]="estado()" styleClass="w-full mb-3"></p-message>
+
+  <div class="cargue-header">
+    <h4>Cargue de Información de Usuarios Semestral</h4>
+    <a class="descarga-plano" (click)="descargarPlano()">⚡ Descargar Plano Guía</a>
+  </div>
+
+  <div class="file-row">
+    <input type="file" accept=".csv" (change)="onArchivoSeleccionado($event)" #fileInput />
+    <span class="file-name" *ngIf="nombreArchivo()">{{ nombreArchivo() }}</span>
+    <button pButton label="Cancelar" severity="danger" [outlined]="true" [disabled]="!nombreArchivo()" (click)="cancelarCargue(); fileInput.value = ''"></button>
+  </div>
+
+  <div *ngIf="errores().length" class="errores-box">
+    <p-message *ngFor="let err of errores()" severity="error" [text]="err" styleClass="w-full mb-2"></p-message>
+  </div>
+
+  <div *ngIf="filas().length">
+    <h4>Vista Previa del Archivo</h4>
+    <app-tabla-avanzada
+      [columnas]="columnasPreview"
+      [rows]="filas()"
+      [autoWidth]="true"
+      storageKey="cargue-semestral-comercial"
+      nombreExportar="Inf_Usuarios_Semestral">
+    </app-tabla-avanzada>
+
+    <div class="guardar-row">
+      <button pButton label="Guardar Información de Usuarios" icon="pi pi-save" [loading]="guardando()" (click)="guardar()"></button>
+    </div>
+  </div>
+</div>

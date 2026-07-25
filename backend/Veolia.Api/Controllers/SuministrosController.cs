@@ -10,7 +10,7 @@ namespace Veolia.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/suministros")]
-public sealed class SuministrosController(ISuministrosRepository suministrosRepository, FileParserService fileParserService, ICargueProductividadService cargueProductividadService) : ControllerBase
+public sealed class SuministrosController(ISuministrosRepository suministrosRepository, ICargueProductividadService cargueProductividadService, IValidacionesRepository validacionesRepository) : ControllerBase
 {
     [HttpPost("filecarguecomercial")]
     public async Task<IActionResult> FileCargueComercial([FromBody] CargueComercialRequest request, CancellationToken cancellationToken)
@@ -32,24 +32,17 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
     }
 
     [HttpPost("filecarguecomercialsemestral")]
-    public async Task<IActionResult> FileCargueComercialSemestral([FromForm] int aps, [FromForm] int anno, [FromForm] int mes, [FromForm] IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> FileCargueComercialSemestral([FromBody] CargueComercialSemRequest request, CancellationToken cancellationToken)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
         {
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        if (file is null || file.Length == 0)
-        {
-            return BadRequest(new { message = "El archivo es obligatorio." });
-        }
-
         try
         {
-            var parsed = await fileParserService.ParseComercialSemAsync(file, cancellationToken);
-            var inserted = await suministrosRepository.InsertCargueUsuSemBatchAsync(parsed.ValidRows, cancellationToken);
-            var response = new FileUploadBatchResponse(parsed.TotalRows, parsed.ValidRows.Count, parsed.Errors.Count, inserted, parsed.Errors);
-            return Ok(new { data = response });
+            var inserted = await suministrosRepository.SetCargueComercialSemAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = inserted });
         }
         catch
         {
@@ -77,8 +70,23 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
     }
 
     [HttpPost("setCargueInfPropiaSem")]
-    public Task<IActionResult> SetCargueInfPropiaSem([FromBody] CarguePropiaSemRequest request, CancellationToken cancellationToken) =>
-        ExecuteIntAsync(() => suministrosRepository.SetCargueInfPropiaSemAsync(request, cancellationToken));
+    public async Task<IActionResult> SetCargueInfPropiaSem([FromBody] CarguePropiaSemRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var result = await suministrosRepository.SetCargueInfPropiaSemAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = result });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("setCargueInfCompetidor")]
     public async Task<IActionResult> SetCargueInfCompetidor([FromBody] CargueCompetidorRequest request, CancellationToken cancellationToken)
@@ -100,8 +108,23 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
     }
 
     [HttpPost("setCargueInfCompetidorSemestral")]
-    public Task<IActionResult> SetCargueInfCompetidorSemestral([FromBody] CargueCompetidorSemRequest request, CancellationToken cancellationToken) =>
-        ExecuteIntAsync(() => suministrosRepository.SetCargueInfCompetidorSemestralAsync(request, cancellationToken));
+    public async Task<IActionResult> SetCargueInfCompetidorSemestral([FromBody] CargueCompetidorSemRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var result = await suministrosRepository.SetCargueInfCompetidorSemestralAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = result });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("setTerceros")]
     public async Task<IActionResult> SetTerceros([FromBody] TercerosRequest request, CancellationToken cancellationToken)
@@ -165,15 +188,50 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
     }
 
     [HttpPost("guardarQRTRural")]
-    public Task<IActionResult> GuardarQrtRural([FromBody] QRTRuralRequest request, CancellationToken cancellationToken) =>
-        ExecuteIntAsync(() => suministrosRepository.GuardarQrtRuralAsync(request, cancellationToken));
+    public async Task<IActionResult> GuardarQrtRural([FromBody] QRTRuralRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var result = await suministrosRepository.GuardarQrtRuralAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = result });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
+
+    [HttpPost("existeRelleno")]
+    public async Task<IActionResult> ExisteRelleno([FromBody] PrevalidarSemestralRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var mesCierre = request.semestre == 1 ? 6 : 12;
+            var raw = await validacionesRepository.ExecuteAsync("fauco_existerelleno", request.aps, request.anno, mesCierre, cancellationToken);
+            return Ok(new { data = raw == "1" });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("getcanCertificate")]
     public Task<IActionResult> GetCanCertificate([FromBody] PrevalidarRequest request, CancellationToken cancellationToken) =>
         ExecuteDataAsync(() => suministrosRepository.GetCanCertificateAsync(request, cancellationToken));
 
     [HttpPost("getcanCertificateSemestral")]
-    public Task<IActionResult> GetCanCertificateSemestral([FromBody] PrevalidarRequest request, CancellationToken cancellationToken) =>
+    public Task<IActionResult> GetCanCertificateSemestral([FromBody] PrevalidarSemestralRequest request, CancellationToken cancellationToken) =>
         ExecuteDataAsync(() => suministrosRepository.GetCanCertificateSemestralAsync(request, cancellationToken));
 
     [HttpPost("Certificar")]
@@ -181,15 +239,30 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
         ExecuteDataAsync(() => suministrosRepository.CertificarAsync(request, cancellationToken));
 
     [HttpPost("Certificarsemestral")]
-    public Task<IActionResult> CertificarSemestral([FromBody] CertificarRequest request, CancellationToken cancellationToken) =>
-        ExecuteDataAsync(() => suministrosRepository.CertificarSemestralAsync(request, cancellationToken));
+    public async Task<IActionResult> CertificarSemestral([FromBody] CertificarSemestralRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var result = await suministrosRepository.CertificarSemestralAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = result });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("certificarMensual")]
     public Task<IActionResult> CertificarMensual([FromBody] CertificarRequest request, CancellationToken cancellationToken) =>
         ExecuteDataAsync(() => suministrosRepository.CertificarMensualAsync(request, cancellationToken));
 
     [HttpPost("plcertificarSemestral")]
-    public Task<IActionResult> PlCertificarSemestral([FromBody] CertificarRequest request, CancellationToken cancellationToken) =>
+    public Task<IActionResult> PlCertificarSemestral([FromBody] CertificarSemestralRequest request, CancellationToken cancellationToken) =>
         ExecuteDataAsync(() => suministrosRepository.PlCertificarSemestralAsync(request, cancellationToken));
 
     [HttpPost("cenrtificarEditar")]

@@ -179,6 +179,7 @@ export class LayoutComponent implements OnInit {
       case '/pgirs/informe-variables': return 'PGIRS - Informe Variables';
       case '/pgirs/variables': return 'Variables PGIRS';
       case '/suministros/cargue-mensual': return 'Cargue Mensual';
+      case '/suministros/cargue-semestral': return 'Cargue Semestral';
       case '/costos/calculo-tarifas': return 'Cálculo de Tarifas';
       case '/cra': return 'Índices CRA';
       case '/tarifas': return 'Detallado Tarifas';

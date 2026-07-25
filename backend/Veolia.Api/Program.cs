@@ -64,7 +64,6 @@ builder.Services.AddScoped<IPgirsRepository, PgirsRepository>();
 builder.Services.AddScoped<IIndicesRepository, IndicesRepository>();
 builder.Services.AddScoped<IProductividadRepository, ProductividadRepository>();
 builder.Services.AddScoped<IAprovechamientoRepository, AprovechamientoRepository>();
-builder.Services.AddScoped<FileParserService>();
 
 builder.Services.Configure<GoogleDriveOptions>(builder.Configuration.GetSection(GoogleDriveOptions.SectionName));
 builder.Services.AddSingleton<IGoogleSheetsService, GoogleSheetsService>();

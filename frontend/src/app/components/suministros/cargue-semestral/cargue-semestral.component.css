@@ -1,0 +1,61 @@
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-section:last-child {
+  margin-bottom: 0;
+}
+
+.parametros-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.parametros-row app-aps-selector {
+  flex: 0 1 220px;
+  min-width: 180px;
+}
+
+.parametros-row app-anno-selector,
+.parametros-row .semestre-group {
+  flex: 0 1 160px;
+  min-width: 140px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-body);
+}
+
+.loading-text {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.celda-pgirs {
+  background: rgb(82, 138, 184);
+  color: #fff;
+}
+
+.custom-rojo-style {
+  background: rgb(211, 124, 124);
+}
+
+.custom-verde-style {
+  background: rgb(119, 192, 119);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}

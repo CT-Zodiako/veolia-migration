@@ -68,6 +68,13 @@ export class SidebarMenuService {
       keywords: ['cargue mensual', 'cargue de informacion', 'informacion mensual'],
       menuId: 701
     },
+    {
+      label: 'Cargue Semestral',
+      path: '/suministros/cargue-semestral',
+      icon: '📥',
+      keywords: ['cargue semestral', 'cargue de informacion', 'informacion semestral'],
+      menuId: 702
+    },
     { label: 'Formatos y Formularios', path: '/sui/integracion', icon: '🧩', keywords: ['sui integracion', 'integracion sui', 'formatos y formularios'], menuId: 801 },
     { label: 'Cargue Complementario', path: '/sui/cargue-complementario', icon: '📥', keywords: ['cargue complementario', 'cargue complemento'], menuId: 802 },
     { label: 'SUI Dashboard', path: '/sui/dashboard', icon: '📊', keywords: ['sui dashboard', 'dashboard sui'], menuId: 803 },

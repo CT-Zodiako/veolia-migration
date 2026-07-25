@@ -1,0 +1,14 @@
+<div class="card-section">
+  <p-message *ngIf="estado()" severity="info" [text]="estado()" styleClass="w-full mb-3"></p-message>
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label for="rural-qrt">QRT Rural</label>
+      <p-inputnumber inputId="rural-qrt" [(ngModel)]="qrtRural" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full" placeholder="QRT Rural"></p-inputnumber>
+    </div>
+  </div>
+
+  <div class="guardar-row">
+    <button pButton label="Guardar Información de Rural" icon="pi pi-save" [loading]="guardando()" (click)="guardar()"></button>
+  </div>
+</div>

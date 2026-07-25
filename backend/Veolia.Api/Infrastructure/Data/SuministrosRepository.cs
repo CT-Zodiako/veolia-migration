@@ -2,6 +2,7 @@ using Dapper;
 using System.Data;
 using System.Data.Common;
 using Veolia.Api.Contracts.Requests;
+using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Contracts.Suministros;
 using Veolia.Api.Services;
 
@@ -60,9 +61,6 @@ ORDER BY ar.REVE_ANNO DESC, ar.REVE_MES DESC, aa.APSA_NOMAPS";
         return rows.ToList();
     }
 
-    public async Task<int> FileCargueComercialSemestralAsync(FileUploadRequest request, CancellationToken cancellationToken) =>
-        await ExecutePackageIntAsync("PK_CERTIFICACION.filecarguecomercialsemestral", request.aps, request.anno, request.mes, cancellationToken);
-
     public async Task<int> SetCargueInfPropiaAsync(CarguePropiaRequest request, long usuarioId, CancellationToken cancellationToken)
     {
         if (request.resumemes is null || request.resumemes.Count == 0) return 0;
@@ -110,14 +108,57 @@ VALUES (:aps, :empr, :anno, :mes, :cp, :mt3agua, :m2cc, :m2lav, :ti, :tm, :klp, 
         }
     }
 
-    public async Task<int> SetCargueInfPropiaSemAsync(CarguePropiaSemRequest request, CancellationToken cancellationToken)
+    public async Task<int> SetCargueInfPropiaSemAsync(CarguePropiaSemRequest request, long usuarioId, CancellationToken cancellationToken)
     {
-        const string sql = @"INSERT INTO AUCO_CARGUEPROPIOSEM (APSA_ID, CAPS_ANNO, CAPS_MES, CAPS_DATA)
-VALUES (:aps, :anno, :mes, :payload)";
-        var payload = System.Text.Json.JsonSerializer.Serialize(request.data ?? []);
+        if (request.resumesem is null || request.resumesem.Count == 0) return 0;
+
+        const string deleteSql = "DELETE FROM AUCO_CARGUEPROPIOSEM WHERE APSA_ID = :aps AND PROP_ANNO = :anno AND PROP_MES = :mes";
+        const string insertSql = @"INSERT INTO TARIFICADOR.AUCO_CARGUEPROPIOSEM
+(APSA_ID, EMPR_EMPR, PROP_ANNO, PROP_MES, PROP_QRT, PROP_QLU, PROP_QNA, PROP_QBL, PROP_QR, PROP_QRS, PROP_LBL, PROP_VL, PROP_ESCENARIO, PROP_CTLMX, PROP_CPE, PROP_NAA, PROP_TAFA, PROP_CRTPROPIO, PROP_CDFPROPIO, PROP_FECCREA, USUA_USUARIO, PROP_QRSMUNRECP)
+VALUES (:aps, :empr, :anno, :mes, :qrt, :qlu, :qna, :qbl, :qr, :qrs, :lbl, :vl, :esce, :ctlmx, :cpe, :naa, :tafa, :crtpro, :cdfpro, SYSDATE, :usuario, :qrsmunrecp)";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        return await connection.ExecuteAsync(new CommandDefinition(sql, new { request.aps, request.anno, request.mes, payload }, cancellationToken: cancellationToken));
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            var inserted = 0;
+            foreach (var fila in request.resumesem)
+            {
+                await connection.ExecuteAsync(new CommandDefinition(deleteSql, new { aps = fila.aps, anno = fila.anno, mes = fila.mes }, transaction: transaction, cancellationToken: cancellationToken));
+                inserted += await connection.ExecuteAsync(new CommandDefinition(insertSql, new
+                {
+                    aps = fila.aps,
+                    empr = fila.empr,
+                    anno = fila.anno,
+                    mes = fila.mes,
+                    qrt = fila.qrt,
+                    qlu = fila.qlu,
+                    qna = fila.qna,
+                    qbl = fila.qbl,
+                    qr = fila.qr,
+                    qrs = fila.qrs,
+                    lbl = fila.lbl,
+                    vl = fila.vl,
+                    esce = fila.esce,
+                    ctlmx = fila.ctlmx,
+                    cpe = fila.cpe,
+                    naa = fila.naa,
+                    tafa = fila.tafa,
+                    crtpro = fila.crtpro,
+                    cdfpro = fila.cdfpro,
+                    usuario = usuarioId,
+                    qrsmunrecp = fila.qrsmunrecp
+                }, transaction: transaction, cancellationToken: cancellationToken));
+            }
+
+            transaction.Commit();
+            return inserted;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     public async Task<int> SetCargueInfCompetidorAsync(CargueCompetidorRequest request, long usuarioId, CancellationToken cancellationToken)
@@ -165,14 +206,112 @@ VALUES (:aps, :empr, :anno, :mes, :cp, :mt3agua, :m2cc, :m2lav, :ti, :tm, :klp, 
         }
     }
 
-    public async Task<int> SetCargueInfCompetidorSemestralAsync(CargueCompetidorSemRequest request, CancellationToken cancellationToken)
+    public async Task<int> SetCargueInfCompetidorSemestralAsync(CargueCompetidorSemRequest request, long usuarioId, CancellationToken cancellationToken)
     {
-        const string sql = @"INSERT INTO AUCO_CARGUECOMPESEM (APSA_ID, CACS_ANNO, CACS_MES, CACS_DATA)
-VALUES (:aps, :anno, :mes, :payload)";
-        var payload = System.Text.Json.JsonSerializer.Serialize(request.data ?? []);
+        if (request.resumesem is null || request.resumesem.Count == 0) return 0;
+
+        const string deleteSql = "DELETE FROM AUCO_CARGUECOMPESEM WHERE APSA_ID = :aps AND EMPR_EMPR = :empr AND COMP_ANNO = :anno AND COMP_MES = :mes";
+        const string insertSql = @"INSERT INTO TARIFICADOR.AUCO_CARGUECOMPESEM
+(APSA_ID, EMPR_EMPR, COMP_ANNO, COMP_MES, COMP_N, COMP_NAA, COMP_NDA, COMP_QLU, COMP_QNA, COMP_QBL, COMP_QR, COMP_CBLJ, COMP_LBLCOM, COMP_CRTVBA, COMP_CDFVBA, COMP_QRT, COMP_FECCREA, USUA_USUARIO)
+VALUES (:aps, :empr, :anno, :mes, :n, :na, :nd, :qlu, :qna, :qbl, :qr, :cblj, :lbl, :crtcomp, :cdfcomp, :qrtz, SYSDATE, :usuario)";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        return await connection.ExecuteAsync(new CommandDefinition(sql, new { request.aps, request.anno, request.mes, payload }, cancellationToken: cancellationToken));
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            var inserted = 0;
+            foreach (var fila in request.resumesem)
+            {
+                await connection.ExecuteAsync(new CommandDefinition(deleteSql, new { aps = fila.aps, empr = fila.empr, anno = fila.anno, mes = fila.mes }, transaction: transaction, cancellationToken: cancellationToken));
+                inserted += await connection.ExecuteAsync(new CommandDefinition(insertSql, new
+                {
+                    aps = fila.aps,
+                    empr = fila.empr,
+                    anno = fila.anno,
+                    mes = fila.mes,
+                    n = fila.n,
+                    na = fila.na,
+                    nd = fila.nd,
+                    qlu = fila.qlu,
+                    qna = fila.qna,
+                    qbl = fila.qbl,
+                    qr = fila.qr,
+                    cblj = fila.cblj,
+                    lbl = fila.lbl,
+                    crtcomp = fila.crtcomp,
+                    cdfcomp = fila.cdfcomp,
+                    qrtz = fila.qrtz,
+                    usuario = usuarioId
+                }, transaction: transaction, cancellationToken: cancellationToken));
+            }
+
+            transaction.Commit();
+            return inserted;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    public async Task<int> SetCargueComercialSemAsync(CargueComercialSemRequest request, long usuarioId, CancellationToken cancellationToken)
+    {
+        if (request.filecontent is null || request.filecontent.Count == 0) return 0;
+
+        var primera = request.filecontent[0];
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            await connection.ExecuteAsync(new CommandDefinition(
+                "DELETE FROM AUCO_CARGUEUSUSEM WHERE CAUS_CODAPS = :codaps AND CAUS_ANNO = :anno AND CAUS_SEMESTRE = :semestre",
+                new { codaps = primera.codaps, anno = primera.anno, semestre = primera.semestre }, transaction: transaction, cancellationToken: cancellationToken));
+
+            var inserted = 0;
+            const string insertSql = @"INSERT INTO TARIFICADOR.AUCO_CARGUEUSUSEM
+(CAUS_CODAPS, CAUS_APSNOM, CAUS_ANNO, CAUS_SEMESTRE, CAUS_CODCU, CAUS_NOMCU, CAUS_CODFACTOR, CAUS_NOMFACTOR, CAUS_CODTIPO, CAUS_NOMTIPO, CAUS_CANTM1, CAUS_CANTM2, CAUS_CANTM3, CAUS_CANTM4, CAUS_CANTM5, CAUS_CANTM6, CAUS_TONM1, CAUS_TONM2, CAUS_TONM3, CAUS_TONM4, CAUS_TONM5, CAUS_TONM6, CAUS_FECRE, CAUS_USUCRE)
+VALUES (:codaps, :apsNom, :anno, :semestre, :coduso, :nomuso, :codfactor, :nomfact, :codtipo, :nomtipo, :susm1, :susm2, :susm3, :susm4, :susm5, :susm6, :afom1, :afom2, :afom3, :afom4, :afom5, :afom6, SYSDATE, :usuario)";
+
+            foreach (var fila in request.filecontent)
+            {
+                inserted += await connection.ExecuteAsync(new CommandDefinition(insertSql, new
+                {
+                    codaps = fila.codaps,
+                    apsNom = fila.aps,
+                    anno = fila.anno,
+                    semestre = fila.semestre,
+                    coduso = fila.coduso,
+                    nomuso = fila.nomuso,
+                    codfactor = fila.codfactor,
+                    nomfact = fila.nomfact,
+                    codtipo = fila.codtipo,
+                    nomtipo = fila.nomtipo,
+                    susm1 = fila.susm1,
+                    susm2 = fila.susm2,
+                    susm3 = fila.susm3,
+                    susm4 = fila.susm4,
+                    susm5 = fila.susm5,
+                    susm6 = fila.susm6,
+                    afom1 = fila.afom1,
+                    afom2 = fila.afom2,
+                    afom3 = fila.afom3,
+                    afom4 = fila.afom4,
+                    afom5 = fila.afom5,
+                    afom6 = fila.afom6,
+                    usuario = usuarioId
+                }, transaction: transaction, cancellationToken: cancellationToken));
+            }
+
+            transaction.Commit();
+            return inserted;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     public async Task<int> SetTercerosAsync(TercerosRequest request, long usuarioId, CancellationToken cancellationToken)
@@ -338,13 +477,26 @@ VALUES (:codAps, :aps, :codEmpresa, :empresa, :anno, :mes, :ccs, :cbls, :clus, :
         }
     }
 
-    public async Task<int> GuardarQrtRuralAsync(QRTRuralRequest request, CancellationToken cancellationToken)
+    public async Task<int> GuardarQrtRuralAsync(QRTRuralRequest request, long usuarioId, CancellationToken cancellationToken)
     {
-        const string sql = @"INSERT INTO AUCO_CARGUERURAL (APSA_ID, CARU_ANNO, CARU_MES, CARU_QRT, CARU_OBSERVACION)
-VALUES (:aps, :anno, :mes, :qrtRural, :observacion)";
+        const string deleteSql = "DELETE FROM AUCO_CARGUERURAL WHERE APSA_ID = :aps AND RURA_ANNO = :anno AND RURA_SEMESTRE = :semestre";
+        const string insertSql = @"INSERT INTO AUCO_CARGUERURAL (APSA_ID, RURA_ANNO, RURA_SEMESTRE, RURA_QRT, COMP_FECCREA, USUA_USUARIO)
+VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        return await connection.ExecuteAsync(new CommandDefinition(sql, request, cancellationToken: cancellationToken));
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            await connection.ExecuteAsync(new CommandDefinition(deleteSql, new { request.aps, request.anno, request.semestre }, transaction: transaction, cancellationToken: cancellationToken));
+            var result = await connection.ExecuteAsync(new CommandDefinition(insertSql, new { request.aps, request.anno, request.semestre, request.qrtRural, usuario = usuarioId }, transaction: transaction, cancellationToken: cancellationToken));
+            transaction.Commit();
+            return result;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     public async Task<IReadOnlyList<dynamic>> GetCanCertificateAsync(PrevalidarRequest request, CancellationToken cancellationToken)
@@ -356,105 +508,75 @@ VALUES (:aps, :anno, :mes, :qrtRural, :observacion)";
         return rows.ToList();
     }
 
-    public async Task<IReadOnlyList<dynamic>> GetCanCertificateSemestralAsync(PrevalidarRequest request, CancellationToken cancellationToken)
+    public async Task<int> GetCanCertificateSemestralAsync(PrevalidarSemestralRequest request, CancellationToken cancellationToken)
     {
-        const string sql = @"SELECT * FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mes";
+        var mesCierre = request.semestre == 1 ? 6 : 12;
+        const string sql = @"SELECT COUNT(1) AS CANTIDAD FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mesCierre";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        var rows = await connection.QueryAsync(sql, request);
-        return rows.ToList();
+        return await connection.ExecuteScalarAsync<int>(new CommandDefinition(sql, new { request.aps, request.anno, mesCierre }, cancellationToken: cancellationToken));
     }
 
     public async Task<string?> CertificarAsync(CertificarRequest request, CancellationToken cancellationToken) =>
         await ExecutePackageStringAsync("PK_CERTIFICACION.fauco_certificar", request.aps, request.anno, request.mes, cancellationToken);
 
-    public async Task<string?> CertificarSemestralAsync(CertificarRequest request, CancellationToken cancellationToken) =>
-        await ExecutePackageStringAsync("PK_CERTIFICACION.fauco_certificarsem", request.aps, request.anno, request.mes, cancellationToken);
+    public async Task<int?> CertificarSemestralAsync(CertificarSemestralRequest request, long usuarioId, CancellationToken cancellationToken)
+    {
+        const string sql = "BEGIN :res := PK_CERTIFICACION.fauco_certificarsem(:1,:2,:3,:4); COMMIT; END;";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("res", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parameters.Add("1", request.aps);
+        parameters.Add("2", request.semestre);
+        parameters.Add("3", request.anno);
+        parameters.Add("4", usuarioId);
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+        return parameters.Get<int?>("res");
+    }
 
     public async Task<string?> CertificarMensualAsync(CertificarRequest request, CancellationToken cancellationToken) =>
         await ExecutePackageStringAsync("PK_GIRS.fpgirs_mensual", request.aps, request.anno, request.mes, cancellationToken);
 
-    public async Task<string?> PlCertificarSemestralAsync(CertificarRequest request, CancellationToken cancellationToken) =>
-        await ExecutePackageStringAsync("PK_GIRS.fpgirs_semestral", request.aps, request.anno, request.mes, cancellationToken);
-
-    public async Task<string?> CenrtificarEditarAsync(CertificarRequest request, CancellationToken cancellationToken) =>
-        await ExecutePackageStringAsync("PK_VALGRAL.fauco_existarifa", request.aps, request.anno, request.mes, cancellationToken);
-
-    public async Task<int> InsertCargueUsuSemBatchAsync(IReadOnlyList<ComercialSemRow> rows, CancellationToken cancellationToken)
+    public async Task<PlCertificarSemestralResponse> PlCertificarSemestralAsync(CertificarSemestralRequest request, CancellationToken cancellationToken)
     {
-        if (rows.Count == 0) return 0;
-
-        using var connection = await OpenConnectionAsync(cancellationToken);
-        using var transaction = connection.BeginTransaction();
-
-        try
-        {
-            var inserted = 0;
-            const string sql = @"
-INSERT INTO AUCO_CARGUEUSUSEM
-(CAUS_CODAPS, CAUS_APSNOM, CAUS_ANNO, CAUS_SEMESTRE, CAUS_CODCU, CAUS_NOMCU, CAUS_CODFACTOR, CAUS_NOMFACTOR, CAUS_CODTIPO, CAUS_NOMTIPO,
-CAUS_CANTM1, CAUS_CANTM2, CAUS_CANTM3, CAUS_CANTM4, CAUS_CANTM5, CAUS_CANTM6,
-CAUS_TONM1, CAUS_TONM2, CAUS_TONM3, CAUS_TONM4, CAUS_TONM5, CAUS_TONM6, CAUS_USUCRE)
-VALUES
-(:codAps, :apsNom, :anno, :semestre, :codCu, :nomCu, :codFactor, :nomFactor, :codTipo, :nomTipo,
-:cantM1, :cantM2, :cantM3, :cantM4, :cantM5, :cantM6, :tonM1, :tonM2, :tonM3, :tonM4, :tonM5, :tonM6, 0)";
-
-            foreach (var chunk in rows.Chunk(BatchSize))
-            {
-                foreach (var row in chunk)
-                {
-                    inserted += await connection.ExecuteAsync(new CommandDefinition(sql, new
-                    {
-                        codAps = row.CodAps,
-                        apsNom = row.ApsNom,
-                        anno = row.Anno,
-                        semestre = row.Semestre,
-                        codCu = row.CodCu,
-                        nomCu = row.NomCu,
-                        codFactor = row.CodFactor,
-                        nomFactor = row.NomFactor,
-                        codTipo = row.CodTipo,
-                        nomTipo = row.NomTipo,
-                        cantM1 = row.CantM1,
-                        cantM2 = row.CantM2,
-                        cantM3 = row.CantM3,
-                        cantM4 = row.CantM4,
-                        cantM5 = row.CantM5,
-                        cantM6 = row.CantM6,
-                        tonM1 = row.TonM1,
-                        tonM2 = row.TonM2,
-                        tonM3 = row.TonM3,
-                        tonM4 = row.TonM4,
-                        tonM5 = row.TonM5,
-                        tonM6 = row.TonM6
-                    }, transaction: transaction, cancellationToken: cancellationToken));
-                }
-            }
-
-            transaction.Commit();
-            return inserted;
-        }
-        catch
-        {
-            transaction.Rollback();
-            throw;
-        }
-    }
-
-    private async Task<int> ExecutePackageIntAsync(string functionName, int aps, int anno, int mes, CancellationToken cancellationToken)
-    {
-        var sql = $"BEGIN :res := {functionName}(:1,:2,:3); END;";
+        const string sql = "BEGIN :res := PK_GIRS.fpgirs_semestral(:1,:2,:3); END;";
 
         var parameters = new DynamicParameters();
-        parameters.Add("res", dbType: DbType.Int32, direction: ParameterDirection.Output);
-        parameters.Add("1", aps);
-        parameters.Add("2", anno);
-        parameters.Add("3", mes);
+        parameters.Add("res", dbType: DbType.String, direction: ParameterDirection.Output, size: 4000);
+        parameters.Add("1", request.aps);
+        parameters.Add("2", request.anno);
+        parameters.Add("3", request.semestre);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
-        return parameters.Get<int?>("res") ?? 0;
+        var raw = parameters.Get<string>("res");
+
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return new PlCertificarSemestralResponse([]);
+        }
+
+        using var doc = System.Text.Json.JsonDocument.Parse(raw);
+        var datasets = new List<SemestralDataset>();
+        foreach (var item in doc.RootElement.GetProperty("dataset").EnumerateArray())
+        {
+            var pgris = item.GetProperty("pgris").EnumerateArray().Select(ToDecimal).ToList();
+            var barrido = item.GetProperty("barrido").EnumerateArray()
+                .Select(b => new BarridoItem(
+                    b[0].ToString(),
+                    b[1].ToString(),
+                    b[2].ToString()))
+                .ToList();
+            datasets.Add(new SemestralDataset(pgris, barrido));
+        }
+
+        return new PlCertificarSemestralResponse(datasets);
     }
+
+    public async Task<string?> CenrtificarEditarAsync(CertificarRequest request, CancellationToken cancellationToken) =>
+        await ExecutePackageStringAsync("PK_VALGRAL.fauco_existarifa", request.aps, request.anno, request.mes, cancellationToken);
 
     public async Task<IReadOnlyList<dynamic>> GetPodaAsync(PodaConsultaRequest request, CancellationToken cancellationToken)
     {
@@ -522,6 +644,11 @@ VALUES
             new { valor = request.CPTE_VALORSUI, aps = request.apsa_id, emprEmpr = request.EMPR_EMPR, anno = request.cpte_anno, mes = request.cpte_mes, usuario = usuarioId },
             cancellationToken: cancellationToken));
     }
+
+    private static decimal ToDecimal(System.Text.Json.JsonElement element) =>
+        element.ValueKind == System.Text.Json.JsonValueKind.String
+            ? decimal.Parse(element.GetString()!, System.Globalization.CultureInfo.InvariantCulture)
+            : element.GetDecimal();
 
     private async Task<string?> ExecutePackageStringAsync(string functionName, int aps, int anno, int mes, CancellationToken cancellationToken)
     {
