@@ -1,0 +1,5 @@
+bin/
+obj/
+Wallet_VEOM/
+appsettings.Development.json
+Credentials/

@@ -1,0 +1,19 @@
+services:
+  backend:
+    build:
+      context: ./backend/Veolia.Api
+    container_name: veolia-backend
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Oracle: ${ORACLE_CONNECTION_STRING}
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: veolia-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
