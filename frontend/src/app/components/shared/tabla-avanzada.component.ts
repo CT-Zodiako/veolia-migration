@@ -23,15 +23,24 @@ export class ColumnasState {
   orden: TablaColumn[];
   ocultas = new Set<string>();
   fijadas = new Set<string>();
-  visibles: TablaColumn[];
+  visibles: TablaColumn[] = [];
   presets: ColumnaPreset[] = [];
   presetActual: string | null = null;
   private dragField: string | null = null;
 
-  constructor(private readonly columnas: TablaColumn[], private readonly storageKey: string) {
+  constructor(
+    private readonly columnas: TablaColumn[],
+    private readonly storageKey: string,
+    private readonly fijadasPorDefecto: string[] = []
+  ) {
     this.orden = [...columnas];
-    this.visibles = [...this.orden];
     this.cargarPresets();
+    if (fijadasPorDefecto.length > 0) {
+      this.fijadas = new Set(fijadasPorDefecto);
+      this.reordenarPorFijadas();
+    } else {
+      this.visibles = [...this.orden];
+    }
   }
 
   esFija(field: string): boolean {
@@ -68,9 +77,9 @@ export class ColumnasState {
   restaurar(): void {
     this.orden = [...this.columnas];
     this.ocultas.clear();
-    this.fijadas.clear();
+    this.fijadas = new Set(this.fijadasPorDefecto);
     this.presetActual = null;
-    this.recalcularVisibles();
+    this.reordenarPorFijadas();
   }
 
   onDragStart(field: string): void {
@@ -194,6 +203,11 @@ export class TablaAvanzadaComponent implements OnInit, OnChanges {
   @Input() filasPorPagina = 10;
   @Input() autoWidth = false;
 
+  /** Fields que arrancan fijados la primera vez (sin vista guardada previa) y al
+   *  usar "Restaurar columnas". El usuario puede des-fijarlos igual que cualquier
+   *  otra columna; esto solo define el estado inicial, no un mínimo obligatorio. */
+  @Input() columnasFijadasPorDefecto: string[] = [];
+
   /** Si se pasa, reemplaza el contenido default (`{{ row[col.field] }}`) de cada celda.
    *  Contexto: `$implicit` = valor de la celda, `row` = fila completa, `col` = columna actual. */
   @Input() cellTemplate?: TemplateRef<{ $implicit: unknown; row: Record<string, unknown>; col: TablaColumn }>;
@@ -213,12 +227,20 @@ export class TablaAvanzadaComponent implements OnInit, OnChanges {
   pantallaCompleta = signal(false);
 
   ngOnInit(): void {
-    this.columnasState = new ColumnasState(this.columnas, `veolia:tabla-presets:${this.storageKey}`);
+    this.columnasState = new ColumnasState(
+      this.columnas,
+      `veolia:tabla-presets:${this.storageKey}`,
+      this.columnasFijadasPorDefecto
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['columnas'] && this.columnasState) {
-      this.columnasState = new ColumnasState(this.columnas, `veolia:tabla-presets:${this.storageKey}`);
+      this.columnasState = new ColumnasState(
+        this.columnas,
+        `veolia:tabla-presets:${this.storageKey}`,
+        this.columnasFijadasPorDefecto
+      );
     }
   }
 
