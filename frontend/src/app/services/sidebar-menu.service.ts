@@ -82,7 +82,7 @@ export class SidebarMenuService {
     { label: 'Detallado Facturación', path: '/facturacion', icon: '🧾', keywords: ['facturacion', 'facturación', 'billing', 'detallado facturacion'], menuId: 502 },
     { label: 'Historial de Certificación', path: '/histCertificacion', icon: '📋', keywords: ['historial certificacion', 'historia de certificacion'], menuId: 503 },
     { label: 'Historial de Productividad', path: '/histProductividad', icon: '📈', keywords: ['historial productividad'], menuId: 504 },
-    { label: 'Rellenos', path: '/rellenos', icon: '🗑️', keywords: ['relleno', 'rellenos sanitarios', 'rellenos'] },
+    { label: 'Rellenos', path: '/rellenos', icon: '🗑️', keywords: ['relleno', 'rellenos sanitarios', 'rellenos'], menuId: 203 },
     { label: 'Validaciones', path: '/validaciones', icon: '✅', keywords: ['validacion', 'validaciones'] },
     { label: 'Subsidios y Contribuciones', path: '/subcon', icon: '💰', keywords: ['subcont', 'subcon'], menuId: 302 },
     { label: 'Crear Proyección', path: '/proyecciones', icon: '🔮', keywords: ['crear proyeccion', 'proyecciones'], menuId: 901 },
@@ -117,9 +117,17 @@ export class SidebarMenuService {
     { label: 'Variables PGIRS', path: '/pgirs/variables', icon: '♻️', keywords: ['pgirs variables', 'variables pgris'], menuId: 2001 },
     { label: 'SUI 853 - APS Empresa', path: '/apsEmpresa', icon: '🏢', keywords: ['aps empresa'], menuId: 30001 },
     { label: 'SUI 853 - APS Documentos', path: '/apsDocumentos', icon: '📄', keywords: ['aps documentos'], menuId: 30002 },
-    { label: 'Configuración APS', path: '/aps-usuario', icon: '⚙️', keywords: ['aps usuario'], menuId: 205 },
-    { label: 'Asignación Sistema', path: '/asignacion-sistema', icon: '🖥️', keywords: ['asignacion sistema'], menuId: 206 },
-    { label: 'Menú Usuario', path: '/menu-usuario', icon: '📋', keywords: ['menu usuario'], menuId: 207 },
+    // 'Configuración APS' (/aps-usuario), 'Asignación Sistema' (/asignacion-sistema) y
+    // 'Menú Usuario' (/menu-usuario) NO tienen nodo propio en AUGE_MENU: dump completo del
+    // árbol confirma que el nodo padre "Configuración" (menu_id 200) solo tiene 4 hijos reales
+    // (201 APS, 202 Empresas, 203 Rellenos, 204 Usuarios), y una búsqueda por
+    // ASIGNAC%/SISTEMA%/MENU+USUARIO%/APS% en toda la tabla no arroja ningún otro menu_id para
+    // estas 3 funcionalidades. Confirmado también en el código: <app-apsx-usuario>,
+    // <app-asignacion-sistema> y MenuxUsuarioComponent se renderizan como pestañas dentro de
+    // usuarios.component.html (bajo la ruta /usuarios, menuId 204), no como opciones de menú
+    // separadas. Los menuId 205/206/207 que tenían eran inventados y nunca podían matchear
+    // (buildMenuGroups/processChildren solo recorren nodos reales de AUGE_MENU), así que se
+    // quitan las entradas del catálogo en vez de dejarlas con un menuId falso.
   ];
 
   buildMenuGroups(menuTree: any[], permittedMenuIds: Set<number>): MenuGroup[] {
