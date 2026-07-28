@@ -15,7 +15,6 @@ import { ApsDocumentosComponent } from './components/sui853-configuracion/aps-do
 import { ResiduosGeneradosComponent } from './components/sui853-configuracion/residuos-generados.component';
 import { InformesGeneradosComponent } from './components/sui853-configuracion/informes-generados.component';
 import { InformesGeneradosMesComponent } from './components/sui853-configuracion/informes-generados-mes.component';
-import { CalculoTarifasComponent } from './components/tarifas/calculo-tarifas.component';
 import { DetalleTarifasComponent } from './components/tarifas/detalle-tarifas.component';
 import { DetalleTarifasGenComponent } from './components/tarifas/detalle-tarifas-gen.component';
 import { HistorialCertificacionComponent } from './components/tarifas/historial-certificacion.component';
@@ -82,7 +81,11 @@ export const routes: Routes = [
       { path: 'residuosGenerados', component: ResiduosGeneradosComponent },
       { path: 'informesGenerados', component: InformesGeneradosComponent },
       { path: 'informesGeneradosMes', component: InformesGeneradosMesComponent },
-      { path: 'calculo', component: CalculoTarifasComponent },
+      {
+        path: 'calculo',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/costos/costos-calculo-page.component').then((m) => m.CostosCalculoPageComponent)
+      },
       { path: 'tarifas', component: DetalleTarifasComponent },
       { path: 'tarifas-general', component: DetalleTarifasGenComponent },
       { path: 'histCertificacion', component: HistorialCertificacionComponent },
@@ -117,8 +120,8 @@ export const routes: Routes = [
       { path: 'gerencial/poda', component: CostoPodaComponent },
       { path: 'gerencial/descuento-costos', component: DescuentoCostosComponent },
       { path: 'suministros/verificacion', component: VerificacionApsComponent },
-      { path: 'pgirs/resumen', component: PgirsInformeVariablesComponent },
-      { path: 'pgirs/informe-variables', component: PgirsResumenComponent },
+      { path: 'pgirs/resumen', component: PgirsResumenComponent },
+      { path: 'pgirs/informe-variables', component: PgirsInformeVariablesComponent },
       { path: 'pgirs/variables', component: PgirsVariablesComponent },
       { path: 'cra', component: IndicesCraComponent },
       { path: 'productividad', component: AjusteProductividadComponent },
@@ -127,12 +130,7 @@ export const routes: Routes = [
       { path: 'suministros/costo-poda', component: SuministrosCostoPodaComponent },
       { path: 'suministros/cargue-productividad', component: CargueProductividadComponent },
       { path: 'suministros/cargue-mensual', component: CargueMensualComponent },
-      { path: 'suministros/cargue-semestral', component: CargueSemestralComponent },
-      {
-        path: 'costos/calculo-tarifas',
-        canActivate: [AuthGuard],
-        loadComponent: () => import('./components/costos/costos-calculo-page.component').then((m) => m.CostosCalculoPageComponent)
-      }
+      { path: 'suministros/cargue-semestral', component: CargueSemestralComponent }
     ]
   },
   { path: '**', redirectTo: '' }
