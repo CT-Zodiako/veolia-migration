@@ -48,12 +48,51 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
 
     public async Task<IReadOnlyList<CompararTarifasResponseDto>> CompararTarifasAsync(long reliq, CancellationToken cancellationToken)
     {
+        // Columnas confirmadas contra el legacy Vue (front-tarificador/src/reliq/views/CompararTarifas.vue,
+        // líneas 65-637): la vista no expone RELI/APSA_ID/TARIFA_APS/TARIFA_EMPRESA/DIF_TARIFA (no existen
+        // en ninguna fuente documentada), sino tríos ORIG/REL/DIF por componente tarifario.
         const string sql = @"
-            SELECT RELI AS Reli,
-                   APSA_ID AS ApsaId,
-                   TARIFA_APS AS TarifaAps,
-                   TARIFA_EMPRESA AS TarifaEmpresa,
-                   DIF_TARIFA AS DifTarifa
+            SELECT MES AS Mes,
+                   ANNO AS Anno,
+                   CLAS_NOMBRE AS ClasNombre,
+                   PARA_NOMBRE AS ParaNombre,
+                   FAPR_NOMBRE AS FaprNombre,
+                   TC_ORIG AS TcOrig,
+                   TC_REL AS TcRel,
+                   TC_DIF AS TcDif,
+                   TCAPROV_ORIG AS TcaprovOrig,
+                   TCAPROV_REL AS TcaprovRel,
+                   TCAPROV_DIF AS TcaprovDif,
+                   TCADD_ORIG AS TcaddOrig,
+                   TCADD_REL AS TcaddRel,
+                   TCADD_DIF AS TcaddDif,
+                   TCADDAPROV_ORIG AS TcaddaprovOrig,
+                   TCADDAPROV_REL AS TcaddaprovRel,
+                   TCADDAPROV_DIF AS TcaddaprovDif,
+                   TBL_ORIG AS TblOrig,
+                   TBL_REL AS TblRel,
+                   TBL_DIF AS TblDif,
+                   TLU_ORIG AS TluOrig,
+                   TLU_REL AS TluRel,
+                   TLU_DIF AS TluDif,
+                   TRT_ORIG AS TrtOrig,
+                   TRT_REL AS TrtRel,
+                   TRT_DIF AS TrtDif,
+                   TDF_ORIG AS TdfOrig,
+                   TDF_REL AS TdfRel,
+                   TDF_DIF AS TdfDif,
+                   TTL_ORIG AS TtlOrig,
+                   TTL_REL AS TtlRel,
+                   TTL_DIF AS TtlDif,
+                   TA_ORIG AS TaOrig,
+                   TA_REL AS TaRel,
+                   TA_DIF AS TaDif,
+                   TAR_PLENA_ENE_ORG AS TarPlenaEneOrg,
+                   TAR_PLENA_ENE_REL AS TarPlenaEneRel,
+                   DEVOLENE AS Devolene,
+                   TAR_PLENA_ACU_ORG AS TarPlenaAcuOrg,
+                   TAR_PLENA_ACU_REL AS TarPlenaAcuRel,
+                   DEVOLACU AS Devolacu
               FROM VREL_COMPARATARIFACOBRO
              WHERE RELI = :1";
 
@@ -82,9 +121,76 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
         if (row is null || string.IsNullOrWhiteSpace(row.JsonTrna))
             return null;
 
-        var parsed = JsonSerializer.Deserialize<object>(row.JsonTrna);
-        return new ResumenCompararTarifasResponseDto { JsonTrna = parsed };
+        return ParseResumenCompararTarifas(row.JsonTrna);
     }
+
+    // El legacy (CompararTarifas.vue líneas 755-777 y GenericTable.vue líneas 88-104) consume el JSON
+    // con claves en minúscula "periodo"/"dataset", y cada bloque del dataset con "nombre" u opcionalmente
+    // "grup" como leyenda, más "columns" (encabezados) y "data" (matriz fila x columna). Se parsea así,
+    // preservando la estructura dinámica en vez de forzar columnas fijas que no existen.
+    private static ResumenCompararTarifasResponseDto ParseResumenCompararTarifas(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        var periodo = root.TryGetProperty("periodo", out var periodoEl) && periodoEl.ValueKind == JsonValueKind.String
+            ? periodoEl.GetString()
+            : null;
+
+        var dataset = new List<ResumenCompararTarifasDatasetItemDto>();
+        if (root.TryGetProperty("dataset", out var datasetEl) && datasetEl.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in datasetEl.EnumerateArray())
+            {
+                var nombre = item.TryGetProperty("nombre", out var nombreEl) && nombreEl.ValueKind == JsonValueKind.String
+                    ? nombreEl.GetString()
+                    : item.TryGetProperty("grup", out var grupEl) && grupEl.ValueKind == JsonValueKind.String
+                        ? grupEl.GetString()
+                        : null;
+
+                var columns = new List<string>();
+                if (item.TryGetProperty("columns", out var columnsEl) && columnsEl.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var col in columnsEl.EnumerateArray())
+                    {
+                        columns.Add(col.ValueKind == JsonValueKind.String ? col.GetString() ?? string.Empty : col.GetRawText());
+                    }
+                }
+
+                var data = new List<List<object?>>();
+                if (item.TryGetProperty("data", out var dataEl) && dataEl.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var dataRow in dataEl.EnumerateArray())
+                    {
+                        var rowValues = new List<object?>();
+                        if (dataRow.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var cell in dataRow.EnumerateArray())
+                            {
+                                rowValues.Add(ConvertJsonValue(cell));
+                            }
+                        }
+
+                        data.Add(rowValues);
+                    }
+                }
+
+                dataset.Add(new ResumenCompararTarifasDatasetItemDto { Nombre = nombre, Columns = columns, Data = data });
+            }
+        }
+
+        return new ResumenCompararTarifasResponseDto { Periodo = periodo, Dataset = dataset };
+    }
+
+    private static object? ConvertJsonValue(JsonElement element) => element.ValueKind switch
+    {
+        JsonValueKind.String => element.GetString(),
+        JsonValueKind.Number => element.TryGetDecimal(out var dec) ? dec : element.GetDouble(),
+        JsonValueKind.True => true,
+        JsonValueKind.False => false,
+        JsonValueKind.Null or JsonValueKind.Undefined => null,
+        _ => element.GetRawText()
+    };
 
     public async Task<IReadOnlyList<ReliInfoUsuariosDto>> GetReliInfoUsuariosAsync(long idReliq, CancellationToken cancellationToken)
     {

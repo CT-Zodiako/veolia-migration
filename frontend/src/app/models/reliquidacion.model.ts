@@ -46,12 +46,82 @@ export interface CompararCostos {
   costo: number;
 }
 
+/**
+ * Fila de RELIQ.VREL_COMPARATARIFACOBRO.
+ * Columnas confirmadas contra el legacy Vue (front-tarificador/src/reliq/views/CompararTarifas.vue,
+ * líneas 65-637): tríos ORIG/REL/DIF por componente tarifario + acumulados de tarifa plena y
+ * cobro/devolución. No existen columnas `reli`/`tarifa`/`componente` en la vista real.
+ */
 export interface CompararTarifas {
-  reli: number;
-  tarifa: number;
-  componente: string;
-  anno?: number;
-  mes?: number;
+  mes?: number | null;
+  anno?: number | null;
+  clasNombre?: string | null;
+  paraNombre?: string | null;
+  faprNombre?: string | null;
+
+  tcOrig?: number | null;
+  tcRel?: number | null;
+  tcDif?: number | null;
+
+  tcaprovOrig?: number | null;
+  tcaprovRel?: number | null;
+  tcaprovDif?: number | null;
+
+  tcaddOrig?: number | null;
+  tcaddRel?: number | null;
+  tcaddDif?: number | null;
+
+  tcaddaprovOrig?: number | null;
+  tcaddaprovRel?: number | null;
+  tcaddaprovDif?: number | null;
+
+  tblOrig?: number | null;
+  tblRel?: number | null;
+  tblDif?: number | null;
+
+  tluOrig?: number | null;
+  tluRel?: number | null;
+  tluDif?: number | null;
+
+  trtOrig?: number | null;
+  trtRel?: number | null;
+  trtDif?: number | null;
+
+  tdfOrig?: number | null;
+  tdfRel?: number | null;
+  tdfDif?: number | null;
+
+  ttlOrig?: number | null;
+  ttlRel?: number | null;
+  ttlDif?: number | null;
+
+  taOrig?: number | null;
+  taRel?: number | null;
+  taDif?: number | null;
+
+  tarPlenaEneOrg?: number | null;
+  tarPlenaEneRel?: number | null;
+  devolene?: number | null;
+
+  tarPlenaAcuOrg?: number | null;
+  tarPlenaAcuRel?: number | null;
+  devolacu?: number | null;
+}
+
+/**
+ * Bloque del dataset de RELIQ.PK_JSONRESUMEN.freli_jsongral (resumen de Comparar Tarifas).
+ * Estructura dinámica: cada bloque trae su propio set de columnas (ver legacy
+ * GenericTable.vue líneas 88-104), por eso `columns`/`data` en vez de campos fijos.
+ */
+export interface ResumenCompararTarifasDatasetItem {
+  nombre: string | null;
+  columns: string[];
+  data: unknown[][];
+}
+
+export interface ResumenCompararTarifas {
+  periodo: string | null;
+  dataset: ResumenCompararTarifasDatasetItem[];
 }
 
 export interface ReliInfoUsuarios {

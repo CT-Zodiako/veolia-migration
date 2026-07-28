@@ -11,7 +11,8 @@ import {
   ReliInfoAps,
   ReliInfoEmpresa,
   ReliInfoRelleno,
-  ReliInfoUsuarios
+  ReliInfoUsuarios,
+  ResumenCompararTarifas
 } from '../../models/reliquidacion.model';
 
 @Injectable({ providedIn: 'root' })
@@ -47,8 +48,8 @@ export class ReliqCargueService {
       .pipe(catchError((error) => this.handleError(error)));
   }
 
-  resumenCompararTarifas(reliq: number, aps: number, anno: number, mes: number): Observable<ApiEnvelope<unknown>> {
-    return this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/resumenCompararTarifas`, { reliq, apsaId: aps, anno, mes }, { headers: this.getHeaders() })
+  resumenCompararTarifas(reliq: number, aps: number, anno: number, mes: number): Observable<ApiEnvelope<ResumenCompararTarifas>> {
+    return this.http.post<ApiEnvelope<ResumenCompararTarifas>>(`${this.baseUrl}/resumenCompararTarifas`, { reliq, apsaId: aps, anno, mes }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 

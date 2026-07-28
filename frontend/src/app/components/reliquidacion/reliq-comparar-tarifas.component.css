@@ -1,3 +1,47 @@
-.page-wrap { padding: 1.5rem; max-width: 1300px; margin: 0 auto; }
-.toolbar { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-pre { white-space: pre-wrap; word-break: break-word; }
+.page-wrap { padding: 1.5rem; max-width: 1600px; margin: 0 auto; }
+
+.toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.form-group.reliq-field {
+  flex: 0 1 260px;
+  min-width: 220px;
+  margin-bottom: 12px;
+}
+.form-group.reliq-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-body);
+}
+
+.boton-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.resumen-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.resumen-bloque {
+  flex: 1 1 320px;
+  min-width: 280px;
+  max-width: 100%;
+  overflow-x: auto;
+}
