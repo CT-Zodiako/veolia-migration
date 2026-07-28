@@ -22,6 +22,12 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         var relqDescripcion = request.RelqDescripcion ?? request.Descripcion;
         var relqDesde = (string.IsNullOrWhiteSpace(request.RelqDesde) ? request.Desde : request.RelqDesde) ?? string.Empty;
         var relqHasta = (string.IsNullOrWhiteSpace(request.RelqHasta) ? request.Hasta : request.RelqHasta) ?? string.Empty;
+        // Legacy (reliq/routes.js "/crear" -> controller.js "crear") insertaba el relqestado
+        // recibido del form sin validarlo. El form de "Crear" en el frontend solo ofrece
+        // CREADA/APLICADA (ver ESTADO_OPTIONS en reliq-crear.component.ts) con "CREADA" por
+        // defecto, así que replicamos ese default cuando no llega el campo, pero respetamos
+        // lo que el usuario haya elegido en vez de forzarlo en el backend.
+        var relqEstado = string.IsNullOrWhiteSpace(request.Estado) ? "CREADA" : request.Estado.Trim().ToUpperInvariant();
 
         if (string.IsNullOrWhiteSpace(relqNombre))
             return UnprocessableEntity(Envelope("error", null, "relqNombre es obligatorio."));
@@ -33,6 +39,7 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         request.RelqDescripcion = relqDescripcion;
         request.RelqDesde = relqDesde;
         request.RelqHasta = relqHasta;
+        request.Estado = relqEstado;
 
         try
         {

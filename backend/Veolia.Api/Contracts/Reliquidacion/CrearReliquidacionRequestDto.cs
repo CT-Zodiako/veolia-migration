@@ -24,4 +24,7 @@ public sealed class CrearReliquidacionRequestDto
 
     [JsonPropertyName("hasta")]
     public string? Hasta { get; set; }
+
+    [JsonPropertyName("estado")]
+    public string? Estado { get; set; }
 }

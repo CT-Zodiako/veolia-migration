@@ -12,8 +12,8 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
         const string insertCabeceraSql = @"
             INSERT INTO RELQRELIQUIDA
             (RELQID, APSA_ID, RELQNOMBRE, RELQDESCRIPCION, RELQDESDE, RELQHASTA, RELQESTADO, RELQUSUSOLICITA, RELQUSUAPRUEBA, RELQFECHA)
-            VALUES (SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, 'CREADA', :6, :7, SYSDATE)
-            RETURNING RELQID INTO :8";
+            VALUES (SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, :8, SYSDATE)
+            RETURNING RELQID INTO :9";
 
         const string insertFiltroSql = @"
             INSERT INTO FILTRO_COMPARACOSTO
@@ -44,12 +44,13 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
             cabeceraParams.Add("3", request.RelqDescripcion);
             cabeceraParams.Add("4", request.RelqDesde);
             cabeceraParams.Add("5", request.RelqHasta);
-            cabeceraParams.Add("6", request.UsuSolicita);
-            cabeceraParams.Add("7", request.UsuAprueba);
-            cabeceraParams.Add("8", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
+            cabeceraParams.Add("6", string.IsNullOrWhiteSpace(request.Estado) ? "CREADA" : request.Estado);
+            cabeceraParams.Add("7", request.UsuSolicita);
+            cabeceraParams.Add("8", request.UsuAprueba);
+            cabeceraParams.Add("9", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
 
             await connection.ExecuteAsync(new CommandDefinition(insertCabeceraSql, cabeceraParams, transaction: transaction, cancellationToken: cancellationToken));
-            var relqId = cabeceraParams.Get<long>("8");
+            var relqId = cabeceraParams.Get<long>("9");
 
             var filtroParams = new DynamicParameters();
             filtroParams.Add("1", relqId);

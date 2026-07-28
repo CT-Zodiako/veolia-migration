@@ -10,6 +10,7 @@ public sealed class ActualizarReliquidacionRequestDto
     public string? RelqDescripcion { get; set; }
     public string RelqDesde { get; set; } = string.Empty;
     public string RelqHasta { get; set; } = string.Empty;
+    [JsonPropertyName("estado")]
     public string RelqEstado { get; set; } = string.Empty;
     public long UsuSolicita { get; set; }
     public long UsuAprueba { get; set; }
