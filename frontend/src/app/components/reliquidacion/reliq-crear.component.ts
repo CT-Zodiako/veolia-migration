@@ -4,9 +4,15 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, map, of } from 'rxjs';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { DialogModule } from 'primeng/dialog';
+import { ConfirmationService } from 'primeng/api';
 import { ReliquidacionService } from '../../services/reliquidacion/reliquidacion.service';
 import { ApsService } from '../../services/aps.service';
 import { ApsOption, Reliquidacion } from '../../models/reliquidacion.model';
+
+const ESTADO_OPTIONS = [
+  { label: 'Creada', value: 'CREADA' },
+  { label: 'Aplicada', value: 'APLICADA' }
+];
 
 @Component({
   selector: 'app-reliq-crear',
@@ -16,6 +22,8 @@ import { ApsOption, Reliquidacion } from '../../models/reliquidacion.model';
   styleUrls: ['./reliq-crear.component.css']
 })
 export class ReliqCrearComponent {
+  readonly estadoOptions = ESTADO_OPTIONS;
+
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly showDialog = signal(false);
@@ -38,7 +46,8 @@ export class ReliqCrearComponent {
   constructor(
     private readonly fb: FormBuilder,
     private readonly apsService: ApsService,
-    private readonly reliqService: ReliquidacionService
+    private readonly reliqService: ReliquidacionService,
+    private readonly confirmationService: ConfirmationService
   ) {
     this.loadAps();
     this.loadReliquidaciones();
@@ -105,7 +114,19 @@ export class ReliqCrearComponent {
   }
 
   eliminar(row: Reliquidacion): void {
-    if (!window.confirm(`¿Eliminar reliquidación ${row.relqNombre}?`)) return;
+    this.confirmationService.confirm({
+      header: 'Eliminar Reliquidación',
+      message: `¿Seguro que querés eliminar la reliquidación "${row.relqNombre}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => this.confirmarEliminar(row)
+    });
+  }
+
+  private confirmarEliminar(row: Reliquidacion): void {
     this.reliqService.eliminarReliquidacion(row.relqId).subscribe({ next: () => this.loadReliquidaciones() });
   }
 

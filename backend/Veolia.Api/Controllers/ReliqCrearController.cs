@@ -51,12 +51,14 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope("error", null, "No autorizado."));
 
-        if (payload.ApsaId <= 0)
-            return UnprocessableEntity(Envelope("error", null, "apsaId es obligatorio."));
+        // Legacy (reliq/routes.js "/getReliquidaciones") no recibía ni exigía apsaId: listaba
+        // todas las reliquidaciones activas de cualquier APS. apsaId es opcional acá para
+        // replicar ese comportamiento; GetReliquidacionByAps sigue exigiéndolo para el filtro puntual.
+        var apsaId = payload.ApsaId > 0 ? payload.ApsaId : (long?)null;
 
         try
         {
-            var data = await repository.GetReliquidacionesAsync(payload.ApsaId, cancellationToken);
+            var data = await repository.GetReliquidacionesAsync(apsaId, cancellationToken);
             return Ok(Envelope("ok", data, "OK"));
         }
         catch (Exception ex)

@@ -9,6 +9,7 @@ public sealed class CrearReliquidacionRequestDto
     public string? RelqDescripcion { get; set; }
     public string RelqDesde { get; set; } = string.Empty;
     public string RelqHasta { get; set; } = string.Empty;
+    public long UsuSolicita { get; set; }
     public long UsuAprueba { get; set; }
     public long? IdAtt { get; set; }
 

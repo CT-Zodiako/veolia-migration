@@ -46,7 +46,7 @@
     <label>Solicitante</label>
     <p-inputNumber formControlName="usuSolicita" />
     <label>Estado</label>
-    <input pInputText formControlName="estado" />
+    <p-select formControlName="estado" [options]="estadoOptions" optionLabel="label" optionValue="value" />
     <label>Aprobador</label>
     <p-inputNumber formControlName="usuAprueba" />
   </form>

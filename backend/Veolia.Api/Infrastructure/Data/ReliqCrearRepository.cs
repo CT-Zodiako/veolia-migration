@@ -11,9 +11,9 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
     {
         const string insertCabeceraSql = @"
             INSERT INTO RELQRELIQUIDA
-            (RELQID, APSA_ID, RELQNOMBRE, RELQDESCRIPCION, RELQDESDE, RELQHASTA, RELQESTADO, USUA_USUA, RELQFECHA)
-            VALUES (SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, 'CREADA', :6, SYSDATE)
-            RETURNING RELQID INTO :7";
+            (RELQID, APSA_ID, RELQNOMBRE, RELQDESCRIPCION, RELQDESDE, RELQHASTA, RELQESTADO, RELQUSUSOLICITA, RELQUSUAPRUEBA, RELQFECHA)
+            VALUES (SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, 'CREADA', :6, :7, SYSDATE)
+            RETURNING RELQID INTO :8";
 
         const string insertFiltroSql = @"
             INSERT INTO FILTRO_COMPARACOSTO
@@ -44,11 +44,12 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
             cabeceraParams.Add("3", request.RelqDescripcion);
             cabeceraParams.Add("4", request.RelqDesde);
             cabeceraParams.Add("5", request.RelqHasta);
-            cabeceraParams.Add("6", usuarioId);
-            cabeceraParams.Add("7", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
+            cabeceraParams.Add("6", request.UsuSolicita);
+            cabeceraParams.Add("7", request.UsuAprueba);
+            cabeceraParams.Add("8", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
 
             await connection.ExecuteAsync(new CommandDefinition(insertCabeceraSql, cabeceraParams, transaction: transaction, cancellationToken: cancellationToken));
-            var relqId = cabeceraParams.Get<long>("7");
+            var relqId = cabeceraParams.Get<long>("8");
 
             var filtroParams = new DynamicParameters();
             filtroParams.Add("1", relqId);
@@ -87,7 +88,8 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                        R.RELQDESDE AS RelqDesde,
                        R.RELQHASTA AS RelqHasta,
                        R.RELQESTADO AS RelqEstado,
-                       R.USUA_USUA AS UsuaUsua,
+                       R.RELQUSUSOLICITA AS RelqSolicita,
+                       R.RELQUSUAPRUEBA AS RelqAprueba,
                        R.RELQFECHA AS RelqFecha
                   FROM RELQRELIQUIDA R
                  WHERE R.RELQID = :1";
@@ -104,9 +106,15 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
         }
     }
 
-    public async Task<IReadOnlyList<ReliquidacionDto>> GetReliquidacionesAsync(long apsaId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ReliquidacionDto>> GetReliquidacionesAsync(long? apsaId, CancellationToken cancellationToken)
     {
-        const string sql = @"
+        // Legacy (reliq/controller.js getReliquidaciones) no filtraba por APS: traía todas
+        // las reliquidaciones activas de cualquier APS. Se replica ese comportamiento cuando
+        // no se recibe un apsaId real (>0); el filtro por APS puntual sigue disponible vía
+        // GetReliquidacionByApsAsync.
+        var filtrarPorAps = apsaId is > 0;
+
+        var sql = @"
             SELECT R.RELQID AS RelqId,
                    R.APSA_ID AS ApsaId,
                    R.RELQNOMBRE AS RelqNombre,
@@ -114,16 +122,21 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQDESDE AS RelqDesde,
                    R.RELQHASTA AS RelqHasta,
                    R.RELQESTADO AS RelqEstado,
-                   R.USUA_USUA AS UsuaUsua,
+                   R.RELQUSUSOLICITA AS RelqSolicita,
+                   R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha
               FROM RELQRELIQUIDA R
               LEFT JOIN AUCO_APSASEO A ON A.APSA_ID = R.APSA_ID
-              LEFT JOIN AUGE_SISUSUARIO U ON U.SISU_ID = R.USUA_USUA
-             WHERE R.APSA_ID = :1
-             ORDER BY R.RELQID DESC";
+              LEFT JOIN AUGE_SISUSUARIO U ON U.SISU_ID = R.RELQUSUSOLICITA";
+
+        sql += filtrarPorAps ? " WHERE R.APSA_ID = :1" : string.Empty;
+        sql += " ORDER BY R.RELQID DESC";
 
         var parameters = new DynamicParameters();
-        parameters.Add("1", apsaId);
+        if (filtrarPorAps)
+        {
+            parameters.Add("1", apsaId);
+        }
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<ReliquidacionDto>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
@@ -140,7 +153,8 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQDESDE AS RelqDesde,
                    R.RELQHASTA AS RelqHasta,
                    R.RELQESTADO AS RelqEstado,
-                   R.USUA_USUA AS UsuaUsua,
+                   R.RELQUSUSOLICITA AS RelqSolicita,
+                   R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha
               FROM RELQRELIQUIDA R
              WHERE R.APSA_ID = :1
@@ -165,9 +179,10 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    RELQDESDE = :4,
                    RELQHASTA = :5,
                    RELQESTADO = :6,
-                   USUA_USUA = :7,
+                   RELQUSUSOLICITA = :7,
+                   RELQUSUAPRUEBA = :8,
                    RELQFECHA = SYSDATE
-             WHERE RELQID = :8";
+             WHERE RELQID = :9";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", request.ApsaId);
@@ -176,8 +191,9 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
         parameters.Add("4", request.RelqDesde);
         parameters.Add("5", request.RelqHasta);
         parameters.Add("6", request.RelqEstado);
-        parameters.Add("7", usuarioId);
-        parameters.Add("8", request.RelqId);
+        parameters.Add("7", request.UsuSolicita);
+        parameters.Add("8", request.UsuAprueba);
+        parameters.Add("9", request.RelqId);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
