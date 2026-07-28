@@ -1,11 +1,29 @@
+<!--
+  Estilos 100% inline (sin clases CSS): el contenido de este ng-template lo renderiza
+  el <td> de tabla-avanzada.component.html (componente compartido), fuera del alcance
+  de reliq-tarificador.component.css por el encapsulamiento de Angular (ver hallazgo
+  ya documentado con pgirs-resumen/cellClass). Como no se puede tocar el CSS compartido
+  en esta tarea (fuera del alcance de Tarificador), se usa `style` inline con
+  `var(--token)` para que igual respete modo oscuro.
+-->
+<ng-template #celdaCambio let-valor>
+  <ng-container *ngIf="esCambioCelda(valor); else valorPlano">
+    <div style="display:flex; flex-direction:column; gap:4px; max-width:170px;">
+      <span style="padding:2px 6px; border-radius:6px; font-size:0.75rem; font-weight:600; text-align:center; background:var(--color-bg-soft); color:var(--color-text-secondary); border:1px solid var(--color-border-soft);">{{ valor.antes ?? '—' }}</span>
+      <span style="padding:2px 6px; border-radius:6px; font-size:0.75rem; font-weight:600; text-align:center; background:var(--color-bg-success-soft); color:var(--color-text-success); border:1px solid var(--color-border-success-soft);">{{ valor.despues ?? '—' }}</span>
+    </div>
+  </ng-container>
+  <ng-template #valorPlano>{{ valor ?? '—' }}</ng-template>
+</ng-template>
+
 <div class="page-wrap">
   <p-card>
     <div class="toolbar">
       <p-select [options]="reliquidaciones()" optionLabel="relqNombre" optionValue="relqId" [(ngModel)]="selectedReliq" placeholder="Seleccione reliquidación" />
-      <p-button label="Previsualizar" icon="pi pi-search" [loading]="loading()" (onClick)="consultar()" />
+      <p-button label="Previsualizar" icon="pi pi-search" [disabled]="!selectedReliq()" [loading]="loading()" (onClick)="consultar()" />
       <p-button *ngIf="estado()?.puedeAprobar" label="Aprobar" severity="success" icon="pi pi-check" (onClick)="abrirAprobar()" />
     </div>
-    <p *ngIf="estado()">Estado actual: <b>{{ estado()?.estado }}</b></p>
+    <p *ngIf="estado()">Estado actual: <b>{{ estadoTexto() }}</b></p>
   </p-card>
 
   <p-card styleClass="mt-3">
@@ -18,11 +36,51 @@
         <p-tab value="aps">APS</p-tab>
       </p-tablist>
       <p-tabpanels>
-        <p-tabpanel value="usuarios"><pre>{{ resumenes().usuarios | json }}</pre></p-tabpanel>
-        <p-tabpanel value="empresa"><pre>{{ resumenes().empresa | json }}</pre></p-tabpanel>
-        <p-tabpanel value="adicional"><pre>{{ resumenes().adicional | json }}</pre></p-tabpanel>
-        <p-tabpanel value="relleno"><pre>{{ resumenes().relleno | json }}</pre></p-tabpanel>
-        <p-tabpanel value="aps"><pre>{{ resumenes().aps | json }}</pre></p-tabpanel>
+        <p-tabpanel value="usuarios">
+          <app-tabla-avanzada
+            [columnas]="columnasUsuarios()"
+            [rows]="filasUsuarios()"
+            [cellTemplate]="celdaCambio"
+            storageKey="reliq-tarificador-usuarios"
+            nombreExportar="ResumenUsuarios"
+          ></app-tabla-avanzada>
+        </p-tabpanel>
+        <p-tabpanel value="empresa">
+          <app-tabla-avanzada
+            [columnas]="columnasEmpresa()"
+            [rows]="filasEmpresa()"
+            [cellTemplate]="celdaCambio"
+            storageKey="reliq-tarificador-empresa"
+            nombreExportar="ResumenEmpresa"
+          ></app-tabla-avanzada>
+        </p-tabpanel>
+        <p-tabpanel value="adicional">
+          <app-tabla-avanzada
+            [columnas]="columnasAdicional()"
+            [rows]="filasAdicional()"
+            [cellTemplate]="celdaCambio"
+            storageKey="reliq-tarificador-adicional"
+            nombreExportar="ResumenAdicional"
+          ></app-tabla-avanzada>
+        </p-tabpanel>
+        <p-tabpanel value="relleno">
+          <app-tabla-avanzada
+            [columnas]="columnasRelleno()"
+            [rows]="filasRelleno()"
+            [cellTemplate]="celdaCambio"
+            storageKey="reliq-tarificador-relleno"
+            nombreExportar="ResumenRelleno"
+          ></app-tabla-avanzada>
+        </p-tabpanel>
+        <p-tabpanel value="aps">
+          <app-tabla-avanzada
+            [columnas]="columnasAps()"
+            [rows]="filasAps()"
+            [cellTemplate]="celdaCambio"
+            storageKey="reliq-tarificador-aps"
+            nombreExportar="ResumenAps"
+          ></app-tabla-avanzada>
+        </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
   </p-card>
@@ -32,6 +90,37 @@
   <p>¿Confirmás aprobar esta reliquidación?</p>
   <ng-template pTemplate="footer">
     <p-button label="Cancelar" severity="secondary" (onClick)="showApproveModal.set(false)" />
-    <p-button label="Aprobar" severity="success" icon="pi pi-check" (onClick)="aprobar()" />
+    <p-button label="Aprobar" severity="success" icon="pi pi-check" [loading]="aprobando()" (onClick)="aprobar()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog [visible]="showResultadoModal()" header="Aprobación Aplicada" [modal]="true" [closable]="true" [style]="{width:'40vw', maxWidth:'720px'}" (visibleChange)="showResultadoModal.set($event)">
+  <p *ngIf="aprobacionMensaje()">{{ aprobacionMensaje() }}</p>
+  <table class="result-table">
+    <tbody>
+      <tr>
+        <td>Informacion APS</td>
+        <td>{{ formatContador(aprobacionResultado()?.iaed) }}</td>
+      </tr>
+      <tr>
+        <td>Informacion Empresas</td>
+        <td>{{ formatContador(aprobacionResultado()?.ined) }}</td>
+      </tr>
+      <tr>
+        <td>Informacion Rellenos</td>
+        <td>{{ formatContador(aprobacionResultado()?.iare) }}</td>
+      </tr>
+      <tr>
+        <td>Informacion Usuarios</td>
+        <td>{{ formatContador(aprobacionResultado()?.iuae) }}</td>
+      </tr>
+      <tr>
+        <td>Informacion Adicional</td>
+        <td>{{ formatContador(aprobacionResultado()?.cead) }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <ng-template pTemplate="footer">
+    <p-button label="Cerrar" severity="secondary" (onClick)="showResultadoModal.set(false)" />
   </ng-template>
 </p-dialog>

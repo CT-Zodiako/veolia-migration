@@ -269,3 +269,66 @@ export interface ReliInfoAdicional {
   cdf: number;
   ctl: number;
 }
+
+/**
+ * Cambio puntual (antes/despues) de un campo dentro de una fila de resumen del
+ * Tarificador. Estructura confirmada contra el legacy
+ * (front-tarificador/src/reliq/components/tarificador/Resumen*TablaCambios.vue,
+ * ver p.ej. ResumenUsuariosTablaCambios.vue:104-109): cada fila trae un array
+ * `cambios` con el nombre de columna y su valor antes/despues de la tarificación.
+ */
+export interface ResumenTarificadorCambio {
+  col: string;
+  antes: unknown;
+  despues: unknown;
+}
+
+/**
+ * Fila cruda de cualquiera de los 5 resumenes del Tarificador
+ * (reliqTarificador/resumenUsuarios|resumenEmpresa|resumenAdicional|resumenRelleno|resumenAPS).
+ * El shape exacto de los campos "planos" (iuae_anno, ined_anno, etc.) y de los objetos
+ * anidados (empr_empr, divi_divi, fapr_codigo, clas_claseuso, para_tiptar20012, rell_id)
+ * varía por tab; se tipa como índice abierto porque viene directo del PL/SQL
+ * (fnrei_previsualizar_*) y no hay DDL/documentación oficial de esas funciones.
+ */
+export interface ResumenTarificadorFila {
+  cambios?: ResumenTarificadorCambio[];
+  [key: string]: unknown;
+}
+
+export interface ResumenTarificadorDto {
+  filas?: ResumenTarificadorFila[];
+  [key: string]: unknown;
+}
+
+/**
+ * Contadores del bloque "resultados" devuelto por
+ * reliq.pkrei_aplicarreliquida.fnrei_aplicartodo (ver legacy
+ * tarificador/controller.js:303-312 y Tarificador.vue:86-105, dialog de aprobación).
+ */
+export interface AprobarReliquidacionContadores {
+  iaed: number;
+  ined: number;
+  iare: number;
+  iuae: number;
+  cead: number;
+}
+
+export interface AprobarReliquidacionResultado {
+  mensaje?: string | null;
+  codmes?: string | null;
+  resultados?: AprobarReliquidacionContadores | null;
+  rawResultado?: string | null;
+}
+
+export interface AprobarReliquidacionResponse {
+  ok: boolean;
+  mensaje: string;
+  resultado?: AprobarReliquidacionResultado | null;
+}
+
+export interface EstadoReliquidacion {
+  ok: boolean;
+  estado: string;
+  puedeAprobar: boolean;
+}

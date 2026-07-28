@@ -58,13 +58,18 @@ public sealed class ReliqTarificadorController(IReliqTarificadorRepository repos
             }
 
             var resultado = await repository.AprobarReliquidacionAsync(request.ReliqId, tokenContext.SisuId, cancellationToken);
-            var data = new
+            var mensaje = string.IsNullOrWhiteSpace(resultado.Mensaje) ? "Proceso aplicado correctamente." : resultado.Mensaje;
+            var data = new AprobarReliquidacionResponseDto
             {
-                ok = string.Equals(resultado, "STUB_OK", StringComparison.OrdinalIgnoreCase) || string.Equals(resultado, "OK", StringComparison.OrdinalIgnoreCase),
-                resultado
+                // Igual que el legacy (tarificador/controller.js:220-227): "ok" refleja que la
+                // llamada al PL/SQL se ejecutó sin excepción, no una comparación contra un
+                // literal mágico ("STUB_OK"/"OK") que el JSON real nunca contiene.
+                Ok = true,
+                Mensaje = mensaje,
+                Resultado = resultado
             };
 
-            return Ok(Envelope("ok", data, "Reliquidación aprobada."));
+            return Ok(Envelope("ok", data, mensaje));
         }
         catch (Exception ex)
         {

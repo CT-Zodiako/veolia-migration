@@ -23,7 +23,7 @@ public sealed class ReliqTarificadorRepository(IOracleConnectionFactory connecti
     public Task<ResumenResponseDto?> ResumenApsAsync(long reliqId, CancellationToken cancellationToken)
         => ExecuteResumenAsync("SELECT reliq.pkrei_updtarifador.fnrei_previsualizar(:1) AS resumen FROM dual", reliqId, cancellationToken);
 
-    public async Task<string?> AprobarReliquidacionAsync(long reliqId, long usuarioId, CancellationToken cancellationToken)
+    public async Task<AprobarReliquidacionResultadoDto> AprobarReliquidacionAsync(long reliqId, long usuarioId, CancellationToken cancellationToken)
     {
         const string sql = @"
             BEGIN
@@ -37,7 +37,8 @@ public sealed class ReliqTarificadorRepository(IOracleConnectionFactory connecti
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
-        return parameters.Get<string>("1");
+        var raw = parameters.Get<string>("1");
+        return ParseAprobarResultado(raw);
     }
 
     public async Task<string?> EstadoReliquidacionAsync(long reliqId, CancellationToken cancellationToken)
@@ -51,7 +52,106 @@ public sealed class ReliqTarificadorRepository(IOracleConnectionFactory connecti
         parameters.Add("1", reliqId);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        return await connection.QueryFirstOrDefaultAsync<string>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+        var estado = await connection.QueryFirstOrDefaultAsync<string>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+
+        // Defensivo, igual que el legacy (tarificador/controller.js:16, `.trim()`): si la
+        // columna Oracle real es CHAR con padding en vez de VARCHAR2, esto evita que la
+        // comparación de catálogo ('1'/'2') falle por espacios finales. No se pudo confirmar
+        // el tipo de columna real (schema RELIQ no disponible en dev), pero el trim es inocuo
+        // sobre un VARCHAR2 sin padding.
+        return estado?.Trim();
+    }
+
+    /// <summary>
+    /// La PL/SQL real (reliq.pkrei_aplicarreliquida.fnrei_aplicartodo) devuelve JSON:
+    /// {"mensaje":..., "codmes":..., "resultados":{iaed,ined,iare,iuae,cead}} (ver
+    /// legacy tarificador/controller.js:205-227). A veces el valor llega doblemente
+    /// serializado (una cadena JSON que contiene otra cadena JSON) por cómo Oracle
+    /// serializa el CLOB/VARCHAR2 de salida; en ese caso se vuelve a parsear.
+    /// </summary>
+    private static AprobarReliquidacionResultadoDto ParseAprobarResultado(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return new AprobarReliquidacionResultadoDto { RawResultado = raw };
+        }
+
+        var parsed = TryParseJson(raw);
+
+        // Doble parseo: si el primer JSON.parse-equivalente da como resultado una cadena
+        // (en vez de un objeto), esa cadena es a su vez JSON y hay que parsearla de nuevo.
+        if (parsed is { ValueKind: JsonValueKind.String } stringElement)
+        {
+            var inner = TryParseJson(stringElement.GetString());
+            if (inner is not null)
+            {
+                parsed = inner;
+            }
+        }
+
+        if (parsed is null || parsed.Value.ValueKind != JsonValueKind.Object)
+        {
+            return new AprobarReliquidacionResultadoDto { Mensaje = raw, RawResultado = raw };
+        }
+
+        var obj = parsed.Value;
+        var mensaje = obj.TryGetProperty("mensaje", out var mensajeEl) ? mensajeEl.GetString() : null;
+        var codmes = obj.TryGetProperty("codmes", out var codmesEl)
+            ? (codmesEl.ValueKind == JsonValueKind.String ? codmesEl.GetString() : codmesEl.ToString())
+            : null;
+
+        AprobarReliquidacionContadoresDto? contadores = null;
+        if (obj.TryGetProperty("resultados", out var resultadosEl) && resultadosEl.ValueKind == JsonValueKind.Object)
+        {
+            contadores = new AprobarReliquidacionContadoresDto
+            {
+                Iaed = GetIntOrDefault(resultadosEl, "iaed"),
+                Ined = GetIntOrDefault(resultadosEl, "ined"),
+                Iare = GetIntOrDefault(resultadosEl, "iare"),
+                Iuae = GetIntOrDefault(resultadosEl, "iuae"),
+                Cead = GetIntOrDefault(resultadosEl, "cead")
+            };
+        }
+
+        return new AprobarReliquidacionResultadoDto
+        {
+            Mensaje = mensaje,
+            Codmes = codmes,
+            Resultados = contadores,
+            RawResultado = raw
+        };
+    }
+
+    private static JsonElement? TryParseJson(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<JsonElement>(text);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static int GetIntOrDefault(JsonElement obj, string propertyName)
+    {
+        if (!obj.TryGetProperty(propertyName, out var value))
+        {
+            return 0;
+        }
+
+        return value.ValueKind switch
+        {
+            JsonValueKind.Number when value.TryGetInt32(out var n) => n,
+            JsonValueKind.String when int.TryParse(value.GetString(), out var n) => n,
+            _ => 0
+        };
     }
 
     private async Task<ResumenResponseDto?> ExecuteResumenAsync(string sql, long reliqId, CancellationToken cancellationToken)

@@ -1,3 +1,39 @@
 .page-wrap { padding: 1.5rem; max-width: 1300px; margin: 0 auto; }
 .toolbar { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-pre { white-space: pre-wrap; word-break: break-word; }
+
+/* Modal de resultado de aprobación (Bug 3): réplica de Tarificador.vue .result-table,
+   con tokens de color en vez de hex fijo para respetar modo oscuro. */
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.result-table td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  font-size: 0.95rem;
+  color: var(--color-text-body);
+}
+
+.result-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.result-table tr:nth-child(odd) {
+  background: var(--color-bg-soft);
+}
+
+.result-table td:first-child {
+  font-weight: 700;
+  color: var(--color-brand-strong);
+  width: 62%;
+}
+
+.result-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+}

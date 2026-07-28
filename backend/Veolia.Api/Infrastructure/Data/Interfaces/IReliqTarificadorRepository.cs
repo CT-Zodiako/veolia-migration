@@ -9,6 +9,6 @@ public interface IReliqTarificadorRepository
     Task<ResumenResponseDto?> ResumenAdicionalAsync(long reliqId, CancellationToken cancellationToken);
     Task<ResumenResponseDto?> ResumenRellenoAsync(long reliqId, CancellationToken cancellationToken);
     Task<ResumenResponseDto?> ResumenApsAsync(long reliqId, CancellationToken cancellationToken);
-    Task<string?> AprobarReliquidacionAsync(long reliqId, long usuarioId, CancellationToken cancellationToken);
+    Task<AprobarReliquidacionResultadoDto> AprobarReliquidacionAsync(long reliqId, long usuarioId, CancellationToken cancellationToken);
     Task<string?> EstadoReliquidacionAsync(long reliqId, CancellationToken cancellationToken);
 }

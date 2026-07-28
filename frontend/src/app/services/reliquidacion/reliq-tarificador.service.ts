@@ -3,7 +3,15 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth.service';
-import { ApiEnvelope } from '../../models/reliquidacion.model';
+import {
+  ApiEnvelope,
+  AprobarReliquidacionResponse,
+  EstadoReliquidacion,
+  ResumenTarificadorDto
+} from '../../models/reliquidacion.model';
+
+/** El backend envuelve cada resumen en `{ resumen: ... }` (ver ResumenResponseDto.cs). */
+export type ResumenTarificadorEnvelope = ApiEnvelope<{ resumen: ResumenTarificadorDto | null }>;
 
 @Injectable({ providedIn: 'root' })
 export class ReliqTarificadorService {
@@ -23,38 +31,38 @@ export class ReliqTarificadorService {
     return throwError(() => error);
   }
 
-  resumenUsuarios(reliq: number): Observable<ApiEnvelope<unknown>> {
-    return this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/resumenUsuarios`, { reliqId: reliq }, { headers: this.getHeaders() })
+  resumenUsuarios(reliq: number): Observable<ResumenTarificadorEnvelope> {
+    return this.http.post<ResumenTarificadorEnvelope>(`${this.baseUrl}/resumenUsuarios`, { reliqId: reliq }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
-  resumenEmpresa(reliq: number): Observable<ApiEnvelope<unknown>> {
-    return this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/resumenEmpresa`, { reliqId: reliq }, { headers: this.getHeaders() })
+  resumenEmpresa(reliq: number): Observable<ResumenTarificadorEnvelope> {
+    return this.http.post<ResumenTarificadorEnvelope>(`${this.baseUrl}/resumenEmpresa`, { reliqId: reliq }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
-  resumenAdicional(reliq: number): Observable<ApiEnvelope<unknown>> {
-    return this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/resumenAdicional`, { reliqId: reliq }, { headers: this.getHeaders() })
+  resumenAdicional(reliq: number): Observable<ResumenTarificadorEnvelope> {
+    return this.http.post<ResumenTarificadorEnvelope>(`${this.baseUrl}/resumenAdicional`, { reliqId: reliq }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
-  resumenRelleno(reliq: number): Observable<ApiEnvelope<unknown>> {
-    return this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/resumenRelleno`, { reliqId: reliq }, { headers: this.getHeaders() })
+  resumenRelleno(reliq: number): Observable<ResumenTarificadorEnvelope> {
+    return this.http.post<ResumenTarificadorEnvelope>(`${this.baseUrl}/resumenRelleno`, { reliqId: reliq }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
-  resumenAps(reliq: number): Observable<ApiEnvelope<unknown>> {
-    return this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/resumenAPS`, { reliqId: reliq }, { headers: this.getHeaders() })
+  resumenAps(reliq: number): Observable<ResumenTarificadorEnvelope> {
+    return this.http.post<ResumenTarificadorEnvelope>(`${this.baseUrl}/resumenAPS`, { reliqId: reliq }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
-  aprobarReliquidacion(reliq: number): Observable<ApiEnvelope<unknown>> {
-    return this.http.post<ApiEnvelope<unknown>>(`${this.baseUrl}/aprobarReliquidacion`, { reliqId: reliq }, { headers: this.getHeaders() })
+  aprobarReliquidacion(reliq: number): Observable<ApiEnvelope<AprobarReliquidacionResponse>> {
+    return this.http.post<ApiEnvelope<AprobarReliquidacionResponse>>(`${this.baseUrl}/aprobarReliquidacion`, { reliqId: reliq }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
-  estadoReliquidacion(reliq: number): Observable<ApiEnvelope<{ ok: boolean; estado: string; puedeAprobar: boolean }>> {
-    return this.http.post<ApiEnvelope<{ ok: boolean; estado: string; puedeAprobar: boolean }>>(`${this.baseUrl}/estadoReliquidacion`, { reliqId: reliq }, { headers: this.getHeaders() })
+  estadoReliquidacion(reliq: number): Observable<ApiEnvelope<EstadoReliquidacion>> {
+    return this.http.post<ApiEnvelope<EstadoReliquidacion>>(`${this.baseUrl}/estadoReliquidacion`, { reliqId: reliq }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 }
