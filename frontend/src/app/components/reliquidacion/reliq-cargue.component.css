@@ -1,2 +1,12 @@
 .page-wrap { padding: 1.5rem; max-width: 1300px; margin: 0 auto; }
 .toolbar { display: flex; gap: 1rem; align-items: center; }
+
+.table-scroll-x { overflow-x: auto; }
+
+.text-right { text-align: right; }
+
+.cell-input {
+  width: 100%;
+  min-width: 90px;
+  text-align: right;
+}

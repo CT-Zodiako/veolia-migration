@@ -32,6 +32,11 @@ export class ReliqCargueService {
     return throwError(() => error);
   }
 
+  compararCostosCargue(reliq: number, apsaId: number): Observable<ApiEnvelope<{ resultado: string | null }>> {
+    return this.http.post<ApiEnvelope<{ resultado: string | null }>>(`${this.baseUrl}/compararCostosCargue`, { reliq, apsaId }, { headers: this.getHeaders() })
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
   compararCostos(reliq: number): Observable<ApiEnvelope<CompararCostos[]>> {
     return this.http.post<ApiEnvelope<CompararCostos[]>>(`${this.baseUrl}/compararCostos`, { reliq }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));

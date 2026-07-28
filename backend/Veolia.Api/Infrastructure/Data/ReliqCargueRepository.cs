@@ -91,13 +91,19 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
         const string sql = @"
             SELECT U.IUAE_ID AS IuaeId,
                    U.RELI_ID AS ReliId,
-                   U.CODUSO AS CodUso,
-                   U.CODTIPOPRED AS CodTipoPred,
-                   U.CANTIDAD AS Cantidad,
-                   U.TONELADAS AS Toneladas
+                   U.IUAE_ANNO AS Anno,
+                   U.IUAE_MES AS Mes,
+                   U.DIVI_DIVI AS DiviDivi,
+                   U.CLAS_CLASEUSO AS ClasClaseUso,
+                   U.PARA_TIPTAR20012 AS ParaTipTar20012,
+                   U.PARA_UBICACION20016 AS ParaUbicacion20016,
+                   U.PARA_TIPFAC20014 AS ParaTipFac20014,
+                   U.FAPR_CODIGO AS FaprCodigo,
+                   U.IUAE_CANTIDAD AS Cantidad,
+                   U.IUAE_TONELADAS AS Toneladas
               FROM RELI_INFUSUAPSEMPRDIVI U
-              JOIN RELQRELIQUIDA R ON R.RELQID = U.RELI_ID
-             WHERE U.RELI_ID = :1";
+             WHERE U.RELI_ID = :1
+             ORDER BY U.IUAE_ANNO, U.IUAE_MES";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", idReliq);
@@ -110,13 +116,28 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
     public async Task<IReadOnlyList<ReliInfoEmpresaDto>> GetResumenEmpresaAsync(long idReliq, CancellationToken cancellationToken)
     {
         const string sql = @"
-            SELECT INED_ID AS InedId,
-                   RELI_ID AS ReliId,
-                   CBLJ AS Cblj,
-                   COSTO AS Costo,
-                   TARIFA AS Tarifa
-              FROM RELI_INFOEMPRDIVI
-             WHERE RELI_ID = :1";
+            SELECT I.INED_ID AS InedId,
+                   I.RELI_ID AS ReliId,
+                   I.INED_ANNO AS Anno,
+                   I.INED_MES AS Mes,
+                   E.EMPR_NOMBRE AS EmpresaNombre,
+                   I.INED_CBLJ AS Cblj,
+                   I.INED_LBLJ AS Lblj,
+                   I.INED_N AS N,
+                   I.INED_M3AGUA AS M3agua,
+                   I.INED_CP AS Cp,
+                   I.INED_M2CCJ AS M2ccj,
+                   I.INED_M2LAVJ AS M2lavj,
+                   I.INED_TIJ AS Tij,
+                   I.INED_KLPJ AS Klpj,
+                   I.INED_TMJ AS Tmj,
+                   I.INED_CLAVJ AS Clavj,
+                   I.INED_QRTJ AS Qrtj,
+                   I.INED_QRSJ AS Qrsj
+              FROM RELI_INFOEMPRDIVI I
+              JOIN AUGE_EMPRESAS E ON E.EMPR_EMPR = I.EMPR_EMPR
+             WHERE I.RELI_ID = :1
+             ORDER BY E.EMPR_NOMBRE";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", idReliq);
@@ -129,13 +150,40 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
     public async Task<IReadOnlyList<ReliInfoApsDto>> GetResumenApsAsync(long idReliq, CancellationToken cancellationToken)
     {
         const string sql = @"
-            SELECT IAED_ID AS IaedId,
-                   RELI_ID AS ReliId,
-                   QRTZ AS Qrtz,
-                   COSTO AS Costo,
-                   TARIFA AS Tarifa
-              FROM RELI_INFOAPSEMPRDIVI
-             WHERE RELI_ID = :1";
+            SELECT I.IAED_ID AS IaedId,
+                   I.RELI_ID AS ReliId,
+                   I.IAED_ANNO AS Anno,
+                   I.IAED_MES AS Mes,
+                   E.EMPR_NOMBRE AS EmpresaNombre,
+                   I.DIVI_DIVI AS DiviDivi,
+                   I.IAED_QRTZ AS Qrtz,
+                   I.IAED_CPE AS Cpe,
+                   I.IAED_T AS T,
+                   I.IAED_VACRTABC AS VacrtAbc,
+                   I.IAED_VACRT AS Vacrt,
+                   I.IAED_CRTZ AS Crtz,
+                   I.IAED_QBL AS Qbl,
+                   I.IAED_QLU AS Qlu,
+                   I.IAED_QR AS Qr,
+                   I.IAED_TAFA AS Tafa,
+                   I.IAED_ND AS Nd,
+                   I.IAED_NA AS Na,
+                   I.IAED_QNA AS Qna,
+                   I.IAED_TAFNA AS Tafna,
+                   I.IAED_QA AS Qa,
+                   I.IAED_APROVECHA AS Aprovecha,
+                   I.IAED_QALMACEN AS Qalmacen,
+                   I.IAED_CPEET AS Cpeet,
+                   I.IAED_QRTET AS Qrtet,
+                   I.IAED_CRTCOMP AS Crtcomp,
+                   I.IAED_CDFCOMP AS Cdfcomp,
+                   I.IAED_QRSCOMP AS Qrscomp,
+                   I.IAED_NAA AS Naa,
+                   I.IAED_NDA AS Nda
+              FROM RELI_INFOAPSEMPRDIVI I
+              JOIN AUGE_EMPRESAS E ON E.EMPR_EMPR = I.EMPR_EMPR
+             WHERE I.RELI_ID = :1
+             ORDER BY E.EMPR_NOMBRE";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", idReliq);
@@ -148,13 +196,24 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
     public async Task<IReadOnlyList<ReliInfoRellenoDto>> GetResumenRellenoAsync(long idReliq, CancellationToken cancellationToken)
     {
         const string sql = @"
-            SELECT IARE_ID AS IareId,
-                   RELI_ID AS ReliId,
-                   QRS AS Qrs,
-                   COSTO AS Costo,
-                   TARIFA AS Tarifa
-              FROM RELI_INFOAPSRELLENO
-             WHERE RELI_ID = :1";
+            SELECT R.IARE_ID AS IareId,
+                   R.RELI_ID AS ReliId,
+                   R.IARE_ANNO AS Anno,
+                   R.IARE_MES AS Mes,
+                   R.IARE_QRS AS Qrs,
+                   R.IARE_C AS C,
+                   R.IARE_VL AS Vl,
+                   R.IARE_CTMLX AS Ctmlx,
+                   R.IARE_CTLK AS Ctlk,
+                   R.IARE_ESCENARIO AS Escenario,
+                   R.IARE_CDFK AS Cdfk,
+                   R.IARE_VACDFABC AS VacdfAbc,
+                   R.IARE_VACDF AS Vacdf,
+                   R.IARE_VACTLABC AS VactlAbc,
+                   R.IARE_VACTL AS Vactl
+              FROM RELI_INFOAPSRELLENO R
+             WHERE R.RELI_ID = :1
+             ORDER BY R.IARE_ANNO, R.IARE_MES";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", idReliq);
@@ -167,12 +226,15 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
     public async Task<IReadOnlyList<ReliInfoAdicionalDto>> GetReliInfoAdicionalAsync(long idReliq, CancellationToken cancellationToken)
     {
         const string sql = @"
-            SELECT CEAD_ID AS CeadId,
-                   RELI_ID AS ReliId,
-                   CDF AS Cdf,
-                   CTL AS Ctl
-              FROM RELI_INFOADICIONAL
-             WHERE RELI_ID = :1";
+            SELECT A.CEAD_ID AS CeadId,
+                   A.RELI_ID AS ReliId,
+                   A.CEAD_ANNO AS Anno,
+                   A.CEAD_MES AS Mes,
+                   A.CEAD_CDF AS Cdf,
+                   A.CEAD_CTL AS Ctl
+              FROM RELI_INFOADICIONAL A
+             WHERE A.RELI_ID = :1
+             ORDER BY A.CEAD_ANNO, A.CEAD_MES";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", idReliq);
@@ -185,115 +247,188 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
     public Task<int> UpdateReliInfoUsuariosAsync(IReadOnlyList<UpdateReliInfoUsuariosRequestDto> items, long userId, CancellationToken cancellationToken)
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFUSUAPSEMPRDIVI
-                 SET CODUSO = :1,
-                     CODTIPOPRED = :2,
-                     CANTIDAD = :3,
-                     TONELADAS = :4,
-                     USUA_USUA = :5,
-                     FECHA = SYSDATE
-               WHERE IUAE_ID = :6
-                 AND RELI_ID = :7",
+                 SET DIVI_DIVI = :1,
+                     FAPR_CODIGO = :2,
+                     CLAS_CLASEUSO = :3,
+                     PARA_TIPTAR20012 = :4,
+                     IUAE_CANTIDAD = :5,
+                     IUAE_TONELADAS = :6,
+                     PARA_UBICACION20016 = :7,
+                     PARA_TIPFAC20014 = :8
+               WHERE IUAE_ID = :9
+                 AND RELI_ID = :10",
             items,
             userId,
-            (parameters, row, uid) =>
+            (parameters, row, _) =>
             {
-                parameters.Add("1", row.CodUso);
-                parameters.Add("2", row.CodTipoPred);
-                parameters.Add("3", row.Cantidad);
-                parameters.Add("4", row.Toneladas);
-                parameters.Add("5", uid);
-                parameters.Add("6", row.IuaeId);
-                parameters.Add("7", row.ReliId);
+                parameters.Add("1", row.DiviDivi);
+                parameters.Add("2", row.FaprCodigo);
+                parameters.Add("3", row.ClasClaseUso);
+                parameters.Add("4", row.ParaTipTar20012);
+                parameters.Add("5", row.Cantidad);
+                parameters.Add("6", row.Toneladas);
+                parameters.Add("7", row.ParaUbicacion20016);
+                parameters.Add("8", row.ParaTipFac20014);
+                parameters.Add("9", row.IuaeId);
+                parameters.Add("10", row.ReliId);
             },
             cancellationToken);
 
     public Task<int> UpdateResumenEmpresaAsync(IReadOnlyList<UpdateResumenEmpresaRequestDto> items, long userId, CancellationToken cancellationToken)
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFOEMPRDIVI
-                 SET CBLJ = :1,
-                     COSTO = :2,
-                     TARIFA = :3,
-                     USUA_USUA = :4,
-                     FECHA = SYSDATE
-               WHERE INED_ID = :5
-                 AND RELI_ID = :6",
+                 SET INED_CBLJ = :1,
+                     INED_LBLJ = :2,
+                     INED_N = :3,
+                     INED_M3AGUA = :4,
+                     INED_CP = :5,
+                     INED_M2CCJ = :6,
+                     INED_M2LAVJ = :7,
+                     INED_TIJ = :8,
+                     INED_KLPJ = :9,
+                     INED_TMJ = :10,
+                     INED_CLAVJ = :11,
+                     INED_QRTJ = :12,
+                     INED_QRSJ = :13
+               WHERE INED_ID = :14
+                 AND RELI_ID = :15",
             items,
             userId,
-            (parameters, row, uid) =>
+            (parameters, row, _) =>
             {
                 parameters.Add("1", row.Cblj);
-                parameters.Add("2", row.Costo);
-                parameters.Add("3", row.Tarifa);
-                parameters.Add("4", uid);
-                parameters.Add("5", row.InedId);
-                parameters.Add("6", row.ReliId);
+                parameters.Add("2", row.Lblj);
+                parameters.Add("3", row.N);
+                parameters.Add("4", row.M3agua);
+                parameters.Add("5", row.Cp);
+                parameters.Add("6", row.M2ccj);
+                parameters.Add("7", row.M2lavj);
+                parameters.Add("8", row.Tij);
+                parameters.Add("9", row.Klpj);
+                parameters.Add("10", row.Tmj);
+                parameters.Add("11", row.Clavj);
+                parameters.Add("12", row.Qrtj);
+                parameters.Add("13", row.Qrsj);
+                parameters.Add("14", row.InedId);
+                parameters.Add("15", row.ReliId);
             },
             cancellationToken);
 
     public Task<int> UpdateResumenApsAsync(IReadOnlyList<UpdateResumenApsRequestDto> items, long userId, CancellationToken cancellationToken)
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFOAPSEMPRDIVI
-                 SET QRTZ = :1,
-                     COSTO = :2,
-                     TARIFA = :3,
-                     USUA_USUA = :4,
-                     FECHA = SYSDATE
-               WHERE IAED_ID = :5
-                 AND RELI_ID = :6",
+                 SET DIVI_DIVI = :1,
+                     IAED_QRTZ = :2,
+                     IAED_CPE = :3,
+                     IAED_T = :4,
+                     IAED_VACRTABC = :5,
+                     IAED_VACRT = :6,
+                     IAED_CRTZ = :7,
+                     IAED_QBL = :8,
+                     IAED_QLU = :9,
+                     IAED_QR = :10,
+                     IAED_TAFA = :11,
+                     IAED_ND = :12,
+                     IAED_NA = :13,
+                     IAED_QNA = :14,
+                     IAED_TAFNA = :15,
+                     IAED_QA = :16,
+                     IAED_APROVECHA = :17,
+                     IAED_QALMACEN = :18,
+                     IAED_CPEET = :19,
+                     IAED_QRTET = :20,
+                     IAED_CRTCOMP = :21,
+                     IAED_CDFCOMP = :22,
+                     IAED_QRSCOMP = :23,
+                     IAED_NAA = :24,
+                     IAED_NDA = :25
+               WHERE IAED_ID = :26
+                 AND RELI_ID = :27",
             items,
             userId,
-            (parameters, row, uid) =>
+            (parameters, row, _) =>
             {
-                parameters.Add("1", row.Qrtz);
-                parameters.Add("2", row.Costo);
-                parameters.Add("3", row.Tarifa);
-                parameters.Add("4", uid);
-                parameters.Add("5", row.IaedId);
-                parameters.Add("6", row.ReliId);
+                parameters.Add("1", row.DiviDivi);
+                parameters.Add("2", row.Qrtz);
+                parameters.Add("3", row.Cpe);
+                parameters.Add("4", row.T);
+                parameters.Add("5", row.VacrtAbc);
+                parameters.Add("6", row.Vacrt);
+                parameters.Add("7", row.Crtz);
+                parameters.Add("8", row.Qbl);
+                parameters.Add("9", row.Qlu);
+                parameters.Add("10", row.Qr);
+                parameters.Add("11", row.Tafa);
+                parameters.Add("12", row.Nd);
+                parameters.Add("13", row.Na);
+                parameters.Add("14", row.Qna);
+                parameters.Add("15", row.Tafna);
+                parameters.Add("16", row.Qa);
+                parameters.Add("17", row.Aprovecha);
+                parameters.Add("18", row.Qalmacen);
+                parameters.Add("19", row.Cpeet);
+                parameters.Add("20", row.Qrtet);
+                parameters.Add("21", row.Crtcomp);
+                parameters.Add("22", row.Cdfcomp);
+                parameters.Add("23", row.Qrscomp);
+                parameters.Add("24", row.Naa);
+                parameters.Add("25", row.Nda);
+                parameters.Add("26", row.IaedId);
+                parameters.Add("27", row.ReliId);
             },
             cancellationToken);
 
     public Task<int> UpdateResumenRellenoAsync(IReadOnlyList<UpdateResumenRellenoRequestDto> items, long userId, CancellationToken cancellationToken)
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFOAPSRELLENO
-                 SET QRS = :1,
-                     COSTO = :2,
-                     TARIFA = :3,
-                     USUA_USUA = :4,
-                     FECHA = SYSDATE
-               WHERE IARE_ID = :5
-                 AND RELI_ID = :6",
+                 SET IARE_QRS = :1,
+                     IARE_CDFK = :2,
+                     IARE_VACDFABC = :3,
+                     IARE_VACDF = :4,
+                     IARE_VL = :5,
+                     IARE_CTMLX = :6,
+                     IARE_CTLK = :7,
+                     IARE_VACTLABC = :8,
+                     IARE_VACTL = :9,
+                     IARE_ESCENARIO = :10,
+                     IARE_C = :11
+               WHERE IARE_ID = :12
+                 AND RELI_ID = :13",
             items,
             userId,
-            (parameters, row, uid) =>
+            (parameters, row, _) =>
             {
                 parameters.Add("1", row.Qrs);
-                parameters.Add("2", row.Costo);
-                parameters.Add("3", row.Tarifa);
-                parameters.Add("4", uid);
-                parameters.Add("5", row.IareId);
-                parameters.Add("6", row.ReliId);
+                parameters.Add("2", row.Cdfk);
+                parameters.Add("3", row.VacdfAbc);
+                parameters.Add("4", row.Vacdf);
+                parameters.Add("5", row.Vl);
+                parameters.Add("6", row.Ctmlx);
+                parameters.Add("7", row.Ctlk);
+                parameters.Add("8", row.VactlAbc);
+                parameters.Add("9", row.Vactl);
+                parameters.Add("10", row.Escenario);
+                parameters.Add("11", row.C);
+                parameters.Add("12", row.IareId);
+                parameters.Add("13", row.ReliId);
             },
             cancellationToken);
 
     public Task<int> UpdateResumenAdicionalAsync(IReadOnlyList<UpdateResumenAdicionalRequestDto> items, long userId, CancellationToken cancellationToken)
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFOADICIONAL
-                 SET CDF = :1,
-                     CTL = :2,
-                     USUA_USUA = :3,
-                     FECHA = SYSDATE
-               WHERE CEAD_ID = :4
-                 AND RELI_ID = :5",
+                 SET CEAD_CDF = :1,
+                     CEAD_CTL = :2
+               WHERE CEAD_ID = :3
+                 AND RELI_ID = :4",
             items,
             userId,
-            (parameters, row, uid) =>
+            (parameters, row, _) =>
             {
                 parameters.Add("1", row.Cdf);
                 parameters.Add("2", row.Ctl);
-                parameters.Add("3", uid);
-                parameters.Add("4", row.CeadId);
-                parameters.Add("5", row.ReliId);
+                parameters.Add("3", row.CeadId);
+                parameters.Add("4", row.ReliId);
             },
             cancellationToken);
 

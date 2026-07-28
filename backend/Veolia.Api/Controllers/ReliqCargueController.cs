@@ -230,7 +230,7 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (!request.Data.Any())
             return UnprocessableEntity(Envelope("error", null, "PAYLOAD_EMPTY"));
 
-        if (request.Data.Any(x => x.InedId <= 0 || x.ReliId <= 0 || x.Cblj < 0 || x.Costo < 0 || x.Tarifa < 0))
+        if (request.Data.Any(x => x.InedId <= 0 || x.ReliId <= 0 || x.Cblj < 0))
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
         try
@@ -253,7 +253,7 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (!request.Data.Any())
             return UnprocessableEntity(Envelope("error", null, "PAYLOAD_EMPTY"));
 
-        if (request.Data.Any(x => x.IaedId <= 0 || x.ReliId <= 0 || x.Qrtz < 0 || x.Costo < 0 || x.Tarifa < 0))
+        if (request.Data.Any(x => x.IaedId <= 0 || x.ReliId <= 0 || x.Qrtz < 0))
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
         try
@@ -276,7 +276,7 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (!request.Data.Any())
             return UnprocessableEntity(Envelope("error", null, "PAYLOAD_EMPTY"));
 
-        if (request.Data.Any(x => x.IareId <= 0 || x.ReliId <= 0 || x.Qrs < 0 || x.Costo < 0 || x.Tarifa < 0))
+        if (request.Data.Any(x => x.IareId <= 0 || x.ReliId <= 0 || x.Qrs < 0))
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
         try
