@@ -49,6 +49,7 @@ builder.Services.AddScoped<IToneladasRepository, ToneladasRepository>();
 builder.Services.AddScoped<IFacturacionRepository, FacturacionRepository>();
 builder.Services.AddScoped<IRellenosRepository, RellenosRepository>();
 builder.Services.AddScoped<IKillometrosRepository, KillometrosRepository>();
+builder.Services.AddScoped<ISui853CftRepository, Sui853CftRepository>();
 builder.Services.AddScoped<ISubContRepository, SubContRepository>();
 builder.Services.AddScoped<IProyeccionRepository, ProyeccionRepository>();
 builder.Services.AddScoped<ILineaTiempoRepository, LineaTiempoRepository>();
