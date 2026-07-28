@@ -52,9 +52,9 @@
                 <tr>
                   <td>{{ row.anno }}</td>
                   <td>{{ row.mes }}</td>
-                  <td>{{ row.clasClaseUso }}</td>
-                  <td>{{ row.paraTipTar20012 }}</td>
-                  <td>{{ row.faprCodigo }}</td>
+                  <td>{{ row.clasNombre || row.clasClaseUso }}</td>
+                  <td>{{ row.tipoTarifaNombre || row.paraTipTar20012 }}</td>
+                  <td>{{ row.factorProduccionNombre || row.faprCodigo }}</td>
                   <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.cantidad" /></td>
                   <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.toneladas" /></td>
                 </tr>

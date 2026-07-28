@@ -181,10 +181,13 @@ export interface ReliInfoUsuarios {
   mes: number;
   diviDivi?: number | null;
   clasClaseUso?: number | null;
+  clasNombre?: string | null;
   paraTipTar20012?: number | null;
+  tipoTarifaNombre?: string | null;
   paraUbicacion20016?: number | null;
   paraTipFac20014?: number | null;
   faprCodigo?: number | null;
+  factorProduccionNombre?: string | null;
   cantidad: number;
   toneladas: number;
 }

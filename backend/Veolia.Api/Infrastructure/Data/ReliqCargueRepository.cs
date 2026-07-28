@@ -240,6 +240,12 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
 
     public async Task<IReadOnlyList<ReliInfoUsuariosDto>> GetReliInfoUsuariosAsync(long idReliq, CancellationToken cancellationToken)
     {
+        // Nombres legibles confirmados contra el legacy (back-tarificador/src/modules/reliq/cargue/controller.js,
+        // líneas 249-263, cargueController.getReliInfoUsuarios): JOIN con AUCO_CLASESUSO (CLAS_NOMBRE),
+        // AUGE_PARAMETROS filtrado por CLAS_CLAS = 20012 (PARA_NOMBRE del tipo de tarifa) y
+        // AUCO_FACTPRODUCCION (FAPR_DESCRIPCION recortada, reemplazando el prefijo "Factor de Producción para").
+        // Los 3 JOIN son INNER en el legacy (misma semántica preservada aquí): una fila sin catálogo
+        // coincidente para clase de uso / tipo de tarifa / factor de producción no aparece en el listado.
         const string sql = @"
             SELECT U.IUAE_ID AS IuaeId,
                    U.RELI_ID AS ReliId,
@@ -247,13 +253,19 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    U.IUAE_MES AS Mes,
                    U.DIVI_DIVI AS DiviDivi,
                    U.CLAS_CLASEUSO AS ClasClaseUso,
+                   AC.CLAS_NOMBRE AS ClasNombre,
                    U.PARA_TIPTAR20012 AS ParaTipTar20012,
+                   AP.PARA_NOMBRE AS TipoTarifaNombre,
                    U.PARA_UBICACION20016 AS ParaUbicacion20016,
                    U.PARA_TIPFAC20014 AS ParaTipFac20014,
                    U.FAPR_CODIGO AS FaprCodigo,
+                   TRIM(REPLACE(AF.FAPR_DESCRIPCION, 'Factor de Producción para', 'FP ')) AS FactorProduccionNombre,
                    U.IUAE_CANTIDAD AS Cantidad,
                    U.IUAE_TONELADAS AS Toneladas
               FROM RELI_INFUSUAPSEMPRDIVI U
+              JOIN AUCO_CLASESUSO AC ON (U.CLAS_CLASEUSO = AC.CLAS_CLASE)
+              JOIN AUGE_PARAMETROS AP ON (U.PARA_TIPTAR20012 = AP.PARA_PARA AND AP.CLAS_CLAS = 20012)
+              JOIN AUCO_FACTPRODUCCION AF ON (U.APSA_ID = AF.APSA_ID AND U.FAPR_CODIGO = AF.FAPR_CODIGO)
              WHERE U.RELI_ID = :1
              ORDER BY U.IUAE_ANNO, U.IUAE_MES";
 
@@ -397,6 +409,8 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
     }
 
     public Task<int> UpdateReliInfoUsuariosAsync(IReadOnlyList<UpdateReliInfoUsuariosRequestDto> items, long userId, CancellationToken cancellationToken)
+        // USUA_USUA confirmado contra el legacy (controller.js:367-422, cargueController.updateReliInfoUsuarios,
+        // parámetro usuaUsua = req.SISU_ID del JWT, bind :9).
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFUSUAPSEMPRDIVI
                  SET DIVI_DIVI = :1,
@@ -406,12 +420,13 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                      IUAE_CANTIDAD = :5,
                      IUAE_TONELADAS = :6,
                      PARA_UBICACION20016 = :7,
-                     PARA_TIPFAC20014 = :8
-               WHERE IUAE_ID = :9
-                 AND RELI_ID = :10",
+                     PARA_TIPFAC20014 = :8,
+                     USUA_USUA = :9
+               WHERE IUAE_ID = :10
+                 AND RELI_ID = :11",
             items,
             userId,
-            (parameters, row, _) =>
+            (parameters, row, userId) =>
             {
                 parameters.Add("1", row.DiviDivi);
                 parameters.Add("2", row.FaprCodigo);
@@ -421,12 +436,15 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                 parameters.Add("6", row.Toneladas);
                 parameters.Add("7", row.ParaUbicacion20016);
                 parameters.Add("8", row.ParaTipFac20014);
-                parameters.Add("9", row.IuaeId);
-                parameters.Add("10", row.ReliId);
+                parameters.Add("9", userId);
+                parameters.Add("10", row.IuaeId);
+                parameters.Add("11", row.ReliId);
             },
             cancellationToken);
 
     public Task<int> UpdateResumenEmpresaAsync(IReadOnlyList<UpdateResumenEmpresaRequestDto> items, long userId, CancellationToken cancellationToken)
+        // USUA_USUA confirmado contra el legacy (controller.js:423-487, cargueController.updateResumenEmpresa,
+        // parámetro usuaUsua = req.SISU_ID del JWT, bind :14).
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFOEMPRDIVI
                  SET INED_CBLJ = :1,
@@ -441,12 +459,13 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                      INED_TMJ = :10,
                      INED_CLAVJ = :11,
                      INED_QRTJ = :12,
-                     INED_QRSJ = :13
-               WHERE INED_ID = :14
-                 AND RELI_ID = :15",
+                     INED_QRSJ = :13,
+                     USUA_USUA = :14
+               WHERE INED_ID = :15
+                 AND RELI_ID = :16",
             items,
             userId,
-            (parameters, row, _) =>
+            (parameters, row, userId) =>
             {
                 parameters.Add("1", row.Cblj);
                 parameters.Add("2", row.Lblj);
@@ -461,12 +480,18 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                 parameters.Add("11", row.Clavj);
                 parameters.Add("12", row.Qrtj);
                 parameters.Add("13", row.Qrsj);
-                parameters.Add("14", row.InedId);
-                parameters.Add("15", row.ReliId);
+                parameters.Add("14", userId);
+                parameters.Add("15", row.InedId);
+                parameters.Add("16", row.ReliId);
             },
             cancellationToken);
 
     public Task<int> UpdateResumenApsAsync(IReadOnlyList<UpdateResumenApsRequestDto> items, long userId, CancellationToken cancellationToken)
+        // USUA_USUA confirmado contra el legacy (controller.js:488-577, cargueController.updateResumenAPS,
+        // parámetro usuaUsua = req.SISU_ID del JWT, bind :25). Nota: el legacy tiene un bug de copy-paste
+        // (usa el bind :6 dos veces para IAED_VACRT e IAED_CRTZ, pisando IAED_CRTZ con el valor de VACRT);
+        // ese bug NO se replica aquí -- IAED_CRTZ ya usa su propio valor (row.Crtz) en el bind :7, que es
+        // el comportamiento correcto y no forma parte de esta corrección (solo se agrega USUA_USUA).
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFOAPSEMPRDIVI
                  SET DIVI_DIVI = :1,
@@ -493,12 +518,13 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                      IAED_CDFCOMP = :22,
                      IAED_QRSCOMP = :23,
                      IAED_NAA = :24,
-                     IAED_NDA = :25
-               WHERE IAED_ID = :26
-                 AND RELI_ID = :27",
+                     IAED_NDA = :25,
+                     USUA_USUA = :26
+               WHERE IAED_ID = :27
+                 AND RELI_ID = :28",
             items,
             userId,
-            (parameters, row, _) =>
+            (parameters, row, userId) =>
             {
                 parameters.Add("1", row.DiviDivi);
                 parameters.Add("2", row.Qrtz);
@@ -525,12 +551,15 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                 parameters.Add("23", row.Qrscomp);
                 parameters.Add("24", row.Naa);
                 parameters.Add("25", row.Nda);
-                parameters.Add("26", row.IaedId);
-                parameters.Add("27", row.ReliId);
+                parameters.Add("26", userId);
+                parameters.Add("27", row.IaedId);
+                parameters.Add("28", row.ReliId);
             },
             cancellationToken);
 
     public Task<int> UpdateResumenRellenoAsync(IReadOnlyList<UpdateResumenRellenoRequestDto> items, long userId, CancellationToken cancellationToken)
+        // USUA_USUA confirmado contra el legacy (controller.js:578-640, cargueController.updateResumenRellno,
+        // parámetro usuaUsua = req.SISU_ID del JWT, bind :12).
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFOAPSRELLENO
                  SET IARE_QRS = :1,
@@ -543,12 +572,13 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                      IARE_VACTLABC = :8,
                      IARE_VACTL = :9,
                      IARE_ESCENARIO = :10,
-                     IARE_C = :11
-               WHERE IARE_ID = :12
-                 AND RELI_ID = :13",
+                     IARE_C = :11,
+                     USUA_USUA = :12
+               WHERE IARE_ID = :13
+                 AND RELI_ID = :14",
             items,
             userId,
-            (parameters, row, _) =>
+            (parameters, row, userId) =>
             {
                 parameters.Add("1", row.Qrs);
                 parameters.Add("2", row.Cdfk);
@@ -561,26 +591,32 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                 parameters.Add("9", row.Vactl);
                 parameters.Add("10", row.Escenario);
                 parameters.Add("11", row.C);
-                parameters.Add("12", row.IareId);
-                parameters.Add("13", row.ReliId);
+                parameters.Add("12", userId);
+                parameters.Add("13", row.IareId);
+                parameters.Add("14", row.ReliId);
             },
             cancellationToken);
 
     public Task<int> UpdateResumenAdicionalAsync(IReadOnlyList<UpdateResumenAdicionalRequestDto> items, long userId, CancellationToken cancellationToken)
+        // USUA_USUA confirmado contra el legacy (controller.js:641-683 y su duplicado 684-726,
+        // cargueController.updateResumenAdicional, parámetro usuaUsua = req.SISU_ID del JWT, bind :3).
+        // Este método también estaba afectado por la regresión aunque no se listó explícitamente.
         => ExecuteBatchUpdateAsync(
             @"UPDATE RELI_INFOADICIONAL
                  SET CEAD_CDF = :1,
-                     CEAD_CTL = :2
-               WHERE CEAD_ID = :3
-                 AND RELI_ID = :4",
+                     CEAD_CTL = :2,
+                     USUA_USUA = :3
+               WHERE CEAD_ID = :4
+                 AND RELI_ID = :5",
             items,
             userId,
-            (parameters, row, _) =>
+            (parameters, row, userId) =>
             {
                 parameters.Add("1", row.Cdf);
                 parameters.Add("2", row.Ctl);
-                parameters.Add("3", row.CeadId);
-                parameters.Add("4", row.ReliId);
+                parameters.Add("3", userId);
+                parameters.Add("4", row.CeadId);
+                parameters.Add("5", row.ReliId);
             },
             cancellationToken);
 
