@@ -58,6 +58,26 @@
   text-align: center;
 }
 
+/* SUI853/CFT (formato2): colores por columna capturados del legacy
+   TablaScrollHorizontal.vue (tablasColor: G/T/R). Distintos de los
+   .color-rojo/verde/azul de PGIRS de arriba (esos son semánticos de
+   comparación, estos son solo la codificación de color que trae la función
+   PL/SQL SUI.f_render_formato2 por columna). */
+.sui853-bg-g {
+  background-color: #edf5ff;
+  color: #0f172a;
+}
+
+.sui853-bg-t {
+  background-color: #ecfdf5;
+  color: #0f172a;
+}
+
+.sui853-bg-r {
+  background-color: #fff1f2;
+  color: #0f172a;
+}
+
 .tabla-toolbar {
   display: flex;
   align-items: center;

@@ -184,6 +184,14 @@ export class LayoutComponent implements OnInit {
       case '/cra': return 'Índices CRA';
       case '/tarifas': return 'Detallado Tarifas';
       case '/tarifas-general': return 'Detallado Tarifas';
+      case '/cft': return 'SUI 853 - CFT';
+      case '/cssaprovechamiento': return 'SUI 853 - CSS Aprovechamiento';
+      case '/crlus': return 'SUI 853 - CRLUS';
+      case '/cbls': return 'SUI 853 - CBLS';
+      case '/cblusMinimo': return 'SUI 853 - CBLUS Mínimo';
+      case '/cblusMaximo': return 'SUI 853 - CBLUS Máximo';
+      case '/cblus': return 'SUI 853 - CBLUS';
+      case '/cbicsmaxmin': return 'SUI 853 - CBICS Mínimo y Máximo';
       default: return '';
     }
   }

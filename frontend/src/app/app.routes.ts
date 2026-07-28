@@ -130,7 +130,47 @@ export const routes: Routes = [
       { path: 'suministros/costo-poda', component: SuministrosCostoPodaComponent },
       { path: 'suministros/cargue-productividad', component: CargueProductividadComponent },
       { path: 'suministros/cargue-mensual', component: CargueMensualComponent },
-      { path: 'suministros/cargue-semestral', component: CargueSemestralComponent }
+      { path: 'suministros/cargue-semestral', component: CargueSemestralComponent },
+      {
+        path: 'cft',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cft-page.component').then((m) => m.CftPageComponent)
+      },
+      {
+        path: 'cssaprovechamiento',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/css-aprovechamiento-page.component').then((m) => m.CssAprovechamientoPageComponent)
+      },
+      {
+        path: 'crlus',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/crlus-page.component').then((m) => m.CrlusPageComponent)
+      },
+      {
+        path: 'cbls',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cbls-page.component').then((m) => m.CblsPageComponent)
+      },
+      {
+        path: 'cblusMinimo',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cblus-minimo-page.component').then((m) => m.CblusMinimoPageComponent)
+      },
+      {
+        path: 'cblusMaximo',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cblus-maximo-page.component').then((m) => m.CblusMaximoPageComponent)
+      },
+      {
+        path: 'cblus',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cblus-page.component').then((m) => m.CblusPageComponent)
+      },
+      {
+        path: 'cbicsmaxmin',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cbics-maxmin-page.component').then((m) => m.CbicsMaxminPageComponent)
+      }
     ]
   },
   { path: '**', redirectTo: '' }

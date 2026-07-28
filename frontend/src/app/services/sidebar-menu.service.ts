@@ -117,6 +117,14 @@ export class SidebarMenuService {
     { label: 'Variables PGIRS', path: '/pgirs/variables', icon: '♻️', keywords: ['pgirs variables', 'variables pgris'], menuId: 2001 },
     { label: 'SUI 853 - APS Empresa', path: '/apsEmpresa', icon: '🏢', keywords: ['aps empresa'], menuId: 30001 },
     { label: 'SUI 853 - APS Documentos', path: '/apsDocumentos', icon: '📄', keywords: ['aps documentos'], menuId: 30002 },
+    { label: 'SUI 853 - CFT', path: '/cft', icon: '🎓', keywords: ['cft'], menuId: 7011 },
+    { label: 'SUI 853 - CSS Aprovechamiento', path: '/cssaprovechamiento', icon: '🎓', keywords: ['css aprovechamiento', 'ccs aprovechamiento'], menuId: 7001 },
+    { label: 'SUI 853 - CRLUS', path: '/crlus', icon: '🎓', keywords: ['crlus'], menuId: 7002 },
+    { label: 'SUI 853 - CBLS', path: '/cbls', icon: '🎓', keywords: ['cbls'], menuId: 7003 },
+    { label: 'SUI 853 - CBLUS Mínimo', path: '/cblusMinimo', icon: '🎓', keywords: ['cblus minimo'], menuId: 7004 },
+    { label: 'SUI 853 - CBLUS Máximo', path: '/cblusMaximo', icon: '🎓', keywords: ['cblus maximo'], menuId: 7005 },
+    { label: 'SUI 853 - CBLUS', path: '/cblus', icon: '🎓', keywords: ['cblus'], menuId: 7006 },
+    { label: 'SUI 853 - CBICS Mínimo y Máximo', path: '/cbicsmaxmin', icon: '🎓', keywords: ['cbics maxmin', 'cbics minimo maximo'], menuId: 7010 },
     // 'Configuración APS' (/aps-usuario), 'Asignación Sistema' (/asignacion-sistema) y
     // 'Menú Usuario' (/menu-usuario) NO tienen nodo propio en AUGE_MENU: dump completo del
     // árbol confirma que el nodo padre "Configuración" (menu_id 200) solo tiene 4 hijos reales

@@ -1,0 +1,38 @@
+<div class="card-section">
+  <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab [value]="0">SEG1</p-tab>
+      <p-tab [value]="1">SEG2</p-tab>
+      <p-tab [value]="2">SEG3</p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+      <p-tabpanel [value]="0">
+        <app-sui853-formato2-tabla
+          [data]="seg1()"
+          [loading]="loadingSeg1()"
+          storageKey="sui853-cft-seg1"
+          nombreExportar="CFT-SEG1"
+        ></app-sui853-formato2-tabla>
+      </p-tabpanel>
+
+      <p-tabpanel [value]="1">
+        <app-sui853-formato2-tabla
+          [data]="seg2()"
+          [loading]="loadingSeg2()"
+          storageKey="sui853-cft-seg2"
+          nombreExportar="CFT-SEG2"
+        ></app-sui853-formato2-tabla>
+      </p-tabpanel>
+
+      <p-tabpanel [value]="2">
+        <app-sui853-formato2-tabla
+          [data]="seg3()"
+          [loading]="loadingSeg3()"
+          storageKey="sui853-cft-seg3"
+          nombreExportar="CFT-SEG3"
+        ></app-sui853-formato2-tabla>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</div>

@@ -1,0 +1,46 @@
+<div *ngIf="loading" class="text-center py-4">
+  <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+  <p>Cargando...</p>
+</div>
+
+<div *ngIf="!loading && (!data || data.data.length === 0)" class="text-center py-4 text-secondary">
+  <i class="pi pi-inbox" style="font-size: 2rem"></i>
+  <p>Sin datos</p>
+</div>
+
+<div *ngIf="!loading && data && data.data.length > 0" class="table-scroll">
+  <app-tabla-avanzada
+    [columnas]="columnas"
+    [rows]="data.data"
+    [columnasFijadasPorDefecto]="columnasFijadasPorDefecto"
+    [storageKey]="storageKey"
+    [nombreExportar]="nombreExportarEfectivo"
+    [cellTemplate]="celdaTpl"
+    [cellClass]="cellClassFn"
+    [accionesTemplate]="accionesTpl"
+  ></app-tabla-avanzada>
+</div>
+
+<ng-template #celdaTpl let-value let-col="col">
+  <span [title]="tooltip(col, value)">{{ displayValue(col, value) }}</span>
+</ng-template>
+
+<ng-template #accionesTpl let-row>
+  <p-button icon="pi pi-eye" label="Ver" severity="info" size="small" (click)="verDetalle(row)"></p-button>
+</ng-template>
+
+<div class="modal-overlay" *ngIf="detalleVisible" (click)="cerrarDetalle()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Detalle</h3>
+      <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="cerrarDetalle()"></p-button>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-item" *ngFor="let entry of detalleEntries">
+        <div class="detail-key">{{ entry.label }}</div>
+        <div class="detail-value">{{ entry.value || '—' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
