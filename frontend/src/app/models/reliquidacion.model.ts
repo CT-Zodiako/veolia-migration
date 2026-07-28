@@ -38,12 +38,62 @@ export interface ActualizarReliquidacionRequest extends CrearReliquidacionReques
   relqId: number;
 }
 
+/**
+ * Fila de RELIQ.VREL_COMPARACOSTOS.
+ * Columnas confirmadas contra el legacy (back-tarificador/src/modules/reliq/cargue/controller.js,
+ * líneas 169-224, y front-tarificador/src/reliq/views/CompararCosto.vue, líneas 34-326):
+ * CODRELIQ/APSNOM/COSTANNO/COSTMES + 11 tríos RELQ_X/TARI_X/DIFE_X por componente de costo.
+ * No existen columnas apsaId/relqDesde/relqHasta/costoAps/costoEmpresa/difCosto en esta vista.
+ */
 export interface CompararCostos {
   codReliq: number;
-  apsNom: string;
-  costAnno: number;
-  costMes: number;
-  costo: number;
+  apsNom?: string | null;
+  costAnno?: number | null;
+  costMes?: number | null;
+
+  relqCcsener?: number | null;
+  tariCcsener?: number | null;
+  difeCcsener?: number | null;
+
+  relqCcsenerapv?: number | null;
+  tariCcsenerapv?: number | null;
+  difeCcsenerapv?: number | null;
+
+  relqCcsacue?: number | null;
+  tariCcsacue?: number | null;
+  difeCcsacue?: number | null;
+
+  relqCcsacueapv?: number | null;
+  tariCcsacueapv?: number | null;
+  difeCcsacueapv?: number | null;
+
+  relqCbls?: number | null;
+  tariCbls?: number | null;
+  difeCbls?: number | null;
+
+  relqClus?: number | null;
+  tariClus?: number | null;
+  difeClus?: number | null;
+
+  relqCrt?: number | null;
+  tariCrt?: number | null;
+  difeCrt?: number | null;
+
+  relqCdf?: number | null;
+  tariCdf?: number | null;
+  difeCdf?: number | null;
+
+  relqCtl?: number | null;
+  tariCtl?: number | null;
+  difeCtl?: number | null;
+
+  relqVba?: number | null;
+  tariVba?: number | null;
+  difeVba?: number | null;
+
+  relqIat?: number | null;
+  tariIat?: number | null;
+  difeIat?: number | null;
 }
 
 /**

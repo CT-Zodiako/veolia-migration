@@ -27,16 +27,62 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
 
     public async Task<IReadOnlyList<CompararCostosResponseDto>> CompararCostosAsync(long reliq, CancellationToken cancellationToken)
     {
+        // Columnas confirmadas contra el legacy (back-tarificador/src/modules/reliq/cargue/controller.js,
+        // líneas 169-224, y front-tarificador/src/reliq/views/CompararCosto.vue, líneas 34-326): la vista
+        // no expone APSA_ID/RELQDESDE/RELQHASTA/COSTO_APS/COSTO_EMPRESA/DIF_COSTO (no existen en ninguna
+        // fuente documentada), sino CODRELIQ/APSNOM/COSTANNO/COSTMES + 11 tríos RELQ_X/TARI_X/DIFE_X.
         const string sql = @"
-            SELECT COD_RELIQ AS CodReliq,
-                   APSA_ID AS ApsaId,
-                   RELQDESDE AS RelqDesde,
-                   RELQHASTA AS RelqHasta,
-                   COSTO_APS AS CostoAps,
-                   COSTO_EMPRESA AS CostoEmpresa,
-                   DIF_COSTO AS DifCosto
+            SELECT CODRELIQ AS CodReliq,
+                   APSNOM AS ApsNom,
+                   COSTANNO AS CostAnno,
+                   COSTMES AS CostMes,
+
+                   RELQ_CCSENER AS RelqCcsener,
+                   TARI_CCSENER AS TariCcsener,
+                   DIFE_CCSENER AS DifeCcsener,
+
+                   RELQ_CCSENERAPV AS RelqCcsenerapv,
+                   TARI_CCSENERAPV AS TariCcsenerapv,
+                   DIFE_CCSENERAPV AS DifeCcsenerapv,
+
+                   RELQ_CCSACUE AS RelqCcsacue,
+                   TARI_CCSACUE AS TariCcsacue,
+                   DIFE_CCSACUE AS DifeCcsacue,
+
+                   RELQ_CCSACUEAPV AS RelqCcsacueapv,
+                   TARI_CCSACUEAPV AS TariCcsacueapv,
+                   DIFE_CCSACUEAPV AS DifeCcsacueapv,
+
+                   RELQ_CBLS AS RelqCbls,
+                   TARI_CBLS AS TariCbls,
+                   DIFE_CBLS AS DifeCbls,
+
+                   RELQ_CLUS AS RelqClus,
+                   TARI_CLUS AS TariClus,
+                   DIFE_CLUS AS DifeClus,
+
+                   RELQ_CRT AS RelqCrt,
+                   TARI_CRT AS TariCrt,
+                   DIFE_CRT AS DifeCrt,
+
+                   RELQ_CDF AS RelqCdf,
+                   TARI_CDF AS TariCdf,
+                   DIFE_CDF AS DifeCdf,
+
+                   RELQ_CTL AS RelqCtl,
+                   TARI_CTL AS TariCtl,
+                   DIFE_CTL AS DifeCtl,
+
+                   RELQ_VBA AS RelqVba,
+                   TARI_VBA AS TariVba,
+                   DIFE_VBA AS DifeVba,
+
+                   RELQ_IAT AS RelqIat,
+                   TARI_IAT AS TariIat,
+                   DIFE_IAT AS DifeIat
+
               FROM VREL_COMPARACOSTOS
-             WHERE COD_RELIQ = :1";
+             WHERE CODRELIQ = :1";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", reliq);
