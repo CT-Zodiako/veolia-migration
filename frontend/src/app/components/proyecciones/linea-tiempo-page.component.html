@@ -87,7 +87,16 @@
         <p-button icon="pi pi-times" severity="secondary" size="small" (onClick)="cancelarEdicionFila()"></p-button>
       </ng-container>
       <ng-template #accionEditar>
-        <p-button icon="pi pi-pencil" severity="info" size="small" (onClick)="iniciarEdicionFila(row)"></p-button>
+        <p-button
+          *ngIf="!filaBloqueada(row); else filaBloqueadaIcono"
+          icon="pi pi-pencil"
+          severity="info"
+          size="small"
+          (onClick)="iniciarEdicionFila(row)"
+        ></p-button>
+        <ng-template #filaBloqueadaIcono>
+          <i class="pi pi-lock" pTooltip="Ya fue usada en una proyección ejecutada, no se puede editar" tooltipPosition="top"></i>
+        </ng-template>
       </ng-template>
     </div>
   </ng-template>

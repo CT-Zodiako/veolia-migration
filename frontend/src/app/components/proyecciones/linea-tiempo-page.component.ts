@@ -6,6 +6,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { ProyeccionesService } from '../../services/proyecciones.service';
 import { LineaTiempoRow, Proyeccion } from '../../models/proyecciones.models';
@@ -35,7 +36,7 @@ const COLUMNAS_LINEA_TIEMPO: TablaColumn[] = [
   standalone: true,
   imports: [
     CommonModule, FormsModule, ButtonModule, InputTextModule,
-    InputNumberModule, TextareaModule, ToastModule, ApsSelectorComponent, ProyeccionSelectorComponent, TablaAvanzadaComponent
+    InputNumberModule, TextareaModule, ToastModule, TooltipModule, ApsSelectorComponent, ProyeccionSelectorComponent, TablaAvanzadaComponent
   ],
   providers: [MessageService],
   templateUrl: './linea-tiempo-page.component.html',
@@ -93,7 +94,14 @@ export class LineaTiempoPageComponent {
     return `${row.anno}-${row.mes}`;
   }
 
+  // DELTESTADO (verificado contra Oracle real): 1 = la fila ya fue usada en una proyección
+  // ejecutada y no permite ser modificada (legacy editarLineadeTiempo.vue:106).
+  filaBloqueada(row: Record<string, unknown>): boolean {
+    return Number((row as unknown as LineaTiempoRow).deltestado) === 1;
+  }
+
   iniciarEdicionFila(row: Record<string, unknown>): void {
+    if (this.filaBloqueada(row)) return;
     this.editingKey.set(this.rowKey(row));
     this.editDraft.set({ ...(row as unknown as LineaTiempoRow) });
   }
@@ -140,7 +148,11 @@ export class LineaTiempoPageComponent {
           this.consultar(proyId);
         }
       },
-      error: () => this.saving.set(false)
+      error: (err) => {
+        this.saving.set(false);
+        const detail = err?.error?.message || 'No se pudo guardar la línea de tiempo.';
+        this.messages.add({ severity: 'error', summary: 'Línea de tiempo', detail });
+      }
     });
   }
 
@@ -166,7 +178,7 @@ export class LineaTiempoPageComponent {
     let mes = p.proyMesDes;
 
     while (anno < p.proyAnnoHas || (anno === p.proyAnnoHas && mes <= p.proyMesHas)) {
-      filas.push({ proyId: this.proyId() || 0, apsaId: this.aps() || 0, anno, mes });
+      filas.push({ proyId: this.proyId() || 0, apsaId: this.aps() || 0, anno, mes, deltestado: 0 });
       mes++;
       if (mes > 12) {
         mes = 1;

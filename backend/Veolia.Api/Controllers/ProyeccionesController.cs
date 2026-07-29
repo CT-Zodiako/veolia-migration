@@ -178,6 +178,10 @@ public sealed class ProyeccionesController(
             var result = await lineaTiempoRepository.UpsertAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
         }
+        catch (InvalidOperationException ex) when (ex.Message == "PROYECCION_BLOQUEADA")
+        {
+            return Conflict(Envelope(false, null, "No se puede modificar una proyección ya certificada (línea bloqueada)."));
+        }
         catch (Exception ex)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));

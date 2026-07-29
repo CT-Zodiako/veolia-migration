@@ -28,6 +28,10 @@ CREATE TABLE PROY_DETLINEATIEMPO (
   DELTSMLV NUMBER,
   DELTIOEXP NUMBER,
   DELTFACPRODUC NUMBER,
+  -- DELTESTADO: verificado contra Oracle real (USER_TAB_COLUMNS), NOT NULL sin default.
+  -- Comentario de columna real: "Estado que debe cambiar a 1 cuando se realiza la proyeccion
+  -- y con el cual no permite ser modificado". 0 = editable, 1 = bloqueada.
+  DELTESTADO NUMBER DEFAULT 0 NOT NULL,
   DELTFECHA DATE,
   USUARIO NUMBER,
   DELTINDIPCC NUMBER,

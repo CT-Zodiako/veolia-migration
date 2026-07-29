@@ -22,7 +22,8 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
                    DELTIOEXP AS Deltioexp,
                    DELTFACPRODUC AS Deltfacproduc,
                    DELTINDIPCC AS Deltindipcc,
-                   DELTIPCCS AS Deltipccs
+                   DELTIPCCS AS Deltipccs,
+                   DELTESTADO AS Deltestado
               FROM PROY_DETLINEATIEMPO
              WHERE PROYID = :1
              ORDER BY PROYANNO, PROYMES";
@@ -44,10 +45,13 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
         {
             if (request.IsNew)
             {
+                // DELTESTADO es NOT NULL sin default en Oracle real (verificado vía USER_TAB_COLUMNS);
+                // toda fila nueva nace en 0 (editable) -- solo el motor de ejecución (PK_PROYLIQUIDA)
+                // la pasa a 1 (bloqueada), nunca este alta.
                 const string insertSql = @"
                     INSERT INTO PROY_DETLINEATIEMPO
-                    (PROYID, APS, PROYANNO, PROYMES, DELTIPC, DELTIPCC, DELTSMLV, DELTIOEXP, DELTFACPRODUC, DELTFECHA, USUARIO, DELTINDIPCC, DELTIPCCS)
-                    VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, SYSDATE, :10, :11, :12)";
+                    (PROYID, APS, PROYANNO, PROYMES, DELTIPC, DELTIPCC, DELTSMLV, DELTIOEXP, DELTFACPRODUC, DELTESTADO, DELTFECHA, USUARIO, DELTINDIPCC, DELTIPCCS)
+                    VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, 0, SYSDATE, :10, :11, :12)";
 
                 foreach (var row in request.Rows)
                 {
@@ -70,6 +74,33 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
             }
             else
             {
+                // Guard de servidor equivalente al bloqueo de UI (filaBloqueada() en
+                // linea-tiempo-page.component.ts): DELTESTADO=1 significa que la proyección
+                // ya fue ejecutada y, por comentario real de columna en Oracle, "no permite
+                // ser modificado". Se valida el estado vigente antes de actualizar para que
+                // un cliente que llame directo al endpoint no pueda saltarse el bloqueo de UI.
+                const string currentStatusSql = @"
+                    SELECT PROYANNO AS Anno,
+                           PROYMES AS Mes,
+                           DELTESTADO AS Deltestado
+                      FROM PROY_DETLINEATIEMPO
+                     WHERE PROYID = :1
+                       AND APS = :2";
+
+                var statusParameters = new DynamicParameters();
+                statusParameters.Add("1", request.ProyId);
+                statusParameters.Add("2", request.ApsaId);
+
+                var estadoActualPorPeriodo = (await connection.QueryAsync<LineaTiempoRow>(
+                        new CommandDefinition(currentStatusSql, statusParameters, transaction: transaction, cancellationToken: cancellationToken)))
+                    .ToDictionary(r => (r.Anno, r.Mes), r => r.Deltestado);
+
+                if (request.Rows.Any(row =>
+                        estadoActualPorPeriodo.TryGetValue((row.Anno, row.Mes), out var estadoActual) && estadoActual == 1))
+                {
+                    throw new InvalidOperationException("PROYECCION_BLOQUEADA");
+                }
+
                 const string updateSql = @"
                     UPDATE PROY_DETLINEATIEMPO
                        SET DELTIPC = :1,
@@ -108,6 +139,11 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
 
             transaction.Commit();
             return new MutationResponse { Success = true, Message = "Línea de tiempo guardada correctamente.", Id = request.ProyId };
+        }
+        catch (InvalidOperationException)
+        {
+            transaction.Rollback();
+            throw;
         }
         catch (Exception ex)
         {

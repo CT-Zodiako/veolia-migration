@@ -13,4 +13,9 @@ public sealed class LineaTiempoRow
     public decimal? Deltfacproduc { get; set; }
     public decimal? Deltindipcc { get; set; }
     public decimal? Deltipccs { get; set; }
+
+    // DELTESTADO (verificado contra Oracle real, NUMBER NOT NULL, sin default): comentario de
+    // columna real "Estado que debe cambiar a 1 cuando se realiza la proyeccion y con el cual
+    // no permite ser modificado". 0 = editable, 1 = bloqueada (ya usada en una proyección ejecutada).
+    public int Deltestado { get; set; }
 }
