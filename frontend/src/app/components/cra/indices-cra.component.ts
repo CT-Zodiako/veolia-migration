@@ -30,6 +30,15 @@ export class IndicesCraComponent implements OnInit {
   editingParaId = signal<number | null>(null);
   editingValor = signal<number | null>(null);
 
+  // Alta de índices para un período nuevo (sin registros aún). Ids fijos,
+  // igual que en el legacy (Cra.vue): 1=IPC, 2=SMLV, 3=IPCC, 4=IOEXP.
+  showModal = signal(false);
+  guardandoNuevo = signal(false);
+  nuevoIpc = signal<number | null>(null);
+  nuevoSmlv = signal<number | null>(null);
+  nuevoIpcc = signal<number | null>(null);
+  nuevoIoexp = signal<number | null>(null);
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly consultarTrigger$ = new Subject<void>();
 
@@ -121,6 +130,50 @@ export class IndicesCraComponent implements OnInit {
       rejectLabel: 'Cancelar',
       accept: () => this.guardarValor(row)
     });
+  }
+
+  abrirModalAgregar(): void {
+    this.nuevoIpc.set(null);
+    this.nuevoSmlv.set(null);
+    this.nuevoIpcc.set(null);
+    this.nuevoIoexp.set(null);
+    this.showModal.set(true);
+  }
+
+  cerrarModal(): void {
+    this.showModal.set(false);
+  }
+
+  guardarNuevo(): void {
+    const anno = this.anno();
+    const mes = this.mes();
+    if (anno === null || mes === null) return;
+
+    const periodo = periodoAnterior(anno, mes);
+    this.guardandoNuevo.set(true);
+    this.service
+      .crear({
+        anno: periodo.anno,
+        mes: periodo.mes,
+        valores: [
+          { id: 1, val: this.nuevoIpc() ?? 0 },
+          { id: 2, val: this.nuevoSmlv() ?? 0 },
+          { id: 3, val: this.nuevoIpcc() ?? 0 },
+          { id: 4, val: this.nuevoIoexp() ?? 0 }
+        ]
+      })
+      .subscribe({
+        next: () => {
+          this.guardandoNuevo.set(false);
+          this.showModal.set(false);
+          this.messages.add({ severity: 'success', summary: 'Índices CRA', detail: 'Índices creados correctamente.' });
+          this.consultar();
+        },
+        error: (err: any) => {
+          this.guardandoNuevo.set(false);
+          this.messages.add({ severity: 'error', summary: 'Índices CRA', detail: err?.error?.message || 'No se pudo crear los índices.' });
+        }
+      });
   }
 
   private guardarValor(row: any): void {

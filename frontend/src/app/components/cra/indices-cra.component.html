@@ -8,6 +8,10 @@
 </div>
 
 <div class="card-section">
+  <div class="agregar-bar" *ngIf="!loading() && rows().length === 0">
+    <p-button label="Agregar" icon="pi pi-plus" (click)="abrirModalAgregar()"></p-button>
+  </div>
+
   <p-table [value]="rows()" [loading]="loading()" [tableStyle]="{ 'min-width': '30rem' }">
     <ng-template pTemplate="header">
       <tr>
@@ -41,5 +45,40 @@
         </td>
       </tr>
     </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="3">No hay índices registrados para el período seleccionado.</td>
+      </tr>
+    </ng-template>
   </p-table>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal()" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Registrar Nuevo Índice</h3>
+      <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="cerrarModal()"></p-button>
+    </div>
+
+    <form (ngSubmit)="guardarNuevo()">
+      <div class="form-group">
+        <label>{{ nombreIndice(1) }}</label>
+        <p-inputnumber [ngModel]="nuevoIpc()" (ngModelChange)="nuevoIpc.set($event)" name="ipc" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full"></p-inputnumber>
+      </div>
+      <div class="form-group">
+        <label>{{ nombreIndice(2) }}</label>
+        <p-inputnumber [ngModel]="nuevoSmlv()" (ngModelChange)="nuevoSmlv.set($event)" name="smlv" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full"></p-inputnumber>
+      </div>
+      <div class="form-group">
+        <label>{{ nombreIndice(3) }}</label>
+        <p-inputnumber [ngModel]="nuevoIpcc()" (ngModelChange)="nuevoIpcc.set($event)" name="ipcc" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full"></p-inputnumber>
+      </div>
+      <div class="form-group">
+        <label>{{ nombreIndice(4) }}</label>
+        <p-inputnumber [ngModel]="nuevoIoexp()" (ngModelChange)="nuevoIoexp.set($event)" name="ioexp" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full"></p-inputnumber>
+      </div>
+
+      <p-button type="submit" label="{{ guardandoNuevo() ? 'Guardando...' : 'Guardar' }}" [loading]="guardandoNuevo()" styleClass="w-full"></p-button>
+    </form>
+  </div>
 </div>
