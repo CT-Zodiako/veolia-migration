@@ -35,6 +35,7 @@ builder.Services.AddScoped<AuthContractMapper>();
 builder.Services.AddScoped<IApsRepository, ApsRepository>();
 builder.Services.AddScoped<ApsContractMapper>();
 builder.Services.AddScoped<IEmpresasRepository, EmpresasRepository>();
+builder.Services.AddScoped<IGeneralRepository, GeneralRepository>();
 builder.Services.AddScoped<ITarifasRepository, TarifasRepository>();
 builder.Services.AddScoped<IReversionesRepository, ReversionesRepository>();
 builder.Services.AddScoped<ISuministrosRepository, SuministrosRepository>();
