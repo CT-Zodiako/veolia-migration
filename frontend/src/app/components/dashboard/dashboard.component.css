@@ -184,7 +184,7 @@
 
 .ayuda-flotante {
   position: fixed;
-  left: 24px;
+  right: 88px;
   bottom: 24px;
   width: 48px;
   height: 48px;
