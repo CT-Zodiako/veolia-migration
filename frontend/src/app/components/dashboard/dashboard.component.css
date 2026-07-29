@@ -5,22 +5,8 @@
 
 .dashboard-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 32px;
-}
-
-.dashboard-header h1 {
-  color: var(--color-brand-strong);
-  font-size: 32px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-}
-
-.dashboard-header p {
-  color: var(--color-text-secondary);
-  font-size: 16px;
-  margin: 0;
+  justify-content: flex-end;
+  margin-bottom: 16px;
 }
 
 .cards-grid {
