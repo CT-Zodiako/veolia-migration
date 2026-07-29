@@ -49,6 +49,43 @@ Definidos en `frontend/src/styles.css`, con set claro (`:root`) y oscuro
 - Todo CSS propio (no-PrimeNG) debe usar los tokens de la sección 1, nunca
   hex fijos, para que el toggle los alcance.
 
+### Por qué nunca escribir `.app-dark .algo { ... }` en un stylesheet de componente
+
+Un selector `.app-dark .mi-clase { color: rojo; }` puesto en el CSS de un
+componente standalone **nunca matchea, aunque `.app-dark` esté realmente
+puesto en `<html>`**. Angular (`ViewEncapsulation.Emulated`, el default)
+reescribe TODAS las partes simples del selector agregándoles el atributo de
+scope del componente (`[_ngcontent-xxx]`) — incluida `.app-dark`, que vive
+en `<html>`, fuera de la vista de cualquier componente, y por lo tanto NUNCA
+tiene ese atributo. El selector compilado queda pidiendo algo que no puede
+existir. Confirmado con Playwright en la migración del modal "libro" de
+Documentación (Dashboard): `<html class="app-dark">` estaba presente pero
+el `background-color` computado del hijo seguía siendo el del modo claro.
+
+La solución NO es `::ng-deep` para este caso puntual (eso sirve para llegar
+al CSS interno de un componente HIJO, no para matchear una clase en un
+ancestro externo como `<html>`). La solución correcta, ya establecida en
+este proyecto: definir un token `--color-bg-xxx` nuevo en `:root` y en
+`.app-dark` dentro de `frontend/src/styles.css` (global, sin
+encapsulamiento) y consumirlo con `var(--color-bg-xxx)` — nunca un
+selector de ancestro ni un hex fijo condicionado a `.app-dark` en el CSS
+de un componente.
+
+### CSS Grid con paneles que necesitan scroll interno propio
+
+Si un layout usa `display:grid` con dos (o más) paneles y cada uno necesita
+su propio `overflow-y:auto` independiente (ej. índice + área de lectura de
+un modal), el grid container tiene que acotarse con `height` **definida**
+(ej. `height: min(70vh, 620px)`), nunca solo `max-height`. Con `max-height`,
+la fila implícita del grid sigue calculando su alto en modo `auto` (al
+contenido), así que el `overflow-y:auto` de los hijos nunca encuentra una
+altura acotada real para activarse — el contenido más largo se recorta
+duro contra el `overflow:hidden` del container en vez de scrollear. Además,
+cada hijo con su propio `overflow-y:auto` necesita `min-height: 0` (si no,
+ese hijo ignora la altura de fila y crece a su contenido natural, forzando
+el recorte de nuevo). Encontrado armando el modal "libro" de Documentación
+(Dashboard): la portada se veía cortada a la mitad hasta aplicar ambos fixes.
+
 ## 3. Estructura de una pantalla CRUD (lista + modal)
 
 Referencia completa: `aps-config.component.{ts,html,css}`.
