@@ -174,7 +174,7 @@ export class PgirsVariablesComponent {
 
   guardarNuevaVariable(): void {
     const form = this.newForm();
-    if (!form.apsId || !form.anno || !form.mes || !form.variable || form.valor === '' || form.valor === null) {
+    if (!form.apsId || !form.anno || !form.mes || !form.variable || form.valor === '' || form.valor === null || !form.frecuencia) {
       this.messages.add({ severity: 'warn', summary: 'PGIRS', detail: 'Complete todos los campos' });
       return;
     }
@@ -182,6 +182,12 @@ export class PgirsVariablesComponent {
     const catalogo = this.variableOptions.find(v => v.label === form.variable);
     if (!catalogo) {
       this.messages.add({ severity: 'error', summary: 'PGIRS', detail: 'Variable no reconocida' });
+      return;
+    }
+
+    const frecuenciaValida = this.frecuenciaOptions.some(f => f.value === Number(form.frecuencia));
+    if (!frecuenciaValida) {
+      this.messages.add({ severity: 'error', summary: 'PGIRS', detail: 'Frecuencia no válida' });
       return;
     }
 
