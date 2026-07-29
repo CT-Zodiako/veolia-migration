@@ -18,6 +18,7 @@ interface DashboardCard {
 }
 
 const ACCESOS_POR_DEFECTO = ['/usuarios', '/aps-usuario', '/asignacion-sistema', '/menu-usuario'];
+const COLUMNAS_DEFECTO = 6;
 
 /** Set de íconos 3D subido por el usuario (frontend/public/iconos/), solo para
  *  las tarjetas de Inicio -- el sidebar sigue usando los Twemoji de siempre.
@@ -84,6 +85,7 @@ export class DashboardComponent {
   cardPaths: string[] = [];
   disponibles: SidebarMenuItem[] = [];
   mostrarPersonalizar = false;
+  columnas = COLUMNAS_DEFECTO;
 
   constructor(
     private readonly authService: AuthService,
@@ -91,6 +93,7 @@ export class DashboardComponent {
     private readonly sidebarMenuService: SidebarMenuService,
     private readonly cdr: ChangeDetectorRef
   ) {
+    this.columnas = this.cargarColumnasGuardadas();
     effect(() => {
       this.cargarMenu(this.authState.sistemaId());
     });
@@ -133,6 +136,11 @@ export class DashboardComponent {
     this.cdr.detectChanges();
   }
 
+  guardarColumnas(n: number): void {
+    this.columnas = n;
+    localStorage.setItem(this.columnasStorageKey(), String(n));
+  }
+
   trackByRoute(_index: number, card: DashboardCard): string {
     return card.route;
   }
@@ -157,6 +165,16 @@ export class DashboardComponent {
     const sisuId = this.authState.user()?.SISU_ID ?? 'anonimo';
     const idSistema = this.authState.sistemaId() ?? 'sin-sistema';
     return `dashboard:accesos:${sisuId}:${idSistema}`;
+  }
+
+  private columnasStorageKey(): string {
+    const sisuId = this.authState.user()?.SISU_ID ?? 'anonimo';
+    return `dashboard:columnas:${sisuId}`;
+  }
+
+  private cargarColumnasGuardadas(): number {
+    const raw = Number(localStorage.getItem(this.columnasStorageKey()));
+    return raw >= 3 && raw <= 6 ? raw : COLUMNAS_DEFECTO;
   }
 
   private cargarSeleccionGuardada(): string[] {

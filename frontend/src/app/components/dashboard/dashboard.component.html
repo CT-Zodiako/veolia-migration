@@ -27,7 +27,13 @@
     </div>
   </div>
 
-  <div class="cards-grid" cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="onDrop($event)">
+  <div
+    class="cards-grid"
+    [style.grid-template-columns]="'repeat(' + columnas + ', 1fr)'"
+    cdkDropList
+    cdkDropListOrientation="mixed"
+    (cdkDropListDropped)="onDrop($event)"
+  >
     <a
       *ngFor="let card of cards; trackBy: trackByRoute"
       [routerLink]="card.route"
@@ -64,5 +70,7 @@
   [(visible)]="mostrarPersonalizar"
   [disponibles]="disponibles"
   [seleccionadosIniciales]="cardPaths"
+  [columnas]="columnas"
   (guardar)="guardarSeleccion($event)"
+  (columnasChange)="guardarColumnas($event)"
 ></app-personalizar-inicio-dialog>

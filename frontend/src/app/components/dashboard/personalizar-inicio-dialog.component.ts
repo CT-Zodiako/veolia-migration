@@ -19,6 +19,19 @@ import { IconComponent } from '../shared/icon.component';
       [style]="{ width: '30rem' }"
     >
       <div class="campo">
+        <label>Columnas de la grilla ({{ columnas }})</label>
+        <div class="columnas-selector">
+          <button
+            type="button"
+            *ngFor="let n of columnasOpciones"
+            class="columna-opcion"
+            [class.activa]="columnas === n"
+            (click)="onColumnasChange(n)"
+          >{{ n }}</button>
+        </div>
+      </div>
+
+      <div class="campo">
         <div class="opciones-header">
           <label>Accesos disponibles ({{ seleccionados.length }} de {{ disponibles.length }})</label>
           <div class="opciones-acciones">
@@ -102,6 +115,34 @@ import { IconComponent } from '../shared/icon.component';
       color: var(--color-text-body);
       cursor: pointer;
     }
+
+    .columnas-selector {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .columna-opcion {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-card);
+      color: var(--color-text-body);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .columna-opcion:hover {
+      border-color: var(--color-brand-accent);
+    }
+
+    .columna-opcion.activa {
+      background: var(--color-brand-strong);
+      border-color: var(--color-brand-strong);
+      color: #fff;
+    }
   `]
 })
 export class PersonalizarInicioDialogComponent implements OnChanges {
@@ -110,10 +151,13 @@ export class PersonalizarInicioDialogComponent implements OnChanges {
 
   @Input() disponibles: SidebarMenuItem[] = [];
   @Input() seleccionadosIniciales: string[] = [];
+  @Input() columnas = 6;
 
   @Output() guardar = new EventEmitter<string[]>();
+  @Output() columnasChange = new EventEmitter<number>();
 
   seleccionados: SidebarMenuItem[] = [];
+  readonly columnasOpciones = [3, 4, 5, 6];
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && this.visible) {
@@ -152,5 +196,10 @@ export class PersonalizarInicioDialogComponent implements OnChanges {
 
   seleccionarNinguna(): void {
     this.seleccionados = [];
+  }
+
+  onColumnasChange(n: number): void {
+    this.columnas = n;
+    this.columnasChange.emit(n);
   }
 }
