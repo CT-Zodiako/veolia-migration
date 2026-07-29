@@ -67,6 +67,7 @@
             <app-tabla-avanzada
               [columnas]="columnasTablaEmpresa"
               [rows]="grupo.filas"
+              [scrollHeight]="alturaScroll()"
               [cellClass]="cellClassFilaEspecial"
               [filaExportable]="filaEsExportable"
               storageKey="verificacion-empresa"
@@ -84,6 +85,7 @@
             <app-tabla-avanzada
               [columnas]="columnasTablaAps"
               [rows]="grupo.filas"
+              [scrollHeight]="alturaScroll()"
               [cellClass]="cellClassFilaEspecial"
               [filaExportable]="filaEsExportable"
               storageKey="verificacion-aps"
@@ -101,6 +103,7 @@
             <app-tabla-avanzada
               [columnas]="columnasTablaRelleno"
               [rows]="grupo.filas"
+              [scrollHeight]="alturaScroll()"
               [cellClass]="cellClassFilaEspecial"
               [filaExportable]="filaEsExportable"
               storageKey="verificacion-relleno"

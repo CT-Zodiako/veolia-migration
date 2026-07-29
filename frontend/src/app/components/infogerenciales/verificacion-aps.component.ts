@@ -157,6 +157,11 @@ export class VerificacionApsComponent {
   // a la vez (no afecta el export, que ya las excluye siempre vía filaEsExportable).
   readonly mostrarTotales = signal(true);
 
+  // Cada tabla tiene siempre 6 filas (una por mes) + 2 sintéticas si mostrarTotales está
+  // activo -- se calcula un scrollHeight que alcanza a mostrar todas sin scroll interno,
+  // así TOTAL/PROMEDIO quedan siempre visibles sin que el usuario tenga que desplazarse.
+  readonly alturaScroll = computed(() => (this.mostrarTotales() ? '460px' : '320px'));
+
   readonly gruposEmpresa = computed<GrupoTabla[]>(() =>
     this.agruparPorEntidad(this.emprDataRaw(), 'EMPR_NOMBRE', this.numericasEmpresa, this.empresaSeleccionada(), this.mostrarTotales())
   );
