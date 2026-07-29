@@ -1,0 +1,54 @@
+<button
+  type="button"
+  class="support-log-fab"
+  [title]="abierto() ? 'Cerrar log de errores DB' : 'Ver log de errores DB'"
+  (click)="toggle()"
+>
+  <i class="pi pi-database"></i>
+  <span class="support-log-badge" *ngIf="logs().length > 0">{{ logs().length }}</span>
+</button>
+
+<div class="support-log-panel" *ngIf="abierto()">
+  <div class="support-log-header">
+    <span class="support-log-title">
+      <i class="pi pi-database"></i>
+      Log de errores DB (soporte)
+    </span>
+    <div class="support-log-header-actions">
+      <p-button
+        icon="pi pi-trash"
+        label="Limpiar"
+        severity="secondary"
+        size="small"
+        [text]="true"
+        [disabled]="logs().length === 0"
+        (click)="limpiar()"
+      ></p-button>
+      <p-button
+        icon="pi pi-times"
+        [rounded]="true"
+        [text]="true"
+        severity="secondary"
+        size="small"
+        (click)="toggle()"
+      ></p-button>
+    </div>
+  </div>
+
+  <div class="support-log-body">
+    <p class="support-log-empty" *ngIf="logs().length === 0">Sin errores registrados en esta sesión.</p>
+
+    <div class="support-log-entry" *ngFor="let entry of logs()">
+      <div class="support-log-entry-top">
+        <span class="support-log-timestamp">{{ entry.timestamp | date: 'dd/MM/yyyy HH:mm:ss' }}</span>
+        <span class="support-log-status">{{ entry.status }}</span>
+      </div>
+      <div class="support-log-request">
+        <span class="support-log-method">{{ entry.method }}</span>
+        <span class="support-log-url">{{ entry.url }}</span>
+      </div>
+      <p class="support-log-message">{{ entry.message }}</p>
+      <span class="support-log-ora" *ngIf="entry.oraCode">{{ entry.oraCode }}</span>
+    </div>
+  </div>
+</div>

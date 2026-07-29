@@ -6,7 +6,7 @@ namespace Veolia.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
-public class AuthController(IAuthRepository authRepository, AuthContractMapper contractMapper) : ControllerBase
+public class AuthController(IAuthRepository authRepository, AuthContractMapper contractMapper, IConfiguration configuration) : ControllerBase
 {
     [HttpPost("registro")]
     public async Task<IActionResult> Registro([FromBody] RegistroRequest request, CancellationToken cancellationToken)
@@ -54,6 +54,13 @@ public class AuthController(IAuthRepository authRepository, AuthContractMapper c
         if (result is not LoginRepositoryResult loginResult)
         {
             return Unauthorized(contractMapper.MapLoginError(401, "Correo o contraseña inválida"));
+        }
+
+        if (loginResult.Kind == LoginOutcomeKind.Success && loginResult.Usuario is Dictionary<string, object?> usuario)
+        {
+            var supportCorreo = configuration["Support:Correo"];
+            usuario["esSoporte"] = !string.IsNullOrWhiteSpace(supportCorreo)
+                && string.Equals(request.correo, supportCorreo, StringComparison.OrdinalIgnoreCase);
         }
 
         return loginResult.Kind switch

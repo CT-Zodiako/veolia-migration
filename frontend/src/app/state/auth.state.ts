@@ -6,6 +6,7 @@ export interface User {
   SISU_APELLIDO: string;
   SISU_CORREO: string;
   SISU_ESTADO: number;
+  esSoporte?: boolean;
 }
 
 export interface Sistema {

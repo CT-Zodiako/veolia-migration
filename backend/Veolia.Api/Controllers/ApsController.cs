@@ -23,7 +23,7 @@ public sealed class ApsController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error en Aps.ConsultaGeneral");
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError(ex));
         }
     }
 
@@ -38,7 +38,7 @@ public sealed class ApsController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error en Aps.ConsultaAps para aps {Aps}", request.aps);
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError(ex));
         }
     }
 
@@ -66,7 +66,7 @@ public sealed class ApsController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error en Aps.Crear para nombre {Nombre}", request.nombre);
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError(ex));
         }
     }
 
@@ -91,7 +91,7 @@ public sealed class ApsController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error en Aps.Editar para id {Id}", id);
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError(ex));
         }
     }
 
@@ -111,7 +111,7 @@ public sealed class ApsController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error en Aps.GetApsByUsuario para usuario {SisuId}", tokenContext.SisuId);
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError(ex));
         }
     }
 
@@ -126,7 +126,7 @@ public sealed class ApsController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error en Aps.UsuarioPorAps para aps {Aps}", request.aps);
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError(ex));
         }
     }
 
@@ -144,7 +144,7 @@ public sealed class ApsController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error en Aps.Eliminar para id {Id}", id);
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapLegacyError(ex));
         }
     }
 

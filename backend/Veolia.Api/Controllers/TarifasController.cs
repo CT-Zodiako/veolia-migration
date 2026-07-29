@@ -15,9 +15,9 @@ public sealed class TarifasController(ITarifasRepository tarifasRepository) : Co
             var data = await tarifasRepository.ConsultaTarifaAsync(request.aps, request.anno, request.mes, cancellationToken);
             return Ok(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -29,9 +29,9 @@ public sealed class TarifasController(ITarifasRepository tarifasRepository) : Co
             var data = await tarifasRepository.ConsultaGeneralAsync(request.anno, request.mes, cancellationToken);
             return Ok(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -43,9 +43,9 @@ public sealed class TarifasController(ITarifasRepository tarifasRepository) : Co
             var data = await tarifasRepository.TarifaPorComponenteAsync(request.aps, request.anno, request.mes, cancellationToken);
             return Ok(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -57,13 +57,22 @@ public sealed class TarifasController(ITarifasRepository tarifasRepository) : Co
             var data = await tarifasRepository.TarifaPorComponenteGeneralAsync(request.anno, request.mes, cancellationToken);
             return Ok(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
-    private static object MapLegacyError() => new { data = "Error" };
+    private static object MapLegacyError(Exception ex)
+    {
+        var oracleEx = ex as Oracle.ManagedDataAccess.Client.OracleException;
+        return new
+        {
+            data = "Error",
+            message = ex.Message,
+            oraCode = oracleEx is not null ? $"ORA-{Math.Abs(oracleEx.Number):D5}" : null
+        };
+    }
 }
 
 public sealed record TarifasApsPeriodoRequest(long aps, int anno, int mes);

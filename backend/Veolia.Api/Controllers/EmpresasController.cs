@@ -16,9 +16,9 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
             var data = await empresasRepository.GetAllAsync(cancellationToken);
             return Ok(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -42,9 +42,9 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
 
             return Ok(result);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -56,9 +56,9 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
             var data = await empresasRepository.ConsultarPropiasAsync(request.aps, request.propia, cancellationToken);
             return Ok(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -70,9 +70,9 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
             var data = await empresasRepository.ConsultaEmprAsync(request.empr, cancellationToken);
             return Ok(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -84,9 +84,9 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
             var result = await empresasRepository.UpdateAsync(id, request.nombre, request.estado, request.propia, request.nuap, cancellationToken);
             return Ok(result);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -101,9 +101,9 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
             var result = await empresasRepository.EliminarAsync(id, cancellationToken);
             return Ok(result);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -118,9 +118,9 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
             var result = await empresasRepository.ToggleEstadoAsync(id, cancellationToken);
             return Ok(result);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError());
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
         }
     }
 
@@ -130,7 +130,16 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
         return AuthTokenContextAccessor.TryRead(token, out tokenContext);
     }
 
-    private static object MapLegacyError() => new { data = "Error" };
+    private static object MapLegacyError(Exception ex)
+    {
+        var oracleEx = ex as Oracle.ManagedDataAccess.Client.OracleException;
+        return new
+        {
+            data = "Error",
+            message = ex.Message,
+            oraCode = oracleEx is not null ? $"ORA-{Math.Abs(oracleEx.Number):D5}" : null
+        };
+    }
 }
 
 public sealed record EmpresaCreateRequest(string nombre, int estado, int propia, string? nuap);

@@ -9,11 +9,12 @@ import { AuthState } from '../../state/auth.state';
 import { SidebarMenuService, MenuGroup } from '../../services/sidebar-menu.service';
 import { ThemeService } from '../../services/theme.service';
 import { ProfileComponent } from './profile/profile.component';
+import { SupportErrorLogPanelComponent } from '../shared/support-error-log-panel.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ...CommonPrimeNgModules, ProfileComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ...CommonPrimeNgModules, ProfileComponent, SupportErrorLogPanelComponent],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })
