@@ -13,7 +13,7 @@ public sealed class ToneladasRepository(IOracleConnectionFactory connectionFacto
         const string sql = @"SELECT APS AS Aps,
        EMPRESA AS Empresa,
        TIPO AS Tipo,
-       SUM(VALOR) AS Valor
+       ROUND(SUM(VALOR) / 6, 4) AS Valor
 FROM VAUCO_TONELADAS
 WHERE APS = :1
   AND TIPO NOT IN ('QA', 'TAFNA')
@@ -37,12 +37,11 @@ ORDER BY EMPRESA, TIPO";
        EMPRESA AS Empresa,
        ANNO AS Anno,
        MES AS Mes,
-       SUM(VALOR) AS Valor
+       VALOR AS Valor
 FROM VAUCO_TONELADAS
 WHERE APS = :1
   AND TIPO IN ('QA')
   AND (ANNO * 12 + MES) BETWEEN ((:2 * 12 + :3) - 6) AND (:2 * 12 + :3)
-GROUP BY APS, EMPRESA, ANNO, MES
 ORDER BY ANNO, MES, EMPRESA";
 
         var parameters = new DynamicParameters();
