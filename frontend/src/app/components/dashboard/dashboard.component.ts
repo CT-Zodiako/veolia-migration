@@ -23,7 +23,6 @@ const ACCESOS_POR_DEFECTO = ['/usuarios', '/aps-usuario', '/asignacion-sistema',
  *  las tarjetas de Inicio -- el sidebar sigue usando los Twemoji de siempre.
  *  Si una ruta no está acá, la tarjeta cae al ícono Twemoji normal. */
 const ICONOS_CUSTOM_POR_RUTA: Record<string, string> = {
-  '/': 'inicio.png',
   '/aps': 'aps.png',
   '/empresas': 'empresas.png',
   '/usuarios': 'usuarios.png',
@@ -111,7 +110,9 @@ export class DashboardComponent {
     }).subscribe({
       next: ({ permissions, menuTree }: { permissions: MenuPermission[]; menuTree: any[] }) => {
         const permittedMenuIds = new Set((permissions || []).map(item => item.MENU_ID));
-        this.disponibles = this.sidebarMenuService.getFlatPermittedItems(menuTree, permittedMenuIds);
+        this.disponibles = this.sidebarMenuService
+          .getFlatPermittedItems(menuTree, permittedMenuIds)
+          .filter(item => item.path !== '/');
         this.aplicarSeleccion(this.cargarSeleccionGuardada());
         this.cdr.detectChanges();
       },
