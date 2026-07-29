@@ -2,13 +2,32 @@ import { ChangeDetectorRef, Component, ElementRef, ViewChild, effect } from '@an
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { DialogModule } from 'primeng/dialog';
+import { MenuModule } from 'primeng/menu';
+import { Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AuthService, MenuPermission } from '../../services/auth.service';
 import { AuthState } from '../../state/auth.state';
 import { SidebarMenuService, SidebarMenuItem } from '../../services/sidebar-menu.service';
+import { NotificationService } from '../../services/notification.service';
 import { PersonalizarInicioDialogComponent } from './personalizar-inicio-dialog.component';
 import { IconComponent } from '../shared/icon.component';
+
+interface ArticuloDocumentacion {
+  categoria: string;
+  titulo: string;
+}
+
+/** Contenido simulado -- no hay base de conocimientos real todavia. */
+const DOCUMENTACION_SIMULADA: ArticuloDocumentacion[] = [
+  { categoria: 'Primeros pasos', titulo: 'Cómo navegar el menú y personalizar tu Inicio' },
+  { categoria: 'Cálculo de Tarifas', titulo: 'Ejecutar y verificar un cálculo de tarifas' },
+  { categoria: 'Reliquidaciones', titulo: 'Crear una reliquidación y comparar costos' },
+  { categoria: 'SUI 853', titulo: 'Cargue de formatos e integración con el SUI' },
+  { categoria: 'Preguntas frecuentes', titulo: '¿Qué hago si un cargue queda con error?' }
+];
 
 interface DashboardCard {
   title: string;
@@ -74,23 +93,42 @@ function iconoCustomUrl(path: string): string | null {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, DragDropModule, ...CommonPrimeNgModules, PersonalizarInicioDialogComponent, IconComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    DragDropModule,
+    DialogModule,
+    MenuModule,
+    ...CommonPrimeNgModules,
+    PersonalizarInicioDialogComponent,
+    IconComponent
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent {
   @ViewChild('ayudaSection') ayudaSection?: ElementRef<HTMLElement>;
+  @ViewChild('menuSoporte') menuSoporte!: Menu;
 
   cards: DashboardCard[] = [];
   cardPaths: string[] = [];
   disponibles: SidebarMenuItem[] = [];
   mostrarPersonalizar = false;
+  mostrarDocumentacion = false;
   columnas = COLUMNAS_DEFECTO;
+  documentacionSimulada = DOCUMENTACION_SIMULADA;
+
+  soporteMenuItems: MenuItem[] = [
+    { label: 'Enviar correo a soporte', icon: 'pi pi-envelope', command: () => this.simularCanalSoporte('correo') },
+    { label: 'Llamar a soporte', icon: 'pi pi-phone', command: () => this.simularCanalSoporte('teléfono') },
+    { label: 'Chat en vivo', icon: 'pi pi-comments', command: () => this.simularCanalSoporte('chat') }
+  ];
 
   constructor(
     private readonly authService: AuthService,
     private readonly authState: AuthState,
     private readonly sidebarMenuService: SidebarMenuService,
+    private readonly notificationService: NotificationService,
     private readonly cdr: ChangeDetectorRef
   ) {
     this.columnas = this.cargarColumnasGuardadas();
@@ -128,6 +166,18 @@ export class DashboardComponent {
 
   irAAyuda(): void {
     this.ayudaSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  abrirDocumentacion(): void {
+    this.mostrarDocumentacion = true;
+  }
+
+  abrirMenuSoporte(event: Event): void {
+    this.menuSoporte.toggle(event);
+  }
+
+  private simularCanalSoporte(canal: string): void {
+    this.notificationService.info(`Esto es una simulación -- todavía no hay integración real con ${canal}.`, 'Soporte Directo');
   }
 
   guardarSeleccion(paths: string[]): void {

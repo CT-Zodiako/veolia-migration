@@ -167,10 +167,17 @@
   flex-wrap: wrap;
 }
 
-.ayuda-flotante {
+.ayuda-flotante-wrapper {
   position: fixed;
   right: 88px;
   bottom: 24px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ayuda-flotante {
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -181,11 +188,88 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 40;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.ayuda-flotante:hover {
+.ayuda-flotante-wrapper:hover .ayuda-flotante {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+.ayuda-flotante-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.ayuda-flotante-wrapper:hover .ayuda-flotante-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.ayuda-flotante-accion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
+}
+
+.ayuda-flotante-accion:hover {
+  transform: translateX(-2px);
+}
+
+.ayuda-flotante-accion.destacada {
+  background: var(--color-brand-strong);
+  border-color: var(--color-brand-strong);
+  color: #fff;
+}
+
+.documentacion-aviso {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-style: italic;
+  margin: 0 0 16px 0;
+}
+
+.documentacion-articulo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.documentacion-articulo:last-child {
+  border-bottom: none;
+}
+
+.documentacion-categoria {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-brand-accent);
+}
+
+.documentacion-titulo {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  font-weight: 500;
 }

@@ -12,4 +12,8 @@ export class NotificationService {
   error(detail: string, summary = 'Error'): void {
     this.messageService.add({ severity: 'error', summary, detail, life: 6000 });
   }
+
+  info(detail: string, summary = 'Info'): void {
+    this.messageService.add({ severity: 'info', summary, detail, life: 4000 });
+  }
 }
