@@ -203,6 +203,11 @@ export class TablaAvanzadaComponent implements OnInit, OnChanges {
   @Input() filasPorPagina = 10;
   @Input() autoWidth = false;
 
+  /** Muestra el overlay de carga nativo de PrimeNG (spinner + fondo semitransparente)
+   *  mientras el consumidor está esperando la respuesta de una consulta -- para que el
+   *  usuario distinga "cargando" de "sin datos" en vez de ver la tabla vacía sin más. */
+  @Input() loading = false;
+
   /** Fields que arrancan fijados la primera vez (sin vista guardada previa) y al
    *  usar "Restaurar columnas". El usuario puede des-fijarlos igual que cualquier
    *  otra columna; esto solo define el estado inicial, no un mínimo obligatorio. */

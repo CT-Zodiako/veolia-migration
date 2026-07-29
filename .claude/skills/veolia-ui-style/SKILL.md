@@ -323,6 +323,14 @@ consumidores que no los usan:
   sintéticas puramente visuales (ej. TOTAL/PROMEDIO agregadas a mano por el
   consumidor) que no deben aparecer en el archivo descargado — ver
   `verificacion-aps.component.ts` (`filaEsExportable`).
+- `[loading]="miSignalDeCarga()"` — pasa directo al `loading` nativo de
+  `p-table` (overlay + spinner semitransparente sobre la tabla mientras dura
+  la consulta). Usarlo SIEMPRE que una pantalla con `<app-tabla-avanzada>`
+  tenga un signal de carga (`loading = signal(false)` típico alrededor de un
+  `http.post(...).subscribe(...)`) — sin esto, mientras se re-consulta con
+  datos previos ya visibles, el usuario no puede distinguir "está cargando"
+  de "no hay datos para este período". Default `false`, no rompe a quien no
+  lo pasa. Ver `verificacion-aps.component.html`.
 
 Referencia completa (edición inline por fila + traducción de códigos):
 `pgirs-variables.component.{ts,html}`. Referencia de `cellClass` para
