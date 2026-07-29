@@ -80,35 +80,58 @@
 <p-menu #menuSoporte [popup]="true" [model]="soporteMenuItems"></p-menu>
 
 <p-dialog
-  header="Centro de Documentación (simulado)"
   [(visible)]="mostrarDocumentacion"
   [modal]="true"
-  [style]="{ width: '32rem' }"
+  [style]="{ width: '54rem' }"
+  styleClass="libro-dialog"
+  [showHeader]="false"
 >
-  <ng-container *ngIf="!articuloSeleccionado; else detalleArticulo">
-    <p class="documentacion-aviso">
-      Esto es una simulación visual -- todavía no hay contenido real conectado.
-    </p>
-    <div
-      class="documentacion-articulo clickeable"
-      *ngFor="let articulo of documentacionSimulada"
-      (click)="verArticulo(articulo)"
-    >
-      <span class="documentacion-categoria">{{ articulo.categoria }}</span>
-      <span class="documentacion-titulo">{{ articulo.titulo }}</span>
+  <div class="libro">
+    <div class="libro-lomo">
+      <div class="libro-lomo-encabezado">
+        <i class="pi pi-book"></i>
+        <span>Centro de Documentación</span>
+      </div>
+      <div class="libro-indice">
+        <div class="libro-capitulo" *ngFor="let capitulo of capitulosDocumentacion">
+          <div class="libro-capitulo-titulo">
+            <span class="libro-numeral">{{ capitulo.numeroRomano }}</span>
+            {{ capitulo.categoria }}
+          </div>
+          <div
+            class="libro-articulo"
+            *ngFor="let articulo of capitulo.articulos"
+            [class.activo]="articuloSeleccionado === articulo"
+            (click)="verArticulo(articulo)"
+          >
+            {{ articulo.titulo }}
+          </div>
+        </div>
+      </div>
     </div>
-  </ng-container>
 
-  <ng-template #detalleArticulo>
-    <button type="button" class="documentacion-volver" (click)="volverAlListado()">
-      <i class="pi pi-arrow-left"></i>
-      Volver al listado
-    </button>
-    <span class="documentacion-categoria">{{ articuloSeleccionado?.categoria }}</span>
-    <h3 class="documentacion-detalle-titulo">{{ articuloSeleccionado?.titulo }}</h3>
-    <p class="documentacion-detalle-contenido">{{ articuloSeleccionado?.contenido }}</p>
-    <p class="documentacion-aviso">Contenido simulado a modo de ejemplo.</p>
-  </ng-template>
+    <div class="libro-pagina">
+      <button type="button" class="libro-cerrar" (click)="mostrarDocumentacion = false">
+        <i class="pi pi-times"></i>
+      </button>
+
+      <ng-container *ngIf="articuloSeleccionado; else portada">
+        <span class="libro-pagina-categoria">{{ articuloSeleccionado.categoria }}</span>
+        <h2 class="libro-pagina-titulo">{{ articuloSeleccionado.titulo }}</h2>
+        <p class="libro-pagina-contenido">{{ articuloSeleccionado.contenido }}</p>
+        <p class="libro-pagina-simulado">— Contenido simulado a modo de ejemplo —</p>
+      </ng-container>
+
+      <ng-template #portada>
+        <div class="libro-portada">
+          <i class="pi pi-book"></i>
+          <h2>Bienvenido al Centro de Documentación</h2>
+          <p>Elegí un capítulo del índice para empezar a leer.</p>
+          <p class="libro-pagina-simulado">Esto es una simulación visual -- todavía no hay contenido real conectado.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
 </p-dialog>
 
 <app-personalizar-inicio-dialog

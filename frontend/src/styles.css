@@ -31,6 +31,10 @@
   --color-bg-success-soft: #f0fdf4;
   --color-border-success-soft: #bbf7d0;
   --color-text-success: #16a34a;
+
+  /* Papel del "libro" de documentación (Dashboard) -- distinto de --color-bg-card
+     a propósito, busca un tono cálido tipo página en vez de superficie neutra. */
+  --color-bg-book-page: #fdfbf3;
 }
 
 .app-dark {
@@ -58,6 +62,8 @@
   --color-bg-success-soft: #14291d;
   --color-border-success-soft: #1e4a2f;
   --color-text-success: #4ade80;
+
+  --color-bg-book-page: #2a2622;
 }
 
 /* Reset y base */

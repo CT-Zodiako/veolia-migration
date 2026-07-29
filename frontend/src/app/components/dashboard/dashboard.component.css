@@ -241,74 +241,189 @@
   color: #fff;
 }
 
-.documentacion-aviso {
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  font-style: italic;
-  margin: 0 0 16px 0;
+::ng-deep .libro-dialog .p-dialog-content {
+  padding: 0;
 }
 
-.documentacion-articulo {
+.libro {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: min(70vh, 620px);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.libro-lomo {
+  background: linear-gradient(160deg, #780200 0%, #9c0300 45%, #c40300 100%);
+  color: rgba(255, 255, 255, 0.92);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.libro-lomo-encabezado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 18px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 16px;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}
+
+.libro-lomo-encabezado i {
+  font-size: 18px;
+}
+
+.libro-indice {
   padding: 12px 0;
-  border-bottom: 1px solid var(--color-border-soft);
 }
 
-.documentacion-articulo:last-child {
-  border-bottom: none;
+.libro-capitulo {
+  padding: 10px 18px;
 }
 
-.documentacion-categoria {
-  font-size: 11px;
+.libro-capitulo-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: var(--color-brand-accent);
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 6px;
 }
 
-.documentacion-titulo {
-  font-size: 14px;
-  color: var(--color-text-primary);
-  font-weight: 500;
+.libro-numeral {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.documentacion-articulo.clickeable {
-  cursor: pointer;
+.libro-articulo {
+  padding: 7px 10px 7px 30px;
+  font-size: 13px;
+  line-height: 1.4;
   border-radius: 8px;
-  padding-left: 8px;
-  padding-right: 8px;
-  transition: background 0.15s ease;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.documentacion-articulo.clickeable:hover {
-  background: var(--color-bg-soft);
+.libro-articulo:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.documentacion-volver {
+.libro-articulo.activo {
+  background: rgba(255, 255, 255, 0.95);
+  color: #780200;
+  font-weight: 600;
+}
+
+.libro-pagina {
+  position: relative;
+  background: var(--color-bg-book-page);
+  padding: 40px 44px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.libro-cerrar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-secondary);
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  border: none;
-  background: none;
-  color: var(--color-brand-accent);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0 0 16px 0;
+  justify-content: center;
 }
 
-.documentacion-detalle-titulo {
-  color: var(--color-text-primary);
-  font-size: 18px;
+.libro-cerrar:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.libro-pagina-categoria {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 12px;
   font-weight: 700;
-  margin: 6px 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-brand-accent);
 }
 
-.documentacion-detalle-contenido {
+.libro-pagina-titulo {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 10px 0 24px 0;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--color-border);
+  line-height: 1.3;
+}
+
+.libro-pagina-contenido {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  line-height: 1.9;
   color: var(--color-text-body);
+}
+
+.libro-pagina-contenido::first-letter {
+  font-size: 46px;
+  font-weight: 700;
+  color: var(--color-brand-strong);
+  float: left;
+  line-height: 1;
+  margin: 4px 8px 0 0;
+}
+
+.libro-pagina-simulado {
+  margin-top: 32px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.libro-portada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  min-height: 380px;
+  gap: 12px;
+  color: var(--color-text-secondary);
+}
+
+.libro-portada i {
+  font-size: 56px;
+  color: var(--color-brand-strong);
+  opacity: 0.5;
+  margin-bottom: 8px;
+}
+
+.libro-portada h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--color-text-primary);
+  font-size: 22px;
+  margin: 0;
+}
+
+.libro-portada p {
   font-size: 14px;
-  line-height: 1.6;
-  margin: 0 0 16px 0;
+  margin: 0;
 }

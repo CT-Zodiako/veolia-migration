@@ -161,6 +161,37 @@ function iconoCustomUrl(path: string): string | null {
   return archivo ? 'iconos/' + encodeURIComponent(archivo) : null;
 }
 
+interface CapituloDocumentacion {
+  categoria: string;
+  numeroRomano: string;
+  articulos: ArticuloDocumentacion[];
+}
+
+const NUMEROS_ROMANOS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+
+function agruparEnCapitulos(articulos: ArticuloDocumentacion[]): CapituloDocumentacion[] {
+  const capitulos: CapituloDocumentacion[] = [];
+  const porCategoria = new Map<string, ArticuloDocumentacion[]>();
+
+  for (const articulo of articulos) {
+    const lista = porCategoria.get(articulo.categoria) ?? [];
+    lista.push(articulo);
+    porCategoria.set(articulo.categoria, lista);
+  }
+
+  let indice = 0;
+  for (const [categoria, articulosCategoria] of porCategoria) {
+    capitulos.push({
+      categoria,
+      numeroRomano: NUMEROS_ROMANOS[indice] ?? String(indice + 1),
+      articulos: articulosCategoria
+    });
+    indice++;
+  }
+
+  return capitulos;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -187,7 +218,7 @@ export class DashboardComponent {
   mostrarPersonalizar = false;
   mostrarDocumentacion = false;
   columnas = COLUMNAS_DEFECTO;
-  documentacionSimulada = DOCUMENTACION_SIMULADA;
+  capitulosDocumentacion = agruparEnCapitulos(DOCUMENTACION_SIMULADA);
   articuloSeleccionado: ArticuloDocumentacion | null = null;
 
   soporteMenuItems: MenuItem[] = [
