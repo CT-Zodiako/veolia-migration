@@ -504,3 +504,47 @@ espacio. Referencia: `historico-reversion.component.html`,
   valor "vivo" — ver `pgirs-variables.component.ts`.
 - Sidebar: nunca duplicar la lógica de resolución de menú; usa
   `SidebarMenuService` (`frontend/src/app/services/sidebar-menu.service.ts`).
+
+## 10. Íconos — Twemoji self-hosted (`public/emoji/*.svg`), nunca emoji Unicode ni fuente
+
+Los íconos semánticos del sidebar, tarjetas de Inicio y diálogo "Personalizar"
+usan `<app-icon>` (`frontend/src/app/components/shared/icon.component.ts`),
+que renderiza un `<img>` apuntando a `public/emoji/<name>.svg` — **nunca**
+interpolar el emoji Unicode directo como texto (`{{ item.icon }}`): eso rinde
+distinto según SO/navegador/fuente instalada, que es exactamente el problema
+que este componente resuelve (se migró esa deuda una vez, no reintroducirla).
+
+```html
+<app-icon [name]="'building-2'" [size]="18"></app-icon>
+```
+
+- `[name]` es un string kebab-case (ej. `'home'`, `'building-2'`,
+  `'trending-up'`) — el mismo valor que ya vive en `SidebarMenuItem.icon` /
+  `SidebarMenuService.routeCatalog[].icon` / `iconMap`, y coincide 1:1 con el
+  nombre de archivo en `frontend/public/emoji/<name>.svg`.
+- `[size]` en px (default 18). No hay `[color]`: los SVG son arte Twemoji a
+  todo color (varios `fill` fijos por dibujo), no íconos de trazo único —
+  intentar teñirlos con un solo color no tiene sentido visual. Si una
+  pantalla necesita un acento de color, aplicarlo al fondo del contenedor
+  (ver `.card-icon` en `dashboard.component.css`, con
+  `[style.background]="card.color + '15'"`), no al ícono en sí.
+- Si `[name]` no matchea ningún archivo, `(error)` hace fallback a
+  `emoji/folder.svg` (mismo criterio que el `'folder'` default de
+  `SidebarMenuService.resolveIcon()`).
+- **Agregar un ícono nuevo**: se necesita el `.svg` real de Twemoji para ese
+  emoji, self-hosted (nunca cargarlo desde un CDN en runtime — ver más
+  abajo). Para bajarlo: calcular el codepoint hex del emoji
+  (`[...'🏠'].map(c => c.codePointAt(0).toString(16))`, sacando el selector
+  de variación `fe0f` si el archivo con ese codepoint no existe) y traerlo de
+  `https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/<codepoint>.svg`
+  guardándolo como `frontend/public/emoji/<name-kebab-case>.svg` — no hace
+  falta ningún paquete npm para esto, es un archivo estático más servido por
+  el asset pipeline de Angular (`angular.json` ya sirve todo `public/**/*`).
+- **Por qué no una librería de íconos de fuente (Lucide, Font Awesome, etc.)
+  ni el emoji Unicode nativo**: el usuario pidió explícitamente la estética
+  "colorida" tipo emoji, no el estilo monocromático de trazo — Twemoji
+  self-hosted da esa estética pero renderiza igual en todo SO/navegador (el
+  problema real del emoji nativo). No usar CDN en runtime (`twemoji.parse()`
+  con su config default, o el web component `iconify-icon` sin precargar
+  datos offline): son llamadas de red externas para elementos de UI
+  centrales (sidebar), evitables bajando el `.svg` una sola vez.
