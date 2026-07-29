@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, effect } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -14,9 +14,62 @@ interface DashboardCard {
   title: string;
   route: string;
   icon: string;
+  iconoCustomUrl: string | null;
 }
 
 const ACCESOS_POR_DEFECTO = ['/usuarios', '/aps-usuario', '/asignacion-sistema', '/menu-usuario'];
+
+/** Set de íconos 3D subido por el usuario (frontend/public/iconos/), solo para
+ *  las tarjetas de Inicio -- el sidebar sigue usando los Twemoji de siempre.
+ *  Si una ruta no está acá, la tarjeta cae al ícono Twemoji normal. */
+const ICONOS_CUSTOM_POR_RUTA: Record<string, string> = {
+  '/': 'inicio.png',
+  '/aps': 'aps.png',
+  '/empresas': 'empresas.png',
+  '/usuarios': 'usuarios.png',
+  '/calculo': 'Copia de calculo tarifas.png',
+  '/cft': 'calculo tarifas.png',
+  '/tarifas': 'detallado tarifas.png',
+  '/informesGenerados': 'infomre.png',
+  '/reversion_auth': 'aurotizar reversiones.png',
+  '/suministros/reversion': 'Reversion.png',
+  '/suministros/historico': 'historico.png',
+  '/suministros/cargue-mensual': 'cargue mensual.png',
+  '/suministros/cargue-semestral': 'cargue semestra.png',
+  '/sui/integracion': 'formato.png',
+  '/sui/cargue-complementario': 'cargue complemntario.png',
+  '/sui/dashboard': 'dashbaord 2.png',
+  '/sui/resumen-formatos': 'resumen fomratos y formulario.png',
+  '/sui-reversiones': 'sui reversiones.png',
+  '/histProductividad': 'historial de porductividad.png',
+  '/subcon': 'subisdios contribuciones.png',
+  '/proyecciones': 'proyecciones.png',
+  '/proyecciones/linea-tiempo': 'linea de tiempo.png',
+  '/proyecciones/crecimiento': 'crecimiento.png',
+  '/proyecciones/ejecutar': 'proyectar.png',
+  '/proyecciones/subcont': 'subicidos contirbuciones.png',
+  '/reliquidacion/cargue': 'cargue.png',
+  '/cra': 'indices cra.png',
+  '/productividad': 'ajuste productividad.png',
+  '/suministros/descuento-costos': 'Copia de desceunto.png',
+  '/suministros/aprovechamiento': 'activar aprovechamiento.png',
+  '/suministros/costo-poda': 'costo poda.png',
+  '/suministros/cargue-productividad': 'cargue productividad.png',
+  '/generales': 'infomracion general.png',
+  '/gerencial/costos': 'detallado de costo.png',
+  '/gerencial/sub-aporte': 'detallado y aporte.png',
+  '/gerencial/dashboard': 'dashboard.png',
+  '/gerencial/poda': 'poda.png',
+  '/gerencial/descuento-costos': 'desceunto.png',
+  '/suministros/verificacion': 'verificacion.png',
+  '/pgirs/resumen': 'PGIRS RESMEUN.png',
+  '/pgirs/informe-variables': 'pgir infomre variables.png'
+};
+
+function iconoCustomUrl(path: string): string | null {
+  const archivo = ICONOS_CUSTOM_POR_RUTA[path];
+  return archivo ? 'iconos/' + encodeURIComponent(archivo) : null;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -26,6 +79,8 @@ const ACCESOS_POR_DEFECTO = ['/usuarios', '/aps-usuario', '/asignacion-sistema',
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent {
+  @ViewChild('ayudaSection') ayudaSection?: ElementRef<HTMLElement>;
+
   cards: DashboardCard[] = [];
   cardPaths: string[] = [];
   disponibles: SidebarMenuItem[] = [];
@@ -65,6 +120,10 @@ export class DashboardComponent {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  irAAyuda(): void {
+    this.ayudaSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   guardarSeleccion(paths: string[]): void {
@@ -123,7 +182,8 @@ export class DashboardComponent {
       .map((item) => ({
         title: item.label,
         route: item.path,
-        icon: item.icon
+        icon: item.icon,
+        iconoCustomUrl: iconoCustomUrl(item.path)
       }));
   }
 }

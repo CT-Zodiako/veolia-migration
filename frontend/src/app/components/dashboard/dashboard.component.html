@@ -14,28 +14,8 @@
     ></p-button>
   </div>
 
-  <div class="cards-grid" cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="onDrop($event)">
-    <a
-      *ngFor="let card of cards; trackBy: trackByRoute"
-      [routerLink]="card.route"
-      class="card"
-      cdkDrag
-      cdkDragBoundary=".cards-grid"
-    >
-      <div class="card-drag-placeholder" *cdkDragPlaceholder></div>
-      <div class="card-icon">
-        <app-icon [name]="card.icon" [size]="64"></app-icon>
-      </div>
-      <h3>{{ card.title }}</h3>
-    </a>
-
-    <p *ngIf="cards.length === 0" class="sin-accesos">
-      No elegiste ningún acceso todavía. Tocá "Personalizar" para agregar los que quieras ver acá.
-    </p>
-  </div>
-
   <!-- Visual únicamente por ahora: sin destino real todavía para "Ver Documentación". -->
-  <div class="help-cta">
+  <div class="help-cta" #ayudaSection>
     <div class="help-cta-info">
       <div class="help-cta-icon">
         <app-icon name="life-buoy" [size]="32"></app-icon>
@@ -50,7 +30,39 @@
       <p-button label="Soporte Directo"></p-button>
     </div>
   </div>
+
+  <div class="cards-grid" cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="onDrop($event)">
+    <a
+      *ngFor="let card of cards; trackBy: trackByRoute"
+      [routerLink]="card.route"
+      class="card"
+      cdkDrag
+      cdkDragBoundary=".cards-grid"
+    >
+      <div class="card-drag-placeholder" *cdkDragPlaceholder></div>
+      <div class="card-icon">
+        <img
+          *ngIf="card.iconoCustomUrl; else iconoTwemoji"
+          [src]="card.iconoCustomUrl"
+          [alt]="card.title"
+          class="card-icon-custom"
+        />
+        <ng-template #iconoTwemoji>
+          <app-icon [name]="card.icon" [size]="40"></app-icon>
+        </ng-template>
+      </div>
+      <h3>{{ card.title }}</h3>
+    </a>
+
+    <p *ngIf="cards.length === 0" class="sin-accesos">
+      No elegiste ningún acceso todavía. Tocá "Personalizar" para agregar los que quieras ver acá.
+    </p>
+  </div>
 </div>
+
+<button type="button" class="ayuda-flotante" title="Ir a ayuda" (click)="irAAyuda()">
+  <app-icon name="life-buoy" [size]="24"></app-icon>
+</button>
 
 <app-personalizar-inicio-dialog
   [(visible)]="mostrarPersonalizar"

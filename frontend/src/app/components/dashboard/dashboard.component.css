@@ -25,14 +25,14 @@
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
 }
 
 .card {
   background: var(--color-bg-card);
-  border-radius: 16px;
-  padding: 32px;
+  border-radius: 14px;
+  padding: 20px 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
@@ -80,8 +80,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  height: 48px;
+  margin-bottom: 12px;
   transition: transform 0.3s ease;
+}
+
+.card-icon-custom {
+  max-width: 48px;
+  max-height: 48px;
+  object-fit: contain;
 }
 
 .card:hover .card-icon {
@@ -90,9 +97,9 @@
 
 .card h3 {
   color: var(--color-text-primary);
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 700;
-  margin: 0 0 8px 0;
+  margin: 0;
 }
 
 .card p {
@@ -127,7 +134,7 @@
 }
 
 .help-cta {
-  margin-top: 48px;
+  margin-bottom: 32px;
   background: var(--color-bg-card);
   border-radius: 16px;
   padding: 32px;
@@ -173,4 +180,27 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.ayuda-flotante {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-bg-card);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 40;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ayuda-flotante:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
 }
