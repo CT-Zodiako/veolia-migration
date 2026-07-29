@@ -23,11 +23,8 @@
       cdkDragBoundary=".cards-grid"
     >
       <div class="card-drag-placeholder" *cdkDragPlaceholder></div>
-      <div
-        class="card-icon"
-        [style.background]="card.color + '15'"
-      >
-        <app-icon [name]="card.icon" [size]="28"></app-icon>
+      <div class="card-icon">
+        <app-icon [name]="card.icon" [size]="64"></app-icon>
       </div>
       <h3>{{ card.title }}</h3>
     </a>

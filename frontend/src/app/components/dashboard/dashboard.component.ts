@@ -14,10 +14,8 @@ interface DashboardCard {
   title: string;
   route: string;
   icon: string;
-  color: string;
 }
 
-const PALETA_ROJOS = ['#f10400', '#c40300', '#9c0300', '#780200'];
 const ACCESOS_POR_DEFECTO = ['/usuarios', '/aps-usuario', '/asignacion-sistema', '/menu-usuario'];
 
 @Component({
@@ -122,11 +120,10 @@ export class DashboardComponent {
     return paths
       .map(path => porPath.get(path))
       .filter((item): item is SidebarMenuItem => !!item)
-      .map((item, index) => ({
+      .map((item) => ({
         title: item.label,
         route: item.path,
-        icon: item.icon,
-        color: PALETA_ROJOS[index % PALETA_ROJOS.length]
+        icon: item.icon
       }));
   }
 }
