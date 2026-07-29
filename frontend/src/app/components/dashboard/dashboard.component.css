@@ -125,3 +125,52 @@
   border-radius: 16px;
   border: 1px dashed var(--color-border);
 }
+
+.help-cta {
+  margin-top: 48px;
+  background: var(--color-bg-card);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.help-cta-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.help-cta-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(241, 4, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.help-cta-info h4 {
+  color: var(--color-text-primary);
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.help-cta-info p {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+.help-cta-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}

@@ -33,6 +33,23 @@
       No elegiste ningún acceso todavía. Tocá "Personalizar" para agregar los que quieras ver acá.
     </p>
   </div>
+
+  <!-- Visual únicamente por ahora: sin destino real todavía para "Ver Documentación". -->
+  <div class="help-cta">
+    <div class="help-cta-info">
+      <div class="help-cta-icon">
+        <app-icon name="life-buoy" [size]="32"></app-icon>
+      </div>
+      <div>
+        <h4>¿Necesitas ayuda con algo más?</h4>
+        <p>Explorá nuestra base de conocimientos o contactá a soporte.</p>
+      </div>
+    </div>
+    <div class="help-cta-actions">
+      <p-button label="Ver Documentación" severity="secondary" [outlined]="true"></p-button>
+      <p-button label="Soporte Directo"></p-button>
+    </div>
+  </div>
 </div>
 
 <app-personalizar-inicio-dialog

@@ -18,7 +18,7 @@ export type IconName =
   | 'search-check' | 'flask-conical' | 'microscope' | 'file'
   | 'drafting-compass' | 'ruler' | 'trending-down' | 'trending-up' | 'hash'
   | 'signal-high' | 'package' | 'zap' | 'store' | 'factory' | 'file-stack'
-  | 'clipboard-list' | 'folder';
+  | 'clipboard-list' | 'folder' | 'life-buoy';
 
 @Component({
   selector: 'app-icon',
