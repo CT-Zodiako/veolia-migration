@@ -19,7 +19,7 @@ export class ApsFormComponent implements OnChanges {
   @Output() cancel = new EventEmitter<void>();
 
   nombre = '';
-  idsui: number | null = null;
+  idsui: string | null = null;
   resolucion: number | null = null;
   propio = false;
   relleno = false;

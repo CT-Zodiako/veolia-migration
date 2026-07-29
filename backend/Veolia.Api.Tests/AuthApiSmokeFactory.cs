@@ -255,7 +255,7 @@ internal sealed class StubApsRepository : IApsRepository
             ["APSA_SOLORELL"] = 0,
             ["APSA_ESTADO"] = 1,
             ["APSA_VIAT"] = 0,
-            ["APSA_IDSUI"] = 123
+            ["APSA_IDSUI"] = "123"
         },
         new Dictionary<string, object>
         {
@@ -266,7 +266,7 @@ internal sealed class StubApsRepository : IApsRepository
             ["APSA_SOLORELL"] = 1,
             ["APSA_ESTADO"] = 1,
             ["APSA_VIAT"] = 1,
-            ["APSA_IDSUI"] = 456
+            ["APSA_IDSUI"] = "456"
         }
     ];
 
@@ -292,7 +292,7 @@ internal sealed class StubApsRepository : IApsRepository
         return Task.FromResult<IReadOnlyList<object>>(row is null ? [] : [row]);
     }
 
-    public Task<object?> CrearAsync(string nombre, int? idsui, int? resolucion, int propio, int relleno, int estado, int iat, long usuario, CancellationToken cancellationToken)
+    public Task<object?> CrearAsync(string nombre, string? idsui, int? resolucion, int propio, int relleno, int estado, int iat, long usuario, CancellationToken cancellationToken)
     {
         if (string.Equals(nombre, "__SQL_ERROR__", StringComparison.Ordinal))
         {
@@ -302,7 +302,7 @@ internal sealed class StubApsRepository : IApsRepository
         return Task.FromResult<object?>(new { rowsAffected = 1 });
     }
 
-    public Task<object?> EditarAsync(long id, string nombre, int? idsui, int? resolucion, int propio, int relleno, int estado, int iat, CancellationToken cancellationToken)
+    public Task<object?> EditarAsync(long id, string nombre, string? idsui, int? resolucion, int propio, int relleno, int estado, int iat, CancellationToken cancellationToken)
     {
         if (id <= 0 || id == 5000)
         {

@@ -159,7 +159,7 @@ public sealed record ApsByIdRequest(long aps);
 
 public sealed record ApsMutationRequest(
     string nombre,
-    int? idsui,
+    string? idsui,
     int? resolucion,
     int propio,
     int relleno,

@@ -47,7 +47,7 @@ WHERE APSA_ID = :apsId";
 
     public async Task<object?> CrearAsync(
         string nombre,
-        int? idsui,
+        string? idsui,
         int? resolucion,
         int propio,
         int relleno,
@@ -95,7 +95,7 @@ VALUES (
     public async Task<object?> EditarAsync(
         long id,
         string nombre,
-        int? idsui,
+        string? idsui,
         int? resolucion,
         int propio,
         int relleno,

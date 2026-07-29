@@ -11,12 +11,12 @@ export interface ApsConfigItem {
   APSA_SOLORELL?: number;
   APSA_ESTADO?: number;
   APSA_VIAT?: number;
-  APSA_IDSUI?: number | null;
+  APSA_IDSUI?: string | null;
 }
 
 export interface ApsMutationPayload {
   nombre: string;
-  idsui: number | null;
+  idsui: string | null;
   resolucion: number | null;
   propio: number;
   relleno: number;
