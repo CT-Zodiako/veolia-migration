@@ -26,6 +26,28 @@
   min-width: 110px;
 }
 
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-body);
+}
+
+.semestre-group {
+  flex: 0 1 180px;
+  min-width: 160px;
+}
+
+.empresa-group {
+  flex: 0 1 260px;
+  min-width: 220px;
+}
+
 .text-secondary { color: var(--text-color-secondary); }
 
 .table-title {
@@ -33,4 +55,49 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--color-text-primary);
+}
+
+.loading-text {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.sin-datos {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.tabla-empresa:last-child {
+  margin-bottom: 0;
+}
+
+/* KPIs (Promedios Mensuales) -- placeholder visual, ver comentario en el .ts */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.kpi-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.kpi-valor {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-brand-strong);
 }

@@ -4,45 +4,104 @@
   <div class="parametros-row">
     <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
     <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
-    <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
+    <div class="form-group semestre-group">
+      <label>Semestre</label>
+      <p-select
+        [options]="semestres"
+        [ngModel]="semestre()"
+        (ngModelChange)="onSemestreChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccione semestre"
+        [showClear]="true"
+        styleClass="w-full">
+      </p-select>
+    </div>
+    <div class="form-group empresa-group">
+      <label>Empresa</label>
+      <p-select
+        [options]="empresaOptions()"
+        [ngModel]="empresaSeleccionada()"
+        (ngModelChange)="onEmpresaChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas las empresas"
+        styleClass="w-full">
+      </p-select>
+    </div>
   </div>
 </div>
 
-<!-- Resumen Empresa -->
 <div class="card-section">
-  <h3 class="table-title">Resumen Empresa</h3>
-  <div class="table-wrapper table-scroll">
-    <app-tabla-avanzada
-      [columnas]="columnasEmpresa"
-      [rows]="emprData()"
-      storageKey="verificacion-empresa"
-      nombreExportar="ResumenEmpresa"
-    ></app-tabla-avanzada>
+  <h3 class="table-title">Promedios Mensuales</h3>
+  <!-- Placeholder visual: valores mock, falta definir qué KPIs reales van acá. -->
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let kpi of kpis()">
+      <span class="kpi-label">{{ kpi.label }}</span>
+      <span class="kpi-valor">{{ kpi.valor }}</span>
+    </div>
   </div>
 </div>
 
-<!-- Resumen APS -->
-<div class="card-section">
-  <h3 class="table-title">Resumen APS</h3>
-  <div class="table-wrapper table-scroll">
-    <app-tabla-avanzada
-      [columnas]="columnasAps"
-      [rows]="apsEmprData()"
-      storageKey="verificacion-aps"
-      nombreExportar="ResumenAPS"
-    ></app-tabla-avanzada>
-  </div>
+<div class="card-section" *ngIf="loading()">
+  <p class="loading-text">Consultando semestre...</p>
 </div>
 
-<!-- Resumen Relleno -->
 <div class="card-section">
-  <h3 class="table-title">Resumen Relleno</h3>
-  <div class="table-wrapper table-scroll">
-    <app-tabla-avanzada
-      [columnas]="columnasRelleno"
-      [rows]="rellenoData()"
-      storageKey="verificacion-relleno"
-      nombreExportar="ResumenRelleno"
-    ></app-tabla-avanzada>
-  </div>
+  <p-tabs [value]="currentTab()" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab value="EMPRESA">Resumen Empresa</p-tab>
+      <p-tab value="APS">Resumen APS</p-tab>
+      <p-tab value="RELLENO">Resumen Relleno</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="EMPRESA">
+        <div *ngIf="gruposEmpresa().length === 0" class="sin-datos">Sin datos para el período seleccionado.</div>
+        <div class="card-section tabla-empresa" *ngFor="let grupo of gruposEmpresa()">
+          <h3 class="table-title">{{ grupo.nombre }}</h3>
+          <div class="table-wrapper table-scroll">
+            <app-tabla-avanzada
+              [columnas]="columnasTablaEmpresa"
+              [rows]="grupo.filas"
+              [cellClass]="cellClassFilaEspecial"
+              storageKey="verificacion-empresa"
+              nombreExportar="ResumenEmpresa"
+            ></app-tabla-avanzada>
+          </div>
+        </div>
+      </p-tabpanel>
+
+      <p-tabpanel value="APS">
+        <div *ngIf="gruposAps().length === 0" class="sin-datos">Sin datos para el período seleccionado.</div>
+        <div class="card-section tabla-empresa" *ngFor="let grupo of gruposAps()">
+          <h3 class="table-title">{{ grupo.nombre }}</h3>
+          <div class="table-wrapper table-scroll">
+            <app-tabla-avanzada
+              [columnas]="columnasTablaAps"
+              [rows]="grupo.filas"
+              [cellClass]="cellClassFilaEspecial"
+              storageKey="verificacion-aps"
+              nombreExportar="ResumenAPS"
+            ></app-tabla-avanzada>
+          </div>
+        </div>
+      </p-tabpanel>
+
+      <p-tabpanel value="RELLENO">
+        <div *ngIf="gruposRelleno().length === 0" class="sin-datos">Sin datos para el período seleccionado.</div>
+        <div class="card-section tabla-empresa" *ngFor="let grupo of gruposRelleno()">
+          <h3 class="table-title">{{ grupo.nombre }}</h3>
+          <div class="table-wrapper table-scroll">
+            <app-tabla-avanzada
+              [columnas]="columnasTablaRelleno"
+              [rows]="grupo.filas"
+              [cellClass]="cellClassFilaEspecial"
+              storageKey="verificacion-relleno"
+              nombreExportar="ResumenRelleno"
+            ></app-tabla-avanzada>
+          </div>
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
 </div>

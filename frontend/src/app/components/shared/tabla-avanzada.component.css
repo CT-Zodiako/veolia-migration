@@ -78,6 +78,22 @@
   color: #0f172a;
 }
 
+/* Filas sintéticas TOTAL/PROMEDIO agregadas al final de una tabla agrupada (ej.
+   Verificación APS semestral, una app-tabla-avanzada por empresa/relleno). No hay
+   soporte nativo de fila de totales en este componente: el consumidor agrega estas
+   2 filas al array de `rows` y usa [cellClass] para resaltarlas -- las clases van
+   acá (componente compartido) por el encapsulamiento de Angular, ver nota más arriba. */
+.fila-total {
+  background-color: var(--color-bg-soft);
+  font-weight: 600;
+}
+
+.fila-promedio {
+  background-color: var(--color-bg-page);
+  font-weight: 600;
+  font-style: italic;
+}
+
 .tabla-toolbar {
   display: flex;
   align-items: center;
