@@ -87,8 +87,25 @@ public sealed class InfoGeneralesRepository(IOracleConnectionFactory connectionF
 
     public Task<IReadOnlyList<object>> ConsultaCostosAsync(long apsaid, long proyid, long usuario, CancellationToken cancellationToken)
     {
+        // Mismo motivo que ConsultaEnergiaAsync/ConsultaAcueducto: VPRO_RESCOSTOS tiene
+        // columnas numéricas calculadas (FLOAT(126) en Oracle) sin precisión fija que
+        // ODP.NET no puede leer como decimal ("Specified cast is not valid") con SELECT *.
+        // Forzar NUMBER(18,4) evita el cast inválido sin cambiar el contrato de campos
+        // que ya usa el frontend.
         const string sql = @"
-            SELECT C.*
+            SELECT C.TIPO_FACT AS TIPO_FACT,
+                   CAST(C.COST_ANNO AS NUMBER(4,0)) AS COST_ANNO,
+                   CAST(C.COST_MES AS NUMBER(2,0)) AS COST_MES,
+                   CAST(C.COST_CCS AS NUMBER(18,4)) AS COST_CCS,
+                   CAST(C.COST_CCSAPRO AS NUMBER(18,4)) AS COST_CCSAPRO,
+                   CAST(C.COST_CBL AS NUMBER(18,4)) AS COST_CBL,
+                   CAST(C.COST_CLUS AS NUMBER(18,4)) AS COST_CLUS,
+                   CAST(C.COST_CRT AS NUMBER(18,4)) AS COST_CRT,
+                   CAST(C.COST_CDF AS NUMBER(18,4)) AS COST_CDF,
+                   CAST(C.COST_INC AS NUMBER(18,4)) AS COST_INC,
+                   CAST(C.COST_IAT AS NUMBER(18,4)) AS COST_IAT,
+                   CAST(C.COST_CTL AS NUMBER(18,4)) AS COST_CTL,
+                   CAST(C.COST_VBA AS NUMBER(18,4)) AS COST_VBA
               FROM VPRO_RESCOSTOS C
              WHERE C.APSA_ID = :1
                AND C.PROY_ID = :2
@@ -102,8 +119,35 @@ public sealed class InfoGeneralesRepository(IOracleConnectionFactory connectionF
 
     public Task<IReadOnlyList<object>> ConsultaTarifasAsync(long apsaid, long proyid, long usuario, CancellationToken cancellationToken)
     {
+        // SELECT DISTINCT T.* se reemplazó por las 21 columnas explícitas del legacy
+        // (back-tarificador/src/modules/infogenerales/controller.js:117): T.* incluye
+        // columnas adicionales de la vista (p.ej. TARI_ESTADO/TARI_FECHA/TARI_USUA) que
+        // difieren por fila y anulan el DISTINCT, duplicando filas silenciosamente frente
+        // al legacy. Además, igual que en VPRO_RESFACTENE/VPRO_RESFACTACU, las columnas
+        // numéricas calculadas son FLOAT(126) sin precisión fija y requieren CAST a
+        // NUMBER(18,4) para evitar "Specified cast is not valid" en ODP.NET.
         const string sql = @"
-            SELECT DISTINCT T.*
+            SELECT DISTINCT T.PROY_ID AS PROY_ID,
+                   T.APSA_ID AS APSA_ID,
+                   T.CLAS_NOMBRE AS CLAS_NOMBRE,
+                   T.TIPO_TAR AS TIPO_TAR,
+                   T.TIPO_FACT AS TIPO_FACT,
+                   CAST(T.TARI_ANNO AS NUMBER(4,0)) AS TARI_ANNO,
+                   CAST(T.TARI_MES AS NUMBER(2,0)) AS TARI_MES,
+                   CAST(T.TARI_SUBCON AS NUMBER(18,4)) AS TARI_SUBCON,
+                   CAST(T.TARI_TCPROP AS NUMBER(18,4)) AS TARI_TCPROP,
+                   CAST(T.TARI_TCTERC AS NUMBER(18,4)) AS TARI_TCTERC,
+                   CAST(T.TARI_TCAPRO AS NUMBER(18,4)) AS TARI_TCAPRO,
+                   CAST(T.TARI_TBL AS NUMBER(18,4)) AS TARI_TBL,
+                   CAST(T.TARI_TLU AS NUMBER(18,4)) AS TARI_TLU,
+                   CAST(T.TARI_TRT AS NUMBER(18,4)) AS TARI_TRT,
+                   CAST(T.TARI_TDF AS NUMBER(18,4)) AS TARI_TDF,
+                   CAST(T.TARI_INC AS NUMBER(18,4)) AS TARI_INC,
+                   CAST(T.TARI_TIAT AS NUMBER(18,4)) AS TARI_TIAT,
+                   CAST(T.TARI_TTL AS NUMBER(18,4)) AS TARI_TTL,
+                   CAST(T.TARI_TA AS NUMBER(18,4)) AS TARI_TA,
+                   CAST(T.TARI_TOTAL AS NUMBER(18,4)) AS TARI_TOTAL,
+                   CAST(T.TARI_TOTSC AS NUMBER(18,4)) AS TARI_TOTSC
               FROM VPRO_RESTARIFAS T
              WHERE T.APSA_ID = :1
                AND T.PROY_ID = :2
@@ -111,7 +155,7 @@ public sealed class InfoGeneralesRepository(IOracleConnectionFactory connectionF
                              FROM AUCO_APSUSUARIOS AU
                             WHERE AU.APSA_ID = T.APSA_ID
                               AND AU.SISU_ID = :3)
-             ORDER BY T.TARI_ANNO, T.TARI_MES, T.TIPO_FACT, T.TIPO_TAR, T.CLAS_NOMBRE DESC";
+             ORDER BY TARI_ANNO, TARI_MES, TIPO_FACT, TIPO_TAR, CLAS_NOMBRE DESC";
 
         return QueryRowsAsync(sql, [apsaid, proyid, usuario], cancellationToken);
     }
