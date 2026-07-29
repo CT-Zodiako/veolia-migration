@@ -221,21 +221,23 @@ VALUES (:aps, :anno, :mes, :det, :f1et, :cpeet, :prtzet, :ceg, :camrers, :inccdf
             ? Array.Empty<string>()
             : resultado.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-        var puedeProcesar = mensajes.Length == 0 || mensajes.All(m => m is "0" or "1" or "OK");
+        // El legacy (Suisui.vue) exige Number(resp) === 1 exacto para habilitar el proceso;
+        // cualquier otro valor (incluido vacío) bloquea.
+        var puedeProcesar = mensajes.Length > 0 && mensajes.All(m => m == "1");
         return new SuiPrecheckResponse(puedeProcesar, mensajes);
     }
 
     private static async Task<IReadOnlyList<string>> InferirFormatosProcesadosAsync(IDbConnection connection, IDbTransaction transaction, int aps, int mes, int anno, CancellationToken cancellationToken)
     {
-        const string sql = @"SELECT 'F19' AS FORMATO FROM SUI_F19 WHERE APS_ID = :aps AND MES = :mes AND ANNO = :anno
+        const string sql = @"SELECT 'F19' AS FORMATO FROM SUI_F19 WHERE APSA_ID = :aps AND F19_MES = :mes AND F19_ANNO = :anno
 UNION ALL
-SELECT 'F23' AS FORMATO FROM SUI_F23 WHERE APS_ID = :aps AND MES = :mes AND ANNO = :anno
+SELECT 'F23' AS FORMATO FROM SUI_F23 WHERE APSA_ID = :aps AND F23_MES = :mes AND F23_ANNO = :anno
 UNION ALL
-SELECT 'F24' AS FORMATO FROM SUI_F24 WHERE APS_ID = :aps AND MES = :mes AND ANNO = :anno
+SELECT 'F24' AS FORMATO FROM SUI_F24 WHERE APSA_ID = :aps AND F24_MES = :mes AND F24_ANNO = :anno
 UNION ALL
-SELECT 'F35' AS FORMATO FROM SUI_F35 WHERE APS_ID = :aps AND MES = :mes AND ANNO = :anno
+SELECT 'F35' AS FORMATO FROM SUI_F35 WHERE APSA_ID = :aps AND F35_MES = :mes AND F35_ANNO = :anno
 UNION ALL
-SELECT 'F36' AS FORMATO FROM SUI_F36 WHERE APS_ID = :aps AND MES = :mes AND ANNO = :anno";
+SELECT 'F36' AS FORMATO FROM SUI_F36 WHERE APSA_ID = :aps AND F36_MES = :mes AND F36_ANNO = :anno";
 
         var formatos = await connection.QueryAsync<string>(new CommandDefinition(sql, new { aps, mes, anno }, transaction: transaction, cancellationToken: cancellationToken));
         return formatos.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
