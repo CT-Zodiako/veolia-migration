@@ -85,13 +85,30 @@
   [modal]="true"
   [style]="{ width: '32rem' }"
 >
-  <p class="documentacion-aviso">
-    Esto es una simulación visual -- todavía no hay contenido real conectado.
-  </p>
-  <div class="documentacion-articulo" *ngFor="let articulo of documentacionSimulada">
-    <span class="documentacion-categoria">{{ articulo.categoria }}</span>
-    <span class="documentacion-titulo">{{ articulo.titulo }}</span>
-  </div>
+  <ng-container *ngIf="!articuloSeleccionado; else detalleArticulo">
+    <p class="documentacion-aviso">
+      Esto es una simulación visual -- todavía no hay contenido real conectado.
+    </p>
+    <div
+      class="documentacion-articulo clickeable"
+      *ngFor="let articulo of documentacionSimulada"
+      (click)="verArticulo(articulo)"
+    >
+      <span class="documentacion-categoria">{{ articulo.categoria }}</span>
+      <span class="documentacion-titulo">{{ articulo.titulo }}</span>
+    </div>
+  </ng-container>
+
+  <ng-template #detalleArticulo>
+    <button type="button" class="documentacion-volver" (click)="volverAlListado()">
+      <i class="pi pi-arrow-left"></i>
+      Volver al listado
+    </button>
+    <span class="documentacion-categoria">{{ articuloSeleccionado?.categoria }}</span>
+    <h3 class="documentacion-detalle-titulo">{{ articuloSeleccionado?.titulo }}</h3>
+    <p class="documentacion-detalle-contenido">{{ articuloSeleccionado?.contenido }}</p>
+    <p class="documentacion-aviso">Contenido simulado a modo de ejemplo.</p>
+  </ng-template>
 </p-dialog>
 
 <app-personalizar-inicio-dialog

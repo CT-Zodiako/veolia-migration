@@ -273,3 +273,42 @@
   color: var(--color-text-primary);
   font-weight: 500;
 }
+
+.documentacion-articulo.clickeable {
+  cursor: pointer;
+  border-radius: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  transition: background 0.15s ease;
+}
+
+.documentacion-articulo.clickeable:hover {
+  background: var(--color-bg-soft);
+}
+
+.documentacion-volver {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  color: var(--color-brand-accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0 16px 0;
+}
+
+.documentacion-detalle-titulo {
+  color: var(--color-text-primary);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 6px 0 12px 0;
+}
+
+.documentacion-detalle-contenido {
+  color: var(--color-text-body);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
