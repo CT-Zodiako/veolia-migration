@@ -54,6 +54,7 @@
         <td>{{ row.sisuCorreo }}</td>
         <td class="actions-cell">
           <p-button icon="pi pi-pencil" severity="info" size="small" (onClick)="editar(row)"></p-button>
+          <p-button icon="pi pi-trash" severity="danger" size="small" (onClick)="eliminar(row)"></p-button>
         </td>
       </tr>
     </ng-template>
@@ -65,6 +66,8 @@
     <app-aps-selector [selectedAps]="form.apsaId || null" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
     <label>Nombre</label>
     <input pInputText [(ngModel)]="form.proyNombre" />
+    <label>Tipo Proyección</label>
+    <p-select [options]="tipoOptions" optionLabel="label" optionValue="value" [(ngModel)]="form.proyTipo100" [style]="{ width: '100%' }"></p-select>
     <label>Año desde</label>
     <p-inputNumber [(ngModel)]="form.proyAnnoDes"></p-inputNumber>
     <label>Mes desde</label>

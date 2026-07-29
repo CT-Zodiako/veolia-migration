@@ -57,6 +57,9 @@ export interface LineaTiempoRow {
   deltfacproduc?: number | null;
   deltindipcc?: number | null;
   deltipccs?: number | null;
+  // DELTESTADO (verificado contra Oracle real): 0 = editable, 1 = bloqueada
+  // (ya usada en una proyección ejecutada, no permite ser modificada).
+  deltestado: number;
 }
 
 export interface LineaTiempoUpsert {

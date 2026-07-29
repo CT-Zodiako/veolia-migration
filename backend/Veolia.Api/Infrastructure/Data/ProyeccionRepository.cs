@@ -183,9 +183,13 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
 
     public async Task<IReadOnlyList<object>> UltimasTarifasAsync(long apsaId, CancellationToken cancellationToken)
     {
+        // Código muerto (no lo llama ningún componente hoy -- ver ultimasTarifas() en
+        // proyecciones.service.ts), pero corregido para que sea correcto si se usa a futuro:
+        // PROY_DETLINEATIEMPO real no tiene ANNO/MES/APSA_ID, tiene PROYANNO/PROYMES/APS
+        // (verificado contra Oracle real vía USER_TAB_COLUMNS).
         const string sql = @"
-            SELECT D.ANNO,
-                   D.MES,
+            SELECT D.PROYANNO AS ANNO,
+                   D.PROYMES AS MES,
                    D.DELTIPC,
                    D.DELTIPCC,
                    D.DELTSMLV,
@@ -194,8 +198,8 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
                    D.DELTINDIPCC,
                    D.DELTIPCCS
               FROM PROY_DETLINEATIEMPO D
-             WHERE D.APSA_ID = :1
-             ORDER BY D.ANNO DESC, D.MES DESC
+             WHERE D.APS = :1
+             ORDER BY D.PROYANNO DESC, D.PROYMES DESC
              FETCH FIRST 1 ROWS ONLY";
 
         var parameters = new DynamicParameters();

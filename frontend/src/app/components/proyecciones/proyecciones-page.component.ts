@@ -9,10 +9,17 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProyeccionesService } from '../../services/proyecciones.service';
 import { Proyeccion, ProyeccionCreate } from '../../models/proyecciones.models';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
+
+// AUGE_PARAMETROS CLAS_CLAS=100 (catálogo real, verificado contra Oracle):
+// 1 = Ingresos, 2 = Subsidios o Contribuciones (legacy Crear.vue/formCrear.vue: "Sub & Con").
+const TIPO_PROYECCION_OPTIONS = [
+  { label: 'Ingresos', value: 1 },
+  { label: 'Subsidios o Contribuciones', value: 2 }
+];
 
 @Component({
   selector: 'app-proyecciones-page',
@@ -29,6 +36,8 @@ export class ProyeccionesPageComponent {
   editingId = signal<number | null>(null);
   saving = signal(false);
 
+  readonly tipoOptions = TIPO_PROYECCION_OPTIONS;
+
   nombreFilter = '';
   apsFilter = '';
 
@@ -42,7 +51,11 @@ export class ProyeccionesPageComponent {
     proyMesHas: 12
   };
 
-  constructor(private readonly service: ProyeccionesService, private readonly messages: MessageService) {
+  constructor(
+    private readonly service: ProyeccionesService,
+    private readonly messages: MessageService,
+    private readonly confirmationService: ConfirmationService
+  ) {
     this.consultaGeneral();
   }
 
@@ -73,7 +86,7 @@ export class ProyeccionesPageComponent {
 
   nueva(): void {
     this.editingId.set(null);
-    this.form = { ...this.form, apsaId: 0, proyNombre: '' };
+    this.form = { ...this.form, apsaId: 0, proyNombre: '', proyTipo100: 1 };
     this.showDialog.set(true);
   }
 
@@ -104,6 +117,30 @@ export class ProyeccionesPageComponent {
         this.consultaGeneral();
       },
       error: () => this.saving.set(false)
+    });
+  }
+
+  eliminar(row: Proyeccion): void {
+    this.confirmationService.confirm({
+      header: 'Eliminar Proyección',
+      message: `¿Seguro que querés eliminar la proyección "${row.proyNombre}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => this.confirmarEliminar(row)
+    });
+  }
+
+  private confirmarEliminar(row: Proyeccion): void {
+    this.service.eliminar(row.proyId).subscribe({
+      next: (res) => {
+        this.messages.add({ severity: res.status ? 'success' : 'error', summary: 'Proyecciones', detail: res.message });
+        if (res.status) {
+          this.consultaGeneral();
+        }
+      }
     });
   }
 }
