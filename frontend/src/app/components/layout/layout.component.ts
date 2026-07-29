@@ -10,11 +10,12 @@ import { SidebarMenuService, MenuGroup } from '../../services/sidebar-menu.servi
 import { ThemeService } from '../../services/theme.service';
 import { ProfileComponent } from './profile/profile.component';
 import { SupportErrorLogPanelComponent } from '../shared/support-error-log-panel.component';
+import { IconComponent } from '../shared/icon.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ...CommonPrimeNgModules, ProfileComponent, SupportErrorLogPanelComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ...CommonPrimeNgModules, ProfileComponent, SupportErrorLogPanelComponent, IconComponent],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })

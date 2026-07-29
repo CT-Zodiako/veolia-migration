@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { SidebarMenuItem } from '../../services/sidebar-menu.service';
+import { IconComponent } from '../shared/icon.component';
 
 @Component({
   selector: 'app-personalizar-inicio-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ...CommonPrimeNgModules],
+  imports: [CommonModule, FormsModule, DialogModule, ...CommonPrimeNgModules, IconComponent],
   template: `
     <p-dialog
       header="Personalizar accesos de Inicio"
@@ -33,7 +34,10 @@ import { SidebarMenuItem } from '../../services/sidebar-menu.service';
               (onChange)="toggle(item)"
               [inputId]="'acceso-' + item.path"
             ></p-checkbox>
-            <label [for]="'acceso-' + item.path">{{ item.icon }} {{ item.label }}</label>
+            <label [for]="'acceso-' + item.path">
+              <app-icon [name]="item.icon" [size]="14"></app-icon>
+              {{ item.label }}
+            </label>
           </div>
         </div>
       </div>
@@ -89,6 +93,9 @@ import { SidebarMenuItem } from '../../services/sidebar-menu.service';
     }
 
     .opcion-check label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       margin: 0;
       font-size: 13px;
       font-weight: 400;

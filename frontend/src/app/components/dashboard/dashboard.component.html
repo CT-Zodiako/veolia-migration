@@ -27,7 +27,7 @@
         class="card-icon"
         [style.background]="card.color + '15'"
       >
-        {{ card.icon }}
+        <app-icon [name]="card.icon" [size]="28" [color]="card.color"></app-icon>
       </div>
       <h3>{{ card.title }}</h3>
     </a>

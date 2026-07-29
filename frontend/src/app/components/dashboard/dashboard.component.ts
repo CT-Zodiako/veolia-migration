@@ -8,6 +8,7 @@ import { AuthService, MenuPermission } from '../../services/auth.service';
 import { AuthState } from '../../state/auth.state';
 import { SidebarMenuService, SidebarMenuItem } from '../../services/sidebar-menu.service';
 import { PersonalizarInicioDialogComponent } from './personalizar-inicio-dialog.component';
+import { IconComponent } from '../shared/icon.component';
 
 interface DashboardCard {
   title: string;
@@ -22,7 +23,7 @@ const ACCESOS_POR_DEFECTO = ['/usuarios', '/aps-usuario', '/asignacion-sistema',
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, DragDropModule, ...CommonPrimeNgModules, PersonalizarInicioDialogComponent],
+  imports: [CommonModule, RouterModule, DragDropModule, ...CommonPrimeNgModules, PersonalizarInicioDialogComponent, IconComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
