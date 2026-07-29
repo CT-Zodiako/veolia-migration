@@ -75,14 +75,14 @@ export class CargueComercialComponent {
   });
 
   readonly resumenEstratos = computed(() => {
-    const porEstrato = new Map<number, { cantidad: number; toneladas: number }>();
+    const porEstrato = new Map<number, { nomuso: string; cantidad: number; toneladas: number }>();
     this.filas().filter((f) => f.tipo === 1).forEach((f) => {
-      const actual = porEstrato.get(f.codtipo) ?? { cantidad: 0, toneladas: 0 };
+      const actual = porEstrato.get(f.coduso) ?? { nomuso: f.nomuso, cantidad: 0, toneladas: 0 };
       actual.cantidad += f.cantidad;
       actual.toneladas += f.toneladas;
-      porEstrato.set(f.codtipo, actual);
+      porEstrato.set(f.coduso, actual);
     });
-    return Array.from(porEstrato.entries()).map(([estrato, valores]) => ({ estrato, ...valores }));
+    return Array.from(porEstrato.entries()).map(([coduso, valores]) => ({ coduso, ...valores }));
   });
 
   constructor(
