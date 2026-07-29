@@ -40,6 +40,7 @@
           storageKey="pgirs-informe-variables-clus"
           nombreExportar="InformeVariablesPGIRS-Clus"
           [cellClass]="cellClassMedido"
+          [loading]="loading()"
         ></app-tabla-avanzada>
       </p-tabpanel>
 
@@ -63,6 +64,7 @@
           storageKey="pgirs-informe-variables-barrido"
           nombreExportar="InformeVariablesPGIRS-Barrido"
           [cellClass]="cellClassMedido"
+          [loading]="loadingBarrido()"
         ></app-tabla-avanzada>
       </p-tabpanel>
     </p-tabpanels>

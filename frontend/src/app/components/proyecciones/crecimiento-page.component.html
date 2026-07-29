@@ -60,6 +60,7 @@
             [rows]="usuarios()"
             storageKey="crecimiento-usuarios"
             nombreExportar="CrecimientoUsuarios"
+            [loading]="cargandoDrive()"
           ></app-tabla-avanzada>
           <p-button class="mt-2" label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" [disabled]="usuarios().length === 0" (onClick)="guardarUsuarios()"></p-button>
         </p-tabpanel>
@@ -74,6 +75,7 @@
             [rows]="propia()"
             storageKey="crecimiento-propia"
             nombreExportar="CrecimientoInfPropia"
+            [loading]="cargandoDrive()"
           ></app-tabla-avanzada>
           <p-button class="mt-2" label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" [disabled]="propia().length === 0" (onClick)="guardarPropia()"></p-button>
         </p-tabpanel>
@@ -88,6 +90,7 @@
             [rows]="terceros()"
             storageKey="crecimiento-terceros"
             nombreExportar="CrecimientoInfTerceros"
+            [loading]="cargandoDrive()"
           ></app-tabla-avanzada>
           <p-button class="mt-2" label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" [disabled]="terceros().length === 0" (onClick)="guardarTerceros()"></p-button>
         </p-tabpanel>
@@ -102,6 +105,7 @@
             [rows]="descuentos()"
             storageKey="crecimiento-descuentos"
             nombreExportar="CrecimientoDescuentos"
+            [loading]="cargandoDrive()"
           ></app-tabla-avanzada>
           <p-button class="mt-2" label="Guardar" icon="pi pi-save" severity="success" [loading]="guardando()" [disabled]="descuentos().length === 0" (onClick)="guardarDescuentos()"></p-button>
         </p-tabpanel>

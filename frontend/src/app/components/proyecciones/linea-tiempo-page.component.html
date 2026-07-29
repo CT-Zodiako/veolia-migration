@@ -58,6 +58,7 @@
     nombreExportar="LineaTiempo"
     [cellTemplate]="celda"
     [accionesTemplate]="acciones"
+    [loading]="loading()"
   ></app-tabla-avanzada>
 
   <ng-template #celda let-value let-row="row" let-col="col">

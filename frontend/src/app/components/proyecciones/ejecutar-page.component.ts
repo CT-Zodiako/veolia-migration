@@ -55,6 +55,9 @@ export class EjecutarPageComponent {
   resultado = signal<string | null>(null);
   resultadoExito = signal(false);
 
+  cargandoLineaTiempo = signal(false);
+  cargandoCrecimiento = signal(false);
+
   lineaTiempoRows = signal<LineaTiempoRow[]>([]);
   usuarios = signal<FilaDinamica[]>([]);
   propia = signal<FilaDinamica[]>([]);
@@ -123,15 +126,25 @@ export class EjecutarPageComponent {
   }
 
   private cargarDatos(proyId: number): void {
-    this.service.lineaTiempoByProyId(proyId).subscribe({ next: (r) => this.lineaTiempoRows.set(r.data || []) });
+    this.cargandoLineaTiempo.set(true);
+    this.service.lineaTiempoByProyId(proyId).subscribe({
+      next: (r) => {
+        this.lineaTiempoRows.set(r.data || []);
+        this.cargandoLineaTiempo.set(false);
+      },
+      error: () => this.cargandoLineaTiempo.set(false)
+    });
 
+    this.cargandoCrecimiento.set(true);
     this.service.consultarCrecimiento(this.apsaId()!, proyId).subscribe({
       next: (r) => {
         this.usuarios.set((r.data?.usuarios || []) as unknown as FilaDinamica[]);
         this.propia.set((r.data?.propia || []) as unknown as FilaDinamica[]);
         this.terceros.set((r.data?.terceros || []) as unknown as FilaDinamica[]);
         this.descuentos.set((r.data?.descuentos || []) as unknown as FilaDinamica[]);
-      }
+        this.cargandoCrecimiento.set(false);
+      },
+      error: () => this.cargandoCrecimiento.set(false)
     });
   }
 

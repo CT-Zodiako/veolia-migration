@@ -67,6 +67,7 @@
           [rows]="$any(lineaTiempoRows())"
           storageKey="proyectar-linea-tiempo"
           nombreExportar="LineaTiempo"
+          [loading]="cargandoLineaTiempo()"
         ></app-tabla-avanzada>
       </p-tabpanel>
 
@@ -90,6 +91,7 @@
                 [rows]="usuarios()"
                 storageKey="proyectar-usuarios"
                 nombreExportar="Usuarios"
+                [loading]="cargandoCrecimiento()"
               ></app-tabla-avanzada>
             </p-tabpanel>
             <p-tabpanel value="1">
@@ -103,6 +105,7 @@
                 [rows]="propia()"
                 storageKey="proyectar-propia"
                 nombreExportar="InfoPropia"
+                [loading]="cargandoCrecimiento()"
               ></app-tabla-avanzada>
             </p-tabpanel>
             <p-tabpanel value="2">
@@ -116,6 +119,7 @@
                 [rows]="terceros()"
                 storageKey="proyectar-terceros"
                 nombreExportar="InfoTerceros"
+                [loading]="cargandoCrecimiento()"
               ></app-tabla-avanzada>
             </p-tabpanel>
             <p-tabpanel value="3">
@@ -129,6 +133,7 @@
                 [rows]="descuentos()"
                 storageKey="proyectar-descuentos"
                 nombreExportar="DescuentosCosto"
+                [loading]="cargandoCrecimiento()"
               ></app-tabla-avanzada>
             </p-tabpanel>
           </p-tabpanels>

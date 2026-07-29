@@ -67,6 +67,7 @@
           [rows]="energiaData()"
           storageKey="infogenerales-energia"
           nombreExportar="FactEnergia"
+          [loading]="energiaLoading()"
         ></app-tabla-avanzada>
       </p-tabpanel>
 
@@ -89,6 +90,7 @@
           [rows]="acueductoData()"
           storageKey="infogenerales-acueducto"
           nombreExportar="FactAcueducto"
+          [loading]="acueductoLoading()"
         ></app-tabla-avanzada>
       </p-tabpanel>
 
@@ -111,6 +113,7 @@
           [rows]="costosData()"
           storageKey="infogenerales-costos"
           nombreExportar="Costos"
+          [loading]="costosLoading()"
         ></app-tabla-avanzada>
       </p-tabpanel>
 
@@ -133,6 +136,7 @@
           [rows]="tarifasData()"
           storageKey="infogenerales-tarifas"
           nombreExportar="Tarifas"
+          [loading]="tarifasLoading()"
         ></app-tabla-avanzada>
       </p-tabpanel>
     </p-tabpanels>
