@@ -18,6 +18,7 @@
           <app-tabla-avanzada
             [columnas]="columnasPlena"
             [rows]="filteredRows()"
+            [loading]="loading()"
             storageKey="tarifas-gen-plena"
             nombreExportar="TarifaPlena"
           ></app-tabla-avanzada>
@@ -27,6 +28,7 @@
           <app-tabla-avanzada
             [columnas]="columnasSubCon"
             [rows]="filteredRows()"
+            [loading]="loading()"
             storageKey="tarifas-gen-subcon"
             nombreExportar="TariSubCont"
           ></app-tabla-avanzada>
