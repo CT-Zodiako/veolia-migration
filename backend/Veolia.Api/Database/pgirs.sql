@@ -28,47 +28,47 @@ CREATE INDEX IDX_PGRI_PARAM_ANNO_MES ON PGRI_PARAMETROS(PGRIANNO, PGRIMES);
 
 -- -----------------------------------------------------------
 -- 2. VGIRS_INFORME - Vista resumen PGIRS
+--
+-- Origen: esta vista ya existe y está en producción en el esquema Oracle
+-- real (usuario TARIFICADOR, ADB Cloud). El stub anterior consultaba una
+-- tabla ficticia AUCO_RESIDUOS que no existe en la base real. DDL capturado
+-- vía `SELECT DBMS_METADATA.GET_DDL('VIEW', 'VGIRS_INFORME') FROM DUAL`
+-- conectado como TARIFICADOR (verificado 2026-07-27), sin el prefijo de
+-- esquema ni las cláusulas FORCE EDITIONABLE/DEFAULT COLLATION (igual que el
+-- resto de vistas del repo, p.ej. Fase4Facturacion/views.sql).
+-- Depende de la tabla PGIRS_INFORME (ver
+-- Fase1CargueCertificacion/create-tables.sql) y de AUCO_APSASEO.
 -- -----------------------------------------------------------
 CREATE OR REPLACE VIEW VGIRS_INFORME AS
-SELECT 
-    APSA_ID AS APSID,
-    APSA_NOMAPS AS APS_NOMBRE,
-    PERIODO_ANNO AS ANNO,
-    PERIODO_MES AS MES,
-    TIPO_RESIDUO,
-    CANTIDAD_TONELADAS,
-    FRECUENCIA,
-    OBSERVACION,
-    ESTADO
-FROM AUCO_RESIDUOS
-WHERE ESTADO = 1;
+SELECT i.apsid, a.apsa_nomaps, i.periodo,
+       i.barrido, i.barridopgirs, i.barridocolor,
+       i.poda, i.podapgirs, i.podacolor,
+       i.cesped, i.cespedpgirs, i.cespedcolor,
+       i.lavado, i.lavadopgirs, i.lavadocolor,
+       i.playas, i.playaspgirs, i.playascolor,
+       i.cestasins, i.cestasinspgirs, i.cestasinscolor,
+       i.cestasman, i.cestasmanpgirs, i.cestasmancolor
+  FROM pgirs_informe I
+       INNER JOIN auco_apsaseo A ON (i.apsid = a.apsa_id);
 
 -- -----------------------------------------------------------
 -- 3. VGIRS_INFORMELBL - Vista barrido LBL
+--
+-- Origen: igual que VGIRS_INFORME, DDL capturado vía
+-- `SELECT DBMS_METADATA.GET_DDL('VIEW', 'VGIRS_INFORMELBL') FROM DUAL`
+-- conectado como TARIFICADOR (verificado 2026-07-27).
+-- NOTA: depende de la tabla base PGIRS_INFORMELBL, que existe en el Oracle
+-- real pero todavía NO está definida en los scripts de este repo (solo
+-- PGIRS_INFORME está en Fase1CargueCertificacion/create-tables.sql); esta
+-- vista fallará al crearse en un ambiente local/Docker limpio hasta que se
+-- agregue esa tabla (columnas reales: APSID NUMBER, PERIODO NUMBER,
+-- SEMESTRE NUMBER, BARRIDO/BARRIDOPGIRS FLOAT, BARRIDOCOLOR VARCHAR2(10)).
 -- -----------------------------------------------------------
 CREATE OR REPLACE VIEW VGIRS_INFORMELBL AS
-SELECT 
-    APSA_ID AS APSID,
-    APSA_NOMAPS AS APS_NOMBRE,
-    PERIODO_ANNO AS ANNO,
-    PERIODO_MES AS MES,
-    LBL_VALOR,
-    LBL_FRECUENCIA,
-    CESPED_VALOR,
-    CESPED_FRECUENCIA,
-    PODA_VALOR,
-    PODA_FRECUENCIA,
-    LAVADO_VALOR,
-    LAVADO_FRECUENCIA,
-    PLAYAS_VALOR,
-    PLAYAS_FRECUENCIA,
-    INSCESTAS_VALOR,
-    INSCESTAS_FRECUENCIA,
-    MANCESTAS_VALOR,
-    MANCESTAS_FRECUENCIA,
-    ESTADO
-FROM AUCO_RESIDUOS
-WHERE ESTADO = 1;
+SELECT i.apsid, a.apsa_nomaps, i.periodo, i.semestre,
+       i.barrido, i.barridopgirs, i.barridocolor
+  FROM pgirs_informelbl I
+       INNER JOIN auco_apsaseo A ON (i.apsid = a.apsa_id);
 
 -- -----------------------------------------------------------
 -- 4. VPGIR_INFVARIABLES - Vista informe de variables
