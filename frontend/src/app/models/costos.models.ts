@@ -13,16 +13,16 @@ export interface CostosRequest {
   usuario: number;
 }
 
-export interface AntesLiquidarState {
-  estado?: string;
-  mensaje?: string;
-  [key: string]: unknown;
+export interface VerificacionDetalle {
+  empresaNombre: string;
+  grupo: string;
+  variable: string;
+  valor: number;
 }
 
 export interface ValidapreactualizaResponse {
   puedeCalcular: boolean;
-  mensajes: string[];
-  antesLiquidar?: AntesLiquidarState | string;
+  detalle: VerificacionDetalle[];
 }
 
 export interface PrecheckResult {
@@ -36,16 +36,8 @@ export interface RunPrechecksResponse {
   prechecks: PrecheckResult[];
 }
 
-export interface PasoEjecucion {
-  paso: number;
-  nombre?: string;
-  estado: 'pendiente' | 'en-progreso' | 'completado' | 'omitido' | 'error' | string;
-  mensaje?: string;
-}
-
 export interface CalculartarifasResponse {
   exitoso: boolean;
-  pasosEjecutados: PasoEjecucion[];
   resultado?: string;
 }
 
@@ -55,12 +47,15 @@ export interface CertificarTarifasResponse {
 }
 
 export interface CostoItem {
-  apsId: number;
-  mes: number;
-  anno: number;
-  costValor: number;
-  costTipo: string;
-  costFecha: string;
+  apsCosto: number;
+  empresaCosto: number;
+  codCosto: number;
+  nomCosto: string;
+  annoCosto: number;
+  mesCosto: number;
+  aCobrar: number | null;
+  valor: number | null;
+  variacion: number | null;
 }
 
 export interface CostoClusItem {

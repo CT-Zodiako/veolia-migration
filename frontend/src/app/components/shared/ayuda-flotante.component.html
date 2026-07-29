@@ -1,0 +1,73 @@
+<div class="ayuda-flotante-wrapper" [class.abierto]="mostrarFlyoutForzado()">
+  <div class="ayuda-flotante-menu">
+    <button type="button" class="ayuda-flotante-accion" (click)="abrirDocumentacion()">
+      <i class="pi pi-book"></i>
+      Ver Documentación
+    </button>
+    <button type="button" class="ayuda-flotante-accion destacada" (click)="abrirMenuSoporte($event)">
+      <i class="pi pi-headphones"></i>
+      Soporte Directo
+    </button>
+  </div>
+  <button type="button" class="ayuda-flotante" title="Ayuda" (click)="toggleFlyout()">
+    <app-icon name="life-buoy" [size]="24"></app-icon>
+  </button>
+</div>
+
+<p-menu #menuSoporte [popup]="true" [model]="ayudaService.soporteMenuItems"></p-menu>
+
+<p-dialog
+  [visible]="ayudaService.mostrarDocumentacion()"
+  (visibleChange)="ayudaService.mostrarDocumentacion.set($event)"
+  [modal]="true"
+  [style]="{ width: '54rem' }"
+  styleClass="libro-dialog"
+  [showHeader]="false"
+>
+  <div class="libro">
+    <div class="libro-lomo">
+      <div class="libro-lomo-encabezado">
+        <i class="pi pi-book"></i>
+        <span>Centro de Documentación</span>
+      </div>
+      <div class="libro-indice">
+        <div class="libro-capitulo" *ngFor="let capitulo of ayudaService.capitulosDocumentacion">
+          <div class="libro-capitulo-titulo">
+            <span class="libro-numeral">{{ capitulo.numeroRomano }}</span>
+            {{ capitulo.categoria }}
+          </div>
+          <div
+            class="libro-articulo"
+            *ngFor="let articulo of capitulo.articulos"
+            [class.activo]="ayudaService.articuloSeleccionado() === articulo"
+            (click)="ayudaService.verArticulo(articulo)"
+          >
+            {{ articulo.titulo }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="libro-pagina">
+      <button type="button" class="libro-cerrar" (click)="ayudaService.mostrarDocumentacion.set(false)">
+        <i class="pi pi-times"></i>
+      </button>
+
+      <ng-container *ngIf="ayudaService.articuloSeleccionado() as articulo; else portada">
+        <span class="libro-pagina-categoria">{{ articulo.categoria }}</span>
+        <h2 class="libro-pagina-titulo">{{ articulo.titulo }}</h2>
+        <p class="libro-pagina-contenido">{{ articulo.contenido }}</p>
+        <p class="libro-pagina-simulado">— Contenido simulado a modo de ejemplo —</p>
+      </ng-container>
+
+      <ng-template #portada>
+        <div class="libro-portada">
+          <i class="pi pi-book"></i>
+          <h2>Bienvenido al Centro de Documentación</h2>
+          <p>Elegí un capítulo del índice para empezar a leer.</p>
+          <p class="libro-pagina-simulado">Esto es una simulación visual -- todavía no hay contenido real conectado.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</p-dialog>

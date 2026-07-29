@@ -63,6 +63,20 @@ public sealed class TarifasController(ITarifasRepository tarifasRepository) : Co
         }
     }
 
+    [HttpPost("resumen")]
+    public async Task<IActionResult> Resumen([FromBody] TarifasApsPeriodoRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var data = await tarifasRepository.ResumenAsync(request.aps, request.anno, request.mes, cancellationToken);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
+        }
+    }
+
     private static object MapLegacyError(Exception ex)
     {
         var oracleEx = ex as Oracle.ManagedDataAccess.Client.OracleException;

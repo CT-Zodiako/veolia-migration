@@ -34,13 +34,14 @@ type TabType = 'costos' | 'clus' | 'comporta';
             @case ('costos') {
               <p-table [value]="costos()" styleClass="p-datatable-sm">
                 <ng-template pTemplate="header">
-                  <tr><th>Tipo</th><th>Valor</th><th>Fecha</th></tr>
+                  <tr><th>Costo</th><th>Valor</th><th>A Cobrar</th><th>Variación</th></tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                   <tr>
-                    <td>{{ item.costTipo }}</td>
-                    <td>{{ item.costValor | number:'1.0-2' }}</td>
-                    <td>{{ item.costFecha | date:'shortDate' }}</td>
+                    <td>{{ item.nomCosto }}</td>
+                    <td>{{ item.valor | number:'1.0-2' }}</td>
+                    <td>{{ item.aCobrar | number:'1.0-2' }}</td>
+                    <td>{{ item.variacion | number:'1.0-2' }}</td>
                   </tr>
                 </ng-template>
               </p-table>

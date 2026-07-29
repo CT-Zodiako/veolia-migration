@@ -22,9 +22,7 @@ public sealed class CostosController(ICostosRepository repository) : ControllerB
     public async Task<IActionResult> Calculartarifas([FromBody] CalculartarifasRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
             async () => await repository.CalculartarifasAsync(request.Aps, request.Mes, request.Anno, request.Usuario, cancellationToken),
-            request.Aps == 1031
-                ? "Cálculo de tarifas ejecutado correctamente. Advertencia: APS=1031 omite el paso 5 por regla de negocio."
-                : "Cálculo de tarifas ejecutado correctamente.");
+            "Cálculo de tarifas ejecutado correctamente.");
 
     [HttpPost("prechecks")]
     public async Task<IActionResult> RunPrechecks([FromBody] ValidapreactualizaRequest request, CancellationToken cancellationToken)

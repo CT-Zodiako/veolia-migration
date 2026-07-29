@@ -2,12 +2,15 @@ namespace Veolia.Api.Contracts.Responses;
 
 public class CostoItemResponse
 {
-    public int ApsId { get; set; }
-    public int Mes { get; set; }
-    public int Anno { get; set; }
-    public decimal CostValor { get; set; }
-    public string CostTipo { get; set; } = string.Empty;
-    public DateTime CostFecha { get; set; }
+    public int ApsCosto { get; set; }
+    public int EmpresaCosto { get; set; }
+    public int CodCosto { get; set; }
+    public string NomCosto { get; set; } = string.Empty;
+    public int AnnoCosto { get; set; }
+    public int MesCosto { get; set; }
+    public decimal? ACobrar { get; set; }
+    public decimal? Valor { get; set; }
+    public decimal? Variacion { get; set; }
 }
 
 public class CostoClusItemResponse

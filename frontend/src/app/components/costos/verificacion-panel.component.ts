@@ -1,17 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, computed, signal } from '@angular/core';
 import { finalize } from 'rxjs';
 import { MessageModule } from 'primeng/message';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TableModule } from 'primeng/table';
 import { CostosService } from '../../services/costos.service';
-import { ValidapreactualizaResponse } from '../../models/costos.models';
+import { ValidapreactualizaResponse, VerificacionDetalle } from '../../models/costos.models';
 import { NotificationService } from '../../services/notification.service';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
+
+interface EmpresaGroup {
+  empresaNombre: string;
+  filas: VerificacionDetalle[];
+}
 
 @Component({
   selector: 'app-verificacion-panel',
   standalone: true,
-  imports: [CommonModule, ...CommonPrimeNgModules, MessageModule, ProgressSpinnerModule],
+  imports: [CommonModule, ...CommonPrimeNgModules, MessageModule, ProgressSpinnerModule, TableModule],
   template: `
     <p-card>
       <ng-template pTemplate="title">1. Verificación</ng-template>
@@ -32,15 +38,25 @@ import { CommonPrimeNgModules } from '../../shared/primeng-imports';
         </div>
 
         <div class="mt-3" *ngIf="result() as r">
-          <p-message [severity]="r.puedeCalcular ? 'success' : 'error'" [text]="r.puedeCalcular ? 'Puede calcular' : 'No puede calcular'" />
+          <p-message severity="success" text="Verificación ejecutada. Podés continuar con prechecks." />
 
-          <div class="mt-2" *ngIf="r.mensajes.length">
-            <p-message *ngFor="let m of r.mensajes" severity="info" [text]="m"></p-message>
+          <div class="mt-3" *ngFor="let grupo of empresaGroups()">
+            <h5 class="mb-1">{{ grupo.empresaNombre }}</h5>
+            <p-table [value]="grupo.filas" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr><th>Grupo</th><th>Variable</th><th>Valor</th></tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-fila>
+                <tr>
+                  <td>{{ fila.grupo }}</td>
+                  <td>{{ fila.variable }}</td>
+                  <td>{{ fila.valor | number:'1.0-4' }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
           </div>
 
-          <p class="mt-2 mb-0 text-color-secondary" *ngIf="r.antesLiquidar">
-            Estado antesLiquidar: <strong>{{ r.antesLiquidar }}</strong>
-          </p>
+          <p-message *ngIf="!r.detalle.length" severity="info" text="Sin datos de verificación para el período seleccionado."></p-message>
         </div>
       </ng-template>
     </p-card>
@@ -60,6 +76,17 @@ export class VerificacionPanelComponent {
   readonly loading = signal(false);
   readonly result = signal<ValidapreactualizaResponse | null>(null);
   readonly lastError = signal<string | null>(null);
+
+  readonly empresaGroups = computed<EmpresaGroup[]>(() => {
+    const detalle = this.result()?.detalle ?? [];
+    const porEmpresa = new Map<string, VerificacionDetalle[]>();
+    for (const fila of detalle) {
+      const filas = porEmpresa.get(fila.empresaNombre) ?? [];
+      filas.push(fila);
+      porEmpresa.set(fila.empresaNombre, filas);
+    }
+    return Array.from(porEmpresa.entries()).map(([empresaNombre, filas]) => ({ empresaNombre, filas }));
+  });
 
   constructor(
     private readonly costosService: CostosService,
@@ -90,9 +117,7 @@ export class VerificacionPanelComponent {
         next: (resp) => {
           this.result.set(resp);
           this.verified.emit(resp);
-          if (resp.puedeCalcular) {
-            this.notification.success('Verificación exitosa. Podés continuar con prechecks.');
-          }
+          this.notification.success('Verificación exitosa. Podés continuar con prechecks.');
         },
         error: (err: Error) => {
           this.lastError.set(err.message);

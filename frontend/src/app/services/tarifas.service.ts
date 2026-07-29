@@ -46,6 +46,12 @@ export class TarifasService {
     return this.http.post<TarifaRow[]>(`${this.baseUrl}/tarxcomgeneral`, { anno, mes }, { headers: this.getHeaders() });
   }
 
+  getResumen(aps: number, anno: number, mes: number): Observable<TarifaRow[]> {
+    return this.http
+      .post<TarifaRow[]>(`${this.baseUrl}/resumen`, { aps, anno, mes }, { headers: this.getHeaders() })
+      .pipe(map(rows => rows.map(row => this.roundNumericFields(row))));
+  }
+
   private roundNumericFields(row: TarifaRow): TarifaRow {
     const output: TarifaRow = {};
 

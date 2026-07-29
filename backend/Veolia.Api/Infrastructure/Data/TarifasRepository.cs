@@ -59,6 +59,20 @@ public sealed class TarifasRepository(IOracleConnectionFactory connectionFactory
         return rows.Select(ToDictionaryObject).ToList();
     }
 
+    public async Task<IReadOnlyList<object>> ResumenAsync(long aps, int anno, int mes, CancellationToken cancellationToken)
+    {
+        const string sql = "SELECT * FROM VAUCO_RESUMEN WHERE APSA_ID = :1 AND RETA_ANNO = :2 AND RETA_MES = :3";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("1", aps);
+        parameters.Add("2", anno);
+        parameters.Add("3", mes);
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var rows = await connection.QueryAsync(sql, parameters);
+        return rows.Select(ToDictionaryObject).ToList();
+    }
+
     private async Task<System.Data.IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)
     {
         var connection = connectionFactory.CreateConnection();

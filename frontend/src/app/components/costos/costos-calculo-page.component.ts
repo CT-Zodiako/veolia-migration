@@ -9,13 +9,19 @@ import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { VerificacionPanelComponent } from './verificacion-panel.component';
 import { PrechecksPanelComponent, PrecheckUiItem } from './prechecks-panel.component';
-import { EjecucionPanelComponent, PipelineStepUi } from './ejecucion-panel.component';
+import { EjecucionPanelComponent } from './ejecucion-panel.component';
 import { CertificacionPanelComponent } from './certificacion-panel.component';
 import { ToneladasPanelComponent } from './toneladas-panel.component';
 import { KilometrosPanelComponent } from './kilometros-panel.component';
 import { CostosConsultaPanelComponent } from './costos-consulta-panel.component';
-import { CalculartarifasResponse, CertificarTarifasResponse, ValidapreactualizaResponse } from '../../models/costos.models';
+import { CuadriculaCostoComponent } from './cuadricula-costo.component';
+import { ResumenTarifasComponent } from './resumen-tarifas.component';
+import { ResumenVariablesComponent } from './resumen-variables.component';
+import { DashboardGraficosComponent } from './dashboard-graficos.component';
+import { CalculartarifasResponse, CertificarTarifasResponse, CostoItem, ValidapreactualizaResponse } from '../../models/costos.models';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { CostosService } from '../../services/costos.service';
+import { TarifaRow, TarifasService } from '../../services/tarifas.service';
 
 @Component({
   selector: 'app-costos-calculo-page',
@@ -34,7 +40,11 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
     CertificacionPanelComponent,
     ToneladasPanelComponent,
     KilometrosPanelComponent,
-    CostosConsultaPanelComponent
+    CostosConsultaPanelComponent,
+    CuadriculaCostoComponent,
+    ResumenTarifasComponent,
+    ResumenVariablesComponent,
+    DashboardGraficosComponent
   ],
   template: `
     <p-card>
@@ -57,6 +67,8 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
           <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="mes.set($event)" />
         </div>
       </div>
+
+      <app-cuadricula-costo *ngIf="costos().length" [costos]="costos()" class="block mb-3" />
 
       <p-divider />
 
@@ -106,8 +118,6 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
                   [aps]="aps()"
                   [mes]="periodoConsulta()?.mes ?? null"
                   [anno]="periodoConsulta()?.anno ?? null"
-                  [isAps1031]="isAps1031()"
-                  [pipelineSteps]="pipelineSteps()"
                   (calculated)="onCalculated($event)"
                   (loadingChange)="setPanelLoading('execute', $event)"
                 />
@@ -125,6 +135,29 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
                   (certified)="onCertified($event)"
                   (loadingChange)="setPanelLoading('cert', $event)"
                 />
+              </div>
+
+              <div class="col-12">
+                <p-divider />
+                <app-resumen-variables
+                  [aps]="aps()"
+                  [mes]="periodoConsulta()?.mes ?? null"
+                  [anno]="periodoConsulta()?.anno ?? null"
+                  (semestreTituloChange)="semestreTitulo.set($event)"
+                />
+              </div>
+
+              <div class="col-12" *ngIf="!semestreTitulo()">
+                <app-dashboard-graficos
+                  [aps]="aps()"
+                  [mes]="periodoConsulta()?.mes ?? null"
+                  [anno]="periodoConsulta()?.anno ?? null"
+                />
+              </div>
+
+              <div class="col-12" *ngIf="!semestreTitulo() && resumen().length">
+                <p-divider />
+                <app-resumen-tarifas [resumen]="resumen()" />
               </div>
             </div>
           </p-tabpanel>
@@ -167,6 +200,9 @@ export class CostosCalculoPageComponent {
   readonly prechecksResult = signal<PrecheckUiItem[]>([]);
   readonly calculoResultado = signal<CalculartarifasResponse | null>(null);
   readonly certificacionResultado = signal<CertificarTarifasResponse | null>(null);
+  readonly costos = signal<CostoItem[]>([]);
+  readonly resumen = signal<TarifaRow[]>([]);
+  readonly semestreTitulo = signal('');
 
   readonly loadingVerify = signal(false);
   readonly loadingPrecheck = signal(false);
@@ -174,16 +210,15 @@ export class CostosCalculoPageComponent {
   readonly loadingCert = signal(false);
   readonly globalLoading = computed(() => this.loadingVerify() || this.loadingPrecheck() || this.loadingExecute() || this.loadingCert());
 
-  readonly isAps1031 = computed(() => this.aps() === 1031);
   readonly isPrecheckEnabled = computed(() => ['verified', 'prechecked', 'calculated', 'certified'].includes(this.currentStep()));
   readonly isExecutionEnabled = computed(() => ['prechecked', 'calculated', 'certified'].includes(this.currentStep()));
   readonly isCertEnabled = computed(() => ['calculated', 'certified'].includes(this.currentStep()));
 
-  readonly pipelineSteps = signal<PipelineStepUi[]>(this.getInitialSteps());
-
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly costosService: CostosService,
+    private readonly tarifasService: TarifasService
   ) {
     this.restoreState();
 
@@ -203,6 +238,24 @@ export class CostosCalculoPageComponent {
         replaceUrl: true
       });
     });
+
+    effect(() => {
+      const aps = this.aps();
+      const periodo = this.periodoConsulta();
+      if (!aps || !periodo) {
+        this.costos.set([]);
+        this.resumen.set([]);
+        return;
+      }
+      this.costosService.consultarCostos(aps, periodo.mes, periodo.anno).subscribe({
+        next: (data) => this.costos.set(data || []),
+        error: () => this.costos.set([])
+      });
+      this.tarifasService.getResumen(aps, periodo.anno, periodo.mes).subscribe({
+        next: (data) => this.resumen.set(data || []),
+        error: () => this.resumen.set([])
+      });
+    });
   }
 
   setPanelLoading(panel: 'verify' | 'precheck' | 'execute' | 'cert', value: boolean): void {
@@ -218,7 +271,6 @@ export class CostosCalculoPageComponent {
     this.calculoResultado.set(null);
     this.certificacionResultado.set(null);
     this.currentStep.set(result.puedeCalcular ? 'verified' : 'idle');
-    this.pipelineSteps.set(this.getInitialSteps());
   }
 
   onPrechecksCompleted(event: { allPassed: boolean; items: PrecheckUiItem[] }): void {
@@ -229,6 +281,23 @@ export class CostosCalculoPageComponent {
   onCalculated(result: CalculartarifasResponse): void {
     this.calculoResultado.set(result);
     this.currentStep.set(result.exitoso ? 'calculated' : 'prechecked');
+    if (result.exitoso) {
+      this.refreshCostos();
+    }
+  }
+
+  private refreshCostos(): void {
+    const aps = this.aps();
+    const periodo = this.periodoConsulta();
+    if (!aps || !periodo) return;
+    this.costosService.consultarCostos(aps, periodo.mes, periodo.anno).subscribe({
+      next: (data) => this.costos.set(data || []),
+      error: () => {}
+    });
+    this.tarifasService.getResumen(aps, periodo.anno, periodo.mes).subscribe({
+      next: (data) => this.resumen.set(data || []),
+      error: () => {}
+    });
   }
 
   onCertified(result: CertificarTarifasResponse): void {
@@ -252,16 +321,5 @@ export class CostosCalculoPageComponent {
   private readNumber(value: string | null): number | null {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  private getInitialSteps(): PipelineStepUi[] {
-    return [
-      { step: 1, label: 'Inicializar', estado: 'pendiente' },
-      { step: 2, label: 'Limpiar datos', estado: 'pendiente' },
-      { step: 3, label: 'Calcular base', estado: 'pendiente' },
-      { step: 4, label: 'Aplicar ajustes', estado: 'pendiente' },
-      { step: 5, label: 'Generar resumen', estado: 'pendiente' },
-      { step: 6, label: 'Finalizar', estado: 'pendiente' }
-    ];
   }
 }
