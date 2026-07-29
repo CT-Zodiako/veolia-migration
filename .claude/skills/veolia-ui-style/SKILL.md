@@ -318,6 +318,11 @@ consumidores que no los usan:
 - `[accionesTemplate]="tpl"` + `[accionesHeader]="'Acciones'"` — agrega una
   columna final con lo que sea (botones Editar/Guardar, etc.); `let-row` es
   la fila completa.
+- `[filaExportable]="fn"` — `(row) => boolean`, filtra qué filas van al CSV
+  exportado (por defecto exporta todas). Usarlo cuando `rows` incluye filas
+  sintéticas puramente visuales (ej. TOTAL/PROMEDIO agregadas a mano por el
+  consumidor) que no deben aparecer en el archivo descargado — ver
+  `verificacion-aps.component.ts` (`filaEsExportable`).
 
 Referencia completa (edición inline por fila + traducción de códigos):
 `pgirs-variables.component.{ts,html}`. Referencia de `cellClass` para

@@ -173,6 +173,11 @@ export class VerificacionApsComponent {
     return '';
   };
 
+  // TOTAL/PROMEDIO son filas sintéticas solo para lectura en pantalla -- no deben
+  // aparecer en el CSV exportado.
+  readonly filaEsExportable = (row: Record<string, unknown>): boolean =>
+    row['MES'] !== 'TOTAL' && row['MES'] !== 'PROMEDIO';
+
   private readonly destroyRef = inject(DestroyRef);
 
   constructor(
@@ -325,7 +330,8 @@ export class VerificacionApsComponent {
   private generarKpisMock(): void {
     const etiquetas = [
       'Promedio N', 'Promedio LBLJ', 'Promedio ND', 'Promedio NA',
-      'Promedio QNA', 'Promedio QRTZ', 'Promedio QRS', 'Promedio CP'
+      'Promedio QNA', 'Promedio QRTZ', 'Promedio QRS', 'Promedio CP',
+      'Promedio M3AGUA', 'Promedio M2CCJ', 'Promedio TIJ', 'Promedio CBLJ'
     ];
     this.kpis.set(
       etiquetas.map(label => ({

@@ -73,11 +73,19 @@
   margin-bottom: 0;
 }
 
-/* KPIs (Promedios Mensuales) -- placeholder visual, ver comentario en el .ts */
+/* KPIs (Promedios Mensuales) -- placeholder visual, ver comentario en el .ts.
+   Grid fijo de 4 columnas (en vez de auto-fill) para que las tarjetas queden
+   siempre en filas completas y parejas, sin una última fila desbalanceada. */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .kpi-card {

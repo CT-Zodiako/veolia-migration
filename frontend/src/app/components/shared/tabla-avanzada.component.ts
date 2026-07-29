@@ -220,6 +220,15 @@ export class TablaAvanzadaComponent implements OnInit, OnChanges {
   @Input() accionesTemplate?: TemplateRef<{ $implicit: Record<string, unknown> }>;
   @Input() accionesHeader = 'Acciones';
 
+  /** Filtra qué filas van al CSV exportado. Por defecto exporta todas -- usarlo para
+   *  excluir filas puramente visuales (ej. TOTAL/PROMEDIO sintéticas agregadas por el
+   *  consumidor) que no deben aparecer en el archivo descargado. */
+  @Input() filaExportable?: (row: Record<string, unknown>) => boolean;
+
+  get rowsExportables(): Record<string, unknown>[] {
+    return this.filaExportable ? this.rows.filter(this.filaExportable) : this.rows;
+  }
+
   columnasState!: ColumnasState;
   compacta = false;
   mostrarExport = false;
