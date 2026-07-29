@@ -41,6 +41,7 @@
             [columnas]="columnasUsuarios()"
             [rows]="filasUsuarios()"
             [cellTemplate]="celdaCambio"
+            [loading]="loading()"
             storageKey="reliq-tarificador-usuarios"
             nombreExportar="ResumenUsuarios"
           ></app-tabla-avanzada>
@@ -50,6 +51,7 @@
             [columnas]="columnasEmpresa()"
             [rows]="filasEmpresa()"
             [cellTemplate]="celdaCambio"
+            [loading]="loading()"
             storageKey="reliq-tarificador-empresa"
             nombreExportar="ResumenEmpresa"
           ></app-tabla-avanzada>
@@ -59,6 +61,7 @@
             [columnas]="columnasAdicional()"
             [rows]="filasAdicional()"
             [cellTemplate]="celdaCambio"
+            [loading]="loading()"
             storageKey="reliq-tarificador-adicional"
             nombreExportar="ResumenAdicional"
           ></app-tabla-avanzada>
@@ -68,6 +71,7 @@
             [columnas]="columnasRelleno()"
             [rows]="filasRelleno()"
             [cellTemplate]="celdaCambio"
+            [loading]="loading()"
             storageKey="reliq-tarificador-relleno"
             nombreExportar="ResumenRelleno"
           ></app-tabla-avanzada>
@@ -77,6 +81,7 @@
             [columnas]="columnasAps()"
             [rows]="filasAps()"
             [cellTemplate]="celdaCambio"
+            [loading]="loading()"
             storageKey="reliq-tarificador-aps"
             nombreExportar="ResumenAps"
           ></app-tabla-avanzada>
