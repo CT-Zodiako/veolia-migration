@@ -153,16 +153,20 @@ export class VerificacionApsComponent {
   private readonly numericasAps = this.columnasAps.filter(col => col.numero).map(col => col.field);
   private readonly numericasRelleno = this.columnasRelleno.filter(col => col.numero).map(col => col.field);
 
+  // Toggle del usuario -- muestra/oculta las filas sintéticas TOTAL/PROMEDIO en las 3 tabs
+  // a la vez (no afecta el export, que ya las excluye siempre vía filaEsExportable).
+  readonly mostrarTotales = signal(true);
+
   readonly gruposEmpresa = computed<GrupoTabla[]>(() =>
-    this.agruparPorEntidad(this.emprDataRaw(), 'EMPR_NOMBRE', this.numericasEmpresa, this.empresaSeleccionada())
+    this.agruparPorEntidad(this.emprDataRaw(), 'EMPR_NOMBRE', this.numericasEmpresa, this.empresaSeleccionada(), this.mostrarTotales())
   );
   readonly gruposAps = computed<GrupoTabla[]>(() =>
-    this.agruparPorEntidad(this.apsEmprDataRaw(), 'EMPR_NOMBRE', this.numericasAps, this.empresaSeleccionada())
+    this.agruparPorEntidad(this.apsEmprDataRaw(), 'EMPR_NOMBRE', this.numericasAps, this.empresaSeleccionada(), this.mostrarTotales())
   );
   readonly gruposRelleno = computed<GrupoTabla[]>(() =>
     // No hay relación empresa-relleno en los datos de AUCO_INFOAPSRELLENO (sin FK a
     // AUCO_EMPRESAS) -- el filtro de empresa no aplica acá, se muestran todos los rellenos.
-    this.agruparPorEntidad(this.rellenoDataRaw(), 'RELL_NOMRELLENO', this.numericasRelleno, null)
+    this.agruparPorEntidad(this.rellenoDataRaw(), 'RELL_NOMRELLENO', this.numericasRelleno, null, this.mostrarTotales())
   );
 
   // Resalta las filas sintéticas TOTAL/PROMEDIO -- clases definidas en
@@ -297,7 +301,8 @@ export class VerificacionApsComponent {
     rows: Record<string, unknown>[],
     campoEntidad: string,
     columnasNumericas: string[],
-    filtroEntidad: string | null
+    filtroEntidad: string | null,
+    incluirTotales: boolean
   ): GrupoTabla[] {
     const filtradas = filtroEntidad ? rows.filter(row => String(row[campoEntidad]) === filtroEntidad) : rows;
 
@@ -312,6 +317,10 @@ export class VerificacionApsComponent {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([nombre, filas]) => {
         const ordenadas = [...filas].sort((a, b) => Number(a['_mesNum']) - Number(b['_mesNum']));
+
+        if (!incluirTotales) {
+          return { nombre, filas: ordenadas };
+        }
 
         const total: Record<string, unknown> = { MES: 'TOTAL' };
         const promedio: Record<string, unknown> = { MES: 'PROMEDIO' };

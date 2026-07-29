@@ -48,6 +48,10 @@
 </div>
 
 <div class="card-section">
+  <div class="toggle-totales">
+    <p-checkbox [ngModel]="mostrarTotales()" (ngModelChange)="mostrarTotales.set($event)" [binary]="true" inputId="toggle-totales"></p-checkbox>
+    <label for="toggle-totales">Mostrar fila de Total y Promedio</label>
+  </div>
   <p-tabs [value]="currentTab()" (valueChange)="onTabChange($event)">
     <p-tablist>
       <p-tab value="EMPRESA">Resumen Empresa</p-tab>

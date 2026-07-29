@@ -109,3 +109,16 @@
   font-weight: 700;
   color: var(--color-brand-strong);
 }
+
+.toggle-totales {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.toggle-totales label {
+  font-size: 14px;
+  color: var(--color-text-body);
+  cursor: pointer;
+}
