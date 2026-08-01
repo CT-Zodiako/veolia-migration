@@ -11,6 +11,7 @@ using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Infrastructure.Sui853;
 using Veolia.Api.Modules.Regulator.Aps;
 using Veolia.Api.Modules.Regulator.Empresas;
+using Veolia.Api.Modules.Regulator.Tarifas;
 using Veolia.Api.Services;
 
 namespace Veolia.Api.Tests;

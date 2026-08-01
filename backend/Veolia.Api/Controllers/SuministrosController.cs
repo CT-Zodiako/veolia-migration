@@ -4,6 +4,7 @@ using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Contracts.Suministros;
 using Veolia.Api.Infrastructure.Auth;
 using Veolia.Api.Infrastructure.Data;
+using Veolia.Api.Modules.Regulator.Validaciones;
 using Veolia.Api.Services;
 
 namespace Veolia.Api.Controllers;
