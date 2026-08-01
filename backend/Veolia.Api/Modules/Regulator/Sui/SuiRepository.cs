@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Common;
-using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Exceptions;
 using Veolia.Api.Infrastructure.Data;
 

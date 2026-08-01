@@ -1,5 +1,4 @@
 using Veolia.Api.Contracts.Requests;
-using Veolia.Api.Contracts.Responses;
 
 namespace Veolia.Api.Modules.Regulator.Suministros;
 
