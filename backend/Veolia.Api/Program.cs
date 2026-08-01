@@ -25,6 +25,8 @@ using Veolia.Api.Modules.Regulator.Reversiones;
 using Veolia.Api.Modules.Regulator.Sui;
 using Veolia.Api.Modules.Regulator.SuiReversiones;
 using Veolia.Api.Modules.Regulator.Suministros;
+using Veolia.Api.Modules.Regulator.General;
+using Veolia.Api.Modules.Regulator.Health;
 using Veolia.Api.Modules.Reliquidaciones;
 using Veolia.Api.Modules.Sui853.Cft;
 using Veolia.Api.Modules.Sui853.Configuracion;
@@ -53,12 +55,12 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IOracleConnectionFactory, OracleConnectionFactory>();
-builder.Services.AddScoped<IHealthRepository, HealthRepository>();
+builder.Services.AddHealthModule();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<AuthContractMapper>();
 builder.Services.AddApsModule();
 builder.Services.AddEmpresasModule();
-builder.Services.AddScoped<IGeneralRepository, GeneralRepository>();
+builder.Services.AddGeneralModule();
 builder.Services.AddTarifasModule();
 builder.Services.AddReversionesModule();
 builder.Services.AddSuministrosModule();

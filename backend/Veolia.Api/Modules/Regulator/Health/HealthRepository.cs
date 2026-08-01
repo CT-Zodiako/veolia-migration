@@ -1,7 +1,8 @@
+using Veolia.Api.Infrastructure.Data;
 using Dapper;
 using System.Data.Common;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Health;
 
 public class HealthRepository(IOracleConnectionFactory connectionFactory) : IHealthRepository
 {

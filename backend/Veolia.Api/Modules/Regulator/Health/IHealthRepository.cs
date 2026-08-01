@@ -1,4 +1,4 @@
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Health;
 
 public interface IHealthRepository
 {

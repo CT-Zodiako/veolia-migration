@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.Health;
 
 [ApiController]
 [Route("api/[controller]")]
