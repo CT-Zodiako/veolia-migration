@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Veolia.Api.Contracts.Requests;
+namespace Veolia.Api.Modules.Regulator.Killometros;
 
 public sealed class KilometrosRequest
 {
@@ -12,4 +12,15 @@ public sealed class KilometrosRequest
 
     [Range(1, 12, ErrorMessage = "El mes debe estar entre 1 y 12.")]
     public int Mes { get; init; }
+}
+
+public sealed class LblResponse
+{
+    public decimal Aps { get; set; }
+    public decimal Empresa { get; set; }
+    public decimal Mpio { get; set; }
+    public int Anno { get; set; }
+    public int Mes { get; set; }
+    public decimal Valor { get; set; }
+    public decimal Estado { get; set; }
 }

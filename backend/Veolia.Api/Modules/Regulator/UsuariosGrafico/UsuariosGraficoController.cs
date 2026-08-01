@@ -1,20 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Contracts.Requests;
 using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data.Interfaces;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.UsuariosGrafico;
 
 [ApiController]
-[Route("api/v1/kilometros")]
-public sealed class KillometrosController(IKillometrosRepository repository) : ControllerBase
+[Route("api/v1/usuarios")]
+public sealed class UsuariosGraficoController(IUsuariosGraficoRepository repository) : ControllerBase
 {
-    [HttpPost("lbl")]
-    public async Task<IActionResult> Lbl([FromBody] KilometrosRequest request, CancellationToken cancellationToken)
+    [HttpPost("usuagraf")]
+    public async Task<IActionResult> Usuagraf([FromBody] UsuariosGraficoRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.GetLblAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
-            "Consulta LBL ejecutada correctamente.");
+            async () => await repository.GetUsuagrafAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
+            "Consulta de usuarios promedio ejecutada correctamente.");
+
+    [HttpPost("usuadeta")]
+    public async Task<IActionResult> Usuadeta([FromBody] UsuariosGraficoRequest request, CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetUsuadetaAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
+            "Consulta de detalle de usuarios ejecutada correctamente.");
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
     {
@@ -43,7 +47,7 @@ public sealed class KillometrosController(IKillometrosRepository repository) : C
         catch (Exception)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, "Ocurrió un error procesando la consulta de kilómetros.", HttpContext.TraceIdentifier, null));
+                new ApiEnvelopeResponse<object>("error", new { }, "Ocurrió un error procesando la consulta de usuarios.", HttpContext.TraceIdentifier, null));
         }
     }
 }

@@ -1,24 +1,26 @@
 using Dapper;
 using System.Data;
 using System.Data.Common;
-using Veolia.Api.Contracts.Responses;
-using Veolia.Api.Infrastructure.Data.Interfaces;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Killometros;
 
-public sealed class TafnaRepository(IOracleConnectionFactory connectionFactory) : ITafnaRepository
+public sealed class KillometrosRepository(IOracleConnectionFactory connectionFactory) : IKillometrosRepository
 {
-    public async Task<IReadOnlyList<TafnaResponse>> GetTafnaAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<LblResponse>> GetLblAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
     {
         const string sql = @"SELECT APS AS Aps,
        EMPRESA AS Empresa,
+       MPIO AS Mpio,
        ANNO AS Anno,
        MES AS Mes,
-       ROUND(VALOR, 6) AS Valor
-FROM VAUCO_TONELADAS
+       VALOR AS Valor,
+       ESTADO AS Estado
+FROM VAUCO_LBL
 WHERE APS = :1
-  AND TIPO IN ('TAFNA')
-  AND (ANNO * 12 + MES) BETWEEN ((:2 * 12 + :3) - 6) AND (:2 * 12 + :3)";
+  AND ESTADO = 1
+  AND (ANNO * 12 + MES) BETWEEN ((:2 * 12 + :3) - 6) AND (:2 * 12 + :3)
+ORDER BY ANNO, MES, EMPRESA, MPIO";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", aps);
@@ -26,7 +28,7 @@ WHERE APS = :1
         parameters.Add("3", mes);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        var rows = await connection.QueryAsync<TafnaResponse>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+        var rows = await connection.QueryAsync<LblResponse>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
         return rows.ToList();
     }
 

@@ -1,6 +1,4 @@
-using Veolia.Api.Contracts.Responses;
-
-namespace Veolia.Api.Infrastructure.Data.Interfaces;
+namespace Veolia.Api.Modules.Regulator.Toneladas;
 
 public interface IToneladasRepository
 {

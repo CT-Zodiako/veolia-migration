@@ -1,10 +1,9 @@
 using Dapper;
 using System.Data;
 using System.Data.Common;
-using Veolia.Api.Contracts.Responses;
-using Veolia.Api.Infrastructure.Data.Interfaces;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.UsuariosGrafico;
 
 public sealed class UsuariosGraficoRepository(IOracleConnectionFactory connectionFactory) : IUsuariosGraficoRepository
 {

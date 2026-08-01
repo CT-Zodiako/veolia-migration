@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Veolia.Api.Contracts.Requests;
+namespace Veolia.Api.Modules.Regulator.Tafna;
 
-public sealed class TrnaRequest
+public sealed class TafnaRequest
 {
     [Range(1, int.MaxValue, ErrorMessage = "El APS es obligatorio.")]
     public int Aps { get; init; }
@@ -12,4 +12,13 @@ public sealed class TrnaRequest
 
     [Range(1, 12, ErrorMessage = "El mes debe estar entre 1 y 12.")]
     public int Mes { get; init; }
+}
+
+public sealed class TafnaResponse
+{
+    public decimal Aps { get; set; }
+    public decimal Empresa { get; set; }
+    public int Anno { get; set; }
+    public int Mes { get; set; }
+    public decimal Valor { get; set; }
 }
