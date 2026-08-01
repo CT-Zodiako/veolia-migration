@@ -1,6 +1,4 @@
-using Veolia.Api.Contracts.Indices;
-
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Indices;
 
 public interface IIndicesRepository
 {

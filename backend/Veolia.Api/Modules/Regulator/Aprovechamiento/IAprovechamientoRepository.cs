@@ -1,6 +1,4 @@
-using Veolia.Api.Contracts.Aprovechamiento;
-
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Aprovechamiento;
 
 public interface IAprovechamientoRepository
 {

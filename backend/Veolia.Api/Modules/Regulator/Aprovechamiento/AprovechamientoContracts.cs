@@ -1,4 +1,4 @@
-namespace Veolia.Api.Contracts.Aprovechamiento;
+namespace Veolia.Api.Modules.Regulator.Aprovechamiento;
 
 public sealed class AprovechamientoConsultaRequestDto
 {

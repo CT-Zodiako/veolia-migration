@@ -1,17 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Contracts.Aprovechamiento;
 using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.Productividad;
 
 [ApiController]
-[Route("api/v1/aprovechamiento")]
-public sealed class AprovechamientoController(IAprovechamientoRepository repository) : ControllerBase
+[Route("api/v1/productividad")]
+public sealed class ProductividadController(IProductividadRepository repository) : ControllerBase
 {
     [HttpPost("consulta")]
-    public async Task<IActionResult> Consulta([FromBody] AprovechamientoConsultaRequestDto request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Consulta([FromBody] ProductividadConsultaRequestDto request, CancellationToken cancellationToken)
     {
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope("error", (object?)null, "No autorizado."));
@@ -30,8 +28,8 @@ public sealed class AprovechamientoController(IAprovechamientoRepository reposit
         }
     }
 
-    [HttpPost("actualizar")]
-    public async Task<IActionResult> Actualizar([FromBody] AprovechamientoActualizarRequestDto request, CancellationToken cancellationToken)
+    [HttpPost("crear")]
+    public async Task<IActionResult> Crear([FromBody] ProductividadCrearRequestDto request, CancellationToken cancellationToken)
     {
         if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope("error", (object?)null, "No autorizado."));
@@ -41,8 +39,31 @@ public sealed class AprovechamientoController(IAprovechamientoRepository reposit
 
         try
         {
-            await repository.ActualizarAsync(request.Aps, request.Anno, request.Mes, request.Activar, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope("success", (object?)null, "Estado de aprovechamiento actualizado."));
+            await repository.CrearAsync(request.Aps, request.Anno, request.Mes, request.Valor, tokenContext.SisuId, cancellationToken);
+            return StatusCode(StatusCodes.Status201Created, Envelope("success", (object?)null, "Productividad creada."));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", (object?)null, $"Error: {ex.Message}"));
+        }
+    }
+
+    [HttpPut("editar")]
+    public async Task<IActionResult> Editar([FromBody] ProductividadEditarRequestDto request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+            return Unauthorized(Envelope("error", (object?)null, "No autorizado."));
+
+        if (!PeriodoValido(request.Aps, request.Anno, request.Mes))
+            return BadRequest(Envelope("error", (object?)null, "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
+
+        try
+        {
+            var updated = await repository.EditarAsync(request.Aps, request.Anno, request.Mes, request.Valor, cancellationToken);
+            if (!updated)
+                return NotFound(Envelope("error", (object?)null, "No se encontró un registro de productividad para ese período."));
+
+            return Ok(Envelope("success", (object?)null, "Productividad actualizada."));
         }
         catch (Exception ex)
         {

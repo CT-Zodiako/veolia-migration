@@ -1,7 +1,7 @@
 using Dapper;
-using Veolia.Api.Contracts.Indices;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Indices;
 
 public sealed class IndicesRepository(IOracleConnectionFactory connectionFactory) : IIndicesRepository
 {

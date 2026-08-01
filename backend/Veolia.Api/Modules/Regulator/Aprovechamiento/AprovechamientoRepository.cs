@@ -1,7 +1,7 @@
 using Dapper;
-using Veolia.Api.Contracts.Aprovechamiento;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Aprovechamiento;
 
 public sealed class AprovechamientoRepository(IOracleConnectionFactory connectionFactory) : IAprovechamientoRepository
 {

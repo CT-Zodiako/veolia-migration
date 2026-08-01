@@ -1,4 +1,4 @@
-namespace Veolia.Api.Contracts.Indices;
+namespace Veolia.Api.Modules.Regulator.Indices;
 
 public sealed class IndicesConsultaRequestDto
 {

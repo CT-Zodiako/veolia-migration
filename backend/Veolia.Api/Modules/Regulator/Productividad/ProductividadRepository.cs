@@ -1,7 +1,7 @@
 using Dapper;
-using Veolia.Api.Contracts.Productividad;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Productividad;
 
 public sealed class ProductividadRepository(IOracleConnectionFactory connectionFactory) : IProductividadRepository
 {

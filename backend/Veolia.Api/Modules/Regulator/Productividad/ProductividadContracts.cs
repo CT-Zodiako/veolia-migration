@@ -1,4 +1,4 @@
-namespace Veolia.Api.Contracts.Productividad;
+namespace Veolia.Api.Modules.Regulator.Productividad;
 
 public sealed class ProductividadConsultaRequestDto
 {

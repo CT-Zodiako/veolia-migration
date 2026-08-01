@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Contracts.Indices;
 using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.Indices;
 
 [ApiController]
 [Route("api/v1/indices")]
