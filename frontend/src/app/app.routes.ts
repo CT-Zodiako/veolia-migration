@@ -86,6 +86,11 @@ export const routes: Routes = [
         canActivate: [AuthGuard],
         loadComponent: () => import('./components/costos/costos-calculo-page.component').then((m) => m.CostosCalculoPageComponent)
       },
+      {
+        path: 'costo-clus',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/costos/costo-clus.component').then((m) => m.CostoClusComponent)
+      },
       { path: 'tarifas', component: DetalleTarifasComponent },
       { path: 'tarifas-general', component: DetalleTarifasGenComponent },
       { path: 'histCertificacion', component: HistorialCertificacionComponent },

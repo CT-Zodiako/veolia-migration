@@ -1,26 +1,25 @@
 import { Component, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { DividerModule } from 'primeng/divider';
 import { MessageModule } from 'primeng/message';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
-import { VerificacionPanelComponent } from './verificacion-panel.component';
-import { PrechecksPanelComponent, PrecheckUiItem } from './prechecks-panel.component';
-import { EjecucionPanelComponent } from './ejecucion-panel.component';
-import { CertificacionPanelComponent } from './certificacion-panel.component';
+import { VerificacionDialogComponent } from './verificacion-dialog.component';
 import { ToneladasPanelComponent } from './toneladas-panel.component';
 import { KilometrosPanelComponent } from './kilometros-panel.component';
 import { CostosConsultaPanelComponent } from './costos-consulta-panel.component';
 import { CuadriculaCostoComponent } from './cuadricula-costo.component';
 import { ResumenTarifasComponent } from './resumen-tarifas.component';
 import { ResumenVariablesComponent } from './resumen-variables.component';
-import { DashboardGraficosComponent } from './dashboard-graficos.component';
-import { CalculartarifasResponse, CertificarTarifasResponse, CostoItem, ValidapreactualizaResponse } from '../../models/costos.models';
+import { CostoItem, VerificacionDetalle } from '../../models/costos.models';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
 import { CostosService } from '../../services/costos.service';
+import { ValidacionesService } from '../../services/validaciones.service';
+import { NotificationService } from '../../services/notification.service';
 import { TarifaRow, TarifasService } from '../../services/tarifas.service';
 
 @Component({
@@ -34,38 +33,32 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
     ApsSelectorComponent,
     MesSelectorComponent,
     AnnoSelectorComponent,
-    VerificacionPanelComponent,
-    PrechecksPanelComponent,
-    EjecucionPanelComponent,
-    CertificacionPanelComponent,
+    VerificacionDialogComponent,
     ToneladasPanelComponent,
     KilometrosPanelComponent,
     CostosConsultaPanelComponent,
     CuadriculaCostoComponent,
     ResumenTarifasComponent,
-    ResumenVariablesComponent,
-    DashboardGraficosComponent
+    ResumenVariablesComponent
   ],
   template: `
-    <p-card>
-      <div class="flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
-        <h3 class="m-0">Fase 2 · Cálculo de Tarifas</h3>
-        <p-message *ngIf="globalLoading()" severity="info" text="Procesando solicitud..." />
-      </div>
-
-      <div class="grid mb-2">
+    <div class="card-section">
+      <div class="grid">
         <div class="col-12 md:col-4">
-          <label class="text-sm text-color-secondary">APS <i class="pi pi-question-circle" pTooltip="Código APS a procesar"></i></label>
           <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="aps.set($event)" />
         </div>
         <div class="col-12 md:col-4">
-          <label class="text-sm text-color-secondary">Año <i class="pi pi-question-circle" pTooltip="Vigencia del período"></i></label>
           <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="anno.set($event)" />
         </div>
         <div class="col-12 md:col-4">
-          <label class="text-sm text-color-secondary">Mes <i class="pi pi-question-circle" pTooltip="Mes de liquidación"></i></label>
           <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="mes.set($event)" />
         </div>
+      </div>
+    </div>
+
+    <p-card>
+      <div class="flex align-items-center justify-content-end mb-2 flex-wrap gap-2">
+        <p-message *ngIf="globalLoading()" severity="info" text="Procesando solicitud..." />
       </div>
 
       <app-cuadricula-costo *ngIf="costos().length" [costos]="costos()" class="block mb-3" />
@@ -82,63 +75,27 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
         <p-tabpanels>
           <p-tabpanel value="calculo">
             <div class="grid">
-              <div class="col-12 lg:col-6">
-                <app-verificacion-panel
-                  [aps]="aps()"
-                  [mes]="periodoConsulta()?.mes ?? null"
-                  [anno]="periodoConsulta()?.anno ?? null"
-                  [enabled]="true"
-                  [blocked]="globalLoading()"
-                  [showSkeleton]="false"
-                  (verified)="onVerified($event)"
-                  (loadingChange)="setPanelLoading('verify', $event)"
-                />
-              </div>
-
-              <div class="col-12 lg:col-6">
-                <app-prechecks-panel
-                  [aps]="aps()"
-                  [mes]="periodoConsulta()?.mes ?? null"
-                  [anno]="periodoConsulta()?.anno ?? null"
-                  [enabled]="isPrecheckEnabled()"
-                  [blocked]="globalLoading()"
-                  [showSkeleton]="!isPrecheckEnabled()"
-                  (prechecksCompleted)="onPrechecksCompleted($event)"
-                  (loadingChange)="setPanelLoading('precheck', $event)"
-                />
-              </div>
-
-              <div class="col-12"><p-divider /></div>
-
-              <div class="col-12 lg:col-6">
-                <app-ejecucion-panel
-                  [enabled]="isExecutionEnabled()"
-                  [blocked]="globalLoading()"
-                  [showSkeleton]="!isExecutionEnabled()"
-                  [aps]="aps()"
-                  [mes]="periodoConsulta()?.mes ?? null"
-                  [anno]="periodoConsulta()?.anno ?? null"
-                  (calculated)="onCalculated($event)"
-                  (loadingChange)="setPanelLoading('execute', $event)"
-                />
-              </div>
-
-              <div class="col-12 lg:col-6">
-                <app-certificacion-panel
-                  [enabled]="isCertEnabled()"
-                  [blocked]="globalLoading()"
-                  [showSkeleton]="!isCertEnabled()"
-                  [aps]="aps()"
-                  [mes]="periodoConsulta()?.mes ?? null"
-                  [anno]="periodoConsulta()?.anno ?? null"
-                  [calculoResultado]="calculoResultado()"
-                  (certified)="onCertified($event)"
-                  (loadingChange)="setPanelLoading('cert', $event)"
-                />
+              <div class="col-12">
+                <div class="flex align-items-center gap-2 mb-3">
+                  <p-button
+                    label="VERIFICAR"
+                    icon="pi pi-check"
+                    severity="warn"
+                    [loading]="loadingVerificar()"
+                    [disabled]="!aps() || !periodoConsulta() || loadingVerificar()"
+                    (click)="verificar()"
+                  ></p-button>
+                  <p-button
+                    label="CERTIFICAR"
+                    icon="pi pi-check"
+                    [loading]="loadingCertificar()"
+                    [disabled]="!aps() || !periodoConsulta() || certificarDisabled() || loadingCertificar()"
+                    (click)="certificar()"
+                  ></p-button>
+                </div>
               </div>
 
               <div class="col-12">
-                <p-divider />
                 <app-resumen-variables
                   [aps]="aps()"
                   [mes]="periodoConsulta()?.mes ?? null"
@@ -147,19 +104,19 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
                 />
               </div>
 
-              <div class="col-12" *ngIf="!semestreTitulo()">
-                <app-dashboard-graficos
-                  [aps]="aps()"
-                  [mes]="periodoConsulta()?.mes ?? null"
-                  [anno]="periodoConsulta()?.anno ?? null"
-                />
-              </div>
-
               <div class="col-12" *ngIf="!semestreTitulo() && resumen().length">
                 <p-divider />
                 <app-resumen-tarifas [resumen]="resumen()" />
               </div>
             </div>
+
+            <app-verificacion-dialog
+              [visible]="verificacionVisible()"
+              (visibleChange)="verificacionVisible.set($event)"
+              [detalle]="verificacionDetalle()"
+              [applying]="applyingVerificacion()"
+              (aplicar)="aplicar()"
+            />
           </p-tabpanel>
           <p-tabpanel value="toneladas">
             <app-toneladas-panel [aps]="aps()" [anno]="periodoConsulta()?.anno ?? null" [mes]="periodoConsulta()?.mes ?? null" />
@@ -177,48 +134,53 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
         </p-tabpanels>
       </p-tabs>
     </p-card>
-  `
+  `,
+  styles: [`
+    .card-section {
+      background: var(--color-bg-card);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+  `]
 })
 export class CostosCalculoPageComponent {
   private readonly storageKey = 'costos-calculo-filtros';
   readonly aps = signal<number | null>(null);
   readonly mes = signal<number | null>(null);
   readonly anno = signal<number | null>(new Date().getFullYear());
-  readonly currentStep = signal<'idle' | 'verified' | 'prechecked' | 'calculated' | 'certified'>('idle');
 
   // Regla de negocio legacy (Calculo.vue): el año/mes que se selecciona en
-  // pantalla es el "mes actual", pero todo el pipeline (verificar, prechecks,
-  // ejecutar, certificar, consultas) opera sobre el mes YA CERRADO -- el
-  // anterior. Se calcula una sola vez acá y se pasa ya corregido a los 8 paneles hijos.
+  // pantalla es el "mes actual", pero todo el pipeline (verificar, calcular,
+  // certificar, consultas) opera sobre el mes YA CERRADO -- el anterior.
   readonly periodoConsulta = computed(() => {
     const anno = this.anno();
     const mes = this.mes();
     return anno && mes ? periodoAnterior(anno, mes) : null;
   });
 
-  readonly verificationResult = signal<ValidapreactualizaResponse | null>(null);
-  readonly prechecksResult = signal<PrecheckUiItem[]>([]);
-  readonly calculoResultado = signal<CalculartarifasResponse | null>(null);
-  readonly certificacionResultado = signal<CertificarTarifasResponse | null>(null);
+  readonly verificacionVisible = signal(false);
+  readonly verificacionDetalle = signal<VerificacionDetalle[]>([]);
   readonly costos = signal<CostoItem[]>([]);
   readonly resumen = signal<TarifaRow[]>([]);
   readonly semestreTitulo = signal('');
 
-  readonly loadingVerify = signal(false);
-  readonly loadingPrecheck = signal(false);
-  readonly loadingExecute = signal(false);
-  readonly loadingCert = signal(false);
-  readonly globalLoading = computed(() => this.loadingVerify() || this.loadingPrecheck() || this.loadingExecute() || this.loadingCert());
-
-  readonly isPrecheckEnabled = computed(() => ['verified', 'prechecked', 'calculated', 'certified'].includes(this.currentStep()));
-  readonly isExecutionEnabled = computed(() => ['prechecked', 'calculated', 'certified'].includes(this.currentStep()));
-  readonly isCertEnabled = computed(() => ['calculated', 'certified'].includes(this.currentStep()));
+  readonly loadingVerificar = signal(false);
+  readonly applyingVerificacion = signal(false);
+  readonly loadingCertificar = signal(false);
+  // Legacy: CERTIFICAR queda habilitado solo cuando existarifacert == 0
+  // (hay tarifa calculada pero aún no certificada para el período).
+  readonly certificarDisabled = signal(true);
+  readonly globalLoading = computed(() => this.loadingVerificar() || this.applyingVerificacion() || this.loadingCertificar());
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly costosService: CostosService,
-    private readonly tarifasService: TarifasService
+    private readonly validacionesService: ValidacionesService,
+    private readonly tarifasService: TarifasService,
+    private readonly notification: NotificationService
   ) {
     this.restoreState();
 
@@ -245,6 +207,7 @@ export class CostosCalculoPageComponent {
       if (!aps || !periodo) {
         this.costos.set([]);
         this.resumen.set([]);
+        this.certificarDisabled.set(true);
         return;
       }
       this.costosService.consultarCostos(aps, periodo.mes, periodo.anno).subscribe({
@@ -255,35 +218,120 @@ export class CostosCalculoPageComponent {
         next: (data) => this.resumen.set(data || []),
         error: () => this.resumen.set([])
       });
+      this.refreshCertificarEnabled();
     });
   }
 
-  setPanelLoading(panel: 'verify' | 'precheck' | 'execute' | 'cert', value: boolean): void {
-    if (panel === 'verify') this.loadingVerify.set(value);
-    if (panel === 'precheck') this.loadingPrecheck.set(value);
-    if (panel === 'execute') this.loadingExecute.set(value);
-    if (panel === 'cert') this.loadingCert.set(value);
+  verificar(): void {
+    const aps = this.aps();
+    const periodo = this.periodoConsulta();
+    if (!aps || !periodo || this.loadingVerificar()) return;
+
+    this.loadingVerificar.set(true);
+    this.costosService
+      .validapreactualiza(aps, periodo.mes, periodo.anno, this.getUsuarioId())
+      .pipe(finalize(() => this.loadingVerificar.set(false)))
+      .subscribe({
+        next: (resp) => {
+          this.verificacionDetalle.set(resp.detalle ?? []);
+          this.verificacionVisible.set(true);
+        },
+        error: (err: Error) => this.notification.error(err.message)
+      });
   }
 
-  onVerified(result: ValidapreactualizaResponse): void {
-    this.verificationResult.set(result);
-    this.prechecksResult.set([]);
-    this.calculoResultado.set(null);
-    this.certificacionResultado.set(null);
-    this.currentStep.set(result.puedeCalcular ? 'verified' : 'idle');
+  // Legacy Calculo.vue "CalcularTarifas": existarifa -> prechecks -> calculartarifas.
+  aplicar(): void {
+    const aps = this.aps();
+    const periodo = this.periodoConsulta();
+    if (!aps || !periodo || this.applyingVerificacion()) return;
+
+    this.applyingVerificacion.set(true);
+    this.validacionesService.faucoExistarifa({ aps, anno: periodo.anno, mes: periodo.mes }).subscribe({
+      next: (existarifa) => {
+        if (!existarifa.ok) {
+          this.notification.warn('Ya existen tarifas calculadas para el APS y Periodo Seleccionado');
+          this.applyingVerificacion.set(false);
+          this.verificacionVisible.set(false);
+          return;
+        }
+        this.runPrechecksThenCalculate(aps, periodo.mes, periodo.anno);
+      },
+      error: () => {
+        this.applyingVerificacion.set(false);
+        this.notification.error('No fue posible validar la existencia de tarifas calculadas.');
+      }
+    });
   }
 
-  onPrechecksCompleted(event: { allPassed: boolean; items: PrecheckUiItem[] }): void {
-    this.prechecksResult.set(event.items);
-    if (event.allPassed) this.currentStep.set('prechecked');
+  certificar(): void {
+    const aps = this.aps();
+    const periodo = this.periodoConsulta();
+    if (!aps || !periodo || this.certificarDisabled() || this.loadingCertificar()) return;
+
+    this.loadingCertificar.set(true);
+    this.costosService
+      .certificarTarifas(aps, periodo.mes, periodo.anno, this.getUsuarioId())
+      .pipe(finalize(() => this.loadingCertificar.set(false)))
+      .subscribe({
+        next: () => {
+          this.notification.success('Certificado');
+          this.refreshCostos();
+          this.refreshCertificarEnabled();
+        },
+        error: (err: Error) => this.notification.error(err.message)
+      });
   }
 
-  onCalculated(result: CalculartarifasResponse): void {
-    this.calculoResultado.set(result);
-    this.currentStep.set(result.exitoso ? 'calculated' : 'prechecked');
-    if (result.exitoso) {
-      this.refreshCostos();
+  private runPrechecksThenCalculate(aps: number, mes: number, anno: number): void {
+    const usuario = this.getUsuarioId();
+    this.costosService.runPrechecks(aps, mes, anno, usuario).subscribe({
+      next: (prechecks) => {
+        if (!prechecks.puedeCalcular) {
+          // Legacy: un toast de error por cada precheck fallido y no calcula.
+          prechecks.prechecks
+            .filter((p) => (p.estado || '').toLowerCase() === 'error')
+            .forEach((p) => this.notification.error(p.mensaje || p.nombre));
+          this.applyingVerificacion.set(false);
+          this.verificacionVisible.set(false);
+          return;
+        }
+        this.costosService
+          .calculartarifas(aps, mes, anno, usuario)
+          .pipe(finalize(() => this.applyingVerificacion.set(false)))
+          .subscribe({
+            next: (resp) => {
+              if (!resp.exitoso) {
+                this.notification.warn('Ya existen tarifas calculadas para el APS y Periodo Seleccionado');
+                this.verificacionVisible.set(false);
+                return;
+              }
+              this.notification.success('Tarifas Calculadas');
+              this.verificacionVisible.set(false);
+              this.refreshCostos();
+              this.refreshCertificarEnabled();
+            },
+            error: (err: Error) => this.notification.error(err.message)
+          });
+      },
+      error: (err: Error) => {
+        this.applyingVerificacion.set(false);
+        this.notification.error(err.message);
+      }
+    });
+  }
+
+  private refreshCertificarEnabled(): void {
+    const aps = this.aps();
+    const periodo = this.periodoConsulta();
+    if (!aps || !periodo) {
+      this.certificarDisabled.set(true);
+      return;
     }
+    this.validacionesService.faucoExistarifacert({ aps, anno: periodo.anno, mes: periodo.mes }).subscribe({
+      next: (resp) => this.certificarDisabled.set(!resp.ok),
+      error: () => this.certificarDisabled.set(true)
+    });
   }
 
   private refreshCostos(): void {
@@ -300,9 +348,15 @@ export class CostosCalculoPageComponent {
     });
   }
 
-  onCertified(result: CertificarTarifasResponse): void {
-    this.certificacionResultado.set(result);
-    if (result.certificado) this.currentStep.set('certified');
+  private getUsuarioId(): number {
+    try {
+      const raw = localStorage.getItem('usuario');
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw);
+      return Number(parsed?.SISU_ID ?? 0);
+    } catch {
+      return 0;
+    }
   }
 
   private restoreState(): void {

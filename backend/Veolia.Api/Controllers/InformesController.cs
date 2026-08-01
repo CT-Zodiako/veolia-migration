@@ -29,6 +29,24 @@ public sealed class InformesController(IInformesRepository repository, ILogger<I
             "Resumen de variables consultado correctamente.");
     }
 
+    [HttpGet("clus")]
+    public async Task<IActionResult> Clus([FromQuery] int aps, [FromQuery] int anno, [FromQuery] int mes, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+        {
+            var unauthorized = new ApiEnvelopeResponse<object>("error", new { }, "No autorizado.", HttpContext.TraceIdentifier, null);
+            return Unauthorized(unauthorized);
+        }
+
+        return await ExecuteAsync(
+            async () =>
+            {
+                var resultado = await repository.GetClusJsonAsync(aps, anno, mes, cancellationToken);
+                return resultado ?? new InformeCostosResponse(string.Empty, []);
+            },
+            "Componentes CLUS consultados correctamente.");
+    }
+
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
     {
         var token = Request.Headers["x-access-token"].FirstOrDefault();

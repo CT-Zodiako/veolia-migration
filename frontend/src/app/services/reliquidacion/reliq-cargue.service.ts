@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
+import { EXPECTED_ERROR_STATUSES } from '../../interceptors/http-context.tokens';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth.service';
@@ -39,17 +40,17 @@ export class ReliqCargueService {
   }
 
   compararCostos(reliq: number): Observable<ApiEnvelope<CompararCostos[]>> {
-    return this.http.post<ApiEnvelope<CompararCostos[]>>(`${this.baseUrl}/compararCostos`, { reliq }, { headers: this.getHeaders() })
+    return this.http.post<ApiEnvelope<CompararCostos[]>>(`${this.baseUrl}/compararCostos`, { reliq }, { headers: this.getHeaders(), context: new HttpContext().set(EXPECTED_ERROR_STATUSES, [404]) })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
   compararTarifas(reliq: number): Observable<ApiEnvelope<CompararTarifas[]>> {
-    return this.http.post<ApiEnvelope<CompararTarifas[]>>(`${this.baseUrl}/compararTarifas`, { reliq }, { headers: this.getHeaders() })
+    return this.http.post<ApiEnvelope<CompararTarifas[]>>(`${this.baseUrl}/compararTarifas`, { reliq }, { headers: this.getHeaders(), context: new HttpContext().set(EXPECTED_ERROR_STATUSES, [404]) })
       .pipe(catchError((error) => this.handleError(error)));
   }
 
   resumenCompararTarifas(reliq: number, aps: number, anno: number, mes: number): Observable<ApiEnvelope<ResumenCompararTarifas>> {
-    return this.http.post<ApiEnvelope<ResumenCompararTarifas>>(`${this.baseUrl}/resumenCompararTarifas`, { reliq, apsaId: aps, anno, mes }, { headers: this.getHeaders() })
+    return this.http.post<ApiEnvelope<ResumenCompararTarifas>>(`${this.baseUrl}/resumenCompararTarifas`, { reliq, apsaId: aps, anno, mes }, { headers: this.getHeaders(), context: new HttpContext().set(EXPECTED_ERROR_STATUSES, [404]) })
       .pipe(catchError((error) => this.handleError(error)));
   }
 

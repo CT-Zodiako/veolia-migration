@@ -9,18 +9,25 @@ namespace Veolia.Api.Infrastructure.Data;
 
 public sealed class InformesRepository(IOracleConnectionFactory connectionFactory) : IInformesRepository
 {
-    public async Task<InformeCostosResponse?> GetResumenVariablesAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
+    public Task<InformeCostosResponse?> GetResumenVariablesAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
+        => GetInformeJsonAsync(aps, anno, mes, tipo200: 1, cancellationToken);
+
+    public Task<InformeCostosResponse?> GetClusJsonAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
+        => GetInformeJsonAsync(aps, anno, mes, tipo200: 2, cancellationToken);
+
+    private async Task<InformeCostosResponse?> GetInformeJsonAsync(int aps, int anno, int mes, int tipo200, CancellationToken cancellationToken)
     {
         const string sql = @"SELECT * FROM json_json
             WHERE apsa_id = :aps
               AND json_anno = :anno
               AND json_mes = :mes
-              AND json_tipo200 = 1";
+              AND json_tipo200 = :tipo200";
 
         var parameters = new DynamicParameters();
         parameters.Add("aps", aps);
         parameters.Add("anno", anno);
         parameters.Add("mes", mes);
+        parameters.Add("tipo200", tipo200);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken, commandTimeout: 120));

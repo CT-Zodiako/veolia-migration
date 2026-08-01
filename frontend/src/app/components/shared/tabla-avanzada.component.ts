@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, OnInit, OnChanges, SimpleChanges, TemplateRef, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, NgZone, OnDestroy, OnInit, AfterViewInit, OnChanges, SimpleChanges, TemplateRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -194,13 +194,22 @@ export class ColumnasState {
   templateUrl: './tabla-avanzada.component.html',
   styleUrl: './tabla-avanzada.component.css'
 })
-export class TablaAvanzadaComponent implements OnInit, OnChanges {
+export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   @Input({ required: true }) columnas: TablaColumn[] = [];
   @Input() rows: Record<string, unknown>[] = [];
   @Input({ required: true }) storageKey = '';
   @Input() nombreExportar = 'exportar';
   @Input() scrollHeight = '390px';
   @Input() filasPorPagina = 10;
+
+  /** Opciones del paginador; en pantalla completa arranca en la máxima. */
+  readonly rowsPerPageOptionsList = [10, 20, 50];
+
+  /** Filas por página efectivas: al entrar a pantalla completa se sugiere el
+   *  máximo (50) pero el paginador sigue disponible para cambiarlo. */
+  filasPorPaginaActual = this.filasPorPagina;
+  private filasPorPaginaPrevia = this.filasPorPagina;
+
   @Input() autoWidth = false;
 
   /** Muestra el overlay de carga nativo de PrimeNG (spinner + fondo semitransparente)
@@ -235,10 +244,75 @@ export class TablaAvanzadaComponent implements OnInit, OnChanges {
   }
 
   columnasState!: ColumnasState;
-  compacta = false;
+  compacta = true;
   mostrarExport = false;
   mostrarGuardarVista = false;
   pantallaCompleta = signal(false);
+
+  private resizeTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor(
+    private readonly el: ElementRef,
+    private readonly zone: NgZone,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
+
+  ngAfterViewInit(): void {
+    // Primer ajuste cuando el layout inicial se estabiliza; el ajuste fino
+    // ocurre cuando llega la data (ver ngOnChanges -> rows).
+    setTimeout(() => this.ajustarFilasAlEspacio(), 100);
+    // Resize FUERA de la zona de Angular + debounce: no disparar change
+    // detection ni reflows en cada tick del arrastre.
+    this.zone.runOutsideAngular(() => {
+      window.addEventListener('resize', this.onResize);
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Sin esto cada navegación dejaba un listener vivo disparando el
+    // recalculo sobre instancias destruidas (leak detectado en review).
+    window.removeEventListener('resize', this.onResize);
+    if (this.resizeTimer) {
+      clearTimeout(this.resizeTimer);
+      this.resizeTimer = null;
+    }
+  }
+
+  private readonly onResize = (): void => {
+    if (this.resizeTimer) {
+      clearTimeout(this.resizeTimer);
+    }
+    this.resizeTimer = setTimeout(() => {
+      this.zone.run(() => this.ajustarFilasAlEspacio());
+    }, 150);
+  };
+
+  /** Ajusta filasPorPaginaActual a la mayor opción del paginador (10/20/50)
+   *  que quepa en el espacio vertical disponible SIN scroll interno.
+   *  Así, pantallas con más espacio libre muestran más filas por defecto. */
+  private ajustarFilasAlEspacio(): void {
+    if (this.pantallaCompleta()) {
+      return;
+    }
+    const top = this.el.nativeElement.getBoundingClientRect().top;
+    if (top <= 0) {
+      return; // componente aún no renderizado en layout
+    }
+    const altoFila = this.compacta ? 22 : 30;
+    const chrome = 120; // caption + header + paginador + margen inferior aprox.
+    const disponible = window.innerHeight - top - chrome;
+    const opciones = [...this.rowsPerPageOptionsList].sort((a, b) => a - b);
+    let elegida = opciones[0];
+    for (const opc of opciones) {
+      if (opc * altoFila <= disponible) {
+        elegida = opc;
+      }
+    }
+    this.filasPorPaginaActual = elegida;
+    // La asignación ocurre fuera del ciclo de chequeo (setTimeout/resize/data):
+    // sin esto Angular reporta NG0100 porque [rows] cambió tras el check.
+    this.cdr.detectChanges();
+  }
 
   ngOnInit(): void {
     this.columnasState = new ColumnasState(
@@ -249,6 +323,13 @@ export class TablaAvanzadaComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rows']) {
+      // La data puede empujar la tabla a su posición final: re-medir.
+      setTimeout(() => this.ajustarFilasAlEspacio(), 50);
+    }
+    if (changes['filasPorPagina'] && !this.pantallaCompleta()) {
+      this.filasPorPaginaActual = this.filasPorPagina;
+    }
     if (changes['columnas'] && this.columnasState) {
       this.columnasState = new ColumnasState(
         this.columnas,
@@ -270,12 +351,27 @@ export class TablaAvanzadaComponent implements OnInit, OnChanges {
     this.columnasState.guardarPreset(nombre);
   }
 
+  private densidadPrevia = true;
+
+  // En pantalla completa la densidad se fuerza a Compacta (sin opción Normal)
+  // para maximizar filas visibles; al salir se restaura la densidad previa.
   togglePantallaCompleta(): void {
     this.pantallaCompleta.update(valor => !valor);
+    if (this.pantallaCompleta()) {
+      this.densidadPrevia = this.compacta;
+      this.compacta = true;
+      this.filasPorPaginaPrevia = this.filasPorPaginaActual;
+      this.filasPorPaginaActual = Math.max(...this.rowsPerPageOptionsList);
+    } else {
+      this.compacta = this.densidadPrevia;
+      this.filasPorPaginaActual = this.filasPorPaginaPrevia;
+    }
   }
 
   get scrollHeightEfectivo(): string {
-    return this.pantallaCompleta() ? 'calc(100vh - 260px)' : this.scrollHeight;
+    // Pantalla completa: la tabla toma todo el alto del viewport menos el chrome
+    // real de la toolbar/caption/paginador (compactado) para ver máximas filas.
+    return this.pantallaCompleta() ? 'calc(100vh - 180px)' : this.scrollHeight;
   }
 
   @HostListener('document:keydown.escape')

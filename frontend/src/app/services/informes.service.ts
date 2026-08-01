@@ -32,4 +32,16 @@ export class InformesService {
         catchError((err) => this.handleError('consultar resumen de variables', err))
       );
   }
+
+  getClusJson(aps: number, anno: number, mes: number): Observable<InformeCostosResponse> {
+    return this.http
+      .get<ApiResponseEnvelope<InformeCostosResponse>>(`${this.baseUrl}/clus`, {
+        headers: this.getHeaders(),
+        params: { aps: String(aps), anno: String(anno), mes: String(mes) }
+      })
+      .pipe(
+        map((resp) => resp.data),
+        catchError((err) => this.handleError('consultar componentes CLUS', err))
+      );
+  }
 }

@@ -192,3 +192,14 @@ body {
 .fade-in {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* Tabs compactos (PrimeNG v19: p-tabs/p-tablist/p-tab) — menos padding y
+   fuente ligeramente menor, consistente con la densidad compacta de tablas */
+.p-tabs .p-tab {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.p-tabs .p-tablist-content {
+  line-height: 1.2;
+}

@@ -1,6 +1,6 @@
 namespace Veolia.Api.Contracts.Responses;
 
-public sealed record VerificacionDetalleResponse(string EmpresaNombre, string Grupo, string Variable, decimal Valor);
+public sealed record VerificacionDetalleResponse(string EmpresaNombre, string Grupo, string Variable, decimal Valor, decimal EmpresaPropia);
 
 public sealed record ValidapreactualizaResponse(bool PuedeCalcular, IReadOnlyList<VerificacionDetalleResponse> Detalle);
 

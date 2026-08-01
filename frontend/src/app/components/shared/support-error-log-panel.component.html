@@ -1,7 +1,7 @@
 <button
   type="button"
   class="support-log-fab"
-  [title]="abierto() ? 'Cerrar log de errores DB' : 'Ver log de errores DB'"
+  [title]="abierto() ? 'Cerrar log de errores' : 'Ver log de errores'"
   (click)="toggle()"
 >
   <i class="pi pi-database"></i>
@@ -12,7 +12,7 @@
   <div class="support-log-header">
     <span class="support-log-title">
       <i class="pi pi-database"></i>
-      Log de errores DB (soporte)
+      Log de errores (soporte)
     </span>
     <div class="support-log-header-actions">
       <p-button
@@ -41,6 +41,7 @@
     <div class="support-log-entry" *ngFor="let entry of logs()">
       <div class="support-log-entry-top">
         <span class="support-log-timestamp">{{ entry.timestamp | date: 'dd/MM/yyyy HH:mm:ss' }}</span>
+        <span class="support-log-origen origen-{{ entry.origen }}">{{ origenLabel(entry.origen) }}</span>
         <span class="support-log-status">{{ entry.status }}</span>
       </div>
       <div class="support-log-request">

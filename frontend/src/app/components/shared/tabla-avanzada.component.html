@@ -1,34 +1,4 @@
 <div class="tabla-avanzada" [class.pantalla-completa]="pantallaCompleta()" [class.auto-width]="autoWidth">
-  <div class="densidad-toolbar">
-    <span class="densidad-label">Densidad de la tabla</span>
-    <div class="densidad-switch">
-      <button
-        type="button"
-        class="densidad-opcion"
-        [class.activa]="!compacta"
-        (click)="setDensidad(false)"
-      >
-        <i class="pi pi-bars"></i>
-        Normal
-      </button>
-      <button
-        type="button"
-        class="densidad-opcion"
-        [class.activa]="compacta"
-        (click)="setDensidad(true)"
-      >
-        <i class="pi pi-align-justify"></i>
-        Compacta
-      </button>
-    </div>
-    <p-button
-      [icon]="pantallaCompleta() ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
-      [label]="pantallaCompleta() ? 'Salir de pantalla completa' : 'Pantalla completa'"
-      severity="secondary"
-      [text]="true"
-      (click)="togglePantallaCompleta()"
-    ></p-button>
-  </div>
 
   <p-table
     [value]="rows"
@@ -36,8 +6,8 @@
     [scrollable]="true"
     [scrollHeight]="scrollHeightEfectivo"
     [paginator]="true"
-    [rows]="filasPorPagina"
-    [rowsPerPageOptions]="[10, 20, 50]"
+    [rows]="filasPorPaginaActual"
+    [rowsPerPageOptions]="rowsPerPageOptionsList"
     [tableStyle]="autoWidth ? { 'min-width': 'max-content' } : { 'min-width': '50rem' }"
     [stripedRows]="true"
     [rowHover]="true"
@@ -88,7 +58,38 @@
           (click)="mostrarGuardarVista = true"
         ></p-button>
 
-        <p-button icon="pi pi-external-link" label="Exportar" (click)="mostrarExport = true"></p-button>
+        <p-button icon="pi pi-external-link" label="Exportar" size="small" (click)="mostrarExport = true"></p-button>
+      
+  <div class="densidad-toolbar densidad-en-caption">
+    <span class="densidad-label" *ngIf="!pantallaCompleta()">Densidad de la tabla</span>
+    <div class="densidad-switch" *ngIf="!pantallaCompleta()">
+      <button
+        type="button"
+        class="densidad-opcion"
+        [class.activa]="!compacta"
+        (click)="setDensidad(false)"
+      >
+        <i class="pi pi-bars"></i>
+        Normal
+      </button>
+      <button
+        type="button"
+        class="densidad-opcion"
+        [class.activa]="compacta"
+        (click)="setDensidad(true)"
+      >
+        <i class="pi pi-align-justify"></i>
+        Compacta
+      </button>
+    </div>
+    <p-button
+      [icon]="pantallaCompleta() ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+      [label]="pantallaCompleta() ? 'Salir de pantalla completa' : 'Pantalla completa'"
+      severity="secondary"
+      [text]="true"
+      (click)="togglePantallaCompleta()"
+    ></p-button>
+  </div>
       </div>
     </ng-template>
     <ng-template pTemplate="header">
@@ -164,6 +165,16 @@
             [ngTemplateOutlet]="accionesTemplate"
             [ngTemplateOutletContext]="{ $implicit: row }"
           ></ng-container>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td [attr.colspan]="columnasState.visibles.length + (accionesTemplate ? 1 : 0)">
+          <div class="tabla-vacia" *ngIf="!loading">
+            <i class="pi pi-inbox"></i>
+            <span>No hay datos para mostrar.</span>
+          </div>
         </td>
       </tr>
     </ng-template>

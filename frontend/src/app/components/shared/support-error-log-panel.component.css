@@ -163,3 +163,40 @@
   padding: 2px 8px;
   border-radius: 6px;
 }
+
+/* Badge de origen del error (db / backend / red / frontend) */
+.support-log-origen {
+  font-weight: 700;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+.origen-db {
+  background: var(--color-bg-danger-soft);
+  border-color: var(--color-border-danger-soft);
+  color: var(--color-brand-accent);
+}
+
+.origen-backend {
+  background: #fff4e5;
+  border-color: #f0a840;
+  color: #a05a00;
+}
+
+.origen-red {
+  background: #e5efff;
+  border-color: #7aa7e8;
+  color: #1d4fa0;
+}
+
+.origen-frontend {
+  background: #f3e8ff;
+  border-color: #b57ee8;
+  color: #6b21a8;
+}
+
+.app-dark .origen-backend { background: rgba(240, 168, 64, 0.15); color: #f0b45c; }
+.app-dark .origen-red { background: rgba(122, 167, 232, 0.15); color: #8fb4ec; }
+.app-dark .origen-frontend { background: rgba(181, 126, 232, 0.15); color: #c79aef; }

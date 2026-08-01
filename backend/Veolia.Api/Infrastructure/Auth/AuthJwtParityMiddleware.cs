@@ -99,6 +99,14 @@ public sealed class AuthJwtParityMiddleware(RequestDelegate next)
         }
         catch (Exception ex)
         {
+            // ORA-01013 / cancellation: the client aborted the request (typical
+            // on page reload with in-flight calls). Not a real failure: treat
+            // as not-dead without polluting the log.
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return false;
+            }
+
             // Legacy environments may not have the dead-token table available.
             // Treat as not-dead rather than locking every request out.
             Console.WriteLine($"[IsDeadTokenAsync] Fallo consulta '{sql}': {ex.Message}");

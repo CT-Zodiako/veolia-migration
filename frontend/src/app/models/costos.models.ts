@@ -18,6 +18,7 @@ export interface VerificacionDetalle {
   grupo: string;
   variable: string;
   valor: number;
+  empresaPropia: number;
 }
 
 export interface ValidapreactualizaResponse {

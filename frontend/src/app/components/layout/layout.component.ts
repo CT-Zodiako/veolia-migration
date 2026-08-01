@@ -193,6 +193,7 @@ export class LayoutComponent implements OnInit {
       case '/suministros/cargue-mensual': return 'Cargue Mensual';
       case '/suministros/cargue-semestral': return 'Cargue Semestral';
       case '/calculo': return 'Cálculo Tarifas';
+      case '/costo-clus': return 'Detalle CLUS';
       case '/cra': return 'Índices CRA';
       case '/tarifas': return 'Detallado Tarifas';
       case '/tarifas-general': return 'Detallado Tarifas';

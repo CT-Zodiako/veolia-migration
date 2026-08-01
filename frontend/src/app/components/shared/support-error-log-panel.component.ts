@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
-import { SupportErrorLogService } from '../../services/support-error-log.service';
+import { SupportErrorLogService, SupportErrorOrigen, ORIGEN_LABELS } from '../../services/support-error-log.service';
 
 @Component({
   selector: 'app-support-error-log-panel',
@@ -22,5 +22,9 @@ export class SupportErrorLogPanelComponent {
 
   limpiar(): void {
     this.supportErrorLogService.clear();
+  }
+
+  origenLabel(origen: SupportErrorOrigen): string {
+    return ORIGEN_LABELS[origen];
   }
 }

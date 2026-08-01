@@ -31,7 +31,8 @@ public sealed class CostosRepository(
             const string detalleSql = @"SELECT EMPR_NOMBRE AS EmpresaNombre,
        TRIM(VALI_GRUPO) AS Grupo,
        TRIM(VALI_VAR) AS Variable,
-       ROUND(VALI_VALOR, 6) AS Valor
+       ROUND(VALI_VALOR, 6) AS Valor,
+       EMPR_PROPIA AS EmpresaPropia
 FROM VAUCO_ANTESLIQUIDAR
 WHERE APSA_ID = :aps AND VALI_ANNO = :anno AND VALI_MES = :mes
 ORDER BY EMPR_NOMBRE, VALI_GRUPO, VALI_VAR";

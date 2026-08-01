@@ -16,4 +16,8 @@ export class NotificationService {
   info(detail: string, summary = 'Info'): void {
     this.messageService.add({ severity: 'info', summary, detail, life: 4000 });
   }
+
+  warn(detail: string, summary = 'Atención'): void {
+    this.messageService.add({ severity: 'warn', summary, detail, life: 7000 });
+  }
 }

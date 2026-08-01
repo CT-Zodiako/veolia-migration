@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
-import { forkJoin } from 'rxjs';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
@@ -40,7 +39,8 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
             <app-tabla-avanzada
               [columnas]="columnasFacturacion"
               [rows]="resultados().facturacion?.filas || []"
-              storageKey="facturacion-facturacion"
+              [loading]="loadingTabs().has('facturacion')"
+                  storageKey="facturacion-facturacion"
               nombreExportar="InfoFacturacion"
             ></app-tabla-avanzada>
           </p-tabpanel>
@@ -48,7 +48,8 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
             <app-tabla-avanzada
               [columnas]="columnasFacturacionElectronica"
               [rows]="resultados().facturacionelectronica?.filas || []"
-              storageKey="facturacion-electronica"
+              [loading]="loadingTabs().has('facturacionelectronica')"
+                  storageKey="facturacion-electronica"
               nombreExportar="InfoFacturacionElectronica"
             ></app-tabla-avanzada>
           </p-tabpanel>
@@ -56,7 +57,8 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
             <app-tabla-avanzada
               [columnas]="columnasDetaFacturacion"
               [rows]="resultados().detafacturacion?.filas || []"
-              storageKey="facturacion-detafacturacion"
+              [loading]="loadingTabs().has('detafacturacion')"
+                  storageKey="facturacion-detafacturacion"
               nombreExportar="InfoDetFactura"
             ></app-tabla-avanzada>
           </p-tabpanel>
@@ -64,7 +66,8 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
             <app-tabla-avanzada
               [columnas]="columnasFacturacionClus"
               [rows]="resultados().facturacionclus?.filas || []"
-              storageKey="facturacion-clus"
+              [loading]="loadingTabs().has('facturacionclus')"
+                  storageKey="facturacion-clus"
               nombreExportar="InfoFactClus"
             ></app-tabla-avanzada>
           </p-tabpanel>
@@ -72,7 +75,8 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
             <app-tabla-avanzada
               [columnas]="columnasFacturacionDinc"
               [rows]="resultados().facturaciondinc?.filas || []"
-              storageKey="facturacion-dinc"
+              [loading]="loadingTabs().has('facturaciondinc')"
+                  storageKey="facturacion-dinc"
               nombreExportar="InfoFactDINC"
             ></app-tabla-avanzada>
           </p-tabpanel>
@@ -91,6 +95,9 @@ export class FacturacionPageComponent {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly resultados = signal<Partial<Record<FacturacionTab, FacturacionResponse>>>({});
+  /** Tabs con consulta en vuelo (puede haber más de una si el usuario
+   *  cambia de pestaña mientras otra carga). */
+  readonly loadingTabs = signal<ReadonlySet<FacturacionTab>>(new Set());
 
   readonly columnasFacturacion: TablaColumn[] = [
     { field: 'CLAS_NOMBRE', header: 'Clase Uso', filtrable: true },
@@ -326,38 +333,83 @@ export class FacturacionPageComponent {
     const annoValido = anno !== null && anno >= 2000 && anno <= 2999;
     const mesValido = mes !== null && mes >= 1 && mes <= 12;
     if (!apsValido || !annoValido || !mesValido || aps === null || anno === null || mes === null) return;
-    this.loading.set(true);
-    this.error.set('');
-    const payload: FacturacionRequest = { aps, mes, anno };
 
-    forkJoin({
-      facturacion: this.service.facturacion(payload),
-      detafacturacion: this.service.detafacturacion(payload),
-      facturacionclus: this.service.facturacionclus(payload),
-      facturaciondinc: this.service.facturaciondinc(payload),
-      facturacionelectronica: this.service.facturacionelectronica(payload)
-    }).subscribe({
+    // Lazy per-tab: params changed -> drop cached results and load ONLY the
+    // visible tab. The forkJoin version fetched all 5 queries up-front and
+    // blocked the page on the slowest one (fatelectronica > 2 min in Oracle).
+    this.error.set('');
+    this.resultados.set({});
+    this.cargarTab(this.currentTab());
+  }
+
+  private cargarTab(tab: FacturacionTab): void {
+    const aps = this.aps;
+    const anno = this.anno;
+    const mes = this.mes;
+    if (aps === null || anno === null || mes === null) return;
+    if (this.resultados()[tab]) return; // already loaded for current params
+    if (this.loadingTabs().has(tab)) return; // already in flight
+
+    const payload: FacturacionRequest = { aps, mes, anno };
+    this.loadingTabs.update(actual => new Set(actual).add(tab));
+    this.loading.set(true);
+
+    this.llamadaServicio(tab, payload).subscribe({
       next: (resp) => {
-        this.resultados.set({
-          facturacion: {
-            ...resp.facturacion,
-            filas: redondearFilas(
-              resp.facturacion.filas.map((fila) => ({ ...fila, TARI_MES: ((Number(fila['TARI_MES']) || 0) % 12) + 1 })),
-              this.decimalesFacturacion
-            )
-          },
-          detafacturacion: { ...resp.detafacturacion, filas: redondearFilas(resp.detafacturacion.filas, this.decimalesDetaFacturacion) },
-          facturacionclus: { ...resp.facturacionclus, filas: redondearFilas(resp.facturacionclus.filas, this.decimalesFacturacionClus) },
-          facturaciondinc: { ...resp.facturaciondinc, filas: redondearFilas(resp.facturaciondinc.filas, this.decimalesFacturacionDinc) },
-          facturacionelectronica: { ...resp.facturacionelectronica, filas: redondearFilas(resp.facturacionelectronica.filas, this.decimalesFacturacionElectronica) }
-        });
-        this.loading.set(false);
+        // Params guard: if the user changed APS/anno/mes while this query was
+        // in flight, DISCARD the stale response instead of mixing periods.
+        if (this.aps === aps && this.anno === anno && this.mes === mes) {
+          this.resultados.update(actual => ({ ...actual, [tab]: this.transformarFilas(tab, resp) }));
+        }
+        this.finalizarCarga(tab);
       },
       error: (e) => {
-        this.error.set(e?.error?.message || e?.message || 'Error consultando facturación.');
-        this.loading.set(false);
+        if (this.aps === aps && this.anno === anno && this.mes === mes) {
+          this.error.set(e?.error?.message || e?.message || 'Error consultando facturación.');
+        }
+        this.finalizarCarga(tab);
       }
     });
+  }
+
+  private finalizarCarga(tab: FacturacionTab): void {
+    this.loadingTabs.update(actual => {
+      const siguiente = new Set(actual);
+      siguiente.delete(tab);
+      return siguiente;
+    });
+    this.loading.set(this.loadingTabs().size > 0);
+  }
+
+  private llamadaServicio(tab: FacturacionTab, payload: FacturacionRequest) {
+    switch (tab) {
+      case 'facturacion': return this.service.facturacion(payload);
+      case 'detafacturacion': return this.service.detafacturacion(payload);
+      case 'facturacionclus': return this.service.facturacionclus(payload);
+      case 'facturaciondinc': return this.service.facturaciondinc(payload);
+      case 'facturacionelectronica': return this.service.facturacionelectronica(payload);
+    }
+  }
+
+  private transformarFilas(tab: FacturacionTab, resp: FacturacionResponse): FacturacionResponse {
+    switch (tab) {
+      case 'facturacion':
+        return {
+          ...resp,
+          filas: redondearFilas(
+            resp.filas.map((fila) => ({ ...fila, TARI_MES: ((Number(fila['TARI_MES']) || 0) % 12) + 1 })),
+            this.decimalesFacturacion
+          )
+        };
+      case 'detafacturacion':
+        return { ...resp, filas: redondearFilas(resp.filas, this.decimalesDetaFacturacion) };
+      case 'facturacionclus':
+        return { ...resp, filas: redondearFilas(resp.filas, this.decimalesFacturacionClus) };
+      case 'facturaciondinc':
+        return { ...resp, filas: redondearFilas(resp.filas, this.decimalesFacturacionDinc) };
+      case 'facturacionelectronica':
+        return { ...resp, filas: redondearFilas(resp.filas, this.decimalesFacturacionElectronica) };
+    }
   }
 
   limpiar(): void {
@@ -366,6 +418,8 @@ export class FacturacionPageComponent {
   }
 
   onTabChange(value: string | number | undefined): void {
-    this.currentTab.set(String(value ?? 'facturacion') as FacturacionTab);
+    const tab = String(value ?? 'facturacion') as FacturacionTab;
+    this.currentTab.set(tab);
+    this.cargarTab(tab);
   }
 }

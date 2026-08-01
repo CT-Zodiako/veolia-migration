@@ -49,10 +49,9 @@ public sealed class InfoGeneralesController(IInfoGeneralesRepository repository)
         try
         {
             var rows = await action(request.Apsaid, request.Proyid, tokenContext.SisuId, cancellationToken);
-            if (rows.Count == 0)
-                return NotFound(Envelope("error", Array.Empty<object>(), "No se encontraron resultados."));
-
-            return Ok(Envelope("success", rows, "OK"));
+            // Legacy parity: an empty period is a valid state (200 + empty array),
+            // not an error. A 404 triggered false error toasts/log entries.
+            return Ok(Envelope("success", rows, rows.Count == 0 ? "Sin resultados para el período." : "OK"));
         }
         catch (OracleException ex) when (IsDataSourceNotReady(ex))
         {
@@ -78,10 +77,9 @@ public sealed class InfoGeneralesController(IInfoGeneralesRepository repository)
         try
         {
             var rows = await action(request.Anno, request.Mes, tokenContext.SisuId, cancellationToken);
-            if (rows.Count == 0)
-                return NotFound(Envelope("error", Array.Empty<object>(), "No se encontraron resultados."));
-
-            return Ok(Envelope("success", rows, "OK"));
+            // Legacy parity: an empty period is a valid state (200 + empty array),
+            // not an error. A 404 triggered false error toasts/log entries.
+            return Ok(Envelope("success", rows, rows.Count == 0 ? "Sin resultados para el período." : "OK"));
         }
         catch (OracleException ex) when (IsDataSourceNotReady(ex))
         {

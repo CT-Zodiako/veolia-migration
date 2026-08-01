@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
+import { EXPECTED_ERROR_STATUSES } from '../../interceptors/http-context.tokens';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth.service';
@@ -62,7 +63,7 @@ export class ReliqTarificadorService {
   }
 
   estadoReliquidacion(reliq: number): Observable<ApiEnvelope<EstadoReliquidacion>> {
-    return this.http.post<ApiEnvelope<EstadoReliquidacion>>(`${this.baseUrl}/estadoReliquidacion`, { reliqId: reliq }, { headers: this.getHeaders() })
+    return this.http.post<ApiEnvelope<EstadoReliquidacion>>(`${this.baseUrl}/estadoReliquidacion`, { reliqId: reliq }, { headers: this.getHeaders(), context: new HttpContext().set(EXPECTED_ERROR_STATUSES, [404]) })
       .pipe(catchError((error) => this.handleError(error)));
   }
 }
