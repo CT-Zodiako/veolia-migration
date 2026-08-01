@@ -1,4 +1,4 @@
-namespace Veolia.Api.Infrastructure.Auth;
+namespace Veolia.Api.Modules.Auth;
 
 public class AuthContractMapper
 {

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.Common;
 using Veolia.Api.Infrastructure.Data;
+using Veolia.Api.Modules.Auth.Asignaciones;
 
 namespace Veolia.Api.Tests;
 
@@ -10,7 +11,7 @@ public sealed class AuthRepositoryOracleIntegrationTests
 {
     private readonly IConfiguration configuration;
     private readonly IOracleConnectionFactory connectionFactory;
-    private readonly AuthRepository repository;
+    private readonly AsignacionesRepository repository;
 
     public AuthRepositoryOracleIntegrationTests()
     {
@@ -21,7 +22,7 @@ public sealed class AuthRepositoryOracleIntegrationTests
             .Build();
 
         connectionFactory = new OracleConnectionFactory(configuration);
-        repository = new AuthRepository(connectionFactory, configuration);
+        repository = new AsignacionesRepository(connectionFactory);
     }
 
     [Fact]

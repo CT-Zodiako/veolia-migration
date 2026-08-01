@@ -7,6 +7,10 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Veolia.Api.Infrastructure.Data;
+using Veolia.Api.Modules.Auth.Asignaciones;
+using Veolia.Api.Modules.Auth.Login;
+using Veolia.Api.Modules.Auth.Menu;
+using Veolia.Api.Modules.Auth.Usuarios;
 using Veolia.Api.Modules.Regulator.Aps;
 using Veolia.Api.Modules.Regulator.Empresas;
 using Veolia.Api.Modules.Regulator.Proyecciones;
@@ -25,8 +29,17 @@ public sealed class AuthApiSmokeFactory : WebApplicationFactory<Program>
         {
             var sqliteFactory = new SqliteOracleConnectionFactory();
 
-            services.RemoveAll<IAuthRepository>();
-            services.AddSingleton<IAuthRepository>(new StubAuthRepository(sqliteFactory));
+            services.RemoveAll<ILoginRepository>();
+            services.AddSingleton<ILoginRepository>(new StubLoginRepository(sqliteFactory));
+
+            services.RemoveAll<IUsuariosRepository>();
+            services.AddSingleton<IUsuariosRepository>(new StubUsuariosRepository());
+
+            services.RemoveAll<IMenuRepository>();
+            services.AddSingleton<IMenuRepository>(new StubMenuRepository());
+
+            services.RemoveAll<IAsignacionesRepository>();
+            services.AddSingleton<IAsignacionesRepository>(new StubAsignacionesRepository());
 
             services.RemoveAll<IApsRepository>();
             services.AddSingleton<IApsRepository>(new StubApsRepository());
@@ -87,11 +100,11 @@ internal sealed class SqliteOracleConnectionFactory : IOracleConnectionFactory
     public IDbConnection CreateConnection() => new SqliteConnection(connectionString);
 }
 
-internal sealed class StubAuthRepository : IAuthRepository
+internal sealed class StubLoginRepository : ILoginRepository
 {
     private readonly IOracleConnectionFactory connectionFactory;
 
-    public StubAuthRepository(IOracleConnectionFactory connectionFactory)
+    public StubLoginRepository(IOracleConnectionFactory connectionFactory)
     {
         this.connectionFactory = connectionFactory;
     }
@@ -102,8 +115,8 @@ internal sealed class StubAuthRepository : IAuthRepository
         ]);
 
     public Task<object?> LoginAsync(string correo, string pass, int idSistema, CancellationToken cancellationToken)
-        => Task.FromResult<object?>(new LoginRepositoryResult(
-            LoginOutcomeKind.Success,
+        => Task.FromResult<object?>(new Veolia.Api.Modules.Auth.LoginRepositoryResult(
+            Veolia.Api.Modules.Auth.LoginOutcomeKind.Success,
             "OK",
             new Dictionary<string, object>
             {
@@ -119,11 +132,11 @@ internal sealed class StubAuthRepository : IAuthRepository
             },
             "header.payload.signature"));
 
-    public Task<SwitchSistemaRepositoryResult> SwitchSistemaAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
+    public Task<Veolia.Api.Modules.Auth.SwitchSistemaRepositoryResult> SwitchSistemaAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
         => Task.FromResult(idSistema == 999
-            ? new SwitchSistemaRepositoryResult(LoginOutcomeKind.InvalidSystem, "Sistema no encontrado para el usuario")
-            : new SwitchSistemaRepositoryResult(
-                LoginOutcomeKind.Success,
+            ? new Veolia.Api.Modules.Auth.SwitchSistemaRepositoryResult(Veolia.Api.Modules.Auth.LoginOutcomeKind.InvalidSystem, "Sistema no encontrado para el usuario")
+            : new Veolia.Api.Modules.Auth.SwitchSistemaRepositoryResult(
+                Veolia.Api.Modules.Auth.LoginOutcomeKind.Success,
                 "OK",
                 new Dictionary<string, object>
                 {
@@ -149,9 +162,14 @@ internal sealed class StubAuthRepository : IAuthRepository
         return new { rowsAffected };
     }
 
-    public Task<IReadOnlyList<long>> GetUserMenuAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
+    public Task<IReadOnlyList<object>> AllSistemasAsync(CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<object>>([
+            new Dictionary<string, object> { ["SIST_ID"] = 10, ["SIST_NOMBRE"] = "Operaciones" }
+        ]);
+}
 
+internal sealed class StubUsuariosRepository : IUsuariosRepository
+{
     public Task<(int Status, string Response, string Msg)> SetChangePassAsync(long sisuId, string oldPass, string newPass, string confirmPass, CancellationToken cancellationToken)
         => Task.FromResult((200, "OK", "Contraseña actualizada"));
 
@@ -167,15 +185,15 @@ internal sealed class StubAuthRepository : IAuthRepository
             }
         ]);
 
-    public Task<UserMutationRepositoryResult> RegistroAsync(string nombre, string apellido, string correo, string password, int estado, CancellationToken cancellationToken)
+    public Task<Veolia.Api.Modules.Auth.UserMutationRepositoryResult> RegistroAsync(string nombre, string apellido, string correo, string password, int estado, CancellationToken cancellationToken)
         => Task.FromResult(correo.Contains("duplicate", StringComparison.OrdinalIgnoreCase)
-            ? new UserMutationRepositoryResult(true, null, "El correo ya se encuentra registrado")
-            : new UserMutationRepositoryResult(false, new { rowsAffected = 1 }));
+            ? new Veolia.Api.Modules.Auth.UserMutationRepositoryResult(true, null, "El correo ya se encuentra registrado")
+            : new Veolia.Api.Modules.Auth.UserMutationRepositoryResult(false, new { rowsAffected = 1 }));
 
-    public Task<UserMutationRepositoryResult> UpdateUsuarioAsync(long id, string nombre, string apellido, string correo, int estado, CancellationToken cancellationToken)
+    public Task<Veolia.Api.Modules.Auth.UserMutationRepositoryResult> UpdateUsuarioAsync(long id, string nombre, string apellido, string correo, int estado, CancellationToken cancellationToken)
         => Task.FromResult(correo.Contains("duplicate", StringComparison.OrdinalIgnoreCase)
-            ? new UserMutationRepositoryResult(true, null, "El correo ya se encuentra registrado")
-            : new UserMutationRepositoryResult(false, new { rowsAffected = 1 }));
+            ? new Veolia.Api.Modules.Auth.UserMutationRepositoryResult(true, null, "El correo ya se encuentra registrado")
+            : new Veolia.Api.Modules.Auth.UserMutationRepositoryResult(false, new { rowsAffected = 1 }));
 
     public Task<IReadOnlyList<object>> GetUserByIdAsync(long id, CancellationToken cancellationToken)
         => Task.FromResult<IReadOnlyList<object>>([
@@ -184,7 +202,35 @@ internal sealed class StubAuthRepository : IAuthRepository
 
     public Task<string> ResetPassAsync(long id, CancellationToken cancellationToken)
         => Task.FromResult("abc123");
+}
 
+internal sealed class StubMenuRepository : IMenuRepository
+{
+    public Task<IReadOnlyList<long>> GetUserMenuAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
+
+    public Task<IReadOnlyList<object>> GetGeneralMenuTreeAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<object>>([
+            new Dictionary<string, object> { ["MENU_ID"] = 11, ["MENU_NOMBRE"] = "Dashboard" }
+        ]);
+
+    public Task<IReadOnlyList<long>> GetMenuByUserAsync(int idSistema, long sisuId, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
+
+    public Task<IReadOnlyList<long>> GetMenuUserOptionsAsync(long id, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
+
+    public Task<object?> UptUserMenuAsync(long id, IReadOnlyList<long> options, int sistema, CancellationToken cancellationToken)
+        => Task.FromResult<object?>(new { rowsAffected = 2 });
+
+    public Task<IReadOnlyList<object>> GetMenuCatalogAsync(CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<object>>([
+            new Dictionary<string, object> { ["MENU_ID"] = 11, ["MENU_NOMBRE"] = "Dashboard" }
+        ]);
+}
+
+internal sealed class StubAsignacionesRepository : IAsignacionesRepository
+{
     public Task<(IReadOnlyList<object> Asignadas, IReadOnlyList<object> SinAsignar)> GetApsAsignadasAsync(long id, CancellationToken cancellationToken)
     {
         if (id == 500)
@@ -217,30 +263,6 @@ internal sealed class StubAuthRepository : IAuthRepository
 
     public Task<string> AsignarSistemaAsync(long sisuId, IReadOnlyList<long> asignados, IReadOnlyList<long> noAsignados, CancellationToken cancellationToken)
         => Task.FromResult("Sistemas actualizados");
-
-    public Task<IReadOnlyList<object>> AllSistemasAsync(CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<object>>([
-            new Dictionary<string, object> { ["SIST_ID"] = 10, ["SIST_NOMBRE"] = "Operaciones" }
-        ]);
-
-    public Task<IReadOnlyList<object>> GetGeneralMenuTreeAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<object>>([
-            new Dictionary<string, object> { ["MENU_ID"] = 11, ["MENU_NOMBRE"] = "Dashboard" }
-        ]);
-
-    public Task<IReadOnlyList<long>> GetMenuByUserAsync(int idSistema, long sisuId, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
-
-    public Task<IReadOnlyList<long>> GetMenuUserOptionsAsync(long id, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
-
-    public Task<object?> UptUserMenuAsync(long id, IReadOnlyList<long> options, int sistema, CancellationToken cancellationToken)
-        => Task.FromResult<object?>(new { rowsAffected = 2 });
-
-    public Task<IReadOnlyList<object>> GetMenuCatalogAsync(CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<object>>([
-            new Dictionary<string, object> { ["MENU_ID"] = 11, ["MENU_NOMBRE"] = "Dashboard" }
-        ]);
 }
 
 internal sealed class StubApsRepository : IApsRepository

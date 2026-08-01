@@ -1,5 +1,6 @@
 using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Infrastructure.Auth;
+using Veolia.Api.Modules.Auth;
 using Veolia.Api.Modules.Regulator.Aps;
 using Veolia.Api.Modules.Regulator.Costos;
 using Veolia.Api.Modules.Regulator.Empresas;
@@ -56,8 +57,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IOracleConnectionFactory, OracleConnectionFactory>();
 builder.Services.AddHealthModule();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<AuthContractMapper>();
+builder.Services.AddAuthModule();
 builder.Services.AddApsModule();
 builder.Services.AddEmpresasModule();
 builder.Services.AddGeneralModule();
