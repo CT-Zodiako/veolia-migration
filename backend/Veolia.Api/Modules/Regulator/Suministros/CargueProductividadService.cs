@@ -1,8 +1,6 @@
-using Veolia.Api.Contracts.Requests;
-using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Infrastructure.GoogleDrive;
 
-namespace Veolia.Api.Services;
+namespace Veolia.Api.Modules.Regulator.Suministros;
 
 public interface ICargueProductividadService
 {

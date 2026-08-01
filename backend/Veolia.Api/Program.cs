@@ -22,6 +22,7 @@ using Veolia.Api.Modules.Regulator.Pgirs;
 using Veolia.Api.Modules.Regulator.Reversiones;
 using Veolia.Api.Modules.Regulator.Sui;
 using Veolia.Api.Modules.Regulator.SuiReversiones;
+using Veolia.Api.Modules.Regulator.Suministros;
 using Veolia.Api.Modules.Reliquidaciones;
 using Veolia.Api.Modules.Sui853.Cft;
 using Veolia.Api.Modules.Sui853.Configuracion;
@@ -59,7 +60,7 @@ builder.Services.AddEmpresasModule();
 builder.Services.AddScoped<IGeneralRepository, GeneralRepository>();
 builder.Services.AddTarifasModule();
 builder.Services.AddReversionesModule();
-builder.Services.AddScoped<ISuministrosRepository, SuministrosRepository>();
+builder.Services.AddSuministrosModule();
 builder.Services.AddSuiReversionesModule();
 builder.Services.AddSuiModule();
 builder.Services.AddInformesModule();
@@ -91,7 +92,6 @@ builder.Services.AddAprovechamientoModule();
 builder.Services.Configure<GoogleDriveOptions>(builder.Configuration.GetSection(GoogleDriveOptions.SectionName));
 builder.Services.AddSingleton<IGoogleSheetsService, GoogleSheetsService>();
 builder.Services.AddScoped<ICrecimientoDriveService, CrecimientoDriveService>();
-builder.Services.AddScoped<ICargueProductividadService, CargueProductividadService>();
 
 var app = builder.Build();
 

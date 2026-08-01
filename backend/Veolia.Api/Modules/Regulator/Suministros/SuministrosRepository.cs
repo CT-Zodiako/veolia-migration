@@ -3,10 +3,9 @@ using System.Data;
 using System.Data.Common;
 using Veolia.Api.Contracts.Requests;
 using Veolia.Api.Contracts.Responses;
-using Veolia.Api.Contracts.Suministros;
-using Veolia.Api.Services;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Suministros;
 
 public sealed class SuministrosRepository(IOracleConnectionFactory connectionFactory) : ISuministrosRepository
 {

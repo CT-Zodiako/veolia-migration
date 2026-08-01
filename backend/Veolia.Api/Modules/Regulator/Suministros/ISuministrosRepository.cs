@@ -1,8 +1,7 @@
-using Veolia.Api.Contracts.Suministros;
 using Veolia.Api.Contracts.Requests;
 using Veolia.Api.Contracts.Responses;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Suministros;
 
 public interface ISuministrosRepository
 {

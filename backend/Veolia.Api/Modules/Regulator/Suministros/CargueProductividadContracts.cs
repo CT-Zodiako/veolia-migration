@@ -1,4 +1,4 @@
-namespace Veolia.Api.Contracts.Requests;
+namespace Veolia.Api.Modules.Regulator.Suministros;
 
 public sealed record CargueProductividadConsultaRequest(int anno, int mes);
 

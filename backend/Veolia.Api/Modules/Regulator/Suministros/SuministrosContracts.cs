@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Veolia.Api.Contracts.Suministros;
+namespace Veolia.Api.Modules.Regulator.Suministros;
 
 // Nombres de propiedad JSON explícitos: el frontend espera camelCase para
 // este DTO en particular (a diferencia de la mayoría de las respuestas de
@@ -32,3 +32,7 @@ public class ReversionHistoryItem
     [JsonPropertyName("nombreAps")]
     public string NombreAps { get; set; } = string.Empty;
 }
+
+public sealed record ReversionResponse(bool ok, string? message, int? reversionId);
+
+public sealed record SetReversionRequest(int aps, int anno, int mes, string motivo);
