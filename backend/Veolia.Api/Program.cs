@@ -4,6 +4,7 @@ using Veolia.Api.Infrastructure.Aps;
 using Veolia.Api.Infrastructure.Sui853;
 using Veolia.Api.Infrastructure.Data.Interfaces;
 using Veolia.Api.Modules.Regulator.Informes;
+using Veolia.Api.Modules.Reliquidaciones;
 using Veolia.Api.Infrastructure.GoogleDrive;
 using Veolia.Api.Services;
 
@@ -61,9 +62,7 @@ builder.Services.AddScoped<ILineaTiempoRepository, LineaTiempoRepository>();
 builder.Services.AddScoped<ICrecimientoRepository, CrecimientoRepository>();
 builder.Services.AddScoped<ISubcontProyRepository, SubcontProyRepository>();
 builder.Services.AddScoped<IEjecucionProyeccionRepository, EjecucionProyeccionRepository>();
-builder.Services.AddScoped<IReliqCrearRepository, ReliqCrearRepository>();
-builder.Services.AddScoped<IReliqCargueRepository, ReliqCargueRepository>();
-builder.Services.AddScoped<IReliqTarificadorRepository, ReliqTarificadorRepository>();
+builder.Services.AddReliquidacionesModule();
 builder.Services.AddScoped<IInfoGeneralesRepository, InfoGeneralesRepository>();
 builder.Services.AddScoped<IInfoGerencialRepository, InfoGerencialRepository>();
 builder.Services.AddScoped<IPgirsRepository, PgirsRepository>();

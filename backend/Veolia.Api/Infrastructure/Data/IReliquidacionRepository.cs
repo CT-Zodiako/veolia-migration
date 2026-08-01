@@ -1,4 +1,4 @@
-using Veolia.Api.Contracts.Reliquidacion;
+using Veolia.Api.Modules.Reliquidaciones.Contracts;
 
 namespace Veolia.Api.Infrastructure.Data;
 
