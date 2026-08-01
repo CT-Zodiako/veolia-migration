@@ -1,6 +1,5 @@
-using Veolia.Api.Contracts.Responses;
 
-namespace Veolia.Api.Infrastructure.Data.Interfaces;
+namespace Veolia.Api.Modules.Regulator.Informes;
 
 public interface IInformesRepository
 {

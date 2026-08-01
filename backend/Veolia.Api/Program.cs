@@ -3,6 +3,7 @@ using Veolia.Api.Infrastructure.Auth;
 using Veolia.Api.Infrastructure.Aps;
 using Veolia.Api.Infrastructure.Sui853;
 using Veolia.Api.Infrastructure.Data.Interfaces;
+using Veolia.Api.Modules.Regulator.Informes;
 using Veolia.Api.Infrastructure.GoogleDrive;
 using Veolia.Api.Services;
 
@@ -41,7 +42,7 @@ builder.Services.AddScoped<IReversionesRepository, ReversionesRepository>();
 builder.Services.AddScoped<ISuministrosRepository, SuministrosRepository>();
 builder.Services.AddScoped<ISuiReversionesRepository, SuiReversionesRepository>();
 builder.Services.AddScoped<ISuiRepository, SuiRepository>();
-builder.Services.AddScoped<IInformesRepository, InformesRepository>();
+builder.Services.AddInformesModule();
 builder.Services.AddScoped<ISui853ReadmodelsRepository, Sui853ReadmodelsRepository>();
 builder.Services.AddScoped<Sui853ContractMapper>();
 builder.Services.AddScoped<IValidacionesRepository, ValidacionesRepository>();
