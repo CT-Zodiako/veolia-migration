@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Infrastructure.Aps;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.Aps;
 
 [ApiController]
 [Route("api/v1/aps")]

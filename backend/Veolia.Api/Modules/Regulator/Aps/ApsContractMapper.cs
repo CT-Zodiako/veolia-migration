@@ -1,4 +1,4 @@
-namespace Veolia.Api.Infrastructure.Aps;
+namespace Veolia.Api.Modules.Regulator.Aps;
 
 public sealed class ApsContractMapper
 {

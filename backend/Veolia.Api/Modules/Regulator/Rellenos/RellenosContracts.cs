@@ -1,6 +1,31 @@
 using System.Text.Json.Serialization;
 
-namespace Veolia.Api.Contracts.Responses;
+namespace Veolia.Api.Modules.Regulator.Rellenos;
+
+public sealed class RellenoRequest
+{
+    public long rell_id { get; set; }
+}
+
+public sealed class CrearRellenoRequest
+{
+    public string rell_nomrelleno { get; set; } = string.Empty;
+    public string? rell_descripcion { get; set; }
+    public int rell_estado { get; set; } = 1;
+    public int rell_propio { get; set; }
+    public int rell_regional { get; set; }
+    public string? rell_nusd { get; set; }
+}
+
+public sealed class EditarRellenoRequest
+{
+    public string rell_nomrelleno { get; set; } = string.Empty;
+    public string? rell_descripcion { get; set; }
+    public int rell_estado { get; set; } = 1;
+    public int rell_propio { get; set; }
+    public int rell_regional { get; set; }
+    public string? rell_nusd { get; set; }
+}
 
 // Nombres de propiedad JSON explícitos: el frontend espera el nombre de
 // columna Oracle tal cual (mayúsculas). Es la única clase de respuesta en

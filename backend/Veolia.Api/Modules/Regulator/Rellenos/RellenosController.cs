@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Contracts.Requests;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data.Interfaces;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.Rellenos;
 
 [ApiController]
 [Route("api/v1/rellenos")]
