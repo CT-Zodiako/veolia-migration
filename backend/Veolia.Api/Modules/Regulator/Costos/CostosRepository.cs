@@ -1,13 +1,12 @@
 using Dapper;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
-using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Exceptions;
-using Veolia.Api.Infrastructure.Data.Interfaces;
+using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Modules.Regulator.Suministros;
 using Veolia.Api.Modules.Regulator.Validaciones;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Costos;
 
 public sealed class CostosRepository(
     IOracleConnectionFactory connectionFactory,

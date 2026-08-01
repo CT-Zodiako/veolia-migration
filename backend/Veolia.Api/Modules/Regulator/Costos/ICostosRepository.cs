@@ -1,6 +1,4 @@
-using Veolia.Api.Contracts.Responses;
-
-namespace Veolia.Api.Infrastructure.Data.Interfaces;
+namespace Veolia.Api.Modules.Regulator.Costos;
 
 public interface ICostosRepository
 {
@@ -13,3 +11,4 @@ public interface ICostosRepository
     Task<IReadOnlyList<CostoClusItemResponse>> ConsultarCostosClusAsync(int aps, int anno, int mes, CancellationToken cancellationToken);
     Task<IReadOnlyList<ComportaClusItemResponse>> ConsultarComportaClusAsync(int aps, int anno, int mes, CancellationToken cancellationToken);
 }
+
