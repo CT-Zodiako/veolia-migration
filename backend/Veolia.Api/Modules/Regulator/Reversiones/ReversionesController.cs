@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.Reversiones;
 
 [ApiController]
 [Route("api/v1/reversiones")]

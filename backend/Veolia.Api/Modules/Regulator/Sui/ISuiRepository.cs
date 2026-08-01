@@ -1,7 +1,6 @@
-using Veolia.Api.Contracts.Requests;
 using Veolia.Api.Contracts.Responses;
 
-namespace Veolia.Api.Infrastructure.Data.Interfaces;
+namespace Veolia.Api.Modules.Regulator.Sui;
 
 public interface ISuiRepository
 {

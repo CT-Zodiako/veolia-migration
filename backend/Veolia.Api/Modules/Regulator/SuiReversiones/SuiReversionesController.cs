@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Contracts.Sui;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.SuiReversiones;
 
 [ApiController]
 [Route("api/v1/sui")]

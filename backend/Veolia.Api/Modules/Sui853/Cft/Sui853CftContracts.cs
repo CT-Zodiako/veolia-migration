@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Veolia.Api.Contracts.Sui853;
+namespace Veolia.Api.Modules.Sui853.Cft;
 
 // DTOs genéricos compartidos por los 12 endpoints de SUI853/CFT. Los 12
 // ejecutan el mismo SQL genérico (SELECT SUI.f_render_formato2(:codigo) AS

@@ -1,4 +1,4 @@
-namespace Veolia.Api.Infrastructure.Sui853;
+namespace Veolia.Api.Modules.Sui853.Configuracion;
 
 public sealed class Sui853ContractMapper
 {

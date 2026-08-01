@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Infrastructure.Data;
-using Veolia.Api.Infrastructure.Sui853;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Sui853.Configuracion;
 
 [ApiController]
 [Route("api/v1/sui853Configuracion")]

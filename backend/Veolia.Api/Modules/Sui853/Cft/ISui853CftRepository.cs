@@ -1,6 +1,4 @@
-using Veolia.Api.Contracts.Sui853;
-
-namespace Veolia.Api.Infrastructure.Data.Interfaces;
+namespace Veolia.Api.Modules.Sui853.Cft;
 
 public interface ISui853CftRepository
 {

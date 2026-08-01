@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Veolia.Api.Contracts.Requests;
+namespace Veolia.Api.Modules.Regulator.Sui;
 
 public sealed class SuiDashboardRequest
 {

@@ -1,7 +1,8 @@
 using Dapper;
 using System.Data.Common;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Sui853.Configuracion;
 
 public sealed class Sui853ReadmodelsRepository(IOracleConnectionFactory connectionFactory) : ISui853ReadmodelsRepository
 {

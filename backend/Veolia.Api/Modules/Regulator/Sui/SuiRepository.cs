@@ -3,12 +3,11 @@ using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Common;
-using Veolia.Api.Contracts.Requests;
 using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Exceptions;
-using Veolia.Api.Infrastructure.Data.Interfaces;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Sui;
 
 public sealed class SuiRepository(IOracleConnectionFactory connectionFactory, ILogger<SuiRepository> logger) : ISuiRepository
 {

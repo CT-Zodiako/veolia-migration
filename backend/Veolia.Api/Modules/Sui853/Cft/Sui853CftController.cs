@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Veolia.Api.Contracts.Responses;
-using Veolia.Api.Contracts.Sui853;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data.Interfaces;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Sui853.Cft;
 
 // Los 12 endpoints ejecutan el mismo SQL genérico
 // (SELECT SUI.f_render_formato2(:codigo) AS json FROM dual), cambiando solo

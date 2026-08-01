@@ -2,10 +2,9 @@ using Dapper;
 using System.Data;
 using System.Data.Common;
 using System.Text.Json;
-using Veolia.Api.Contracts.Sui853;
-using Veolia.Api.Infrastructure.Data.Interfaces;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Sui853.Cft;
 
 // Los 12 endpoints de SUI853/CFT ejecutan el mismo SQL genérico, cambiando
 // solo el código de formato SUI hardcodeado (nunca provisto por el cliente).

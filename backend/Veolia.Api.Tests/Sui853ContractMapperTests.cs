@@ -1,4 +1,4 @@
-using Veolia.Api.Infrastructure.Sui853;
+using Veolia.Api.Modules.Sui853.Configuracion;
 
 namespace Veolia.Api.Tests;
 
