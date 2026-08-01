@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Common;
 using Oracle.ManagedDataAccess.Client;
-using Veolia.Api.Infrastructure.Data.Interfaces;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Facturacion;
 
 public sealed class FacturacionRepository(IOracleConnectionFactory connectionFactory) : IFacturacionRepository
 {

@@ -1,12 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using Veolia.Api.Contracts.Requests;
 using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data;
-using Veolia.Api.Infrastructure.Data.Interfaces;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.Facturacion;
 
 [ApiController]
 [Route("api/v1/facturacion")]

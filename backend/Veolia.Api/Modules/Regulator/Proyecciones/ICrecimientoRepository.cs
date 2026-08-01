@@ -1,6 +1,4 @@
-using Veolia.Api.Contracts.Proyecciones;
-
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Proyecciones;
 
 public interface ICrecimientoRepository
 {

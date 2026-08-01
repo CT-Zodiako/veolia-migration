@@ -1,4 +1,4 @@
-namespace Veolia.Api.Infrastructure.Data.Interfaces;
+namespace Veolia.Api.Modules.Regulator.Facturacion;
 
 public interface IFacturacionRepository
 {

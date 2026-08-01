@@ -1,8 +1,8 @@
 using System.Data.Common;
 using Dapper;
-using Veolia.Api.Contracts.Proyecciones;
+using Veolia.Api.Infrastructure.Data;
 
-namespace Veolia.Api.Infrastructure.Data;
+namespace Veolia.Api.Modules.Regulator.Proyecciones;
 
 public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFactory) : IProyeccionRepository
 {

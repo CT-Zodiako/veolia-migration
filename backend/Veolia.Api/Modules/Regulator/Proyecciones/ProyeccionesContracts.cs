@@ -1,4 +1,62 @@
-namespace Veolia.Api.Contracts.Proyecciones;
+namespace Veolia.Api.Modules.Regulator.Proyecciones;
+
+// ---------------------------------------------------------------------------
+// Requests
+// ---------------------------------------------------------------------------
+
+public sealed class ProyeccionConsultaRequest
+{
+    public long ApsaId { get; set; }
+    public int Anno { get; set; }
+    public int Mes { get; set; }
+}
+
+public sealed class ProyeccionCreateRequest
+{
+    public long ApsaId { get; set; }
+    public string ProyNombre { get; set; } = string.Empty;
+    public int ProyTipo100 { get; set; } = 1;
+    public int ProyAnnoDes { get; set; }
+    public int ProyMesDes { get; set; }
+    public int ProyAnnoHas { get; set; }
+    public int ProyMesHas { get; set; }
+}
+
+public sealed class ProyeccionUpdateRequest
+{
+    public long ApsaId { get; set; }
+    public string ProyNombre { get; set; } = string.Empty;
+    public int ProyTipo100 { get; set; } = 1;
+    public int ProyAnnoDes { get; set; }
+    public int ProyMesDes { get; set; }
+    public int ProyAnnoHas { get; set; }
+    public int ProyMesHas { get; set; }
+}
+
+public sealed class LineaTiempoUpsertRequest
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+    public bool IsNew { get; set; }
+    public List<LineaTiempoRow> Rows { get; set; } = new();
+}
+
+public sealed class SubcontConsultaRequest
+{
+    public long ApsaId { get; set; }
+    public long ProyId { get; set; }
+    public int Anno { get; set; }
+    public int Mes { get; set; }
+}
+
+public sealed class SubcontUpsertRequest
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+    public int Anno { get; set; }
+    public int Mes { get; set; }
+    public List<SubcontItem> Items { get; set; } = new();
+}
 
 public sealed class CrecimientoConsultaRequest
 {
@@ -10,6 +68,115 @@ public sealed class CrecimientoUsuariosRequest
     public long ProyId { get; set; }
     public long ApsaId { get; set; }
     public List<CrecimientoUsuariosItem> Items { get; set; } = new();
+}
+
+public sealed class CrecimientoPropiaRequest
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+    public List<CrecimientoPropiaItem> Items { get; set; } = new();
+}
+
+public sealed class CrecimientoTercerosRequest
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+    public List<CrecimientoTercerosItem> Items { get; set; } = new();
+}
+
+public sealed class DescuentosRequest
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+    public List<DescuentosItem> Items { get; set; } = new();
+}
+
+public sealed class CrecimientoDriveRequest
+{
+    public long ApsaId { get; set; }
+}
+
+public sealed class EjecutarProyeccionRequest
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+}
+
+// ---------------------------------------------------------------------------
+// Responses / shared payloads
+// ---------------------------------------------------------------------------
+
+public sealed class MutationResponse
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+    public long? Id { get; set; }
+}
+
+public sealed class ProyeccionListItem
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+    public string? ApsaNombre { get; set; }
+    public string ProyNombre { get; set; } = string.Empty;
+    public string? ProyDescripcion { get; set; }
+    public int ProyTipo100 { get; set; }
+    public string? ProyTipoNombre { get; set; }
+    public int ProyAnnoDes { get; set; }
+    public int ProyMesDes { get; set; }
+    public int ProyAnnoHas { get; set; }
+    public int ProyMesHas { get; set; }
+    public int ProyEstado { get; set; }
+    public DateTime? ProyFecha { get; set; }
+    public string? SisuCorreo { get; set; }
+}
+
+public sealed class ProyeccionDetail
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+    public string ProyNombre { get; set; } = string.Empty;
+    public int ProyTipo100 { get; set; }
+    public int ProyAnnoDes { get; set; }
+    public int ProyMesDes { get; set; }
+    public int ProyAnnoHas { get; set; }
+    public int ProyMesHas { get; set; }
+    public int ProyEstado { get; set; }
+    public long? UsuaUsua { get; set; }
+    public DateTime? ProyFecha { get; set; }
+}
+
+public sealed class LineaTiempoRow
+{
+    public long ProyId { get; set; }
+    public long ApsaId { get; set; }
+    public int Anno { get; set; }
+    public int Mes { get; set; }
+    public decimal? Deltipc { get; set; }
+    public decimal? Deltipcc { get; set; }
+    public decimal? Deltsmlv { get; set; }
+    public decimal? Deltioexp { get; set; }
+    public decimal? Deltfacproduc { get; set; }
+    public decimal? Deltindipcc { get; set; }
+    public decimal? Deltipccs { get; set; }
+
+    // DELTESTADO (verificado contra Oracle real, NUMBER NOT NULL, sin default): comentario de
+    // columna real "Estado que debe cambiar a 1 cuando se realiza la proyeccion y con el cual
+    // no permite ser modificado". 0 = editable, 1 = bloqueada (ya usada en una proyección ejecutada).
+    public int Deltestado { get; set; }
+}
+
+public sealed class SubcontItem
+{
+    public long ClasClase { get; set; }
+    public decimal? SucoValor { get; set; }
+}
+
+// AUCO_CLASESUSO -- catálogo real de clase de uso (Estratos 1-6 + Comercial/Industrial/Oficial).
+public sealed class ClaseUsoItem
+{
+    public long ClasClase { get; set; }
+    public string ClasNombre { get; set; } = string.Empty;
 }
 
 // PROY_USUARIOS no tiene ID sustituto -- clave natural (PROY_ID, COD_APS, ANNO,
@@ -26,13 +193,6 @@ public sealed class CrecimientoUsuariosItem
     public string? Nomtipopred { get; set; }
     public decimal? Cantidad { get; set; }
     public decimal? Toneladas { get; set; }
-}
-
-public sealed class CrecimientoPropiaRequest
-{
-    public long ProyId { get; set; }
-    public long ApsaId { get; set; }
-    public List<CrecimientoPropiaItem> Items { get; set; } = new();
 }
 
 // PROY_PROPIA: sin ID sustituto. Legacy real (registrarcrecimientoinfpropia) --
@@ -90,13 +250,6 @@ public sealed class CrecimientoPropiaItem
     public decimal? VQrsMunrecp { get; set; }
 }
 
-public sealed class CrecimientoTercerosRequest
-{
-    public long ProyId { get; set; }
-    public long ApsaId { get; set; }
-    public List<CrecimientoTercerosItem> Items { get; set; } = new();
-}
-
 // PROY_COMPETIDOR: sin ID sustituto. Mismo criterio que PROY_PROPIA pero con
 // las columnas C_* (variables del competidor/tercero).
 public sealed class CrecimientoTercerosItem
@@ -145,13 +298,6 @@ public sealed class CrecimientoTercerosItem
     public decimal? CCpoda { get; set; }
 }
 
-public sealed class DescuentosRequest
-{
-    public long ProyId { get; set; }
-    public long ApsaId { get; set; }
-    public List<DescuentosItem> Items { get; set; } = new();
-}
-
 // PROY_DESCUENTOS: sin ID sustituto, clave natural (PROY_ID, ANNO, MES).
 public sealed class DescuentosItem
 {
@@ -173,4 +319,24 @@ public sealed class CrecimientoPayload
     public List<CrecimientoPropiaItem> Propia { get; set; } = new();
     public List<CrecimientoTercerosItem> Terceros { get; set; } = new();
     public List<DescuentosItem> Descuentos { get; set; } = new();
+}
+
+public sealed class CrecimientoDriveConfig
+{
+    public string IdArchivo { get; set; } = string.Empty;
+    public string ListaHojas { get; set; } = string.Empty;
+}
+
+public sealed class CrecimientoDriveTabResponse
+{
+    public string SheetTitle { get; set; } = string.Empty;
+    public IReadOnlyList<string> Columns { get; set; } = Array.Empty<string>();
+    public IReadOnlyList<Dictionary<string, object?>> Rows { get; set; } = Array.Empty<Dictionary<string, object?>>();
+    public string? Error { get; set; }
+}
+
+public sealed class EjecutarProyeccionResponse
+{
+    public bool Success { get; set; }
+    public int Resultado { get; set; }
 }

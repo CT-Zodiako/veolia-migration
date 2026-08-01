@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Veolia.Api.Contracts.Proyecciones;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data;
-using Veolia.Api.Services;
 
-namespace Veolia.Api.Controllers;
+namespace Veolia.Api.Modules.Regulator.Proyecciones;
 
 [ApiController]
 [Route("api/v1/proyecciones")]

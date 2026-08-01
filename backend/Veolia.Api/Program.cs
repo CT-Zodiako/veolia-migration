@@ -1,9 +1,10 @@
 using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Infrastructure.Auth;
-using Veolia.Api.Infrastructure.Data.Interfaces;
 using Veolia.Api.Modules.Regulator.Aps;
 using Veolia.Api.Modules.Regulator.Costos;
 using Veolia.Api.Modules.Regulator.Empresas;
+using Veolia.Api.Modules.Regulator.Facturacion;
+using Veolia.Api.Modules.Regulator.Proyecciones;
 using Veolia.Api.Modules.Regulator.Rellenos;
 using Veolia.Api.Modules.Regulator.SubCont;
 using Veolia.Api.Modules.Regulator.Tarifas;
@@ -28,7 +29,6 @@ using Veolia.Api.Modules.Reliquidaciones;
 using Veolia.Api.Modules.Sui853.Cft;
 using Veolia.Api.Modules.Sui853.Configuracion;
 using Veolia.Api.Infrastructure.GoogleDrive;
-using Veolia.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,7 +69,7 @@ builder.Services.AddSui853ConfiguracionModule();
 builder.Services.AddValidacionesModule();
 builder.Services.AddCostosModule();
 builder.Services.AddToneladasModule();
-builder.Services.AddScoped<IFacturacionRepository, FacturacionRepository>();
+builder.Services.AddFacturacionModule();
 builder.Services.AddRellenosModule();
 builder.Services.AddKillometrosModule();
 builder.Services.AddTrnaModule();
@@ -77,11 +77,7 @@ builder.Services.AddTafnaModule();
 builder.Services.AddUsuariosGraficoModule();
 builder.Services.AddSui853CftModule();
 builder.Services.AddSubContModule();
-builder.Services.AddScoped<IProyeccionRepository, ProyeccionRepository>();
-builder.Services.AddScoped<ILineaTiempoRepository, LineaTiempoRepository>();
-builder.Services.AddScoped<ICrecimientoRepository, CrecimientoRepository>();
-builder.Services.AddScoped<ISubcontProyRepository, SubcontProyRepository>();
-builder.Services.AddScoped<IEjecucionProyeccionRepository, EjecucionProyeccionRepository>();
+builder.Services.AddProyeccionesModule();
 builder.Services.AddReliquidacionesModule();
 builder.Services.AddInfoGeneralesModule();
 builder.Services.AddInfoGerencialModule();
@@ -92,7 +88,6 @@ builder.Services.AddAprovechamientoModule();
 
 builder.Services.Configure<GoogleDriveOptions>(builder.Configuration.GetSection(GoogleDriveOptions.SectionName));
 builder.Services.AddSingleton<IGoogleSheetsService, GoogleSheetsService>();
-builder.Services.AddScoped<ICrecimientoDriveService, CrecimientoDriveService>();
 
 var app = builder.Build();
 

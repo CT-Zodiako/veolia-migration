@@ -6,13 +6,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Veolia.Api.Contracts.Proyecciones;
 using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Modules.Regulator.Aps;
 using Veolia.Api.Modules.Regulator.Empresas;
+using Veolia.Api.Modules.Regulator.Proyecciones;
 using Veolia.Api.Modules.Regulator.Tarifas;
 using Veolia.Api.Modules.Sui853.Configuracion;
-using Veolia.Api.Services;
 
 namespace Veolia.Api.Tests;
 
