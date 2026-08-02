@@ -1,4 +1,24 @@
-.page-wrap { padding: 1.5rem; max-width: 1300px; margin: 0 auto; }
-.toolbar { display: flex; justify-content: space-between; align-items: center; }
-.actions { display: flex; gap: .5rem; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; align-items: center; }
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-section:last-child {
+  margin-bottom: 0;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  align-items: center;
+}
