@@ -22,3 +22,13 @@
   gap: 0.75rem;
   align-items: center;
 }
+
+.error-message {
+  background: var(--color-bg-danger-soft);
+  border: 1px solid var(--color-border-danger-soft);
+  color: var(--color-brand-accent);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}

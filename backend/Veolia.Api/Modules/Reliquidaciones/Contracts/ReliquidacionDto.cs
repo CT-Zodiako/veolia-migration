@@ -12,4 +12,5 @@ public sealed class ReliquidacionDto
     public long? RelqSolicita { get; set; }
     public long? RelqAprueba { get; set; }
     public DateTime? RelqFecha { get; set; }
+    public long? RelqIdAtt { get; set; }
 }

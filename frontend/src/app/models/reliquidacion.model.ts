@@ -21,6 +21,7 @@ export interface Reliquidacion {
   relqFecha?: string | null;
   relqSolicita?: number | null;
   relqAprueba?: number | null;
+  relqIdAtt?: number | null;
 }
 
 export interface CrearReliquidacionRequest {
@@ -32,6 +33,7 @@ export interface CrearReliquidacionRequest {
   usuSolicita: number;
   estado?: string;
   usuAprueba: number;
+  idAtt?: number | null;
 }
 
 export interface ActualizarReliquidacionRequest extends CrearReliquidacionRequest {

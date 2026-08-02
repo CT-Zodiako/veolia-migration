@@ -29,9 +29,12 @@
 </div>
 
 <p-dialog [visible]="showDialog()" header="Reliquidación" [modal]="true" [style]="{width:'50rem'}" (visibleChange)="showDialog.set($event)">
+  @if (error()) {
+    <div class="error-message">{{ error() }}</div>
+  }
   <form [formGroup]="form" class="form-grid">
     <label>APS</label>
-    <p-select formControlName="apsaId" [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" />
+    <p-select formControlName="apsaId" [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" placeholder="Seleccione APS" />
     <label>Nombre</label>
     <input pInputText formControlName="nombre" />
     <label>Descripción</label>
@@ -41,11 +44,11 @@
     <label>Periodo hasta (YYYYMM)</label>
     <input pInputText formControlName="hasta" />
     <label>Solicitante</label>
-    <p-inputNumber formControlName="usuSolicita" />
+    <p-select formControlName="usuSolicita" [options]="usuariosAps()" optionLabel="SISU_CORREO" optionValue="SISU_ID" [filter]="true" filterPlaceholder="Buscar usuario..." placeholder="Seleccione usuario" />
     <label>Estado</label>
     <p-select formControlName="estado" [options]="estadoOptions" optionLabel="label" optionValue="value" />
     <label>Aprobador</label>
-    <p-inputNumber formControlName="usuAprueba" />
+    <p-select formControlName="usuAprueba" [options]="usuariosAps()" optionLabel="SISU_CORREO" optionValue="SISU_ID" [filter]="true" filterPlaceholder="Buscar usuario..." placeholder="Seleccione usuario" />
   </form>
   <ng-template pTemplate="footer">
     <p-button label="Cancelar" severity="secondary" (onClick)="showDialog.set(false)" />

@@ -90,7 +90,8 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                        CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
                        R.RELQUSUSOLICITA AS RelqSolicita,
                        R.RELQUSUAPRUEBA AS RelqAprueba,
-                       R.RELQFECHA AS RelqFecha
+                       R.RELQFECHA AS RelqFecha,
+                       R.RELQIDATT AS RelqIdAtt
                   FROM RELIQ.RELQRELIQUIDA R
                  WHERE R.RELQID = :1";
 
@@ -124,7 +125,8 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
                    R.RELQUSUSOLICITA AS RelqSolicita,
                    R.RELQUSUAPRUEBA AS RelqAprueba,
-                   R.RELQFECHA AS RelqFecha
+                   R.RELQFECHA AS RelqFecha,
+                   R.RELQIDATT AS RelqIdAtt
               FROM RELIQ.RELQRELIQUIDA R
               LEFT JOIN AUCO_APSASEO A ON A.APSA_ID = R.APSAID
               LEFT JOIN AUGE_SISUSUARIO U ON U.SISU_ID = R.RELQUSUSOLICITA";
@@ -155,7 +157,8 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
                    R.RELQUSUSOLICITA AS RelqSolicita,
                    R.RELQUSUAPRUEBA AS RelqAprueba,
-                   R.RELQFECHA AS RelqFecha
+                   R.RELQFECHA AS RelqFecha,
+                   R.RELQIDATT AS RelqIdAtt
               FROM RELIQ.RELQRELIQUIDA R
              WHERE R.APSAID = :1
                AND R.RELQESTADO IN ('1', '2', 'CREADA', 'APLICADA')

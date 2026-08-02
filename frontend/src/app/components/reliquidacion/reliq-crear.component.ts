@@ -7,12 +7,15 @@ import { DialogModule } from 'primeng/dialog';
 import { ConfirmationService } from 'primeng/api';
 import { ReliquidacionService } from '../../services/reliquidacion/reliquidacion.service';
 import { ApsService } from '../../services/aps.service';
+import { NotificationService } from '../../services/notification.service';
 import { ApsOption, Reliquidacion } from '../../models/reliquidacion.model';
 
 const ESTADO_OPTIONS = [
   { label: 'Creada', value: 'Creada' },
   { label: 'Aplicada', value: 'Aplicada' }
 ];
+
+const DEFAULT_ID_ATT = 11;
 
 @Component({
   selector: 'app-reliq-crear',
@@ -31,6 +34,9 @@ export class ReliqCrearComponent {
   readonly error = signal('');
   readonly apsOptions = signal<ApsOption[]>([]);
   readonly reliquidaciones = signal<Reliquidacion[]>([]);
+  readonly usuariosAps = signal<Array<{ SISU_ID: number; SISU_CORREO: string }>>([]);
+
+  private usuariosApsCargadosPara: number | null = null;
 
   readonly form = this.fb.nonNullable.group({
     apsaId: [0, [Validators.required, Validators.min(1)]],
@@ -40,17 +46,27 @@ export class ReliqCrearComponent {
     hasta: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
     usuSolicita: [0, [Validators.required, Validators.min(1)]],
     estado: ['Creada', [Validators.required]],
-    usuAprueba: [0, [Validators.required, Validators.min(1)]]
+    usuAprueba: [0, [Validators.required, Validators.min(1)]],
+    idAtt: [DEFAULT_ID_ATT]
   });
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly apsService: ApsService,
     private readonly reliqService: ReliquidacionService,
-    private readonly confirmationService: ConfirmationService
+    private readonly confirmationService: ConfirmationService,
+    private readonly notification: NotificationService
   ) {
     this.loadAps();
     this.loadReliquidaciones();
+    this.form.controls.apsaId.valueChanges.subscribe((apsaId) => {
+      if (apsaId && apsaId > 0) {
+        this.cargarUsuariosAps(apsaId);
+      } else {
+        this.usuariosAps.set([]);
+        this.usuariosApsCargadosPara = null;
+      }
+    });
   }
 
   loadReliquidaciones(): void {
@@ -67,14 +83,31 @@ export class ReliqCrearComponent {
     });
   }
 
+  cargarUsuariosAps(apsaId: number): void {
+    if (!apsaId || apsaId <= 0 || this.usuariosApsCargadosPara === apsaId) {
+      return;
+    }
+    this.apsService.usuarioPorAps(apsaId).pipe(
+      catchError(() => of([]))
+    ).subscribe((usuarios) => {
+      this.usuariosAps.set(usuarios || []);
+      this.usuariosApsCargadosPara = apsaId;
+    });
+  }
+
   nueva(): void {
     this.editingId.set(null);
-    this.form.reset({ apsaId: 0, nombre: '', descripcion: '', desde: '', hasta: '', usuSolicita: 0, estado: 'Creada', usuAprueba: 0 });
+    this.error.set('');
+    this.form.reset({ apsaId: 0, nombre: '', descripcion: '', desde: '', hasta: '', usuSolicita: 0, estado: 'Creada', usuAprueba: 0, idAtt: DEFAULT_ID_ATT });
+    if (this.form.controls.apsaId.value > 0) {
+      this.cargarUsuariosAps(this.form.controls.apsaId.value);
+    }
     this.showDialog.set(true);
   }
 
   editar(row: Reliquidacion): void {
     this.editingId.set(row.relqId);
+    this.error.set('');
     this.form.patchValue({
       apsaId: row.apsaId,
       nombre: row.relqNombre,
@@ -83,14 +116,18 @@ export class ReliqCrearComponent {
       hasta: row.relqHasta,
       usuSolicita: row.relqSolicita || 0,
       estado: row.relqEstado,
-      usuAprueba: row.relqAprueba || 0
+      usuAprueba: row.relqAprueba || 0,
+      idAtt: row.relqIdAtt ?? DEFAULT_ID_ATT
     });
+    this.cargarUsuariosAps(row.apsaId);
     this.showDialog.set(true);
   }
 
   guardar(): void {
+    this.error.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set('Complete correctamente los campos requeridos antes de guardar.');
       return;
     }
 
@@ -104,11 +141,15 @@ export class ReliqCrearComponent {
       next: () => {
         this.saving.set(false);
         this.showDialog.set(false);
+        this.notification.success('Reliquidación guardada correctamente.');
         this.loadReliquidaciones();
       },
-      error: () => {
+      error: (err) => {
         this.saving.set(false);
-        this.error.set('No se pudo guardar la reliquidación.');
+        const backendMessage = err?.error?.message;
+        const message = backendMessage || 'No se pudo guardar la reliquidación.';
+        this.error.set(message);
+        this.notification.error(message);
       }
     });
   }
