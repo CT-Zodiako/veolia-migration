@@ -11,7 +11,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
     {
         const string insertCabeceraSql = @"
             INSERT INTO RELIQ.RELQRELIQUIDA
-            (RELQID, APSA_ID, RELQNOMBRE, RELQDESCRIPCION, RELQDESDE, RELQHASTA, RELQESTADO, RELQUSUSOLICITA, RELQUSUAPRUEBA, RELQFECHA)
+            (RELQID, APSAID, RELQNOMBRE, RELQDESCRIP, RELQDESDE, RELQHASTA, RELQESTADO, RELQUSUSOLICITA, RELQUSUAPRUEBA, RELQFECHA)
             VALUES (RELIQ.SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, :8, SYSDATE)
             RETURNING RELQID INTO :9";
 
@@ -83,9 +83,9 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
 
             const string getSql = @"
                 SELECT R.RELQID AS RelqId,
-                       R.APSA_ID AS ApsaId,
+                       R.APSAID AS ApsaId,
                        R.RELQNOMBRE AS RelqNombre,
-                       R.RELQDESCRIPCION AS RelqDescripcion,
+                       R.RELQDESCRIP AS RelqDescripcion,
                        R.RELQDESDE AS RelqDesde,
                        R.RELQHASTA AS RelqHasta,
                        R.RELQESTADO AS RelqEstado,
@@ -117,9 +117,9 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
 
         var sql = @"
             SELECT R.RELQID AS RelqId,
-                   R.APSA_ID AS ApsaId,
+                   R.APSAID AS ApsaId,
                    R.RELQNOMBRE AS RelqNombre,
-                   R.RELQDESCRIPCION AS RelqDescripcion,
+                   R.RELQDESCRIP AS RelqDescripcion,
                    R.RELQDESDE AS RelqDesde,
                    R.RELQHASTA AS RelqHasta,
                    R.RELQESTADO AS RelqEstado,
@@ -127,10 +127,10 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha
               FROM RELIQ.RELQRELIQUIDA R
-              LEFT JOIN AUCO_APSASEO A ON A.APSA_ID = R.APSA_ID
+              LEFT JOIN AUCO_APSASEO A ON A.APSA_ID = R.APSAID
               LEFT JOIN AUGE_SISUSUARIO U ON U.SISU_ID = R.RELQUSUSOLICITA";
 
-        sql += filtrarPorAps ? " WHERE R.APSA_ID = :1" : string.Empty;
+        sql += filtrarPorAps ? " WHERE R.APSAID = :1" : string.Empty;
         sql += " ORDER BY R.RELQID DESC";
 
         var parameters = new DynamicParameters();
@@ -148,9 +148,9 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
     {
         const string sql = @"
             SELECT R.RELQID AS RelqId,
-                   R.APSA_ID AS ApsaId,
+                   R.APSAID AS ApsaId,
                    R.RELQNOMBRE AS RelqNombre,
-                   R.RELQDESCRIPCION AS RelqDescripcion,
+                   R.RELQDESCRIP AS RelqDescripcion,
                    R.RELQDESDE AS RelqDesde,
                    R.RELQHASTA AS RelqHasta,
                    R.RELQESTADO AS RelqEstado,
@@ -158,7 +158,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha
               FROM RELIQ.RELQRELIQUIDA R
-             WHERE R.APSA_ID = :1
+             WHERE R.APSAID = :1
                AND R.RELQESTADO IN ('1', '2', 'CREADA', 'APLICADA')
              ORDER BY R.RELQID DESC
              FETCH FIRST 1 ROWS ONLY";
@@ -174,9 +174,9 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
     {
         const string sql = @"
             UPDATE RELIQ.RELQRELIQUIDA
-               SET APSA_ID = :1,
+               SET APSAID = :1,
                    RELQNOMBRE = :2,
-                   RELQDESCRIPCION = :3,
+                   RELQDESCRIP = :3,
                    RELQDESDE = :4,
                    RELQHASTA = :5,
                    RELQESTADO = :6,
