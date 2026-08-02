@@ -10,8 +10,8 @@ import { ApsService } from '../../services/aps.service';
 import { ApsOption, Reliquidacion } from '../../models/reliquidacion.model';
 
 const ESTADO_OPTIONS = [
-  { label: 'Creada', value: 'CREADA' },
-  { label: 'Aplicada', value: 'APLICADA' }
+  { label: 'Creada', value: 'Creada' },
+  { label: 'Aplicada', value: 'Aplicada' }
 ];
 
 @Component({
@@ -39,7 +39,7 @@ export class ReliqCrearComponent {
     desde: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
     hasta: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
     usuSolicita: [0, [Validators.required, Validators.min(1)]],
-    estado: ['CREADA', [Validators.required]],
+    estado: ['Creada', [Validators.required]],
     usuAprueba: [0, [Validators.required, Validators.min(1)]]
   });
 
@@ -69,7 +69,7 @@ export class ReliqCrearComponent {
 
   nueva(): void {
     this.editingId.set(null);
-    this.form.reset({ apsaId: 0, nombre: '', descripcion: '', desde: '', hasta: '', usuSolicita: 0, estado: 'CREADA', usuAprueba: 0 });
+    this.form.reset({ apsaId: 0, nombre: '', descripcion: '', desde: '', hasta: '', usuSolicita: 0, estado: 'Creada', usuAprueba: 0 });
     this.showDialog.set(true);
   }
 

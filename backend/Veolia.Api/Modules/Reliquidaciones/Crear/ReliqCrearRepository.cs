@@ -44,7 +44,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
             cabeceraParams.Add("4", request.RelqDesde);
             cabeceraParams.Add("5", request.RelqHasta);
             cabeceraParams.Add("6", request.UsuSolicita);
-            cabeceraParams.Add("7", string.IsNullOrWhiteSpace(request.Estado) ? "1" : request.Estado);
+            cabeceraParams.Add("7", EstadoCatalogoAOracle(request.Estado));
             cabeceraParams.Add("8", request.IdAtt);
             cabeceraParams.Add("9", request.UsuAprueba);
             cabeceraParams.Add("10", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
@@ -87,7 +87,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                        R.RELQDESCRIP AS RelqDescripcion,
                        R.RELQDESDE AS RelqDesde,
                        R.RELQHASTA AS RelqHasta,
-                       R.RELQESTADO AS RelqEstado,
+                       CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
                        R.RELQUSUSOLICITA AS RelqSolicita,
                        R.RELQUSUAPRUEBA AS RelqAprueba,
                        R.RELQFECHA AS RelqFecha
@@ -121,7 +121,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQDESCRIP AS RelqDescripcion,
                    R.RELQDESDE AS RelqDesde,
                    R.RELQHASTA AS RelqHasta,
-                   R.RELQESTADO AS RelqEstado,
+                   CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
                    R.RELQUSUSOLICITA AS RelqSolicita,
                    R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha
@@ -152,7 +152,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQDESCRIP AS RelqDescripcion,
                    R.RELQDESDE AS RelqDesde,
                    R.RELQHASTA AS RelqHasta,
-                   R.RELQESTADO AS RelqEstado,
+                   CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
                    R.RELQUSUSOLICITA AS RelqSolicita,
                    R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha
@@ -168,6 +168,11 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
         using var connection = await OpenConnectionAsync(cancellationToken);
         return await connection.QueryFirstOrDefaultAsync<ReliquidacionDto>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
+
+    // Catalog parity with legacy RELQESTADO (NUMBER): the frontend and the
+    // SELECT CASE speak text ('Creada'/'Aplicada'); Oracle stores 1/2.
+    private static int EstadoCatalogoAOracle(string? estado)
+        => estado?.Trim().Equals("Aplicada", StringComparison.OrdinalIgnoreCase) == true ? 2 : 1;
 
     public async Task<bool> ActualizarAsync(ActualizarReliquidacionRequestDto request, long usuarioId, CancellationToken cancellationToken)
     {
@@ -191,7 +196,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
         parameters.Add("3", request.RelqDesde);
         parameters.Add("4", request.RelqHasta);
         parameters.Add("5", request.UsuSolicita);
-        parameters.Add("6", request.RelqEstado);
+        parameters.Add("6", EstadoCatalogoAOracle(request.RelqEstado));
         parameters.Add("7", request.IdAtt);
         parameters.Add("8", request.UsuAprueba);
         parameters.Add("9", request.RelqId);
