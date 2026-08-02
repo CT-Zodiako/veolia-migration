@@ -9,6 +9,9 @@ public sealed class ReliquidacionDto
     public string RelqDesde { get; set; } = string.Empty;
     public string RelqHasta { get; set; } = string.Empty;
     public string RelqEstado { get; set; } = string.Empty;
+    public string? ApsaNomaps { get; set; }
+    public string? MailSolicita { get; set; }
+    public string? MailAprueba { get; set; }
     public long? RelqSolicita { get; set; }
     public long? RelqAprueba { get; set; }
     public DateTime? RelqFecha { get; set; }

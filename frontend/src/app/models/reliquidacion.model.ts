@@ -19,6 +19,9 @@ export interface Reliquidacion {
   relqHasta: string;
   relqEstado: string;
   relqFecha?: string | null;
+  apsaNomaps?: string | null;
+  mailSolicita?: string | null;
+  mailAprueba?: string | null;
   relqSolicita?: number | null;
   relqAprueba?: number | null;
   relqIdAtt?: number | null;

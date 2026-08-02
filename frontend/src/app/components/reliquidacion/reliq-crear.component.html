@@ -8,17 +8,38 @@
   <p-table [value]="reliquidaciones()" [loading]="loading()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '100%' }">
     <ng-template pTemplate="header">
       <tr>
-        <th>ID</th><th>APS</th><th>Nombre</th><th>Descripción</th><th>Periodo</th><th>Estado</th><th>Acciones</th>
+        <th>RELIQ</th>
+        <th>APS</th>
+        <th>APS NOMBRE</th>
+        <th>NOMBRE</th>
+        <th>DESCRIPCIÓN</th>
+        <th>DESDE</th>
+        <th>HASTA</th>
+        <th>USU. SOLICITA</th>
+        <th>ESTADO</th>
+        <th>FECHA</th>
+        <th>USU. APRUEBA</th>
+        <th>ACCIONES</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-row>
       <tr>
-        <td>{{ row.relqId }}</td>
-        <td>{{ row.apsaId }}</td>
-        <td>{{ row.relqNombre }}</td>
-        <td>{{ row.relqDescripcion }}</td>
-        <td>{{ row.relqDesde }} - {{ row.relqHasta }}</td>
-        <td>{{ row.relqEstado }}</td>
+        <td class="mono">{{ row.relqId }}</td>
+        <td class="mono">{{ row.apsaId }}</td>
+        <td><span class="cell-ellipsis" [title]="row.apsaNomaps">{{ row.apsaNomaps }}</span></td>
+        <td><span class="cell-ellipsis" [title]="row.relqNombre">{{ row.relqNombre }}</span></td>
+        <td><span class="cell-ellipsis" [title]="row.relqDescripcion">{{ row.relqDescripcion }}</span></td>
+        <td class="mono">{{ row.relqDesde }}</td>
+        <td class="mono">{{ row.relqHasta }}</td>
+        <td><span class="cell-ellipsis" [title]="row.mailSolicita">{{ row.mailSolicita }}</span></td>
+        <td>
+          <span class="estado-pill" [ngClass]="estadoClass(row.relqEstado)">
+            <i class="pi" [ngClass]="estadoClass(row.relqEstado) === 'estado-aplicada' ? 'pi-check-circle' : 'pi-clock'"></i>
+            {{ row.relqEstado }}
+          </span>
+        </td>
+        <td>{{ row.relqFecha | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td><span class="cell-ellipsis" [title]="row.mailAprueba">{{ row.mailAprueba }}</span></td>
         <td class="actions-cell">
           <p-button icon="pi pi-pencil" severity="info" size="small" (onClick)="editar(row)"></p-button>
           <p-button icon="pi pi-trash" severity="danger" size="small" (onClick)="eliminar(row)"></p-button>

@@ -162,6 +162,13 @@ export class ReliqCrearComponent {
     });
   }
 
+  estadoClass(valor: string | null | undefined): string {
+    const s = String(valor || '').trim().toLowerCase();
+    if (s === 'creada' || s === 'creado') return 'estado-creado';
+    if (s === 'aplicada' || s === 'aplicado') return 'estado-aplicada';
+    return 'estado-otro';
+  }
+
   onPeriodoChange(campo: 'desde' | 'hasta', date: Date | null): void {
     const yyyymm = this.dateToYyyymm(date);
     this.form.controls[campo].setValue(yyyymm);

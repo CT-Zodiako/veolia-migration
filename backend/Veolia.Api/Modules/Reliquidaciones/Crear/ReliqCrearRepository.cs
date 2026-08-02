@@ -88,11 +88,17 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                        R.RELQDESDE AS RelqDesde,
                        R.RELQHASTA AS RelqHasta,
                        CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
+                       AA.APSA_NOMAPS AS ApsaNomaps,
+                       AS2.SISU_CORREO AS MailSolicita,
+                       AS3.SISU_CORREO AS MailAprueba,
                        R.RELQUSUSOLICITA AS RelqSolicita,
                        R.RELQUSUAPRUEBA AS RelqAprueba,
                        R.RELQFECHA AS RelqFecha,
                        R.RELQIDATT AS RelqIdAtt
                   FROM RELIQ.RELQRELIQUIDA R
+                  LEFT JOIN AUCO_APSASEO AA ON AA.APSA_ID = R.APSAID
+                  LEFT JOIN AUGE_SISUSUARIO AS2 ON AS2.SISU_ID = R.RELQUSUSOLICITA
+                  LEFT JOIN AUGE_SISUSUARIO AS3 ON AS3.SISU_ID = R.RELQUSUAPRUEBA
                  WHERE R.RELQID = :1";
 
             var getParams = new DynamicParameters();
@@ -123,15 +129,21 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQDESDE AS RelqDesde,
                    R.RELQHASTA AS RelqHasta,
                    CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
+                   AA.APSA_NOMAPS AS ApsaNomaps,
+                   AS2.SISU_CORREO AS MailSolicita,
+                   AS3.SISU_CORREO AS MailAprueba,
                    R.RELQUSUSOLICITA AS RelqSolicita,
                    R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha,
                    R.RELQIDATT AS RelqIdAtt
               FROM RELIQ.RELQRELIQUIDA R
-              LEFT JOIN AUCO_APSASEO A ON A.APSA_ID = R.APSAID
-              LEFT JOIN AUGE_SISUSUARIO U ON U.SISU_ID = R.RELQUSUSOLICITA";
+              LEFT JOIN AUCO_APSASEO AA ON AA.APSA_ID = R.APSAID
+              LEFT JOIN AUGE_SISUSUARIO AS2 ON AS2.SISU_ID = R.RELQUSUSOLICITA
+              LEFT JOIN AUGE_SISUSUARIO AS3 ON AS3.SISU_ID = R.RELQUSUAPRUEBA
+";
 
-        sql += filtrarPorAps ? " WHERE R.APSAID = :1" : string.Empty;
+        sql += " WHERE R.RELQESTADO IN ('1', '2')";
+        sql += filtrarPorAps ? " AND R.APSAID = :1" : string.Empty;
         sql += " ORDER BY R.RELQID DESC";
 
         var parameters = new DynamicParameters();
@@ -155,13 +167,19 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQDESDE AS RelqDesde,
                    R.RELQHASTA AS RelqHasta,
                    CASE WHEN R.RELQESTADO = 1 THEN 'Creada' WHEN R.RELQESTADO = 2 THEN 'Aplicada' ELSE 'ANULADO' END AS RelqEstado,
+                   AA.APSA_NOMAPS AS ApsaNomaps,
+                   AS2.SISU_CORREO AS MailSolicita,
+                   AS3.SISU_CORREO AS MailAprueba,
                    R.RELQUSUSOLICITA AS RelqSolicita,
                    R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha,
                    R.RELQIDATT AS RelqIdAtt
               FROM RELIQ.RELQRELIQUIDA R
+              LEFT JOIN AUCO_APSASEO AA ON AA.APSA_ID = R.APSAID
+              LEFT JOIN AUGE_SISUSUARIO AS2 ON AS2.SISU_ID = R.RELQUSUSOLICITA
+              LEFT JOIN AUGE_SISUSUARIO AS3 ON AS3.SISU_ID = R.RELQUSUAPRUEBA
              WHERE R.APSAID = :1
-               AND R.RELQESTADO IN ('1', '2', 'CREADA', 'APLICADA')
+               AND R.RELQESTADO IN ('1', '2')
              ORDER BY R.RELQID DESC
              FETCH FIRST 1 ROWS ONLY";
 
