@@ -24,13 +24,13 @@
     </ng-template>
     <ng-template pTemplate="body" let-row>
       <tr>
-        <td class="mono">{{ row.relqId }}</td>
-        <td class="mono">{{ row.apsaId }}</td>
+        <td>{{ row.relqId }}</td>
+        <td>{{ row.apsaId }}</td>
         <td><span class="cell-ellipsis" [title]="row.apsaNomaps">{{ row.apsaNomaps }}</span></td>
         <td><span class="cell-ellipsis" [title]="row.relqNombre">{{ row.relqNombre }}</span></td>
         <td><span class="cell-ellipsis" [title]="row.relqDescripcion">{{ row.relqDescripcion }}</span></td>
-        <td class="mono">{{ row.relqDesde }}</td>
-        <td class="mono">{{ row.relqHasta }}</td>
+        <td>{{ row.relqDesde }}</td>
+        <td>{{ row.relqHasta }}</td>
         <td><span class="cell-ellipsis" [title]="row.mailSolicita">{{ row.mailSolicita }}</span></td>
         <td>
           <span class="estado-pill" [ngClass]="estadoClass(row.relqEstado)">

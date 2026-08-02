@@ -33,7 +33,7 @@
   margin-bottom: 16px;
 }
 
-.mono { font-family: monospace; }
+
 
 .cell-ellipsis {
   display: inline-block;
@@ -58,3 +58,18 @@
 .estado-creado   { background: #FEF08A; color: #854D0E; border: 1px solid #FDE68A; }
 .estado-aplicada { background: #BBF7D0; color: #065F46; border: 1px solid #86EFAC; }
 .estado-otro     { background: #E5E7EB; color: #374151; border: 1px solid #D1D5DB; }
+
+/* Tabla compacta para que entren las 12 columnas sin scroll excesivo */
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  font-size: 12px;
+  padding: 4px 6px;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  font-size: 12px;
+  padding: 3px 6px;
+  line-height: 1.2;
+}
+
+.cell-ellipsis { max-width: 180px; }
