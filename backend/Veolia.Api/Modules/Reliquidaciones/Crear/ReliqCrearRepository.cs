@@ -11,21 +11,20 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
     {
         const string insertCabeceraSql = @"
             INSERT INTO RELIQ.RELQRELIQUIDA
-            (RELQID, APSAID, RELQNOMBRE, RELQDESCRIP, RELQDESDE, RELQHASTA, RELQESTADO, RELQUSUSOLICITA, RELQUSUAPRUEBA, RELQFECHA)
-            VALUES (RELIQ.SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, :8, SYSDATE)
-            RETURNING RELQID INTO :9";
+            (RELQID, APSAID, RELQNOMBRE, RELQDESCRIP, RELQDESDE, RELQHASTA, RELQUSUSOLICITA, RELQESTADO, RELQFECHA, RELQIDATT, RELQUSUAPRUEBA)
+            VALUES (RELIQ.SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, SYSDATE, :8, :9)
+            RETURNING RELQID INTO :10";
 
         const string insertFiltroSql = @"
             INSERT INTO RELIQ.FILTRO_COMPARACOSTO
-            (FICO_ID, RELQID, APSA_ID, ANNO, MES, USUA_USUA, FECHA)
+            (RELI_ID, APSA_ID, ANNO_DESDE, MES_DESDE, ANNO_HASTA, MES_HASTA)
             VALUES (
-                (SELECT NVL(MAX(FICO_ID), 0) + 1 FROM RELIQ.FILTRO_COMPARACOSTO),
                 :1,
                 :2,
                 TO_NUMBER(SUBSTR(:3, 1, 4)),
-                TO_NUMBER(SUBSTR(:4, 5, 2)),
-                :5,
-                SYSDATE
+                TO_NUMBER(SUBSTR(:3, 5, 2)),
+                TO_NUMBER(SUBSTR(:4, 1, 4)),
+                TO_NUMBER(SUBSTR(:4, 5, 2))
             )";
 
         const string ejecutarExtraccionSql = @"
@@ -44,20 +43,20 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
             cabeceraParams.Add("3", request.RelqDescripcion);
             cabeceraParams.Add("4", request.RelqDesde);
             cabeceraParams.Add("5", request.RelqHasta);
-            cabeceraParams.Add("6", string.IsNullOrWhiteSpace(request.Estado) ? "CREADA" : request.Estado);
-            cabeceraParams.Add("7", request.UsuSolicita);
-            cabeceraParams.Add("8", request.UsuAprueba);
-            cabeceraParams.Add("9", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
+            cabeceraParams.Add("6", request.UsuSolicita);
+            cabeceraParams.Add("7", string.IsNullOrWhiteSpace(request.Estado) ? "1" : request.Estado);
+            cabeceraParams.Add("8", request.IdAtt);
+            cabeceraParams.Add("9", request.UsuAprueba);
+            cabeceraParams.Add("10", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
 
             await connection.ExecuteAsync(new CommandDefinition(insertCabeceraSql, cabeceraParams, transaction: transaction, cancellationToken: cancellationToken));
-            var relqId = cabeceraParams.Get<long>("9");
+            var relqId = cabeceraParams.Get<long>("10");
 
             var filtroParams = new DynamicParameters();
             filtroParams.Add("1", relqId);
             filtroParams.Add("2", request.ApsaId);
             filtroParams.Add("3", request.RelqDesde);
             filtroParams.Add("4", request.RelqHasta);
-            filtroParams.Add("5", usuarioId);
 
             await connection.ExecuteAsync(new CommandDefinition(insertFiltroSql, filtroParams, transaction: transaction, cancellationToken: cancellationToken));
 
@@ -174,27 +173,29 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
     {
         const string sql = @"
             UPDATE RELIQ.RELQRELIQUIDA
-               SET APSAID = :1,
-                   RELQNOMBRE = :2,
-                   RELQDESCRIP = :3,
-                   RELQDESDE = :4,
-                   RELQHASTA = :5,
+               SET RELQNOMBRE = :1,
+                   RELQDESCRIP = :2,
+                   RELQDESDE = :3,
+                   RELQHASTA = :4,
+                   RELQUSUSOLICITA = :5,
                    RELQESTADO = :6,
-                   RELQUSUSOLICITA = :7,
-                   RELQUSUAPRUEBA = :8,
-                   RELQFECHA = SYSDATE
-             WHERE RELQID = :9";
+                   RELQFECHA = SYSDATE,
+                   RELQIDATT = :7,
+                   RELQUSUAPRUEBA = :8
+             WHERE RELQID = :9
+               AND APSAID = :10";
 
         var parameters = new DynamicParameters();
-        parameters.Add("1", request.ApsaId);
-        parameters.Add("2", request.RelqNombre);
-        parameters.Add("3", request.RelqDescripcion);
-        parameters.Add("4", request.RelqDesde);
-        parameters.Add("5", request.RelqHasta);
+        parameters.Add("1", request.RelqNombre);
+        parameters.Add("2", request.RelqDescripcion);
+        parameters.Add("3", request.RelqDesde);
+        parameters.Add("4", request.RelqHasta);
+        parameters.Add("5", request.UsuSolicita);
         parameters.Add("6", request.RelqEstado);
-        parameters.Add("7", request.UsuSolicita);
+        parameters.Add("7", request.IdAtt);
         parameters.Add("8", request.UsuAprueba);
         parameters.Add("9", request.RelqId);
+        parameters.Add("10", request.ApsaId);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
