@@ -1,9 +1,49 @@
-.page-wrap { padding: 1.5rem; max-width: 1300px; margin: 0 auto; }
-.toolbar { display: flex; gap: 1rem; align-items: center; }
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+.card-section:last-child { margin-bottom: 0; }
 
-.table-scroll-x { overflow-x: auto; }
+.parametros-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
 
-.text-right { text-align: right; }
+.reliq-field {
+  flex: 0 1 320px;
+  min-width: 220px;
+}
+.reliq-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-body);
+}
+
+.boton-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.label-spacer {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+  line-height: 1;
+  visibility: hidden;
+}
+.botones-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 .cell-input {
   width: 100%;

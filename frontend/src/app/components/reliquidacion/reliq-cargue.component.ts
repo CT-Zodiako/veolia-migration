@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
+import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { ReliqCargueService } from '../../services/reliquidacion/reliq-cargue.service';
 import { ReliquidacionService } from '../../services/reliquidacion/reliquidacion.service';
 import { ReliInfoAdicional, ReliInfoAps, ReliInfoEmpresa, ReliInfoRelleno, ReliInfoUsuarios, Reliquidacion } from '../../models/reliquidacion.model';
@@ -14,7 +15,7 @@ type CargueTab = 'usuarios' | 'empresa' | 'aps' | 'relleno' | 'adicional';
 @Component({
   selector: 'app-reliq-cargue',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, ...CommonPrimeNgModules],
+  imports: [CommonModule, FormsModule, ToastModule, ...CommonPrimeNgModules, TablaAvanzadaComponent],
   providers: [MessageService],
   templateUrl: './reliq-cargue.component.html',
   styleUrls: ['./reliq-cargue.component.css']
@@ -32,6 +33,103 @@ export class ReliqCargueComponent {
   readonly relleno = signal<ReliInfoRelleno[]>([]);
   readonly adicional = signal<ReliInfoAdicional[]>([]);
 
+  // app-tabla-avanzada pide Record<string, unknown>[]; el casteo mantiene las
+  // mismas referencias de fila, así la edición inline sigue pegándole a los
+  // objetos que guardar() envía al backend.
+  readonly usuariosRows = computed(() => this.usuarios() as unknown as Record<string, unknown>[]);
+  readonly empresaRows = computed(() => this.empresa() as unknown as Record<string, unknown>[]);
+  readonly apsRows = computed(() => this.aps() as unknown as Record<string, unknown>[]);
+  readonly rellenoRows = computed(() => this.relleno() as unknown as Record<string, unknown>[]);
+  readonly adicionalRows = computed(() => this.adicional() as unknown as Record<string, unknown>[]);
+
+  readonly columnasUsuarios: TablaColumn[] = [
+    { field: 'anno', header: 'Año' },
+    { field: 'mes', header: 'Mes' },
+    { field: 'clasNombre', header: 'Clase Uso' },
+    { field: 'tipoTarifaNombre', header: 'Tipo Tarifa' },
+    { field: 'factorProduccionNombre', header: 'Factor Prod' },
+    { field: 'cantidad', header: 'Cantidad', numero: true },
+    { field: 'toneladas', header: 'Toneladas', numero: true }
+  ];
+
+  readonly columnasEmpresa: TablaColumn[] = [
+    { field: 'anno', header: 'Año' },
+    { field: 'mes', header: 'Mes' },
+    { field: 'empresaNombre', header: 'Empresa' },
+    { field: 'cblj', header: 'CBLJ', numero: true },
+    { field: 'lblj', header: 'LBLJ', numero: true },
+    { field: 'n', header: 'N', numero: true },
+    { field: 'm3agua', header: 'M3AGUA', numero: true },
+    { field: 'cp', header: 'CP', numero: true },
+    { field: 'm2ccj', header: 'M2CCJ', numero: true },
+    { field: 'm2lavj', header: 'M2LAVJ', numero: true },
+    { field: 'tij', header: 'TIJ', numero: true },
+    { field: 'klpj', header: 'KLPJ', numero: true },
+    { field: 'tmj', header: 'TMJ', numero: true },
+    { field: 'clavj', header: 'CLAVJ', numero: true },
+    { field: 'qrtj', header: 'QRTJ', numero: true }
+  ];
+
+  readonly columnasAps: TablaColumn[] = [
+    { field: 'anno', header: 'Año' },
+    { field: 'mes', header: 'Mes' },
+    { field: 'empresaNombre', header: 'Empresa' },
+    { field: 'qrtz', header: 'QRTZ', numero: true },
+    { field: 'cpe', header: 'CPE', numero: true },
+    { field: 't', header: 'T', numero: true },
+    { field: 'qbl', header: 'QBL', numero: true },
+    { field: 'qlu', header: 'QLU', numero: true },
+    { field: 'qr', header: 'QR', numero: true },
+    { field: 'tafa', header: 'TAFA', numero: true },
+    { field: 'nd', header: 'ND', numero: true },
+    { field: 'na', header: 'NA', numero: true },
+    { field: 'qna', header: 'QNA', numero: true },
+    { field: 'tafna', header: 'TAFNA', numero: true },
+    { field: 'qa', header: 'QA', numero: true },
+    { field: 'aprovecha', header: 'APROVECHA', numero: true },
+    { field: 'crtcomp', header: 'CRTCOMP', numero: true },
+    { field: 'cdfcomp', header: 'CDFCOMP', numero: true },
+    { field: 'qrscomp', header: 'QRSCOMP', numero: true },
+    { field: 'naa', header: 'NAA', numero: true },
+    { field: 'nda', header: 'NDA', numero: true }
+  ];
+
+  readonly columnasRelleno: TablaColumn[] = [
+    { field: 'anno', header: 'Año' },
+    { field: 'mes', header: 'Mes' },
+    { field: 'qrs', header: 'QRS', numero: true },
+    { field: 'c', header: 'QRSmunrecep', numero: true },
+    { field: 'vl', header: 'VL', numero: true },
+    { field: 'ctmlx', header: 'CTMLX', numero: true },
+    { field: 'ctlk', header: 'CTLK', numero: true },
+    { field: 'escenario', header: 'ESCENARIO', numero: true }
+  ];
+
+  readonly columnasAdicional: TablaColumn[] = [
+    { field: 'anno', header: 'Año' },
+    { field: 'mes', header: 'Mes' },
+    { field: 'cdf', header: 'CDF', numero: true },
+    { field: 'ctl', header: 'CTL', numero: true }
+  ];
+
+  // Campos editables de las 5 tabs. Los sets son disjuntos entre tabs y ninguno
+  // pisa un campo de texto, así un único cellTemplate compartido alcanza.
+  private readonly camposEditables = new Set([
+    'cantidad', 'toneladas',
+    'cblj', 'lblj', 'n', 'm3agua', 'cp', 'm2ccj', 'm2lavj', 'tij', 'klpj', 'tmj', 'clavj', 'qrtj',
+    'qrtz', 'cpe', 't', 'qbl', 'qlu', 'qr', 'tafa', 'nd', 'na', 'qna', 'tafna', 'qa',
+    'aprovecha', 'crtcomp', 'cdfcomp', 'qrscomp', 'naa', 'nda',
+    'qrs', 'c', 'vl', 'ctmlx', 'ctlk', 'escenario',
+    'cdf', 'ctl'
+  ]);
+
+  // Columnas de texto cuyo valor de display cae al código cuando el nombre viene null.
+  private readonly fallbackTexto: Record<string, string> = {
+    clasNombre: 'clasClaseUso',
+    tipoTarifaNombre: 'paraTipTar20012',
+    factorProduccionNombre: 'faprCodigo'
+  };
+
   constructor(
     private readonly reliqService: ReliquidacionService,
     private readonly cargueService: ReliqCargueService,
@@ -39,6 +137,23 @@ export class ReliqCargueComponent {
     private readonly confirmationService: ConfirmationService
   ) {
     this.reliqService.getReliquidaciones().subscribe((res) => this.reliquidaciones.set(res.data || []));
+  }
+
+  esCampoEditable(field: string): boolean {
+    return this.camposEditables.has(field);
+  }
+
+  valorCeldaTexto(row: Record<string, unknown>, field: string, value: unknown): unknown {
+    const fallback = this.fallbackTexto[field];
+    const resuelto = value ?? (fallback ? row[fallback] : null);
+    return resuelto ?? '';
+  }
+
+  onReliqChange(reliqId: number | null): void {
+    this.selectedReliq.set(reliqId);
+    if (reliqId !== null) {
+      this.consultar();
+    }
   }
 
   consultar(): void {

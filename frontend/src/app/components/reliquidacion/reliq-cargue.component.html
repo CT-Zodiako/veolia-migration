@@ -1,248 +1,131 @@
 <p-toast></p-toast>
 
-<div class="page-wrap">
-  <p-card>
-    <div class="toolbar">
+<div class="card-section">
+  <div class="parametros-row">
+    <div class="reliq-field">
+      <label for="reliq-cargue-select">Reliquidación</label>
       <p-select
+        inputId="reliq-cargue-select"
         [options]="reliquidaciones()"
         optionLabel="relqNombre"
         optionValue="relqId"
         [ngModel]="selectedReliq()"
-        (ngModelChange)="selectedReliq.set($event)"
+        (ngModelChange)="onReliqChange($event)"
         placeholder="Seleccione reliquidación"
-      />
-      <p-button label="Consultar" icon="pi pi-search" [loading]="loading()" (onClick)="consultar()" />
-      <p-button
-        label="RELIQUIDAR TARIFA"
-        icon="pi pi-refresh"
-        severity="danger"
-        [loading]="reliquidando()"
-        [disabled]="!selectedReliq()"
-        (onClick)="reliquidarTarifa()"
+        [filter]="true"
+        filterBy="relqNombre"
+        [style]="{ width: '100%' }"
       />
     </div>
-  </p-card>
 
-  <p-card styleClass="mt-3">
-    <p-tabs [value]="currentTab()" (valueChange)="onTabChange($event)">
-      <p-tablist>
-        <p-tab value="usuarios">Usuarios</p-tab>
-        <p-tab value="empresa">Empresa</p-tab>
-        <p-tab value="aps">APS</p-tab>
-        <p-tab value="relleno">Relleno</p-tab>
-        <p-tab value="adicional">Adicional</p-tab>
-      </p-tablist>
-      <p-tabpanels>
-        <!-- USUARIOS -->
-        <p-tabpanel value="usuarios">
-          <div class="table-scroll-x">
-            <p-table [value]="usuarios()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '100%' }">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Año</th>
-                  <th>Mes</th>
-                  <th>Clase Uso</th>
-                  <th>Tipo Tarifa</th>
-                  <th>Factor Prod</th>
-                  <th class="text-right">Cantidad</th>
-                  <th class="text-right">Toneladas</th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-row>
-                <tr>
-                  <td>{{ row.anno }}</td>
-                  <td>{{ row.mes }}</td>
-                  <td>{{ row.clasNombre || row.clasClaseUso }}</td>
-                  <td>{{ row.tipoTarifaNombre || row.paraTipTar20012 }}</td>
-                  <td>{{ row.factorProduccionNombre || row.faprCodigo }}</td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.cantidad" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.toneladas" /></td>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="emptymessage">
-                <tr><td colspan="7">Sin información para la reliquidación seleccionada.</td></tr>
-              </ng-template>
-            </p-table>
-          </div>
-          <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar Usuarios' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('usuarios')" />
-        </p-tabpanel>
+    <div class="boton-wrapper">
+      <label class="label-spacer">&nbsp;</label>
+      <div class="botones-row">
+        <p-button
+          label="Consultar"
+          icon="pi pi-search"
+          [loading]="loading()"
+          [disabled]="!selectedReliq()"
+          (onClick)="consultar()"
+        />
+        <p-button
+          label="RELIQUIDAR TARIFA"
+          icon="pi pi-refresh"
+          severity="danger"
+          [loading]="reliquidando()"
+          [disabled]="!selectedReliq()"
+          (onClick)="reliquidarTarifa()"
+        />
+      </div>
+    </div>
+  </div>
+</div>
 
-        <!-- EMPRESA -->
-        <p-tabpanel value="empresa">
-          <div class="table-scroll-x">
-            <p-table [value]="empresa()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '100%' }">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Año</th>
-                  <th>Mes</th>
-                  <th>Empresa</th>
-                  <th class="text-right">CBLJ</th>
-                  <th class="text-right">LBLJ</th>
-                  <th class="text-right">N</th>
-                  <th class="text-right">M3AGUA</th>
-                  <th class="text-right">CP</th>
-                  <th class="text-right">M2CCJ</th>
-                  <th class="text-right">M2LAVJ</th>
-                  <th class="text-right">TIJ</th>
-                  <th class="text-right">KLPJ</th>
-                  <th class="text-right">TMJ</th>
-                  <th class="text-right">CLAVJ</th>
-                  <th class="text-right">QRTJ</th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-row>
-                <tr>
-                  <td>{{ row.anno }}</td>
-                  <td>{{ row.mes }}</td>
-                  <td>{{ row.empresaNombre }}</td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.cblj" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.lblj" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.n" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.m3agua" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.cp" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.m2ccj" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.m2lavj" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.tij" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.klpj" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.tmj" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.clavj" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qrtj" /></td>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="emptymessage">
-                <tr><td colspan="15">Sin información para la reliquidación seleccionada.</td></tr>
-              </ng-template>
-            </p-table>
-          </div>
-          <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar Empresa' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('empresa')" />
-        </p-tabpanel>
+<div class="card-section">
+  <ng-template #celda let-value let-row="row" let-col="col">
+    <input
+      *ngIf="esCampoEditable(col.field); else celdaTexto"
+      pInputText
+      type="number"
+      class="cell-input"
+      [(ngModel)]="row[col.field]"
+    />
+    <ng-template #celdaTexto>{{ valorCeldaTexto(row, col.field, value) }}</ng-template>
+  </ng-template>
 
-        <!-- APS -->
-        <p-tabpanel value="aps">
-          <div class="table-scroll-x">
-            <p-table [value]="aps()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '100%' }">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Año</th>
-                  <th>Mes</th>
-                  <th>Empresa</th>
-                  <th class="text-right">QRTZ</th>
-                  <th class="text-right">CPE</th>
-                  <th class="text-right">T</th>
-                  <th class="text-right">QBL</th>
-                  <th class="text-right">QLU</th>
-                  <th class="text-right">QR</th>
-                  <th class="text-right">TAFA</th>
-                  <th class="text-right">ND</th>
-                  <th class="text-right">NA</th>
-                  <th class="text-right">QNA</th>
-                  <th class="text-right">TAFNA</th>
-                  <th class="text-right">QA</th>
-                  <th class="text-right">APROVECHA</th>
-                  <th class="text-right">CRTCOMP</th>
-                  <th class="text-right">CDFCOMP</th>
-                  <th class="text-right">QRSCOMP</th>
-                  <th class="text-right">NAA</th>
-                  <th class="text-right">NDA</th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-row>
-                <tr>
-                  <td>{{ row.anno }}</td>
-                  <td>{{ row.mes }}</td>
-                  <td>{{ row.empresaNombre }}</td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qrtz" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.cpe" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.t" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qbl" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qlu" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qr" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.tafa" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.nd" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.na" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qna" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.tafna" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qa" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.aprovecha" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.crtcomp" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.cdfcomp" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qrscomp" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.naa" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.nda" /></td>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="emptymessage">
-                <tr><td colspan="21">Sin información para la reliquidación seleccionada.</td></tr>
-              </ng-template>
-            </p-table>
-          </div>
-          <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar APS' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('aps')" />
-        </p-tabpanel>
+  <p-tabs [value]="currentTab()" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab value="usuarios">Usuarios</p-tab>
+      <p-tab value="empresa">Empresa</p-tab>
+      <p-tab value="aps">APS</p-tab>
+      <p-tab value="relleno">Relleno</p-tab>
+      <p-tab value="adicional">Adicional</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <!-- USUARIOS -->
+      <p-tabpanel value="usuarios">
+        <app-tabla-avanzada
+          [columnas]="columnasUsuarios"
+          [rows]="usuariosRows()"
+          storageKey="reliq-cargue-usuarios"
+          nombreExportar="ReliqCargueUsuarios"
+          [cellTemplate]="celda"
+          [loading]="loading()"
+        ></app-tabla-avanzada>
+        <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar Usuarios' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('usuarios')" />
+      </p-tabpanel>
 
-        <!-- RELLENO -->
-        <p-tabpanel value="relleno">
-          <div class="table-scroll-x">
-            <p-table [value]="relleno()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '100%' }">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Año</th>
-                  <th>Mes</th>
-                  <th class="text-right">QRS</th>
-                  <th class="text-right">QRSmunrecep</th>
-                  <th class="text-right">VL</th>
-                  <th class="text-right">CTMLX</th>
-                  <th class="text-right">CTLK</th>
-                  <th class="text-right">ESCENARIO</th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-row>
-                <tr>
-                  <td>{{ row.anno }}</td>
-                  <td>{{ row.mes }}</td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.qrs" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.c" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.vl" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.ctmlx" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.ctlk" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.escenario" /></td>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="emptymessage">
-                <tr><td colspan="8">Sin información para la reliquidación seleccionada.</td></tr>
-              </ng-template>
-            </p-table>
-          </div>
-          <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar Relleno' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('relleno')" />
-        </p-tabpanel>
+      <!-- EMPRESA -->
+      <p-tabpanel value="empresa">
+        <app-tabla-avanzada
+          [columnas]="columnasEmpresa"
+          [rows]="empresaRows()"
+          storageKey="reliq-cargue-empresa"
+          nombreExportar="ReliqCargueEmpresa"
+          [cellTemplate]="celda"
+          [loading]="loading()"
+        ></app-tabla-avanzada>
+        <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar Empresa' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('empresa')" />
+      </p-tabpanel>
 
-        <!-- ADICIONAL -->
-        <p-tabpanel value="adicional">
-          <div class="table-scroll-x">
-            <p-table [value]="adicional()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '100%' }">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Año</th>
-                  <th>Mes</th>
-                  <th class="text-right">CDF</th>
-                  <th class="text-right">CTL</th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-row>
-                <tr>
-                  <td>{{ row.anno }}</td>
-                  <td>{{ row.mes }}</td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.cdf" /></td>
-                  <td class="text-right"><input pInputText type="number" class="cell-input text-right" [(ngModel)]="row.ctl" /></td>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="emptymessage">
-                <tr><td colspan="4">Sin información para la reliquidación seleccionada.</td></tr>
-              </ng-template>
-            </p-table>
-          </div>
-          <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar Adicional' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('adicional')" />
-        </p-tabpanel>
-      </p-tabpanels>
-    </p-tabs>
-  </p-card>
+      <!-- APS -->
+      <p-tabpanel value="aps">
+        <app-tabla-avanzada
+          [columnas]="columnasAps"
+          [rows]="apsRows()"
+          storageKey="reliq-cargue-aps"
+          nombreExportar="ReliqCargueAps"
+          [cellTemplate]="celda"
+          [loading]="loading()"
+        ></app-tabla-avanzada>
+        <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar APS' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('aps')" />
+      </p-tabpanel>
+
+      <!-- RELLENO -->
+      <p-tabpanel value="relleno">
+        <app-tabla-avanzada
+          [columnas]="columnasRelleno"
+          [rows]="rellenoRows()"
+          storageKey="reliq-cargue-relleno"
+          nombreExportar="ReliqCargueRelleno"
+          [cellTemplate]="celda"
+          [loading]="loading()"
+        ></app-tabla-avanzada>
+        <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar Relleno' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('relleno')" />
+      </p-tabpanel>
+
+      <!-- ADICIONAL -->
+      <p-tabpanel value="adicional">
+        <app-tabla-avanzada
+          [columnas]="columnasAdicional"
+          [rows]="adicionalRows()"
+          storageKey="reliq-cargue-adicional"
+          nombreExportar="ReliqCargueAdicional"
+          [cellTemplate]="celda"
+          [loading]="loading()"
+        ></app-tabla-avanzada>
+        <p-button label="{{ guardando() ? 'Guardando...' : 'Guardar Adicional' }}" [loading]="guardando()" class="mt-2" (onClick)="guardar('adicional')" />
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
 </div>
