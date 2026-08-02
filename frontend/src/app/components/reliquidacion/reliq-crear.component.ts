@@ -39,6 +39,7 @@ export class ReliqCrearComponent {
   readonly usuariosAps = signal<Array<{ SISU_ID: number; SISU_CORREO: string }>>([]);
   readonly desdeDate = signal<Date | null>(null);
   readonly hastaDate = signal<Date | null>(null);
+  readonly apruebaCorreo = signal('');
 
   private usuariosApsCargadosPara: number | null = null;
 
@@ -105,6 +106,9 @@ export class ReliqCrearComponent {
     this.form.reset({ apsaId: 0, nombre: '', descripcion: '', desde: '', hasta: '', usuSolicita: 0, estado: 'Creada', usuAprueba: 0, idAtt: DEFAULT_ID_ATT });
     this.desdeDate.set(null);
     this.hastaDate.set(null);
+    const conectado = this.usuarioConectado();
+    this.form.controls.usuAprueba.setValue(conectado.sisuId);
+    this.apruebaCorreo.set(conectado.correo);
     if (this.form.controls.apsaId.value > 0) {
       this.cargarUsuariosAps(this.form.controls.apsaId.value);
     }
@@ -127,6 +131,7 @@ export class ReliqCrearComponent {
     });
     this.desdeDate.set(this.yyyymmToDate(row.relqDesde));
     this.hastaDate.set(this.yyyymmToDate(row.relqHasta));
+    this.apruebaCorreo.set(row.mailAprueba || '');
     this.cargarUsuariosAps(row.apsaId);
     this.showDialog.set(true);
   }
@@ -160,6 +165,17 @@ export class ReliqCrearComponent {
         this.notification.error(message);
       }
     });
+  }
+
+  // Legacy: el aprobador es siempre el usuario conectado (readonly, no editable).
+  private usuarioConectado(): { sisuId: number; correo: string } {
+    try {
+      const raw = localStorage.getItem('usuario');
+      const u = raw ? JSON.parse(raw) : null;
+      return { sisuId: Number(u?.SISU_ID ?? 0), correo: String(u?.SISU_CORREO ?? '') };
+    } catch {
+      return { sisuId: 0, correo: '' };
+    }
   }
 
   estadoClass(valor: string | null | undefined): string {

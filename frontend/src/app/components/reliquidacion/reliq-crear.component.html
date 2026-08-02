@@ -83,7 +83,8 @@
     <label>Estado</label>
     <p-select formControlName="estado" appendTo="body" [options]="estadoOptions" optionLabel="label" optionValue="value" />
     <label>Aprobador</label>
-    <p-select formControlName="usuAprueba" appendTo="body" [options]="usuariosAps()" optionLabel="SISU_CORREO" optionValue="SISU_ID" [filter]="true" filterPlaceholder="Buscar usuario..." placeholder="Seleccione usuario" />
+    <input pInputText [value]="apruebaCorreo()" readonly class="input-readonly" />
+    <input type="hidden" formControlName="usuAprueba" />
   </form>
   <ng-template pTemplate="footer">
     <p-button label="Cancelar" severity="secondary" (onClick)="showDialog.set(false)" />
