@@ -10,16 +10,16 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
     public async Task<ReliquidacionDto?> CrearAsync(CrearReliquidacionRequestDto request, long usuarioId, CancellationToken cancellationToken)
     {
         const string insertCabeceraSql = @"
-            INSERT INTO RELQRELIQUIDA
+            INSERT INTO RELIQ.RELQRELIQUIDA
             (RELQID, APSA_ID, RELQNOMBRE, RELQDESCRIPCION, RELQDESDE, RELQHASTA, RELQESTADO, RELQUSUSOLICITA, RELQUSUAPRUEBA, RELQFECHA)
-            VALUES (SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, :8, SYSDATE)
+            VALUES (RELIQ.SRELQRELIQUIDA.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, :8, SYSDATE)
             RETURNING RELQID INTO :9";
 
         const string insertFiltroSql = @"
-            INSERT INTO FILTRO_COMPARACOSTO
+            INSERT INTO RELIQ.FILTRO_COMPARACOSTO
             (FICO_ID, RELQID, APSA_ID, ANNO, MES, USUA_USUA, FECHA)
             VALUES (
-                (SELECT NVL(MAX(FICO_ID), 0) + 1 FROM FILTRO_COMPARACOSTO),
+                (SELECT NVL(MAX(FICO_ID), 0) + 1 FROM RELIQ.FILTRO_COMPARACOSTO),
                 :1,
                 :2,
                 TO_NUMBER(SUBSTR(:3, 1, 4)),
@@ -30,7 +30,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
 
         const string ejecutarExtraccionSql = @"
             BEGIN
-                :1 := PK_RELI.freli_extraccion(:2, :3, :4, :5, :6);
+                :1 := RELIQ.PK_RELI.freli_extraccion(:2, :3, :4, :5, :6);
             END;";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
@@ -76,7 +76,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                 !string.Equals(resultadoExtraccion, "STUB_OK", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(resultadoExtraccion, "OK", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"PK_RELI.freli_extraccion retornó: {resultadoExtraccion}");
+                throw new InvalidOperationException($"RELIQ.PK_RELI.freli_extraccion retornó: {resultadoExtraccion}");
             }
 
             transaction.Commit();
@@ -92,7 +92,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                        R.RELQUSUSOLICITA AS RelqSolicita,
                        R.RELQUSUAPRUEBA AS RelqAprueba,
                        R.RELQFECHA AS RelqFecha
-                  FROM RELQRELIQUIDA R
+                  FROM RELIQ.RELQRELIQUIDA R
                  WHERE R.RELQID = :1";
 
             var getParams = new DynamicParameters();
@@ -126,7 +126,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQUSUSOLICITA AS RelqSolicita,
                    R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha
-              FROM RELQRELIQUIDA R
+              FROM RELIQ.RELQRELIQUIDA R
               LEFT JOIN AUCO_APSASEO A ON A.APSA_ID = R.APSA_ID
               LEFT JOIN AUGE_SISUSUARIO U ON U.SISU_ID = R.RELQUSUSOLICITA";
 
@@ -157,7 +157,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
                    R.RELQUSUSOLICITA AS RelqSolicita,
                    R.RELQUSUAPRUEBA AS RelqAprueba,
                    R.RELQFECHA AS RelqFecha
-              FROM RELQRELIQUIDA R
+              FROM RELIQ.RELQRELIQUIDA R
              WHERE R.APSA_ID = :1
                AND R.RELQESTADO IN ('1', '2', 'CREADA', 'APLICADA')
              ORDER BY R.RELQID DESC
@@ -173,7 +173,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
     public async Task<bool> ActualizarAsync(ActualizarReliquidacionRequestDto request, long usuarioId, CancellationToken cancellationToken)
     {
         const string sql = @"
-            UPDATE RELQRELIQUIDA
+            UPDATE RELIQ.RELQRELIQUIDA
                SET APSA_ID = :1,
                    RELQNOMBRE = :2,
                    RELQDESCRIPCION = :3,
@@ -203,7 +203,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
 
     public async Task<bool> EliminarAsync(long relqId, CancellationToken cancellationToken)
     {
-        const string sql = @"DELETE FROM RELQRELIQUIDA WHERE RELQID = :1";
+        const string sql = @"DELETE FROM RELIQ.RELQRELIQUIDA WHERE RELQID = :1";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", relqId);

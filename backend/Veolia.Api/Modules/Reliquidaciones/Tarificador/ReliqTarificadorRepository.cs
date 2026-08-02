@@ -45,7 +45,7 @@ public sealed class ReliqTarificadorRepository(IOracleConnectionFactory connecti
     {
         const string sql = @"
             SELECT RELQESTADO
-              FROM RELQRELIQUIDA
+              FROM RELIQ.RELQRELIQUIDA
              WHERE RELQID = :1";
 
         var parameters = new DynamicParameters();

@@ -12,7 +12,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
     {
         const string sql = @"
             BEGIN
-                :1 := PK_RELIQUIDAR.freli_reliquidar(:2, :3);
+                :1 := RELIQ.PK_RELIQUIDAR.freli_reliquidar(:2, :3);
             END;";
 
         var parameters = new DynamicParameters();
@@ -81,7 +81,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    TARI_IAT AS TariIat,
                    DIFE_IAT AS DifeIat
 
-              FROM VREL_COMPARACOSTOS
+              FROM RELIQ.VREL_COMPARACOSTOS
              WHERE CODRELIQ = :1";
 
         var parameters = new DynamicParameters();
@@ -139,7 +139,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    TAR_PLENA_ACU_ORG AS TarPlenaAcuOrg,
                    TAR_PLENA_ACU_REL AS TarPlenaAcuRel,
                    DEVOLACU AS Devolacu
-              FROM VREL_COMPARATARIFACOBRO
+              FROM RELIQ.VREL_COMPARATARIFACOBRO
              WHERE RELI = :1";
 
         var parameters = new DynamicParameters();
@@ -262,7 +262,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    TRIM(REPLACE(AF.FAPR_DESCRIPCION, 'Factor de Producción para', 'FP ')) AS FactorProduccionNombre,
                    U.IUAE_CANTIDAD AS Cantidad,
                    U.IUAE_TONELADAS AS Toneladas
-              FROM RELI_INFUSUAPSEMPRDIVI U
+              FROM RELIQ.RELI_INFUSUAPSEMPRDIVI U
               JOIN AUCO_CLASESUSO AC ON (U.CLAS_CLASEUSO = AC.CLAS_CLASE)
               JOIN AUGE_PARAMETROS AP ON (U.PARA_TIPTAR20012 = AP.PARA_PARA AND AP.CLAS_CLAS = 20012)
               JOIN AUCO_FACTPRODUCCION AF ON (U.APSA_ID = AF.APSA_ID AND U.FAPR_CODIGO = AF.FAPR_CODIGO)
@@ -298,7 +298,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    I.INED_CLAVJ AS Clavj,
                    I.INED_QRTJ AS Qrtj,
                    I.INED_QRSJ AS Qrsj
-              FROM RELI_INFOEMPRDIVI I
+              FROM RELIQ.RELI_INFOEMPRDIVI I
               JOIN AUGE_EMPRESAS E ON E.EMPR_EMPR = I.EMPR_EMPR
              WHERE I.RELI_ID = :1
              ORDER BY E.EMPR_NOMBRE";
@@ -344,7 +344,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    I.IAED_QRSCOMP AS Qrscomp,
                    I.IAED_NAA AS Naa,
                    I.IAED_NDA AS Nda
-              FROM RELI_INFOAPSEMPRDIVI I
+              FROM RELIQ.RELI_INFOAPSEMPRDIVI I
               JOIN AUGE_EMPRESAS E ON E.EMPR_EMPR = I.EMPR_EMPR
              WHERE I.RELI_ID = :1
              ORDER BY E.EMPR_NOMBRE";
@@ -375,7 +375,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    R.IARE_VACDF AS Vacdf,
                    R.IARE_VACTLABC AS VactlAbc,
                    R.IARE_VACTL AS Vactl
-              FROM RELI_INFOAPSRELLENO R
+              FROM RELIQ.RELI_INFOAPSRELLENO R
              WHERE R.RELI_ID = :1
              ORDER BY R.IARE_ANNO, R.IARE_MES";
 
@@ -396,7 +396,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    A.CEAD_MES AS Mes,
                    A.CEAD_CDF AS Cdf,
                    A.CEAD_CTL AS Ctl
-              FROM RELI_INFOADICIONAL A
+              FROM RELIQ.RELI_INFOADICIONAL A
              WHERE A.RELI_ID = :1
              ORDER BY A.CEAD_ANNO, A.CEAD_MES";
 
@@ -412,7 +412,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
         // USUA_USUA confirmado contra el legacy (controller.js:367-422, cargueController.updateReliInfoUsuarios,
         // parámetro usuaUsua = req.SISU_ID del JWT, bind :9).
         => ExecuteBatchUpdateAsync(
-            @"UPDATE RELI_INFUSUAPSEMPRDIVI
+            @"UPDATE RELIQ.RELI_INFUSUAPSEMPRDIVI
                  SET DIVI_DIVI = :1,
                      FAPR_CODIGO = :2,
                      CLAS_CLASEUSO = :3,
@@ -446,7 +446,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
         // USUA_USUA confirmado contra el legacy (controller.js:423-487, cargueController.updateResumenEmpresa,
         // parámetro usuaUsua = req.SISU_ID del JWT, bind :14).
         => ExecuteBatchUpdateAsync(
-            @"UPDATE RELI_INFOEMPRDIVI
+            @"UPDATE RELIQ.RELI_INFOEMPRDIVI
                  SET INED_CBLJ = :1,
                      INED_LBLJ = :2,
                      INED_N = :3,
@@ -493,7 +493,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
         // ese bug NO se replica aquí -- IAED_CRTZ ya usa su propio valor (row.Crtz) en el bind :7, que es
         // el comportamiento correcto y no forma parte de esta corrección (solo se agrega USUA_USUA).
         => ExecuteBatchUpdateAsync(
-            @"UPDATE RELI_INFOAPSEMPRDIVI
+            @"UPDATE RELIQ.RELI_INFOAPSEMPRDIVI
                  SET DIVI_DIVI = :1,
                      IAED_QRTZ = :2,
                      IAED_CPE = :3,
@@ -561,7 +561,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
         // USUA_USUA confirmado contra el legacy (controller.js:578-640, cargueController.updateResumenRellno,
         // parámetro usuaUsua = req.SISU_ID del JWT, bind :12).
         => ExecuteBatchUpdateAsync(
-            @"UPDATE RELI_INFOAPSRELLENO
+            @"UPDATE RELIQ.RELI_INFOAPSRELLENO
                  SET IARE_QRS = :1,
                      IARE_CDFK = :2,
                      IARE_VACDFABC = :3,
@@ -602,7 +602,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
         // cargueController.updateResumenAdicional, parámetro usuaUsua = req.SISU_ID del JWT, bind :3).
         // Este método también estaba afectado por la regresión aunque no se listó explícitamente.
         => ExecuteBatchUpdateAsync(
-            @"UPDATE RELI_INFOADICIONAL
+            @"UPDATE RELIQ.RELI_INFOADICIONAL
                  SET CEAD_CDF = :1,
                      CEAD_CTL = :2,
                      USUA_USUA = :3
