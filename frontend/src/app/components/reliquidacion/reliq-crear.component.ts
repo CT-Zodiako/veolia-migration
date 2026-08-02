@@ -4,6 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, map, of } from 'rxjs';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { DialogModule } from 'primeng/dialog';
+import { DatePickerModule } from 'primeng/datepicker';
+import { FormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { ReliquidacionService } from '../../services/reliquidacion/reliquidacion.service';
 import { ApsService } from '../../services/aps.service';
@@ -20,7 +22,7 @@ const DEFAULT_ID_ATT = 11;
 @Component({
   selector: 'app-reliq-crear',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DialogModule, ...CommonPrimeNgModules],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, DialogModule, DatePickerModule, ...CommonPrimeNgModules],
   templateUrl: './reliq-crear.component.html',
   styleUrls: ['./reliq-crear.component.css']
 })
@@ -35,6 +37,8 @@ export class ReliqCrearComponent {
   readonly apsOptions = signal<ApsOption[]>([]);
   readonly reliquidaciones = signal<Reliquidacion[]>([]);
   readonly usuariosAps = signal<Array<{ SISU_ID: number; SISU_CORREO: string }>>([]);
+  readonly desdeDate = signal<Date | null>(null);
+  readonly hastaDate = signal<Date | null>(null);
 
   private usuariosApsCargadosPara: number | null = null;
 
@@ -99,6 +103,8 @@ export class ReliqCrearComponent {
     this.editingId.set(null);
     this.error.set('');
     this.form.reset({ apsaId: 0, nombre: '', descripcion: '', desde: '', hasta: '', usuSolicita: 0, estado: 'Creada', usuAprueba: 0, idAtt: DEFAULT_ID_ATT });
+    this.desdeDate.set(null);
+    this.hastaDate.set(null);
     if (this.form.controls.apsaId.value > 0) {
       this.cargarUsuariosAps(this.form.controls.apsaId.value);
     }
@@ -119,6 +125,8 @@ export class ReliqCrearComponent {
       usuAprueba: row.relqAprueba || 0,
       idAtt: row.relqIdAtt ?? DEFAULT_ID_ATT
     });
+    this.desdeDate.set(this.yyyymmToDate(row.relqDesde));
+    this.hastaDate.set(this.yyyymmToDate(row.relqHasta));
     this.cargarUsuariosAps(row.apsaId);
     this.showDialog.set(true);
   }
@@ -152,6 +160,45 @@ export class ReliqCrearComponent {
         this.notification.error(message);
       }
     });
+  }
+
+  onPeriodoChange(campo: 'desde' | 'hasta', date: Date | null): void {
+    const yyyymm = this.dateToYyyymm(date);
+    this.form.controls[campo].setValue(yyyymm);
+    this.form.controls[campo].markAsTouched();
+    this.validarPeriodoCruzado(campo);
+  }
+
+  private validarPeriodoCruzado(campo: 'desde' | 'hasta'): void {
+    const desde = this.form.controls.desde.value;
+    const hasta = this.form.controls.hasta.value;
+    if (!desde || !hasta) return;
+    if (campo === 'desde' && desde > hasta) {
+      this.error.set("El periodo 'desde' no puede ser mayor que el periodo 'hasta'.");
+      this.form.controls.desde.setValue('');
+      this.desdeDate.set(null);
+      this.notification.warn("El periodo 'desde' no puede ser mayor que el periodo 'hasta'.");
+    }
+    if (campo === 'hasta' && hasta < desde) {
+      this.error.set("El periodo 'hasta' no puede ser menor que el periodo 'desde'.");
+      this.form.controls.hasta.setValue('');
+      this.hastaDate.set(null);
+      this.notification.warn("El periodo 'hasta' no puede ser menor que el periodo 'desde'.");
+    }
+  }
+
+  private yyyymmToDate(yyyymm: string | null | undefined): Date | null {
+    if (!yyyymm || yyyymm.length !== 6) return null;
+    const year = parseInt(yyyymm.substring(0, 4), 10);
+    const month = parseInt(yyyymm.substring(4, 6), 10) - 1;
+    return new Date(year, month, 1);
+  }
+
+  private dateToYyyymm(date: Date | null): string {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}${month}`;
   }
 
   eliminar(row: Reliquidacion): void {

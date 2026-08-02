@@ -34,21 +34,35 @@
   }
   <form [formGroup]="form" class="form-grid">
     <label>APS</label>
-    <p-select formControlName="apsaId" [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" placeholder="Seleccione APS" />
+    <p-select formControlName="apsaId" appendTo="body" [options]="apsOptions()" optionLabel="apsaNombre" optionValue="apsaId" placeholder="Seleccione APS" />
     <label>Nombre</label>
     <input pInputText formControlName="nombre" />
     <label>Descripción</label>
     <textarea pTextarea rows="2" formControlName="descripcion"></textarea>
-    <label>Periodo desde (YYYYMM)</label>
-    <input pInputText formControlName="desde" />
-    <label>Periodo hasta (YYYYMM)</label>
-    <input pInputText formControlName="hasta" />
+    <label>Periodo desde</label>
+    <p-datepicker
+      [ngModel]="desdeDate()"
+      (ngModelChange)="desdeDate.set($event); onPeriodoChange('desde', $event)"
+      view="month"
+      dateFormat="yy/mm"
+      appendTo="body"
+      placeholder="Año/Mes"
+    ></p-datepicker>
+    <label>Periodo hasta</label>
+    <p-datepicker
+      [ngModel]="hastaDate()"
+      (ngModelChange)="hastaDate.set($event); onPeriodoChange('hasta', $event)"
+      view="month"
+      dateFormat="yy/mm"
+      appendTo="body"
+      placeholder="Año/Mes"
+    ></p-datepicker>
     <label>Solicitante</label>
-    <p-select formControlName="usuSolicita" [options]="usuariosAps()" optionLabel="SISU_CORREO" optionValue="SISU_ID" [filter]="true" filterPlaceholder="Buscar usuario..." placeholder="Seleccione usuario" />
+    <p-select formControlName="usuSolicita" appendTo="body" [options]="usuariosAps()" optionLabel="SISU_CORREO" optionValue="SISU_ID" [filter]="true" filterPlaceholder="Buscar usuario..." placeholder="Seleccione usuario" />
     <label>Estado</label>
-    <p-select formControlName="estado" [options]="estadoOptions" optionLabel="label" optionValue="value" />
+    <p-select formControlName="estado" appendTo="body" [options]="estadoOptions" optionLabel="label" optionValue="value" />
     <label>Aprobador</label>
-    <p-select formControlName="usuAprueba" [options]="usuariosAps()" optionLabel="SISU_CORREO" optionValue="SISU_ID" [filter]="true" filterPlaceholder="Buscar usuario..." placeholder="Seleccione usuario" />
+    <p-select formControlName="usuAprueba" appendTo="body" [options]="usuariosAps()" optionLabel="SISU_CORREO" optionValue="SISU_ID" [filter]="true" filterPlaceholder="Buscar usuario..." placeholder="Seleccione usuario" />
   </form>
   <ng-template pTemplate="footer">
     <p-button label="Cancelar" severity="secondary" (onClick)="showDialog.set(false)" />
