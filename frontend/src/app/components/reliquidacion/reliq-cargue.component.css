@@ -7,11 +7,53 @@
 }
 .card-section:last-child { margin-bottom: 0; }
 
-.parametros-row {
+.selector-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   align-items: flex-start;
+}
+
+.selector-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+.selector-col label,
+.horizonte-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-body);
+}
+
+.selector-col-filtros {
+  flex: 0 1 300px;
+}
+.selector-col-filtros app-aps-selector {
+  display: block;
+}
+
+.selector-col-descripcion {
+  flex: 1 1 320px;
+}
+
+.selector-col-horizonte {
+  flex: 0 1 auto;
+  flex-direction: row;
+  gap: 12px;
+}
+.horizonte-field {
+  flex: 0 1 120px;
+  min-width: 100px;
+}
+
+.reliq-readonly {
+  width: 100%;
+  background: var(--color-bg-soft);
+  color: var(--color-text-body);
+  resize: vertical;
 }
 
 .reliq-field {

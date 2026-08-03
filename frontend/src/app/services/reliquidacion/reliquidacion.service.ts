@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
-import { EXPECTED_ERROR_STATUSES } from '../../interceptors/http-context.tokens';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth.service';
@@ -59,7 +58,7 @@ export class ReliquidacionService {
 
   getReliquidacionByAps(apsaid: number): Observable<ApiEnvelope<Reliquidacion[]>> {
     return this.http
-      .post<ApiEnvelope<Reliquidacion[]>>(`${this.baseUrl}/getReliquidacionByAps`, { apsaid }, { headers: this.getHeaders(), context: new HttpContext().set(EXPECTED_ERROR_STATUSES, [404]) })
+      .post<ApiEnvelope<Reliquidacion[]>>(`${this.baseUrl}/getReliquidacionByAps`, { apsaid }, { headers: this.getHeaders() })
       .pipe(catchError((error) => this.handleError(error)));
   }
 }

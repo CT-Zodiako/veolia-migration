@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { ReliqCargueService } from '../../services/reliquidacion/reliq-cargue.service';
 import { ReliquidacionService } from '../../services/reliquidacion/reliquidacion.service';
 import { ReliInfoAdicional, ReliInfoAps, ReliInfoEmpresa, ReliInfoRelleno, ReliInfoUsuarios, Reliquidacion } from '../../models/reliquidacion.model';
@@ -15,7 +16,7 @@ type CargueTab = 'usuarios' | 'empresa' | 'aps' | 'relleno' | 'adicional';
 @Component({
   selector: 'app-reliq-cargue',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, ...CommonPrimeNgModules, TablaAvanzadaComponent],
+  imports: [CommonModule, FormsModule, ToastModule, ...CommonPrimeNgModules, TablaAvanzadaComponent, ApsSelectorComponent],
   providers: [MessageService],
   templateUrl: './reliq-cargue.component.html',
   styleUrls: ['./reliq-cargue.component.css']
@@ -23,6 +24,12 @@ type CargueTab = 'usuarios' | 'empresa' | 'aps' | 'relleno' | 'adicional';
 export class ReliqCargueComponent {
   readonly reliquidaciones = signal<Reliquidacion[]>([]);
   readonly selectedReliq = signal<number | null>(null);
+  readonly selectedAps = signal<number | null>(null);
+  // Fila completa de la reliquidación elegida: alimenta Descripción y Horizonte
+  // (Desde/Hasta) del selector, replicando el layout del legacy seleccionReliq.vue.
+  readonly reliqSeleccionada = computed(() =>
+    this.reliquidaciones().find((r) => r.relqId === this.selectedReliq()) ?? null
+  );
   readonly currentTab = signal<CargueTab>('usuarios');
   readonly loading = signal(false);
   readonly reliquidando = signal(false);
@@ -136,7 +143,7 @@ export class ReliqCargueComponent {
     private readonly messages: MessageService,
     private readonly confirmationService: ConfirmationService
   ) {
-    this.reliqService.getReliquidaciones().subscribe((res) => this.reliquidaciones.set(res.data || []));
+    this.cargarReliquidaciones(null);
   }
 
   esCampoEditable(field: string): boolean {
@@ -154,6 +161,48 @@ export class ReliqCargueComponent {
     if (reliqId !== null) {
       this.consultar();
     }
+  }
+
+  // Legacy seleccionReliq.vue: el selector filtra las reliquidaciones por APS.
+  // Con APS elegida trae getReliquidacionByAps (lista); al limpiar el APS vuelve
+  // al listado completo de getReliquidaciones.
+  onApsChange(apsId: number | null): void {
+    this.selectedAps.set(apsId);
+    this.selectedReliq.set(null);
+    this.limpiarDatos();
+    this.cargarReliquidaciones(apsId);
+  }
+
+  // Carga las opciones del selector de reliquidaciones. El requestId descarta
+  // respuestas viejas: el APS restaurado por app-aps-selector dispara una segunda
+  // carga apenas inicia la pantalla y solo la última respuesta debe ganar.
+  private reliqRequestId = 0;
+
+  private cargarReliquidaciones(apsId: number | null): void {
+    const requestId = ++this.reliqRequestId;
+    const source$ = apsId
+      ? this.reliqService.getReliquidacionByAps(apsId)
+      : this.reliqService.getReliquidaciones();
+    source$.subscribe((res) => {
+      if (requestId === this.reliqRequestId) {
+        this.reliquidaciones.set(res.data || []);
+      }
+    });
+  }
+
+  // RELQDESDE/RELQHASTA vienen como YYYYMM; se muestran como YYYY/MM en el
+  // horizonte readonly del selector.
+  formatPeriodo(value: string | null | undefined): string {
+    if (!value || value.length !== 6) return '';
+    return `${value.slice(0, 4)}/${value.slice(4, 6)}`;
+  }
+
+  private limpiarDatos(): void {
+    this.usuarios.set([]);
+    this.empresa.set([]);
+    this.aps.set([]);
+    this.relleno.set([]);
+    this.adicional.set([]);
   }
 
   consultar(): void {

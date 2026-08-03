@@ -84,10 +84,9 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
 
         try
         {
+            // Legacy (reliq/controller.js getReliquidacionByAps) devuelve la LISTA completa de
+            // reliquidaciones activas del APS (alimenta el selector del cargue), no una sola fila.
             var data = await repository.GetReliquidacionByApsAsync(payload.ApsaId, cancellationToken);
-            if (data is null)
-                return NotFound(Envelope("error", null, "No se encontró reliquidación para el APS."));
-
             return Ok(Envelope("ok", data, "OK"));
         }
         catch (Exception ex)

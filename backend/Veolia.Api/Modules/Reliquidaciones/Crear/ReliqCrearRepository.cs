@@ -157,7 +157,7 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
         return rows.ToList();
     }
 
-    public async Task<ReliquidacionDto?> GetReliquidacionByApsAsync(long apsaId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ReliquidacionDto>> GetReliquidacionByApsAsync(long apsaId, CancellationToken cancellationToken)
     {
         const string sql = @"
             SELECT R.RELQID AS RelqId,
@@ -180,14 +180,14 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
               LEFT JOIN AUGE_SISUSUARIO AS3 ON AS3.SISU_ID = R.RELQUSUAPRUEBA
              WHERE R.APSAID = :1
                AND R.RELQESTADO IN ('1', '2')
-             ORDER BY R.RELQID DESC
-             FETCH FIRST 1 ROWS ONLY";
+             ORDER BY R.RELQID DESC";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", apsaId);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        return await connection.QueryFirstOrDefaultAsync<ReliquidacionDto>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+        var rowsByAps = await connection.QueryAsync<ReliquidacionDto>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+        return rowsByAps.ToList();
     }
 
     // Catalog parity with legacy RELQESTADO (NUMBER): the frontend and the

@@ -1,21 +1,65 @@
 <p-toast></p-toast>
 
 <div class="card-section">
-  <div class="parametros-row">
-    <div class="reliq-field">
-      <label for="reliq-cargue-select">Reliquidación</label>
-      <p-select
-        inputId="reliq-cargue-select"
-        [options]="reliquidaciones()"
-        optionLabel="relqNombre"
-        optionValue="relqId"
-        [ngModel]="selectedReliq()"
-        (ngModelChange)="onReliqChange($event)"
-        placeholder="Seleccione reliquidación"
-        [filter]="true"
-        filterBy="relqNombre"
-        [style]="{ width: '100%' }"
-      />
+  <div class="selector-grid">
+    <div class="selector-col selector-col-filtros">
+      <app-aps-selector
+        label="APS"
+        [selectedAps]="selectedAps()"
+        (selectedApsChange)="onApsChange($event)"
+      ></app-aps-selector>
+      <div class="reliq-field">
+        <label for="reliq-cargue-select">Reliquidación</label>
+        <p-select
+          inputId="reliq-cargue-select"
+          [options]="reliquidaciones()"
+          optionLabel="relqNombre"
+          optionValue="relqId"
+          [ngModel]="selectedReliq()"
+          (ngModelChange)="onReliqChange($event)"
+          placeholder="Seleccione reliquidación"
+          [filter]="true"
+          filterBy="relqNombre"
+          [showClear]="true"
+          appendTo="body"
+          [style]="{ width: '100%' }"
+        />
+      </div>
+    </div>
+
+    <div class="selector-col selector-col-descripcion">
+      <label for="reliq-cargue-descripcion">Descripción</label>
+      <textarea
+        id="reliq-cargue-descripcion"
+        pTextarea
+        rows="5"
+        [value]="reliqSeleccionada()?.relqDescripcion || ''"
+        readonly
+        class="reliq-readonly"
+      ></textarea>
+    </div>
+
+    <div class="selector-col selector-col-horizonte">
+      <div class="horizonte-field">
+        <label for="reliq-cargue-desde">Desde</label>
+        <input
+          id="reliq-cargue-desde"
+          pInputText
+          [value]="formatPeriodo(reliqSeleccionada()?.relqDesde)"
+          readonly
+          class="reliq-readonly"
+        />
+      </div>
+      <div class="horizonte-field">
+        <label for="reliq-cargue-hasta">Hasta</label>
+        <input
+          id="reliq-cargue-hasta"
+          pInputText
+          [value]="formatPeriodo(reliqSeleccionada()?.relqHasta)"
+          readonly
+          class="reliq-readonly"
+        />
+      </div>
     </div>
 
     <div class="boton-wrapper">
@@ -48,7 +92,8 @@
       pInputText
       type="number"
       class="cell-input"
-      [(ngModel)]="row[col.field]"
+      [ngModel]="row[col.field]"
+      (ngModelChange)="row[col.field] = $event ?? 0"
     />
     <ng-template #celdaTexto>{{ valorCeldaTexto(row, col.field, value) }}</ng-template>
   </ng-template>
