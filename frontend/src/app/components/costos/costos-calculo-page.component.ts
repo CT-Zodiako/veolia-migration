@@ -9,9 +9,6 @@ import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { VerificacionDialogComponent } from './verificacion-dialog.component';
-import { ToneladasPanelComponent } from './toneladas-panel.component';
-import { KilometrosPanelComponent } from './kilometros-panel.component';
-import { CostosConsultaPanelComponent } from './costos-consulta-panel.component';
 import { CuadriculaCostoComponent } from './cuadricula-costo.component';
 import { ResumenTarifasComponent } from './resumen-tarifas.component';
 import { ResumenVariablesComponent } from './resumen-variables.component';
@@ -19,6 +16,7 @@ import { CostoItem, VerificacionDetalle } from '../../models/costos.models';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
 import { CostosService } from '../../services/costos.service';
 import { ValidacionesService } from '../../services/validaciones.service';
+import { SuministrosService } from '../../services/suministros.service';
 import { NotificationService } from '../../services/notification.service';
 import { TarifaRow, TarifasService } from '../../services/tarifas.service';
 
@@ -34,9 +32,6 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
     MesSelectorComponent,
     AnnoSelectorComponent,
     VerificacionDialogComponent,
-    ToneladasPanelComponent,
-    KilometrosPanelComponent,
-    CostosConsultaPanelComponent,
     CuadriculaCostoComponent,
     ResumenTarifasComponent,
     ResumenVariablesComponent
@@ -65,74 +60,49 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
 
       <p-divider />
 
-      <p-tabs value="calculo">
-        <p-tablist>
-          <p-tab value="calculo">Cálculo</p-tab>
-          <p-tab value="toneladas">Toneladas</p-tab>
-          <p-tab value="kilometros">Kilómetros</p-tab>
-          <p-tab value="consultas">Consultas</p-tab>
-        </p-tablist>
-        <p-tabpanels>
-          <p-tabpanel value="calculo">
-            <div class="grid">
-              <div class="col-12">
-                <div class="flex align-items-center gap-2 mb-3">
-                  <p-button
-                    label="VERIFICAR"
-                    icon="pi pi-check"
-                    severity="warn"
-                    [loading]="loadingVerificar()"
-                    [disabled]="!aps() || !periodoConsulta() || loadingVerificar()"
-                    (click)="verificar()"
-                  ></p-button>
-                  <p-button
-                    label="CERTIFICAR"
-                    icon="pi pi-check"
-                    [loading]="loadingCertificar()"
-                    [disabled]="!aps() || !periodoConsulta() || certificarDisabled() || loadingCertificar()"
-                    (click)="certificar()"
-                  ></p-button>
-                </div>
-              </div>
+      <div class="grid">
+        <div class="col-12">
+          <div class="flex align-items-center gap-2 mb-3">
+            <p-button
+              label="VERIFICAR"
+              icon="pi pi-check"
+              severity="warn"
+              [loading]="loadingVerificar()"
+              [disabled]="!aps() || !periodoConsulta() || loadingVerificar()"
+              (click)="verificar()"
+            ></p-button>
+            <p-button
+              label="CERTIFICAR"
+              icon="pi pi-check"
+              [loading]="loadingCertificar()"
+              [disabled]="!aps() || !periodoConsulta() || certificarDisabled() || loadingCertificar()"
+              (click)="certificar()"
+            ></p-button>
+          </div>
+        </div>
 
-              <div class="col-12">
-                <app-resumen-variables
-                  [aps]="aps()"
-                  [mes]="periodoConsulta()?.mes ?? null"
-                  [anno]="periodoConsulta()?.anno ?? null"
-                  (semestreTituloChange)="semestreTitulo.set($event)"
-                />
-              </div>
+        <div class="col-12">
+          <app-resumen-variables
+            [aps]="aps()"
+            [mes]="periodoConsulta()?.mes ?? null"
+            [anno]="periodoConsulta()?.anno ?? null"
+            (semestreTituloChange)="semestreTitulo.set($event)"
+          />
+        </div>
 
-              <div class="col-12" *ngIf="!semestreTitulo() && resumen().length">
-                <p-divider />
-                <app-resumen-tarifas [resumen]="resumen()" />
-              </div>
-            </div>
+        <div class="col-12" *ngIf="!semestreTitulo() && resumen().length">
+          <p-divider />
+          <app-resumen-tarifas [resumen]="resumen()" />
+        </div>
+      </div>
 
-            <app-verificacion-dialog
-              [visible]="verificacionVisible()"
-              (visibleChange)="verificacionVisible.set($event)"
-              [detalle]="verificacionDetalle()"
-              [applying]="applyingVerificacion()"
-              (aplicar)="aplicar()"
-            />
-          </p-tabpanel>
-          <p-tabpanel value="toneladas">
-            <app-toneladas-panel [aps]="aps()" [anno]="periodoConsulta()?.anno ?? null" [mes]="periodoConsulta()?.mes ?? null" />
-          </p-tabpanel>
-          <p-tabpanel value="kilometros">
-            <app-kilometros-panel [aps]="aps()" [anno]="periodoConsulta()?.anno ?? null" [mes]="periodoConsulta()?.mes ?? null" />
-          </p-tabpanel>
-          <p-tabpanel value="consultas">
-            @if (aps() && periodoConsulta()) {
-              <app-costos-consulta-panel [aps]="aps()!" [anno]="periodoConsulta()!.anno" [mes]="periodoConsulta()!.mes" />
-            } @else {
-              <p>Seleccioná APS, año y mes para ver las consultas.</p>
-            }
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
+      <app-verificacion-dialog
+        [visible]="verificacionVisible()"
+        (visibleChange)="verificacionVisible.set($event)"
+        [detalle]="verificacionDetalle()"
+        [applying]="applyingVerificacion()"
+        (aplicar)="aplicar()"
+      />
     </p-card>
   `,
   styles: [`
@@ -179,6 +149,7 @@ export class CostosCalculoPageComponent {
     private readonly router: Router,
     private readonly costosService: CostosService,
     private readonly validacionesService: ValidacionesService,
+    private readonly suministrosService: SuministrosService,
     private readonly tarifasService: TarifasService,
     private readonly notification: NotificationService
   ) {
@@ -241,15 +212,33 @@ export class CostosCalculoPageComponent {
   }
 
   // Legacy Calculo.vue "CalcularTarifas": existarifa -> prechecks -> calculartarifas.
+  //
+  // Bug fix: este precheck debe usar el mismo endpoint que Calculo.vue (legacy)
+  // usaba para "existarifa": `Validaciones.js#fauco_existarifa()` -> POST
+  // `suministros/cenrtificarEditar` -> `PK_VALGRAL.fauco_existarifa` (retorna
+  // literal "0" cuando NO hay tarifa calculada, o un mensaje de error cuando sí
+  // la hay -- ver backend/.../Database/Validaciones/PK_VALGRAL.sql).
+  //
+  // Antes llamaba a `validacionesService.faucoExistarifa()`, que pega contra
+  // `validaciones/certificarfauco_existarifa`. Ese endpoint está correctamente
+  // cableado AS-IS a `PK_VALGRAL.fauco_generasui` (una función distinta, con
+  // semántica invertida: "1" = existen datos, usada también por SUI en
+  // SuiRepository.cs) -- así se llama en el legacy real
+  // (back-tarificador/src/modules/validaciones/controller.js) y así lo
+  // documenta `doc migracion/modules/validaciones/funcionalidades/validaciones-core.md`.
+  // No se debe tocar ese endpoint: el bug estaba en que esta pantalla
+  // (Cálculo de Tarifas) consumía el endpoint equivocado, no en que el
+  // endpoint mismo estuviera mal armado.
   aplicar(): void {
     const aps = this.aps();
     const periodo = this.periodoConsulta();
     if (!aps || !periodo || this.applyingVerificacion()) return;
 
     this.applyingVerificacion.set(true);
-    this.validacionesService.faucoExistarifa({ aps, anno: periodo.anno, mes: periodo.mes }).subscribe({
-      next: (existarifa) => {
-        if (!existarifa.ok) {
+    this.suministrosService.cenrtificarEditar(aps, periodo.anno, periodo.mes).subscribe({
+      next: (resp) => {
+        const yaExisteTarifa = (resp?.data ?? '0').toString().trim() !== '0';
+        if (yaExisteTarifa) {
           this.notification.warn('Ya existen tarifas calculadas para el APS y Periodo Seleccionado');
           this.applyingVerificacion.set(false);
           this.verificacionVisible.set(false);
