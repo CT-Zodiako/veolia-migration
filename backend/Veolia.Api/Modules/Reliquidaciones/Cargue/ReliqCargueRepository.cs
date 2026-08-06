@@ -240,6 +240,15 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
 
     public async Task<IReadOnlyList<ReliInfoUsuariosDto>> GetReliInfoUsuariosAsync(long idReliq, CancellationToken cancellationToken)
     {
+        // Todas las columnas de medida de las 5 tablas RELI_INFO* (esta y las de
+        // GetResumenEmpresaAsync/GetResumenApsAsync/GetResumenRellenoAsync/GetReliInfoAdicionalAsync)
+        // están declaradas FLOAT en Oracle -- que en el motor es un NUMBER sin
+        // precisión/escala definida. Con ese valor en 0 exacto, ODP.NET/Dapper tiran
+        // "Error parsing column N (...=0 - Decimal)" al mapear directo a `decimal`
+        // (bug confirmado en vivo, columna INED_CLAVJ). CAST(x AS NUMBER) sin escala
+        // no alcanza -- sigue siendo la misma representación sin precisión. Hace
+        // falta escala explícita, CAST(x AS NUMBER(18,6)), para que el valor llegue
+        // en un formato que el driver sí convierte bien, sin cambiar el resultado.
         // Nombres legibles confirmados contra el legacy (back-tarificador/src/modules/reliq/cargue/controller.js,
         // líneas 249-263, cargueController.getReliInfoUsuarios): JOIN con AUCO_CLASESUSO (CLAS_NOMBRE),
         // AUGE_PARAMETROS filtrado por CLAS_CLAS = 20012 (PARA_NOMBRE del tipo de tarifa) y
@@ -260,8 +269,8 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    U.PARA_TIPFAC20014 AS ParaTipFac20014,
                    U.FAPR_CODIGO AS FaprCodigo,
                    TRIM(REPLACE(AF.FAPR_DESCRIPCION, 'Factor de Producción para', 'FP ')) AS FactorProduccionNombre,
-                   U.IUAE_CANTIDAD AS Cantidad,
-                   U.IUAE_TONELADAS AS Toneladas
+                   CAST(U.IUAE_CANTIDAD AS NUMBER(18,6)) AS Cantidad,
+                   CAST(U.IUAE_TONELADAS AS NUMBER(18,6)) AS Toneladas
               FROM RELIQ.RELI_INFUSUAPSEMPRDIVI U
               JOIN AUCO_CLASESUSO AC ON (U.CLAS_CLASEUSO = AC.CLAS_CLASE)
               JOIN AUGE_PARAMETROS AP ON (U.PARA_TIPTAR20012 = AP.PARA_PARA AND AP.CLAS_CLAS = 20012)
@@ -285,19 +294,19 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    I.INED_ANNO AS Anno,
                    I.INED_MES AS Mes,
                    E.EMPR_NOMBRE AS EmpresaNombre,
-                   I.INED_CBLJ AS Cblj,
-                   I.INED_LBLJ AS Lblj,
-                   I.INED_N AS N,
-                   I.INED_M3AGUA AS M3agua,
-                   I.INED_CP AS Cp,
-                   I.INED_M2CCJ AS M2ccj,
-                   I.INED_M2LAVJ AS M2lavj,
-                   I.INED_TIJ AS Tij,
-                   I.INED_KLPJ AS Klpj,
-                   I.INED_TMJ AS Tmj,
-                   I.INED_CLAVJ AS Clavj,
-                   I.INED_QRTJ AS Qrtj,
-                   I.INED_QRSJ AS Qrsj
+                   CAST(I.INED_CBLJ AS NUMBER(18,6)) AS Cblj,
+                   CAST(I.INED_LBLJ AS NUMBER(18,6)) AS Lblj,
+                   CAST(I.INED_N AS NUMBER(18,6)) AS N,
+                   CAST(I.INED_M3AGUA AS NUMBER(18,6)) AS M3agua,
+                   CAST(I.INED_CP AS NUMBER(18,6)) AS Cp,
+                   CAST(I.INED_M2CCJ AS NUMBER(18,6)) AS M2ccj,
+                   CAST(I.INED_M2LAVJ AS NUMBER(18,6)) AS M2lavj,
+                   CAST(I.INED_TIJ AS NUMBER(18,6)) AS Tij,
+                   CAST(I.INED_KLPJ AS NUMBER(18,6)) AS Klpj,
+                   CAST(I.INED_TMJ AS NUMBER(18,6)) AS Tmj,
+                   CAST(I.INED_CLAVJ AS NUMBER(18,6)) AS Clavj,
+                   CAST(I.INED_QRTJ AS NUMBER(18,6)) AS Qrtj,
+                   CAST(I.INED_QRSJ AS NUMBER(18,6)) AS Qrsj
               FROM RELIQ.RELI_INFOEMPRDIVI I
               JOIN AUGE_EMPRESAS E ON E.EMPR_EMPR = I.EMPR_EMPR
              WHERE I.RELI_ID = :1
@@ -320,30 +329,30 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    I.IAED_MES AS Mes,
                    E.EMPR_NOMBRE AS EmpresaNombre,
                    I.DIVI_DIVI AS DiviDivi,
-                   I.IAED_QRTZ AS Qrtz,
-                   I.IAED_CPE AS Cpe,
-                   I.IAED_T AS T,
-                   I.IAED_VACRTABC AS VacrtAbc,
-                   I.IAED_VACRT AS Vacrt,
-                   I.IAED_CRTZ AS Crtz,
-                   I.IAED_QBL AS Qbl,
-                   I.IAED_QLU AS Qlu,
-                   I.IAED_QR AS Qr,
-                   I.IAED_TAFA AS Tafa,
-                   I.IAED_ND AS Nd,
-                   I.IAED_NA AS Na,
-                   I.IAED_QNA AS Qna,
-                   I.IAED_TAFNA AS Tafna,
-                   I.IAED_QA AS Qa,
+                   CAST(I.IAED_QRTZ AS NUMBER(18,6)) AS Qrtz,
+                   CAST(I.IAED_CPE AS NUMBER(18,6)) AS Cpe,
+                   CAST(I.IAED_T AS NUMBER(18,6)) AS T,
+                   CAST(I.IAED_VACRTABC AS NUMBER(18,6)) AS VacrtAbc,
+                   CAST(I.IAED_VACRT AS NUMBER(18,6)) AS Vacrt,
+                   CAST(I.IAED_CRTZ AS NUMBER(18,6)) AS Crtz,
+                   CAST(I.IAED_QBL AS NUMBER(18,6)) AS Qbl,
+                   CAST(I.IAED_QLU AS NUMBER(18,6)) AS Qlu,
+                   CAST(I.IAED_QR AS NUMBER(18,6)) AS Qr,
+                   CAST(I.IAED_TAFA AS NUMBER(18,6)) AS Tafa,
+                   CAST(I.IAED_ND AS NUMBER(18,6)) AS Nd,
+                   CAST(I.IAED_NA AS NUMBER(18,6)) AS Na,
+                   CAST(I.IAED_QNA AS NUMBER(18,6)) AS Qna,
+                   CAST(I.IAED_TAFNA AS NUMBER(18,6)) AS Tafna,
+                   CAST(I.IAED_QA AS NUMBER(18,6)) AS Qa,
                    I.IAED_APROVECHA AS Aprovecha,
-                   I.IAED_QALMACEN AS Qalmacen,
-                   I.IAED_CPEET AS Cpeet,
-                   I.IAED_QRTET AS Qrtet,
-                   I.IAED_CRTCOMP AS Crtcomp,
-                   I.IAED_CDFCOMP AS Cdfcomp,
-                   I.IAED_QRSCOMP AS Qrscomp,
-                   I.IAED_NAA AS Naa,
-                   I.IAED_NDA AS Nda
+                   CAST(I.IAED_QALMACEN AS NUMBER(18,6)) AS Qalmacen,
+                   CAST(I.IAED_CPEET AS NUMBER(18,6)) AS Cpeet,
+                   CAST(I.IAED_QRTET AS NUMBER(18,6)) AS Qrtet,
+                   CAST(I.IAED_CRTCOMP AS NUMBER(18,6)) AS Crtcomp,
+                   CAST(I.IAED_CDFCOMP AS NUMBER(18,6)) AS Cdfcomp,
+                   CAST(I.IAED_QRSCOMP AS NUMBER(18,6)) AS Qrscomp,
+                   CAST(I.IAED_NAA AS NUMBER(18,6)) AS Naa,
+                   CAST(I.IAED_NDA AS NUMBER(18,6)) AS Nda
               FROM RELIQ.RELI_INFOAPSEMPRDIVI I
               JOIN AUGE_EMPRESAS E ON E.EMPR_EMPR = I.EMPR_EMPR
              WHERE I.RELI_ID = :1
@@ -364,17 +373,17 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    R.RELI_ID AS ReliId,
                    R.IARE_ANNO AS Anno,
                    R.IARE_MES AS Mes,
-                   R.IARE_QRS AS Qrs,
-                   R.IARE_C AS C,
-                   R.IARE_VL AS Vl,
-                   R.IARE_CTMLX AS Ctmlx,
-                   R.IARE_CTLK AS Ctlk,
+                   CAST(R.IARE_QRS AS NUMBER(18,6)) AS Qrs,
+                   CAST(R.IARE_C AS NUMBER(18,6)) AS C,
+                   CAST(R.IARE_VL AS NUMBER(18,6)) AS Vl,
+                   CAST(R.IARE_CTMLX AS NUMBER(18,6)) AS Ctmlx,
+                   CAST(R.IARE_CTLK AS NUMBER(18,6)) AS Ctlk,
                    R.IARE_ESCENARIO AS Escenario,
-                   R.IARE_CDFK AS Cdfk,
-                   R.IARE_VACDFABC AS VacdfAbc,
-                   R.IARE_VACDF AS Vacdf,
-                   R.IARE_VACTLABC AS VactlAbc,
-                   R.IARE_VACTL AS Vactl
+                   CAST(R.IARE_CDFK AS NUMBER(18,6)) AS Cdfk,
+                   CAST(R.IARE_VACDFABC AS NUMBER(18,6)) AS VacdfAbc,
+                   CAST(R.IARE_VACDF AS NUMBER(18,6)) AS Vacdf,
+                   CAST(R.IARE_VACTLABC AS NUMBER(18,6)) AS VactlAbc,
+                   CAST(R.IARE_VACTL AS NUMBER(18,6)) AS Vactl
               FROM RELIQ.RELI_INFOAPSRELLENO R
              WHERE R.RELI_ID = :1
              ORDER BY R.IARE_ANNO, R.IARE_MES";
@@ -394,8 +403,8 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
                    A.RELI_ID AS ReliId,
                    A.CEAD_ANNO AS Anno,
                    A.CEAD_MES AS Mes,
-                   A.CEAD_CDF AS Cdf,
-                   A.CEAD_CTL AS Ctl
+                   CAST(A.CEAD_CDF AS NUMBER(18,6)) AS Cdf,
+                   CAST(A.CEAD_CTL AS NUMBER(18,6)) AS Ctl
               FROM RELIQ.RELI_INFOADICIONAL A
              WHERE A.RELI_ID = :1
              ORDER BY A.CEAD_ANNO, A.CEAD_MES";
