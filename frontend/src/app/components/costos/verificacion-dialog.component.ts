@@ -32,10 +32,10 @@ interface EmpresaTab {
             <p-table [value]="tab.rows" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '100%' }">
               <ng-template pTemplate="header">
                 <tr>
-                  <th>EMPRESA</th>
-                  <th>GRUPO</th>
-                  <th>VARIABLE</th>
-                  <th class="text-right">VALOR</th>
+                  <th pSortableColumn="empresaNombre">EMPRESA <p-sortIcon field="empresaNombre"></p-sortIcon></th>
+                  <th pSortableColumn="grupo">GRUPO <p-sortIcon field="grupo"></p-sortIcon></th>
+                  <th pSortableColumn="variable">VARIABLE <p-sortIcon field="variable"></p-sortIcon></th>
+                  <th class="text-right" pSortableColumn="valor">VALOR <p-sortIcon field="valor"></p-sortIcon></th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-row>
