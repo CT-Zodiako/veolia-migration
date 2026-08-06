@@ -125,6 +125,12 @@ export class SidebarMenuService {
     { label: 'SUI 853 - CBLUS Máximo', path: '/cblusMaximo', icon: 'trending-up', keywords: ['cblus maximo'], menuId: 7005 },
     { label: 'SUI 853 - CBLUS', path: '/cblus', icon: 'hash', keywords: ['cblus'], menuId: 7006 },
     { label: 'SUI 853 - CBICS Mínimo y Máximo', path: '/cbicsmaxmin', icon: 'signal-high', keywords: ['cbics maxmin', 'cbics minimo maximo'], menuId: 7010 },
+    { label: 'SUI 853 - CRTs Mínimo', path: '/crtsMinimo', icon: 'trending-down', keywords: ['crts minimo'], menuId: 8001 },
+    { label: 'SUI 853 - CRTs Máximo', path: '/crtsMaximo', icon: 'trending-up', keywords: ['crts maximo'], menuId: 8002 },
+    { label: 'SUI 853 - CRT', path: '/crt', icon: 'ruler', keywords: ['crt'], menuId: 8008 },
+    { label: 'SUI 853 - CVNA', path: '/cvna', icon: 'calculator', keywords: ['cvna'], menuId: 8009 },
+    { label: 'SUI 853 - CVA', path: '/cva', icon: 'hash', keywords: ['cva'], menuId: 9001 },
+    { label: 'SUI 853 - CDFT', path: '/cdft', icon: 'calendar-days', keywords: ['cdft'], menuId: 8010 },
     // 'Configuración APS' (/aps-usuario), 'Asignación Sistema' (/asignacion-sistema) y
     // 'Menú Usuario' (/menu-usuario) NO tienen nodo propio en AUGE_MENU: dump completo del
     // árbol confirma que el nodo padre "Configuración" (menu_id 200) solo tiene 4 hijos reales

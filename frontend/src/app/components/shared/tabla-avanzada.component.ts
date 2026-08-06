@@ -229,10 +229,14 @@ export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges,
   /** Clase CSS adicional por celda (ej. resaltado de color según el dato de la fila). */
   @Input() cellClass?: (row: Record<string, unknown>, col: TablaColumn) => string;
 
-  /** Si se pasa, agrega una columna final de acciones renderizando este template por fila.
+  /** Si se pasa, agrega una columna de acciones renderizando este template por fila.
    *  Contexto: `$implicit` = fila completa. */
   @Input() accionesTemplate?: TemplateRef<{ $implicit: Record<string, unknown> }>;
   @Input() accionesHeader = 'Acciones';
+  /** Posición de la columna de acciones. Default 'fin' (convención de la app:
+   *  Editar/Eliminar al final) -- 'inicio' para casos como el botón "Ver" de
+   *  SUI853, donde tiene más sentido verlo primero antes que las columnas de dato. */
+  @Input() accionesPosicion: 'inicio' | 'fin' = 'fin';
 
   /** Filtra qué filas van al CSV exportado. Por defecto exporta todas -- usarlo para
    *  excluir filas puramente visuales (ej. TOTAL/PROMEDIO sintéticas agregadas por el

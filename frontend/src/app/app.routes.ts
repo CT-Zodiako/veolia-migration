@@ -175,6 +175,36 @@ export const routes: Routes = [
         path: 'cbicsmaxmin',
         canActivate: [AuthGuard],
         loadComponent: () => import('./components/sui853-cft/cbics-maxmin-page.component').then((m) => m.CbicsMaxminPageComponent)
+      },
+      {
+        path: 'crtsMinimo',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/crts-minimo-page.component').then((m) => m.CrtsMinimoPageComponent)
+      },
+      {
+        path: 'crtsMaximo',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/crts-maximo-page.component').then((m) => m.CrtsMaximoPageComponent)
+      },
+      {
+        path: 'crt',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/crt-page.component').then((m) => m.CrtPageComponent)
+      },
+      {
+        path: 'cvna',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cvna-page.component').then((m) => m.CvnaPageComponent)
+      },
+      {
+        path: 'cva',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cva-page.component').then((m) => m.CvaPageComponent)
+      },
+      {
+        path: 'cdft',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-cft/cdft-page.component').then((m) => m.CdftPageComponent)
       }
     ]
   },

@@ -2,14 +2,46 @@
   color: var(--color-text-secondary);
 }
 
+/* Texto que trae SUI.f_render_formato2() + sui.TCAT_DOCUMENTO en "title"
+   (compuesto server-side, ver Sui853CftRepository.GetTituloCompuestoAsync)
+   -- en el legacy se ve junto al botón de exportar, arriba de la tabla. Ej.
+   "F853S104 | SG1 - CVA | Generado automáticamente para SUI.TSEG1_CVA". */
+.formato2-titulo {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Botón "Ver": outline sutil en vez del "info" azul genérico de PrimeNG, con
+   relleno solo al pasar el mouse -- p-button encapsula su propio markup, así
+   que hace falta ::ng-deep para llegar a los estilos internos (mismo patrón
+   que .valor-cell ::ng-deep .p-progressbar en costo-clus.component.ts). */
+::ng-deep .sui853-ver-btn {
+  border-color: var(--color-brand-accent) !important;
+  color: var(--color-brand-accent) !important;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+::ng-deep .sui853-ver-btn:hover {
+  background: var(--color-brand-accent) !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px -2px rgba(241, 4, 0, 0.35);
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: sui853-fade-in 0.15s ease-out;
 }
 
 .modal-content {
@@ -17,20 +49,58 @@
   width: min(900px, 92vw);
   max-height: calc(100vh - 120px);
   overflow: auto;
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  border-top: 4px solid #f10400;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.35);
+  padding: 24px;
+  animation: sui853-modal-in 0.18s ease-out;
+}
+
+@keyframes sui853-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sui853-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .modal-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
+  font-size: 18px;
+  color: var(--color-text-primary);
+}
+
+.modal-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--color-bg-danger-soft);
   color: var(--color-brand-strong);
+  font-size: 15px;
+}
+
+.modal-hint {
+  margin: 10px 0 16px 0;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
 }
 
 .detail-grid {
@@ -40,13 +110,26 @@
 }
 
 .detail-item {
+  position: relative;
   background: var(--color-bg-soft);
   border: 1px solid var(--color-border-soft);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 11px 13px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.detail-item.copiable {
+  cursor: pointer;
+}
+
+.detail-item.copiable:hover {
+  background: var(--color-bg-card);
+  border-color: var(--color-brand-accent);
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px);
 }
 
 .detail-key {
@@ -58,8 +141,41 @@
 }
 
 .detail-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text-body);
   word-break: break-word;
+}
+
+.detail-copy-icon {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.detail-item.copiable:hover .detail-copy-icon {
+  opacity: 1;
+}
+
+.detail-copied {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-brand-strong);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: sui853-fade-in 0.12s ease-out;
 }

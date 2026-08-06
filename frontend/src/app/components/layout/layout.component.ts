@@ -205,6 +205,12 @@ export class LayoutComponent implements OnInit {
       case '/cblusMaximo': return 'SUI 853 - CBLUS Máximo';
       case '/cblus': return 'SUI 853 - CBLUS';
       case '/cbicsmaxmin': return 'SUI 853 - CBICS Mínimo y Máximo';
+      case '/crtsMinimo': return 'SUI 853 - CRTs Mínimo';
+      case '/crtsMaximo': return 'SUI 853 - CRTs Máximo';
+      case '/crt': return 'SUI 853 - CRT';
+      case '/cvna': return 'SUI 853 - CVNA';
+      case '/cva': return 'SUI 853 - CVA';
+      case '/cdft': return 'SUI 853 - CDFT';
       default: return '';
     }
   }

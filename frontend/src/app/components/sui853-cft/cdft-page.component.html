@@ -1,0 +1,24 @@
+<div class="card-section">
+  <app-anno-selector
+    [selectedAnno]="anno()"
+    (selectedAnnoChange)="onAnnoChange($event)"
+    label="Año"
+    [rangoInicio]="2018"
+    [rangoFin]="2030"
+  ></app-anno-selector>
+</div>
+
+<div class="card-section">
+  <app-tabla-avanzada
+    [columnas]="columnas"
+    [rows]="rows()"
+    [loading]="loading()"
+    [cellTemplate]="celdaTpl"
+    storageKey="sui853-cdft"
+    nombreExportar="CDFT"
+  ></app-tabla-avanzada>
+</div>
+
+<ng-template #celdaTpl let-value let-col="col">
+  <span class="cdft-celda" [title]="'Clic para copiar: ' + displayValue(col, value)" (click)="copiar(value)">{{ displayValue(col, value) }}</span>
+</ng-template>

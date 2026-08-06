@@ -34,6 +34,8 @@ export class Sui853Formato2TablaComponent implements OnChanges {
 
   detalleVisible = false;
   detalleRow: Record<string, unknown> | null = null;
+  copiedLabel: string | null = null;
+  private copiedTimeout?: ReturnType<typeof setTimeout>;
 
   private fieldMeta = new Map<string, TablaColumnaMeta>();
   private headerMap = new Map<string, string>();
@@ -87,6 +89,21 @@ export class Sui853Formato2TablaComponent implements OnChanges {
   cerrarDetalle(): void {
     this.detalleVisible = false;
     this.detalleRow = null;
+  }
+
+  async copiarValor(entry: DetalleEntry): Promise<void> {
+    if (!entry.value) return;
+    try {
+      await navigator.clipboard.writeText(entry.value);
+      this.copiedLabel = entry.label;
+      clearTimeout(this.copiedTimeout);
+      this.copiedTimeout = setTimeout(() => {
+        this.copiedLabel = null;
+      }, 1200);
+    } catch {
+      // Clipboard API bloqueada (permiso denegado, contexto no seguro, etc.) --
+      // no hay nada crítico que perder, se ignora en silencio.
+    }
   }
 
   private rebuildColumnas(): void {

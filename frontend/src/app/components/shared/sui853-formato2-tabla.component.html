@@ -9,6 +9,7 @@
 </div>
 
 <div *ngIf="!loading && data && data.data.length > 0" class="table-scroll">
+  <h4 class="formato2-titulo" *ngIf="data.title">{{ data.title }}</h4>
   <app-tabla-avanzada
     [columnas]="columnas"
     [rows]="data.data"
@@ -18,6 +19,7 @@
     [cellTemplate]="celdaTpl"
     [cellClass]="cellClassFn"
     [accionesTemplate]="accionesTpl"
+    accionesPosicion="inicio"
   ></app-tabla-avanzada>
 </div>
 
@@ -26,20 +28,39 @@
 </ng-template>
 
 <ng-template #accionesTpl let-row>
-  <p-button icon="pi pi-eye" label="Ver" severity="info" size="small" (click)="verDetalle(row)"></p-button>
+  <p-button
+    icon="pi pi-eye"
+    label="Ver"
+    size="small"
+    [outlined]="true"
+    [rounded]="true"
+    styleClass="sui853-ver-btn"
+    (click)="verDetalle(row)"
+  ></p-button>
 </ng-template>
 
 <div class="modal-overlay" *ngIf="detalleVisible" (click)="cerrarDetalle()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Detalle</h3>
+      <h3><span class="modal-header-icon"><i class="pi pi-eye"></i></span> Detalle</h3>
       <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="cerrarDetalle()"></p-button>
     </div>
+    <p class="modal-hint">Hacé clic en cualquier valor para copiarlo.</p>
 
     <div class="detail-grid">
-      <div class="detail-item" *ngFor="let entry of detalleEntries">
+      <div
+        class="detail-item"
+        *ngFor="let entry of detalleEntries"
+        [class.copiable]="entry.value"
+        [title]="entry.value ? 'Copiar: ' + entry.value : ''"
+        (click)="copiarValor(entry)"
+      >
         <div class="detail-key">{{ entry.label }}</div>
-        <div class="detail-value">{{ entry.value || '—' }}</div>
+        <div class="detail-value">
+          <span>{{ entry.value || '—' }}</span>
+          <i class="pi pi-copy detail-copy-icon" *ngIf="entry.value"></i>
+        </div>
+        <span class="detail-copied" *ngIf="copiedLabel === entry.label"><i class="pi pi-check"></i> Copiado</span>
       </div>
     </div>
   </div>

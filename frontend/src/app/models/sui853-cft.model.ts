@@ -41,3 +41,17 @@ export interface Formato2Response {
   CON_MOVIMIENTO: TablaSeccion | null;
   data: Record<string, unknown>[];
 }
+
+// cdft.vue (legacy) — /cdft — pantalla distinta a las 12+ de Formato2 (no
+// usa SUI.f_render_formato2), consulta por año y devuelve un listado plano
+// por APS. Ver POST api/v1/sui853/cdft/cdft, body { anno }.
+export interface CdftRow {
+  annoFiscal: string;
+  nombreAps: string;
+  valorCorriente: number;
+  valor2018: number;
+  qrtz: number;
+  // Índice genérico requerido para que CdftRow sea asignable a
+  // Record<string, unknown>[] al pasarlo como `[rows]` de app-tabla-avanzada.
+  [key: string]: unknown;
+}

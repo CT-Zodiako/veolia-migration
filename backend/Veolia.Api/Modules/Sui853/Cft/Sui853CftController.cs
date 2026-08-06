@@ -98,6 +98,111 @@ public sealed class Sui853CftController(ISui853CftRepository repository) : Contr
             async () => await repository.GetFormatoAsync("F853S208", cancellationToken),
             "Consulta CBICS Mínimo y Máximo ejecutada correctamente.");
 
+    // /crtsMinimo (SEG1) — F853S102 — "SG1 - CRTS MINIMO"
+    [HttpPost("crts-minimo")]
+    public async Task<IActionResult> GetCrtsMinimo(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S102", cancellationToken),
+            "Consulta CRTS Mínimo ejecutada correctamente.");
+
+    // /crtsMinimo (SEG2) — F853S205 — "SG2 - CRTS MINIMO"
+    [HttpPost("crts-minimo-seg2")]
+    public async Task<IActionResult> GetCrtsMinimoSeg2(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S205", cancellationToken),
+            "Consulta CRTS Mínimo (SEG2) ejecutada correctamente.");
+
+    // /crtsMinimo (SEG3) — F853S302 — "SG3 - CRTS MINIMO"
+    [HttpPost("crts-minimo-seg3")]
+    public async Task<IActionResult> GetCrtsMinimoSeg3(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S302", cancellationToken),
+            "Consulta CRTS Mínimo (SEG3) ejecutada correctamente.");
+
+    // /crtsMaximo (SEG1) — F853S103 — "SG1 - CRTS MAXIMO"
+    [HttpPost("crts-maximo")]
+    public async Task<IActionResult> GetCrtsMaximo(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S103", cancellationToken),
+            "Consulta CRTS Máximo ejecutada correctamente.");
+
+    // /crtsMaximo (SEG2) — F853S206 — "SG2 - CRTS MAXIMO"
+    [HttpPost("crts-maximo-seg2")]
+    public async Task<IActionResult> GetCrtsMaximoSeg2(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S206", cancellationToken),
+            "Consulta CRTS Máximo (SEG2) ejecutada correctamente.");
+
+    // /crtsMaximo (SEG3) — F853S303 — "SG3 - CRTS MAXIMO"
+    [HttpPost("crts-maximo-seg3")]
+    public async Task<IActionResult> GetCrtsMaximoSeg3(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S303", cancellationToken),
+            "Consulta CRTS Máximo (SEG3) ejecutada correctamente.");
+
+    // /crt (SEG1) — F853S106 — "SG1 - CRT"
+    [HttpPost("crt")]
+    public async Task<IActionResult> GetCrt(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S106", cancellationToken),
+            "Consulta CRT ejecutada correctamente.");
+
+    // /crt (SEG2) — F853S211 — "SG2 - CRT"
+    [HttpPost("crt-seg2")]
+    public async Task<IActionResult> GetCrtSeg2(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S211", cancellationToken),
+            "Consulta CRT (SEG2) ejecutada correctamente.");
+
+    // /crt (SEG3) — F853S307 — "SG3 - CRT"
+    [HttpPost("crt-seg3")]
+    public async Task<IActionResult> GetCrtSeg3(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S307", cancellationToken),
+            "Consulta CRT (SEG3) ejecutada correctamente.");
+
+    // /cvna (SEG1) — F853S107 — "SG1 - CVNA"
+    [HttpPost("cvna")]
+    public async Task<IActionResult> GetCvna(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S107", cancellationToken),
+            "Consulta CVNA ejecutada correctamente.");
+
+    // /cvna (SEG2) — F853S210 — "SG2 - CVNA"
+    [HttpPost("cvna-seg2")]
+    public async Task<IActionResult> GetCvnaSeg2(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S210", cancellationToken),
+            "Consulta CVNA (SEG2) ejecutada correctamente.");
+
+    // /cvna (SEG3) — F853S305 — "SG3 - CVNA"
+    [HttpPost("cvna-seg3")]
+    public async Task<IActionResult> GetCvnaSeg3(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S305", cancellationToken),
+            "Consulta CVNA (SEG3) ejecutada correctamente.");
+
+    // /cva (SEG1) — F853S104 — "SG1 - CVA"
+    [HttpPost("cva")]
+    public async Task<IActionResult> GetCva(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S104", cancellationToken),
+            "Consulta CVA ejecutada correctamente.");
+
+    // /cva (SEG2) — F853S207 — "SG2 - CVA"
+    [HttpPost("cva-seg2")]
+    public async Task<IActionResult> GetCvaSeg2(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S207", cancellationToken),
+            "Consulta CVA (SEG2) ejecutada correctamente.");
+
+    // /cva (SEG3) — F853S304 — "SG3 - CVA"
+    [HttpPost("cva-seg3")]
+    public async Task<IActionResult> GetCvaSeg3(CancellationToken cancellationToken)
+        => await ExecuteAsync(
+            async () => await repository.GetFormatoAsync("F853S304", cancellationToken),
+            "Consulta CVA (SEG3) ejecutada correctamente.");
+
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
     {
         var token = Request.Headers["x-access-token"].FirstOrDefault();

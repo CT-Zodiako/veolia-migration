@@ -94,6 +94,7 @@
     </ng-template>
     <ng-template pTemplate="header">
       <tr>
+        <th *ngIf="accionesTemplate && accionesPosicion === 'inicio'">{{ accionesHeader }}</th>
         <th
           *ngFor="let col of columnasState.visibles"
           draggable="true"
@@ -130,9 +131,10 @@
             </span>
           </span>
         </th>
-        <th *ngIf="accionesTemplate">{{ accionesHeader }}</th>
+        <th *ngIf="accionesTemplate && accionesPosicion === 'fin'">{{ accionesHeader }}</th>
       </tr>
       <tr>
+        <th *ngIf="accionesTemplate && accionesPosicion === 'inicio'"></th>
         <th *ngFor="let col of columnasState.visibles" pFrozenColumn [frozen]="columnasState.esFija(col.field)" [class.text-right]="col.numero">
           <p-columnFilter
             *ngIf="col.filtrable"
@@ -142,11 +144,17 @@
             [showMenu]="false"
           ></p-columnFilter>
         </th>
-        <th *ngIf="accionesTemplate"></th>
+        <th *ngIf="accionesTemplate && accionesPosicion === 'fin'"></th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-row>
       <tr>
+        <td *ngIf="accionesTemplate && accionesPosicion === 'inicio'">
+          <ng-container
+            [ngTemplateOutlet]="accionesTemplate"
+            [ngTemplateOutletContext]="{ $implicit: row }"
+          ></ng-container>
+        </td>
         <td
           *ngFor="let col of columnasState.visibles"
           pFrozenColumn
@@ -160,7 +168,7 @@
           ></ng-container>
           <ng-template #celdaDefault>{{ row[col.field] }}</ng-template>
         </td>
-        <td *ngIf="accionesTemplate">
+        <td *ngIf="accionesTemplate && accionesPosicion === 'fin'">
           <ng-container
             [ngTemplateOutlet]="accionesTemplate"
             [ngTemplateOutletContext]="{ $implicit: row }"

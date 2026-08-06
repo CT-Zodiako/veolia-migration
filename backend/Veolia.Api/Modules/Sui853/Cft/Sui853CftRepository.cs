@@ -6,9 +6,9 @@ using Veolia.Api.Infrastructure.Data;
 
 namespace Veolia.Api.Modules.Sui853.Cft;
 
-// Los 12 endpoints de SUI853/CFT ejecutan el mismo SQL genérico, cambiando
-// solo el código de formato SUI hardcodeado (nunca provisto por el cliente).
-// Ver doc migracion/modules/sui853/CFT.md.
+// Los 27 endpoints de SUI853/CFT+CVNA+CVA ejecutan el mismo SQL genérico,
+// cambiando solo el código de formato SUI hardcodeado (nunca provisto por
+// el cliente). Ver doc migracion/modules/sui853/CFT.md.
 public sealed class Sui853CftRepository(IOracleConnectionFactory connectionFactory) : ISui853CftRepository
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
@@ -39,7 +39,39 @@ public sealed class Sui853CftRepository(IOracleConnectionFactory connectionFacto
             return null;
         }
 
-        return JsonSerializer.Deserialize<Formato2ResponseDto>(jsonString, JsonOptions);
+        var dto = JsonSerializer.Deserialize<Formato2ResponseDto>(jsonString, JsonOptions);
+        if (dto is not null)
+        {
+            var tituloCompuesto = await GetTituloCompuestoAsync(connection, codigo, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(tituloCompuesto))
+            {
+                dto.Title = tituloCompuesto;
+            }
+        }
+
+        return dto;
+    }
+
+    // El "title" que devuelve f_render_formato2() es solo el NOMBRE (ej. "SG1 -
+    // CVA"). El legacy (back-tarificador/src/modules/sui853/CVA|CVNA/controller.js)
+    // muestra un texto más completo junto al botón de exportar
+    // (TablaScrollHorizontal.vue -> dialogHeaderValue), armado con una consulta
+    // aparte a sui.TCAT_DOCUMENTO: "{CODIGO} | {NOMBRE} | {DESCRIPCION}", ej.
+    // "F853S104 | SG1 - CVA | Generado automáticamente para SUI.TSEG1_CVA".
+    // Confirmado en vivo que NOMBRE == title (misma columna, dato redundante) y
+    // que el patrón es idéntico para los 14 códigos migrados -- se resuelve una
+    // sola vez acá para que las 14 pantallas lo hereden.
+    private static async Task<string?> GetTituloCompuestoAsync(IDbConnection connection, string codigo, CancellationToken cancellationToken)
+    {
+        const string sql = @"
+            SELECT td.CODIGO || ' | ' || td.NOMBRE || ' | ' || td.DESCRIPCION AS TITULO
+              FROM sui.TCAT_DOCUMENTO td
+             WHERE td.CODIGO = :codigo";
+
+        var parameters = new DynamicParameters();
+        parameters.Add("codigo", codigo);
+
+        return await connection.QueryFirstOrDefaultAsync<string>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
     private async Task<IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)

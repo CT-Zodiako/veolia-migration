@@ -1,8 +1,17 @@
 <div class="card-section">
-  <app-sui853-formato2-tabla
-    [data]="data()"
-    [loading]="loading()"
-    storageKey="sui853-cft-cblus-minimo"
-    nombreExportar="CBLUS-Minimo"
-  ></app-sui853-formato2-tabla>
+  <p-tabs value="0">
+    <p-tablist>
+      <p-tab value="0">SEG1</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="0">
+        <app-sui853-formato2-tabla
+          [data]="data()"
+          [loading]="loading()"
+          storageKey="sui853-cft-cblus-minimo"
+          nombreExportar="CBLUS-Minimo"
+        ></app-sui853-formato2-tabla>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
 </div>
