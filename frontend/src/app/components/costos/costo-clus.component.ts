@@ -144,7 +144,7 @@ const COMPORTA_SERIES: ReadonlyArray<{ name: string; field: keyof ComportaClusIt
 
           <ng-container *ngIf="!loadingClus()">
             <div class="grid" *ngIf="clusRows().length; else sinCostos">
-              <div class="col-12 lg:col-6">
+              <div class="col-12 md:col-6">
                 <apx-chart
                   [series]="donut().series"
                   [chart]="donut().chart"
@@ -154,7 +154,7 @@ const COMPORTA_SERIES: ReadonlyArray<{ name: string; field: keyof ComportaClusIt
                 ></apx-chart>
               </div>
 
-              <div class="col-12 lg:col-6">
+              <div class="col-12 md:col-6">
                 <ng-container *ngIf="hasClusJson(); else tablaClusFallback">
                   <h4 class="clus-json-caption">{{ clusJsonNombre() }}</h4>
                   <p-table [value]="clusJsonRows()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '100%' }">
@@ -166,7 +166,10 @@ const COMPORTA_SERIES: ReadonlyArray<{ name: string; field: keyof ComportaClusIt
                     <ng-template pTemplate="body" let-row>
                       <tr>
                         <td *ngFor="let cell of row" [class.text-right]="isNumericCell(cell)">
-                          <p-progressBar *ngIf="isPercentCell(cell); else celdaPlana" [value]="percentValue(cell)"></p-progressBar>
+                          <div class="barra-wrap" *ngIf="isPercentCell(cell); else celdaPlana">
+                            <p-progressBar [value]="percentValue(cell)" [showValue]="false"></p-progressBar>
+                            <span class="barra-porcentaje">{{ percentValue(cell) | number:'1.0-2' }}%</span>
+                          </div>
                           <ng-template #celdaPlana>{{ displayCell(cell) }}</ng-template>
                         </td>
                       </tr>
@@ -188,7 +191,10 @@ const COMPORTA_SERIES: ReadonlyArray<{ name: string; field: keyof ComportaClusIt
                         <td class="text-right">
                           <div class="valor-cell">
                             <span>$ {{ row.costValor | number:'1.2-2' }}</span>
-                            <p-progressBar [value]="porcentaje(row.costValor)"></p-progressBar>
+                            <div class="barra-wrap">
+                              <p-progressBar [value]="porcentaje(row.costValor)" [showValue]="false"></p-progressBar>
+                              <span class="barra-porcentaje">{{ porcentaje(row.costValor) | number:'1.0-2' }}%</span>
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -275,7 +281,21 @@ const COMPORTA_SERIES: ReadonlyArray<{ name: string; field: keyof ComportaClusIt
       gap: 2px;
     }
     .valor-cell span { text-align: right; }
-        .valor-cell ::ng-deep .p-progressbar { height: 6px; }
+
+    .barra-wrap { position: relative; }
+    .barra-wrap ::ng-deep .p-progressbar { height: 14px; }
+    .barra-porcentaje {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      text-shadow: 0 0 3px var(--color-bg-card), 0 0 3px var(--color-bg-card), 0 0 3px var(--color-bg-card);
+      pointer-events: none;
+    }
 
     .empty-message { color: var(--color-text-secondary); margin: 0; }
     .empty-message a { color: var(--color-brand-accent); }
