@@ -45,6 +45,7 @@
       <h3><span class="modal-header-icon"><i class="pi pi-eye"></i></span> Detalle</h3>
       <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="cerrarDetalle()"></p-button>
     </div>
+    <p class="formato2-titulo modal-titulo" *ngIf="data?.title">{{ data?.title }}</p>
     <p class="modal-hint">Hacé clic en cualquier valor para copiarlo.</p>
 
     <div class="detail-grid">
@@ -60,7 +61,7 @@
           <span>{{ entry.value || '—' }}</span>
           <i class="pi pi-copy detail-copy-icon" *ngIf="entry.value"></i>
         </div>
-        <span class="detail-copied" *ngIf="copiedLabel === entry.label"><i class="pi pi-check"></i> Copiado</span>
+        <span class="detail-copied" *ngIf="copiedLabel === entry.label"><i class="pi pi-check"></i> Copiado: {{ entry.value }}</span>
       </div>
     </div>
   </div>

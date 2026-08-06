@@ -94,15 +94,50 @@ export class Sui853Formato2TablaComponent implements OnChanges {
   async copiarValor(entry: DetalleEntry): Promise<void> {
     if (!entry.value) return;
     try {
-      await navigator.clipboard.writeText(entry.value);
+      await this.copiarAlPortapapeles(entry.value);
       this.copiedLabel = entry.label;
       clearTimeout(this.copiedTimeout);
       this.copiedTimeout = setTimeout(() => {
         this.copiedLabel = null;
       }, 1200);
     } catch {
-      // Clipboard API bloqueada (permiso denegado, contexto no seguro, etc.) --
-      // no hay nada crítico que perder, se ignora en silencio.
+      // Ni la Clipboard API ni el fallback de textarea+execCommand
+      // funcionaron (permiso denegado, etc.) -- no hay nada crítico que
+      // perder, se ignora en silencio.
+    }
+  }
+
+  // navigator.clipboard requiere contexto seguro (HTTPS, o localhost) -- en
+  // un deploy servido por HTTP directo (ej. VM sin TLS) esa API ni existe
+  // (navigator.clipboard es undefined), así que el copiado quedaba roto en
+  // silencio ahí. Mismo fallback que usa el legacy (cdft.vue) para ese caso.
+  private async copiarAlPortapapeles(texto: string): Promise<void> {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(texto);
+      return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '0';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    // El orden importa: sin focus() previo, el primer clic no deja
+    // seleccionado nada de verdad (el navegador todavía no le dio foco al
+    // textarea recién creado) y execCommand('copy') copia vacío -- recién
+    // el segundo clic, con el textarea ya en el DOM de una vuelta anterior,
+    // funciona. focus() + select() + setSelectionRange (Safari/iOS) hacen
+    // que ande a la primera.
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    const copiado = document.execCommand('copy');
+    textarea.remove();
+    if (!copiado) {
+      throw new Error('execCommand("copy") no pudo copiar el valor.');
     }
   }
 

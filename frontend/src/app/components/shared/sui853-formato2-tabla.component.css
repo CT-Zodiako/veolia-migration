@@ -15,6 +15,13 @@
   letter-spacing: 0.03em;
 }
 
+/* Misma etiqueta de título, reusada dentro del modal de detalle -- ahí ya
+   viene después del .modal-header con su propio border-bottom, así que
+   suma un poco de aire arriba en vez del margen 0 default. */
+.modal-titulo {
+  margin-top: 10px;
+}
+
 /* Botón "Ver": outline sutil en vez del "info" azul genérico de PrimeNG, con
    relleno solo al pasar el mouse -- p-button encapsula su propio markup, así
    que hace falta ::ng-deep para llegar a los estilos internos (mismo patrón
