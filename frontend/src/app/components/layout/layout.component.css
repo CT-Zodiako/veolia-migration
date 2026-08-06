@@ -6,7 +6,8 @@
 
 .sidebar {
   width: 260px;
-  background: linear-gradient(180deg, #780200 0%, #9c0300 100%);
+  background: linear-gradient(180deg, #1b1b1f 0%, #242429 100%);
+  box-shadow: inset 4px 0 0 #f10400;
   color: white;
   display: flex;
   flex-direction: column;
@@ -111,15 +112,15 @@
 }
 
 .nav-item.active {
-  background: white;
-  color: #780200;
+  background: rgba(241, 4, 0, 0.14);
+  color: white;
   font-weight: 700;
-  box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 3px 0 0 #f10400;
   transform: none;
 }
 
 .nav-item.active .nav-icon {
-  background: rgba(120, 2, 0, 0.08);
+  background: rgba(241, 4, 0, 0.22);
 }
 
 .nav-icon {
@@ -230,9 +231,10 @@
 }
 
 .submenu-item.active {
-  background: white;
-  color: #780200;
+  background: rgba(241, 4, 0, 0.14);
+  color: white;
   font-weight: 600;
+  box-shadow: inset 3px 0 0 #f10400;
 }
 
 .submenu-icon {
@@ -247,7 +249,7 @@
 }
 
 .submenu-item.active .submenu-icon {
-  background: rgba(120, 2, 0, 0.08);
+  background: rgba(241, 4, 0, 0.2);
 }
 
 .submenu-label {
