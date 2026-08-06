@@ -243,8 +243,16 @@ export class SidebarMenuService {
       }
     }
 
+    // Fallback por palabra clave: solo para cat\u00e1logo SIN menuId propio
+    // (\u00edtems legacy sin id confirmado todav\u00eda, ej. "Validaciones"). Los que
+    // ya tienen menuId deben resolver \u00daNICAMENTE por id exacto -- si no, un
+    // nodo hu\u00e9rfano del \u00e1rbol real de AUGE_MENU (cat\u00e1logo nunca implementado,
+    // ej. "CFTz"/"CDFTd Min" bajo CFT/CVNA) matchea por substring contra la
+    // keyword corta de una pantalla real (ej. "cft"/"cdft", "cftz".includes
+    // ("cft") === true) y la duplica en el sidebar. Bug real, encontrado en
+    // vivo: "CFT" y "CDFT" aparec\u00edan repetidos.
     const matched = this.routeCatalog.find((item) =>
-      item.keywords.some((keyword) => normalizedLabel.includes(keyword))
+      item.menuId === undefined && item.keywords.some((keyword) => normalizedLabel.includes(keyword))
     );
 
     if (!matched) {
