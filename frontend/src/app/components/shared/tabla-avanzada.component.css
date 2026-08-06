@@ -298,3 +298,55 @@
 .preset-delete:hover {
   color: var(--color-brand-accent);
 }
+
+/* Comparar Tarifas (reliquidación): colores por columna capturados del legacy
+   CompararTarifas.vue (líneas 819-867). ORIG=azul clarito, REL=verde clarito,
+   DIF=rojo clarito por cada grupo de 3 columnas; naranja/azul fuerte para
+   TAR_PLENA_*; devol-pos/neg/zero según el signo de COB/DEV ENE y ACU. */
+.bg-reliq {
+  background-color: #e8f2ff;
+}
+
+.bg-tari {
+  background-color: #e9f9ee;
+}
+
+.bg-dife {
+  background-color: #ffe9e9;
+}
+
+.bg-naranja {
+  background-color: #ff910069;
+}
+
+.bg-naranja-oscuro {
+  background-color: #ff9100d3;
+}
+
+.bg-azul {
+  background-color: #00a2ffaf;
+  color: #fff;
+}
+
+.bg-azul-oscuro {
+  background-color: #00a2ffff;
+  color: #fff;
+}
+
+.devol-pos {
+  background: #00ff00;
+  color: #000;
+  font-weight: 700;
+}
+
+.devol-neg {
+  background: #ff0000;
+  color: #000;
+  font-weight: 700;
+}
+
+.devol-zero {
+  background: #fff;
+  color: #111827;
+  font-weight: 700;
+}

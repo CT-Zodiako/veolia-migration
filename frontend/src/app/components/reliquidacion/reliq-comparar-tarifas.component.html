@@ -1,68 +1,102 @@
+<p-toast></p-toast>
+
 <div class="page-wrap">
-  <p-card>
-    <div class="toolbar">
-      <div class="form-group reliq-field">
-        <label>Reliquidación</label>
+  <div class="card-section">
+    <div class="grid">
+      <div class="col-12 md:col-3">
+        <app-aps-selector
+          label="APS"
+          [selectedAps]="selectedAps()"
+          (selectedApsChange)="onApsChange($event)"
+        ></app-aps-selector>
+      </div>
+      <div class="col-12 md:col-3">
+        <label class="block mb-1" for="comparar-tarifas-reliq-select">Reliquidación</label>
         <p-select
+          inputId="comparar-tarifas-reliq-select"
           [options]="reliquidaciones()"
           optionLabel="relqNombre"
           optionValue="relqId"
           [ngModel]="selectedReliq()"
-          (ngModelChange)="selectedReliq.set($event)"
+          (ngModelChange)="onReliqChange($event)"
           placeholder="Seleccione reliquidación"
+          [filter]="true"
+          filterBy="relqNombre"
+          [showClear]="true"
+          appendTo="body"
           [style]="{ width: '100%' }"
         />
       </div>
-
-      <app-parametros-consulta
-        [aps]="selectedAps()"
-        (apsChange)="selectedAps.set($event)"
-        [anno]="selectedAnno()"
-        (annoChange)="selectedAnno.set($event)"
-        [mes]="selectedMes()"
-        (mesChange)="selectedMes.set($event)"
-        [mostrarBoton]="false"
-        [wrapInCard]="false"
-      ></app-parametros-consulta>
-
-      <div class="boton-wrapper">
-        <p-button label="Comparar tarifas" icon="pi pi-search" [disabled]="!puedeConsultar()" [loading]="loading()" (onClick)="consultar()" />
+      <div class="col-12 md:col-3">
+        <label class="block mb-1">Horizonte Desde</label>
+        <input pInputText class="w-full" [ngModel]="formatPeriodo(reliqSeleccionada()?.relqDesde)" disabled />
+      </div>
+      <div class="col-12 md:col-3">
+        <label class="block mb-1">Horizonte Hasta</label>
+        <input pInputText class="w-full" [ngModel]="formatPeriodo(reliqSeleccionada()?.relqHasta)" disabled />
+      </div>
+      <div class="col-12">
+        <label class="block mb-1">Descripción</label>
+        <textarea
+          pTextarea
+          class="w-full"
+          rows="3"
+          [ngModel]="reliqSeleccionada()?.relqDescripcion || ''"
+          disabled
+        ></textarea>
       </div>
     </div>
-  </p-card>
 
-  <div class="card-section">
-    <app-tabla-avanzada
-      [columnas]="columnas"
-      [rows]="rowsParaTabla()"
-      [loading]="loading()"
-      storageKey="reliq-comparar-tarifas"
-      nombreExportar="ComparaTarifas"
-    ></app-tabla-avanzada>
+    <div class="selector-estado" *ngIf="loading()">
+      <i class="pi pi-spin pi-spinner"></i> Cargando...
+    </div>
   </div>
 
-  <div class="card-section" *ngIf="resumenDataset().length > 0">
-    <p-fieldset [legend]="resumenPeriodo() || 'Resumen por periodo'">
-      <div class="resumen-grid">
-        <div class="resumen-bloque" *ngFor="let item of resumenDataset()">
-          <p-table [value]="filasDeResumen(item)" styleClass="p-datatable-sm" [scrollable]="true">
-            <ng-template pTemplate="caption">{{ item.nombre }}</ng-template>
-            <ng-template pTemplate="header">
-              <tr>
-                <th *ngFor="let columna of item.columns">{{ columna }}</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-fila>
-              <tr>
-                <td *ngFor="let columna of item.columns">{{ fila[columna] }}</td>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-              <tr><td [attr.colspan]="item.columns.length || 1">Sin datos.</td></tr>
-            </ng-template>
-          </p-table>
-        </div>
-      </div>
-    </p-fieldset>
+  <div class="card-section">
+    <p-tabs value="comparar">
+      <p-tablist>
+        <p-tab value="comparar">Comparar Tarifas</p-tab>
+        <p-tab value="resumen">Resumen</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="comparar">
+          <app-tabla-avanzada
+            [columnas]="columnas"
+            [rows]="rowsParaTabla()"
+            [loading]="loading()"
+            [cellClass]="cellClass"
+            storageKey="reliq-comparar-tarifas"
+            nombreExportar="ComparaTarifas"
+          ></app-tabla-avanzada>
+        </p-tabpanel>
+
+        <p-tabpanel value="resumen">
+          <div class="selector-grid resumen-selector-grid">
+            <app-anno-selector
+              label="Año"
+              [selectedAnno]="resumenAnno()"
+              (selectedAnnoChange)="resumenAnno.set($event)"
+            ></app-anno-selector>
+            <app-mes-selector
+              label="Mes"
+              [selectedMes]="resumenMes()"
+              (selectedMesChange)="resumenMes.set($event)"
+            ></app-mes-selector>
+            <div class="selector-estado" *ngIf="resumenLoading()">
+              <i class="pi pi-spin pi-spinner"></i> Cargando resumen...
+            </div>
+          </div>
+
+          <p-fieldset [legend]="resumenPeriodo() || 'Resumen por periodo'" *ngIf="resumenDataset().length > 0">
+            <div class="comparar-resumen-grid">
+              <div class="comparar-resumen-item" *ngFor="let item of resumenDataset()">
+                <h5>{{ item.nombre }}</h5>
+                <app-tabla-generica [columnas]="columnasDeResumen(item)" [rows]="filasDeResumen(item)"></app-tabla-generica>
+              </div>
+            </div>
+          </p-fieldset>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
   </div>
 </div>

@@ -1,34 +1,24 @@
 .page-wrap { padding: 1.5rem; max-width: 1600px; margin: 0 auto; }
 
-.toolbar {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.form-group.reliq-field {
-  flex: 0 1 260px;
-  min-width: 220px;
-  margin-bottom: 12px;
-}
-.form-group.reliq-field label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--color-text-body);
-}
-
-.boton-wrapper {
-  display: flex;
-  flex-direction: column;
-}
-
 .card-section {
   background: var(--color-bg-card);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.card-section:last-child { margin-bottom: 0; }
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-body);
+}
+
+.selector-estado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
 }

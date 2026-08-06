@@ -6,9 +6,10 @@ interface ParametrosGuardados {
   anno: number | null;
   mes: number | null;
   proyeccion: number | null;
+  reliquidacion: number | null;
 }
 
-const VACIO: ParametrosGuardados = { aps: null, anno: null, mes: null, proyeccion: null };
+const VACIO: ParametrosGuardados = { aps: null, anno: null, mes: null, proyeccion: null, reliquidacion: null };
 
 @Injectable({ providedIn: 'root' })
 export class ParametrosConsultaStateService {
@@ -44,6 +45,14 @@ export class ParametrosConsultaStateService {
 
   setProyeccion(value: number | null): void {
     this.guardar({ ...this.leer(), proyeccion: value });
+  }
+
+  getReliquidacion(): number | null {
+    return this.leer().reliquidacion;
+  }
+
+  setReliquidacion(value: number | null): void {
+    this.guardar({ ...this.leer(), reliquidacion: value });
   }
 
   private storageKey(): string {

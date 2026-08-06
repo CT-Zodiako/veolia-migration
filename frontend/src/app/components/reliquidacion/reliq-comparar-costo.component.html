@@ -1,30 +1,61 @@
 <div class="page-wrap">
-  <p-card>
-    <div class="toolbar">
-      <div class="form-group reliq-field">
-        <label>Reliquidación</label>
+  <div class="card-section">
+    <div class="grid">
+      <div class="col-12 md:col-3">
+        <app-aps-selector
+          label="APS"
+          [selectedAps]="selectedAps()"
+          (selectedApsChange)="onApsChange($event)"
+        ></app-aps-selector>
+      </div>
+      <div class="col-12 md:col-3">
+        <label class="block mb-1" for="comparar-costo-reliq-select">Reliquidación</label>
         <p-select
+          inputId="comparar-costo-reliq-select"
           [options]="reliquidaciones()"
           optionLabel="relqNombre"
           optionValue="relqId"
           [ngModel]="selectedReliq()"
-          (ngModelChange)="selectedReliq.set($event)"
+          (ngModelChange)="onReliqChange($event)"
           placeholder="Seleccione reliquidación"
+          [filter]="true"
+          filterBy="relqNombre"
+          [showClear]="true"
+          appendTo="body"
           [style]="{ width: '100%' }"
         />
       </div>
-
-      <div class="boton-wrapper">
-        <p-button label="Comparar costos" icon="pi pi-search" [disabled]="!selectedReliq()" [loading]="loading()" (onClick)="consultar()" />
+      <div class="col-12 md:col-3">
+        <label class="block mb-1">Horizonte Desde</label>
+        <input pInputText class="w-full" [ngModel]="formatPeriodo(reliqSeleccionada()?.relqDesde)" disabled />
+      </div>
+      <div class="col-12 md:col-3">
+        <label class="block mb-1">Horizonte Hasta</label>
+        <input pInputText class="w-full" [ngModel]="formatPeriodo(reliqSeleccionada()?.relqHasta)" disabled />
+      </div>
+      <div class="col-12">
+        <label class="block mb-1">Descripción</label>
+        <textarea
+          pTextarea
+          class="w-full"
+          rows="3"
+          [ngModel]="reliqSeleccionada()?.relqDescripcion || ''"
+          disabled
+        ></textarea>
       </div>
     </div>
-  </p-card>
+
+    <div class="selector-estado" *ngIf="loading()">
+      <i class="pi pi-spin pi-spinner"></i> Cargando...
+    </div>
+  </div>
 
   <div class="card-section">
     <app-tabla-avanzada
       [columnas]="columnas"
       [rows]="rowsParaTabla()"
       [loading]="loading()"
+      [cellClass]="cellClass"
       storageKey="reliq-comparar-costo"
       nombreExportar="CompararCostos"
     ></app-tabla-avanzada>

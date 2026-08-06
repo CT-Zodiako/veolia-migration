@@ -9,6 +9,7 @@ import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.co
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { ReliqCargueService } from '../../services/reliquidacion/reliq-cargue.service';
 import { ReliquidacionService } from '../../services/reliquidacion/reliquidacion.service';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { ReliInfoAdicional, ReliInfoAps, ReliInfoEmpresa, ReliInfoRelleno, ReliInfoUsuarios, Reliquidacion } from '../../models/reliquidacion.model';
 
 type CargueTab = 'usuarios' | 'empresa' | 'aps' | 'relleno' | 'adicional';
@@ -34,6 +35,11 @@ export class ReliqCargueComponent {
   readonly loading = signal(false);
   readonly reliquidando = signal(false);
   readonly guardando = signal(false);
+  // Modo edición: apagado por defecto. Las celdas se ven como texto y no hay
+  // botón "Guardar" hasta que se activa -- evita ediciones accidentales al
+  // solo consultar. Exclusivo de esta pantalla (Cargue); no toca otras tablas.
+  readonly editando = signal(false);
+  readonly cambiandoModoEdicion = signal(false);
   readonly usuarios = signal<ReliInfoUsuarios[]>([]);
   readonly empresa = signal<ReliInfoEmpresa[]>([]);
   readonly aps = signal<ReliInfoAps[]>([]);
@@ -141,13 +147,28 @@ export class ReliqCargueComponent {
     private readonly reliqService: ReliquidacionService,
     private readonly cargueService: ReliqCargueService,
     private readonly messages: MessageService,
-    private readonly confirmationService: ConfirmationService
+    private readonly confirmationService: ConfirmationService,
+    private readonly parametrosState: ParametrosConsultaStateService
   ) {
     this.cargarReliquidaciones(null);
   }
 
   esCampoEditable(field: string): boolean {
-    return this.camposEditables.has(field);
+    return this.editando() && this.camposEditables.has(field);
+  }
+
+  toggleEditar(): void {
+    // Tabs grandes (ej. APS, 20 columnas editables) tardan un tick en
+    // re-renderizar todas las celdas como input; el spinner cubre ese
+    // instante en vez de dejar el botón "colgado" sin feedback.
+    // setTimeout(fn) sin delay (0ms) no alcanza a pintar el frame con el
+    // spinner antes de apagarlo -- 250ms es lo mínimo para que el ojo lo
+    // registre como "cargando" en vez de un parpadeo imperceptible.
+    this.cambiandoModoEdicion.set(true);
+    setTimeout(() => {
+      this.editando.set(!this.editando());
+      this.cambiandoModoEdicion.set(false);
+    }, 250);
   }
 
   valorCeldaTexto(row: Record<string, unknown>, field: string, value: unknown): unknown {
@@ -158,6 +179,7 @@ export class ReliqCargueComponent {
 
   onReliqChange(reliqId: number | null): void {
     this.selectedReliq.set(reliqId);
+    this.parametrosState.setReliquidacion(reliqId);
     if (reliqId !== null) {
       this.consultar();
     }
@@ -184,8 +206,19 @@ export class ReliqCargueComponent {
       ? this.reliqService.getReliquidacionByAps(apsId)
       : this.reliqService.getReliquidaciones();
     source$.subscribe((res) => {
-      if (requestId === this.reliqRequestId) {
-        this.reliquidaciones.set(res.data || []);
+      if (requestId !== this.reliqRequestId) return;
+
+      const data = res.data || [];
+      this.reliquidaciones.set(data);
+
+      // Restaura la última reliquidación elegida (en esta u otra pantalla del
+      // módulo, ej. Comparar Tarifas / Comparar Costos) si sigue en la lista
+      // filtrada por APS.
+      if (this.selectedReliq() === null) {
+        const guardada = this.parametrosState.getReliquidacion();
+        if (guardada !== null && data.some((r) => r.relqId === guardada)) {
+          this.onReliqChange(guardada);
+        }
       }
     });
   }
@@ -281,6 +314,9 @@ export class ReliqCargueComponent {
     req$.subscribe({
       next: (res) => {
         this.guardando.set(false);
+        if (res.status) {
+          this.editando.set(false);
+        }
         this.messages.add({ severity: res.status ? 'success' : 'error', summary: 'Reliquidación - Cargue', detail: res.message || 'Cambios guardados.' });
       },
       error: (err) => {

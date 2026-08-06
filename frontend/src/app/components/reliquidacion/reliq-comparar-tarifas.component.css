@@ -1,47 +1,76 @@
 .page-wrap { padding: 1.5rem; max-width: 1600px; margin: 0 auto; }
 
-.toolbar {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.form-group.reliq-field {
-  flex: 0 1 260px;
-  min-width: 220px;
-  margin-bottom: 12px;
-}
-.form-group.reliq-field label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--color-text-body);
-}
-
-.boton-wrapper {
-  display: flex;
-  flex-direction: column;
-}
-
 .card-section {
   background: var(--color-bg-card);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.card-section:last-child { margin-bottom: 0; }
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-body);
 }
 
-.resumen-grid {
+/* Usado solo por el selector Año/Mes del Resumen (ver más abajo): flex de un
+   solo nivel, sin columnas anidadas -- por eso no tiene el problema que tenía
+   el selector de arriba (una clase con flex-basis pensada para ancho, reusada
+   dentro de un padre en column, terminaba fijando alto en vez de ancho). */
+.selector-grid {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 16px;
 }
 
-.resumen-bloque {
-  flex: 1 1 320px;
-  min-width: 280px;
-  max-width: 100%;
+/* Sin botón de "Consultar": la consulta se dispara sola al completar los
+   selectores (ver efecto en el .ts). Este indicador reemplaza el feedback
+   visual que antes daba el [loading] del botón. */
+.selector-estado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+/* Selector de Año/Mes propio del bloque Resumen (legacy SelectorOnlyYear.vue),
+   independiente del selector de arriba. */
+.resumen-selector-grid {
+  margin-bottom: 16px;
+}
+.resumen-selector-grid app-anno-selector,
+.resumen-selector-grid app-mes-selector {
+  flex: 0 1 200px;
+  min-width: 160px;
+}
+
+/* Grid de 3 columnas para las tablas del resumen, mismo patrón que
+   resumen-variables.component.ts (.resumen-variables-grid/-item). */
+.comparar-resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.comparar-resumen-item {
   overflow-x: auto;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.comparar-resumen-item h5 {
+  margin: 0 0 0.5rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  color: var(--color-brand-strong);
+  font-size: 0.85rem;
+  font-weight: 700;
 }
