@@ -12,6 +12,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { SupportErrorLogPanelComponent } from '../shared/support-error-log-panel.component';
 import { AyudaFlotanteComponent } from '../shared/ayuda-flotante.component';
 import { IconComponent } from '../shared/icon.component';
+import { nombreSistemaGenerico } from '../shared/sistema-generico.util';
 
 @Component({
   selector: 'app-layout',
@@ -60,7 +61,11 @@ export class LayoutComponent implements OnInit {
   }
 
   get nombreSistema(): string {
-    return this.authState.sistema()?.SIST_NOMBRE || 'Sistema de Gestión';
+    return nombreSistemaGenerico(this.authState.sistema()?.SIST_ID);
+  }
+
+  nombreGenerico(sistId: number): string {
+    return nombreSistemaGenerico(sistId);
   }
 
   loadSistemasDisponibles(): void {

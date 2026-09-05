@@ -29,8 +29,8 @@ const DOCUMENTACION_SIMULADA: ArticuloDocumentacion[] = [
   },
   {
     categoria: 'Primeros pasos',
-    titulo: 'Cambiar de sistema (VEO-Regulator, Reliquidaciones, SUI 853)',
-    contenido: 'Desde el selector rojo de la barra superior podés pasar de un sistema a otro sin cerrar sesión, siempre que tengas permisos asignados a ambos.'
+    titulo: 'Cambiar de sistema (Sistema Uno, Sistema Dos, Sistema Tres)',
+    contenido: 'Desde el selector azul de la barra superior podés pasar de un sistema a otro sin cerrar sesión, siempre que tengas permisos asignados a ambos.'
   },
   {
     categoria: 'Cálculo de Tarifas',

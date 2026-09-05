@@ -1,9 +1,8 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Title } from '@angular/platform-browser';
-import { AuthState } from './state/auth.state';
 import { ThemeService } from './services/theme.service';
 
 @Component({
@@ -14,13 +13,9 @@ import { ThemeService } from './services/theme.service';
 })
 export class AppComponent {
   private readonly titleService = inject(Title);
-  private readonly authState = inject(AuthState);
   private readonly themeService = inject(ThemeService);
 
   constructor() {
-    effect(() => {
-      const sistema = this.authState.sistema();
-      this.titleService.setTitle(sistema ? `Sistema - ${sistema.SIST_NOMBRE}` : 'Sistema');
-    });
+    this.titleService.setTitle('Sistema Uno');
   }
 }

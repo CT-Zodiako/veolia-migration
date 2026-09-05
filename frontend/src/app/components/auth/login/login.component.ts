@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../../shared/primeng-imports';
 import { AuthService, Sistema } from '../../../services/auth.service';
+import { nombreSistemaGenerico } from '../../shared/sistema-generico.util';
+
+type SistemaOption = Sistema & { nombreGenerico: string };
 
 @Component({
   selector: 'app-login',
@@ -16,7 +19,7 @@ export class LoginComponent {
   email = '';
   password = '';
   idSistema: number | null = null;
-  sistemas: Sistema[] = [];
+  sistemas: SistemaOption[] = [];
   error = '';
   loading = false;
 
@@ -38,7 +41,7 @@ export class LoginComponent {
 
     this.authService.getSistemasByCorreo(this.email).subscribe({
       next: (sistemas: Sistema[]) => {
-        this.sistemas = sistemas;
+        this.sistemas = sistemas.map(s => ({ ...s, nombreGenerico: nombreSistemaGenerico(s.SIST_ID) }));
         if (sistemas.length === 1) {
           this.idSistema = sistemas[0].SIST_ID;
         } else if (sistemas.length === 0) {

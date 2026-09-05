@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../../shared/primeng-imports';
 import { AuthService, Sistema } from '../../../services/auth.service';
+import { nombreSistemaGenerico } from '../../shared/sistema-generico.util';
 
 @Component({
   selector: 'app-menux-usuario',
@@ -160,7 +161,7 @@ export class MenuxUsuarioComponent implements OnInit {
 
   get sistemaOptions(): { label: string; value: number }[] {
     return this.sistemas.map(s => ({
-      label: s.SIST_NOMBRE,
+      label: nombreSistemaGenerico(s.SIST_ID),
       value: s.SIST_ID
     }));
   }

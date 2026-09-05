@@ -93,7 +93,7 @@
               [class.active]="sistema.SIST_ID === sistemaSeleccionadoId"
               (click)="cambiarSistema(sistema.SIST_ID); showSistemaDropdown = false"
             >
-              {{ sistema.SIST_NOMBRE }}
+              {{ nombreGenerico(sistema.SIST_ID) }}
             </button>
           </div>
         </div>

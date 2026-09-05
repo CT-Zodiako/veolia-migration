@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../../shared/primeng-imports';
 import { AuthService, Sistema } from '../../../services/auth.service';
+import { nombreSistemaGenerico } from '../../shared/sistema-generico.util';
 
 @Component({
   selector: 'app-asignacion-sistema',
@@ -24,6 +25,10 @@ export class AsignacionSistemaComponent implements OnInit {
     private authService: AuthService,
     private readonly cdr: ChangeDetectorRef
   ) {}
+
+  nombreGenerico(sistId: number): string {
+    return nombreSistemaGenerico(sistId);
+  }
 
   ngOnInit(): void {
     this.loadUsuarios();
