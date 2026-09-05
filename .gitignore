@@ -12,6 +12,7 @@ frontend/dist/
 **/appsettings.Development.json
 backend/Veolia.Api/Credentials/
 backend/Veolia.Api/Wallet_VEOM/
+Wallet_VEOLIA/
 
 # Pi subagent runtime artifacts
 .pi-subagents/
