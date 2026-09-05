@@ -8,7 +8,7 @@
   width: 260px;
   background: var(--color-bg-card);
   border-right: 1px solid var(--color-border);
-  box-shadow: inset 4px 0 0 #f10400;
+  box-shadow: inset 4px 0 0 #2563eb;
   color: var(--color-text-body);
   display: flex;
   flex-direction: column;
@@ -67,13 +67,12 @@
   transform: scale(1.05);
 }
 
-.sidebar-logo {
+.sidebar-logo-text {
   display: block;
-  max-width: 150px;
-  height: auto;
-  background: #fff;
-  padding: 6px 10px;
-  border-radius: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: var(--color-brand-strong);
 }
 
 .sidebar-header p {
@@ -117,12 +116,12 @@
   background: var(--color-bg-danger-soft);
   color: var(--color-brand-strong);
   font-weight: 700;
-  box-shadow: inset 3px 0 0 #f10400;
+  box-shadow: inset 3px 0 0 #2563eb;
   transform: none;
 }
 
 .nav-item.active .nav-icon {
-  background: rgba(241, 4, 0, 0.14);
+  background: rgba(37, 99, 235, 0.14);
 }
 
 .nav-icon {
@@ -236,7 +235,7 @@
   background: var(--color-bg-danger-soft);
   color: var(--color-brand-strong);
   font-weight: 600;
-  box-shadow: inset 3px 0 0 #f10400;
+  box-shadow: inset 3px 0 0 #2563eb;
 }
 
 .submenu-icon {
@@ -251,7 +250,7 @@
 }
 
 .submenu-item.active .submenu-icon {
-  background: rgba(241, 4, 0, 0.14);
+  background: rgba(37, 99, 235, 0.14);
 }
 
 .submenu-label {

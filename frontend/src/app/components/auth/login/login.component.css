@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #780200 0%, #9c0300 50%, #c40300 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
   position: relative;
   overflow: hidden;
 }
@@ -36,11 +36,13 @@
   margin-bottom: 32px;
 }
 
-.login-logo {
-  width: 80px;
-  height: 80px;
+.login-logo-text {
   margin: 0 auto;
-  display: block;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: var(--color-brand-strong);
 }
 
 .form-group {
@@ -98,7 +100,7 @@ form ::ng-deep .p-button {
 .btn-login {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #f10400 0%, #c40300 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: white;
   border: none;
   border-radius: 8px;

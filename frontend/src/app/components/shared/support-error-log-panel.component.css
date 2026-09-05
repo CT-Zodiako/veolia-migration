@@ -6,7 +6,7 @@
   height: 48px;
   border-radius: 50%;
   border: none;
-  background: #f10400;
+  background: #2563eb;
   color: #fff;
   font-size: 20px;
   display: flex;
@@ -19,7 +19,7 @@
 }
 
 .support-log-fab:hover {
-  background: #c40300;
+  background: #1d4ed8;
   transform: scale(1.05);
 }
 

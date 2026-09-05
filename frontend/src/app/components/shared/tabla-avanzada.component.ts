@@ -321,7 +321,7 @@ export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges,
   ngOnInit(): void {
     this.columnasState = new ColumnasState(
       this.columnas,
-      `veolia:tabla-presets:${this.storageKey}`,
+      `app:tabla-presets:${this.storageKey}`,
       this.columnasFijadasPorDefecto
     );
   }
@@ -337,7 +337,7 @@ export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges,
     if (changes['columnas'] && this.columnasState) {
       this.columnasState = new ColumnasState(
         this.columnas,
-        `veolia:tabla-presets:${this.storageKey}`,
+        `app:tabla-presets:${this.storageKey}`,
         this.columnasFijadasPorDefecto
       );
     }

@@ -1,7 +1,7 @@
 <div class="login-container">
   <div class="login-box">
     <div class="login-header">
-      <img src="/VeoliaLogo.png" alt="Veolia" class="login-logo" />
+      <div class="login-logo-text">Sistema</div>
     </div>
 
     <div *ngIf="error" class="error-message">
@@ -16,7 +16,7 @@
           type="email"
           [(ngModel)]="email"
           name="email"
-          placeholder="usuario@veolia.com"
+          placeholder="usuario@ejemplo.com"
           (input)="onEmailChange()"
           required
           style="width: 100%"

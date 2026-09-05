@@ -88,7 +88,7 @@
 }
 
 .libro-lomo {
-  background: linear-gradient(160deg, #780200 0%, #9c0300 45%, #c40300 100%);
+  background: linear-gradient(160deg, #1e3a8a 0%, #1e40af 45%, #1d4ed8 100%);
   color: rgba(255, 255, 255, 0.92);
   display: flex;
   flex-direction: column;
@@ -153,7 +153,7 @@
 
 .libro-articulo.activo {
   background: rgba(255, 255, 255, 0.95);
-  color: #780200;
+  color: #1e3a8a;
   font-weight: 600;
 }
 

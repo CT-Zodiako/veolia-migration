@@ -20,7 +20,7 @@ export class AppComponent {
   constructor() {
     effect(() => {
       const sistema = this.authState.sistema();
-      this.titleService.setTitle(sistema ? `Veolia - ${sistema.SIST_NOMBRE}` : 'Veolia');
+      this.titleService.setTitle(sistema ? `Sistema - ${sistema.SIST_NOMBRE}` : 'Sistema');
     });
   }
 }

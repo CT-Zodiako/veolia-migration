@@ -13,21 +13,21 @@ import { authTokenInterceptor } from './app/interceptors/auth-token.interceptor'
 import { httpErrorInterceptor } from './app/interceptors/http-error.interceptor';
 import { GlobalErrorHandler } from './app/interceptors/global-error-handler';
 
-// Escala tonal derivada del rojo de marca Veolia (#f10400), anclado en el paso 600.
-const VeoliaPreset = definePreset(Aura, {
+// Escala tonal derivada del azul de marca (#2563eb), anclado en el paso 600.
+const BrandPreset = definePreset(Aura, {
   semantic: {
     primary: {
-      50: '#fff2f2',
-      100: '#ffe6e5',
-      200: '#ffcdcc',
-      300: '#ffa5a3',
-      400: '#ff6966',
-      500: '#ff2a26',
-      600: '#f10400',
-      700: '#c40300',
-      800: '#9c0300',
-      900: '#780200',
-      950: '#4a0100'
+      50: '#eff6ff',
+      100: '#dbeafe',
+      200: '#bfdbfe',
+      300: '#93c5fd',
+      400: '#60a5fa',
+      500: '#3b82f6',
+      600: '#2563eb',
+      700: '#1d4ed8',
+      800: '#1e40af',
+      900: '#1e3a8a',
+      950: '#172554'
     }
   }
 });
@@ -42,7 +42,7 @@ bootstrapApplication(AppComponent, {
     ConfirmationService,
     providePrimeNG({
       theme: {
-        preset: VeoliaPreset,
+        preset: BrandPreset,
         options: {
           darkModeSelector: '.app-dark'
         }
