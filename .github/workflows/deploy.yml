@@ -1,0 +1,80 @@
+name: Build and deploy IIS
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build versioned package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Publish Windows API
+        run: >-
+          dotnet publish backend/Veolia.Api/Veolia.Api.csproj
+          --configuration Release --framework net10.0
+          --runtime win-x64 --self-contained false
+          --output package/api
+          -p:SourceRevisionId=${{ github.sha }}
+      - name: Remove server configuration from artifact
+        run: Remove-Item package/api/appsettings*.json -Force -ErrorAction SilentlyContinue
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Build production frontend
+        working-directory: frontend
+        run: npm run build -- --configuration production
+      - name: Assemble deployment package
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p package/frontend package/deploy
+          cp -a frontend/dist/veolia-frontend/browser/. package/frontend/
+          cp deploy/deploy.ps1 package/deploy/deploy.ps1
+          printf '%s\n' "$COMMIT_SHA" > package/commit-sha.txt
+      - name: Upload versioned package
+        uses: actions/upload-artifact@v4
+        with:
+          name: veolia-iis-${{ github.sha }}
+          path: package/
+          if-no-files-found: error
+          retention-days: 14
+
+  deploy:
+    name: Deploy production IIS
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: [self-hosted, windows, iis]
+    concurrency:
+      group: veolia-iis-production
+      cancel-in-progress: false
+    steps:
+      - name: Download this run's package
+        uses: actions/download-artifact@v4
+        with:
+          name: veolia-iis-${{ github.sha }}
+          path: ${{ runner.temp }}/veolia-iis-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Deploy and smoke check
+        shell: powershell
+        env:
+          PACKAGE_PATH: ${{ runner.temp }}/veolia-iis-${{ github.run_id }}-${{ github.run_attempt }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $actual = (Get-Content -LiteralPath (Join-Path $env:PACKAGE_PATH 'commit-sha.txt') -Raw).Trim()
+          if ($actual -ne $env:EXPECTED_SHA) { throw 'Artifact commit does not match this workflow run.' }
+          & (Join-Path $env:PACKAGE_PATH 'deploy/deploy.ps1') -ArtifactPath $env:PACKAGE_PATH
+          if (-not $?) { throw 'Deployment failed.' }
