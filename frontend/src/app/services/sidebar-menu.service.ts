@@ -115,6 +115,7 @@ export class SidebarMenuService {
     { label: 'PGIRS - Resumen', path: '/pgirs/resumen', icon: 'recycle', keywords: ['pgirs resumen', 'resumen pgirs', 'informe pgirs'], menuId: 2002 },
     { label: 'PGIRS - Informe Variables', path: '/pgirs/informe-variables', icon: 'flask-conical', keywords: ['pgirs informe variables', 'informe variables pgirs'], menuId: 2003 },
     { label: 'Variables PGIRS', path: '/pgirs/variables', icon: 'microscope', keywords: ['pgirs variables', 'variables pgris'], menuId: 2001 },
+    { label: 'Formularios', path: '/formularios', icon: 'file-text', keywords: ['formularios'], menuId: 30003 },
     { label: 'SUI 853 - APS Empresa', path: '/apsEmpresa', icon: 'building-2', keywords: ['aps empresa'], menuId: 30001 },
     { label: 'SUI 853 - APS Documentos', path: '/apsDocumentos', icon: 'file', keywords: ['aps documentos'], menuId: 30002 },
     { label: 'SUI 853 - CFT', path: '/cft', icon: 'calculator', keywords: ['cft'], menuId: 7011 },
@@ -131,6 +132,9 @@ export class SidebarMenuService {
     { label: 'SUI 853 - CVNA', path: '/cvna', icon: 'calculator', keywords: ['cvna'], menuId: 8009 },
     { label: 'SUI 853 - CVA', path: '/cva', icon: 'hash', keywords: ['cva'], menuId: 9001 },
     { label: 'SUI 853 - CDFT', path: '/cdft', icon: 'calendar-days', keywords: ['cdft'], menuId: 8010 },
+    // System 3: resolved only from the authenticated system's permitted menu tree.
+    { label: 'SUI 853 - FAC', path: '/fac', icon: 'file-text', keywords: ['fac'], menuId: 40001 },
+    { label: 'SUI 853 - Comercial', path: '/facturacionServicioAseo', icon: 'file-text', keywords: ['facturacion servicio aseo'], menuId: 10001 },
     // 'Configuración APS' (/aps-usuario), 'Asignación Sistema' (/asignacion-sistema) y
     // 'Menú Usuario' (/menu-usuario) NO tienen nodo propio en AUGE_MENU: dump completo del
     // árbol confirma que el nodo padre "Configuración" (menu_id 200) solo tiene 4 hijos reales

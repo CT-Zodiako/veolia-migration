@@ -76,6 +76,7 @@ export const routes: Routes = [
       { path: 'menu-usuario', component: MenuxUsuarioComponent },
       { path: 'aps', component: ApsConfigComponent },
       { path: 'empresas', component: EmpresasConfigComponent },
+      { path: 'formularios', loadComponent: () => import('./components/sui853-configuracion/formularios.component').then(m => m.FormulariosComponent) },
       { path: 'apsEmpresa', component: ApsEmpresaComponent },
       { path: 'apsDocumentos', component: ApsDocumentosComponent },
       { path: 'residuosGenerados', component: ResiduosGeneradosComponent },
@@ -136,6 +137,16 @@ export const routes: Routes = [
       { path: 'suministros/cargue-productividad', component: CargueProductividadComponent },
       { path: 'suministros/cargue-mensual', component: CargueMensualComponent },
       { path: 'suministros/cargue-semestral', component: CargueSemestralComponent },
+      {
+        path: 'fac',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-fac/sui853-fac.component').then((m) => m.Sui853FacComponent)
+      },
+      {
+        path: 'facturacionServicioAseo',
+        canActivate: [AuthGuard],
+        loadComponent: () => import('./components/sui853-comercial/sui853-comercial.component').then((m) => m.Sui853ComercialComponent)
+      },
       {
         path: 'cft',
         canActivate: [AuthGuard],

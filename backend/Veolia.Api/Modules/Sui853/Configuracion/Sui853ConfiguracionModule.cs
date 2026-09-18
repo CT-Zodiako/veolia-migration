@@ -11,6 +11,7 @@ public static class Sui853ConfiguracionModule
     {
         services.AddScoped<ISui853ReadmodelsRepository, Sui853ReadmodelsRepository>();
         services.AddScoped<Sui853ContractMapper>();
+        services.AddScoped<IFormulariosRepository, FormulariosRepository>();
         return services;
     }
 }

@@ -1,0 +1,16 @@
+<section class="card-section">
+  <p-tabs value="general">
+    <p-tablist><p-tab value="general">General</p-tab></p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="general">
+        <div *ngIf="error()" class="error-message" role="alert">
+          <p>{{ error() }}</p>
+          <p-button label="Reintentar" icon="pi pi-refresh" (click)="load()" />
+        </div>
+        <app-sui853-formato2-tabla *ngIf="!error()"
+          [data]="data()" [loading]="loading()"
+          storageKey="sui853-fac-general" nombreExportar="FAC" />
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</section>

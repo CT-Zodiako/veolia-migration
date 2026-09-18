@@ -79,7 +79,9 @@ builder.Services.AddTrnaModule();
 builder.Services.AddTafnaModule();
 builder.Services.AddUsuariosGraficoModule();
 builder.Services.AddSui853CftModule();
+builder.Services.AddScoped<Veolia.Api.Modules.Sui853.Comercial.IComercialRepository, Veolia.Api.Modules.Sui853.Comercial.ComercialRepository>();
 builder.Services.AddCdftModule();
+builder.Services.AddScoped<Veolia.Api.Modules.Sui853.General.IFacRepository, Veolia.Api.Modules.Sui853.General.FacRepository>();
 builder.Services.AddSubContModule();
 builder.Services.AddProyeccionesModule();
 builder.Services.AddReliquidacionesModule();
@@ -389,6 +391,11 @@ app.UseWhen(
 
         return true;
     },
+    branch => { branch.UseMiddleware<AuthJwtParityMiddleware>(); });
+
+app.UseWhen(
+    context => context.Request.Path.StartsWithSegments("/api/v1/sui853Configuracion/getFormularios", StringComparison.OrdinalIgnoreCase)
+        || context.Request.Path.StartsWithSegments("/api/v1/sui853Configuracion/updateFormulario", StringComparison.OrdinalIgnoreCase),
     branch => { branch.UseMiddleware<AuthJwtParityMiddleware>(); });
 
 app.MapControllers();

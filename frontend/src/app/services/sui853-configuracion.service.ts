@@ -30,6 +30,23 @@ export interface TcfgApsItem {
   NOMBRE_APS: string;
 }
 
+export interface FormularioRow {
+  FORMATO: string;
+  SECCION: string;
+  FIELD: string;
+  HEADER_TXT: string;
+  BACKGROUND_COLOR: string;
+  FILTER_FLAG: string;
+  FORMATO_DATO: string;
+  DECIMALES: number | null;
+  ALINEACION: string;
+  TOOLTIP: string | null;
+  MOSTRAR_HEADER: string;
+  INCLUIR_DATA: string;
+  ORDEN_HEADER: number | null;
+  ORDEN_DATA: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class Sui853ConfiguracionService {
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/sui853Configuracion`;
@@ -42,6 +59,14 @@ export class Sui853ConfiguracionService {
       'Content-Type': 'application/json',
       'x-access-token': token || ''
     });
+  }
+
+  getFormularios(): Observable<LegacyEnvelope<FormularioRow[]>> {
+    return this.http.post<LegacyEnvelope<FormularioRow[]>>(`${this.baseUrl}/getFormularios`, {}, { headers: this.getHeaders() });
+  }
+
+  updateFormulario(row: FormularioRow): Observable<LegacyEnvelope<FormularioRow>> {
+    return this.http.post<LegacyEnvelope<FormularioRow>>(`${this.baseUrl}/updateFormulario`, row, { headers: this.getHeaders() });
   }
 
   vcfgApsEmpresa(): Observable<LegacyEnvelope<VcfgApsEmpresaItem[]>> {

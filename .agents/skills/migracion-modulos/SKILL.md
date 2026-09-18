@@ -1,87 +1,59 @@
 ---
 name: migracion-modulos
-description: >
-  Construye una guía de migración por módulo a partir del markdown AS-IS,
-  manteniendo trazabilidad funcional completa Actor → Frontend → Endpoint → Lógica backend → Base de datos.
-  Trigger: cuando el usuario pida migrar un módulo desde el .md documentado,
-  convertir extracción AS-IS en plan de migración, o preparar implementación TO-BE sin perder comportamiento.
+description: "Trigger: migrar módulo, migrar componente, revisar legacy, Node/Vue a Angular/.NET. Migra por paridad funcional desde el proyecto legacy hacia el nuevo, trazando Frontend → API → backend → Oracle."
 license: Apache-2.0
 metadata:
   author: gentleman-programming
-  version: "1.0"
+  version: "2.0"
 ---
 
-## Cuándo usar
-- Cuando ya existe un `.md` de módulo (extracción AS-IS) y se necesita plan de migración.
-- Cuando hay que transformar funcionalidades actuales en contratos TO-BE implementables.
-- Cuando se requiere priorizar, secuenciar y mitigar riesgos por módulo.
+## Activation Contract
 
-## Patrones críticos (obligatorios)
-1. **Fuente única: el `.md` del módulo**
-   - No inventar comportamientos fuera de evidencia en el markdown y código trazado.
-2. **Paridad funcional primero**
-   - Migrar sin cambiar reglas de negocio ni contratos externos en primera fase.
-3. **Trazabilidad inquebrantable**
-   - Cada decisión TO-BE debe mapearse a una evidencia AS-IS (línea/endpoint/objeto DB).
-4. **DDL como gate de salida**
-   - Si hay `pendiente_ddl`, el diseño queda `pendiente-validacion` hasta resolverlo.
-5. **Separar claramente**
-   - `observado_as_is` vs `decision_to_be` vs `riesgo_migracion`.
-6. **Sin big-bang**
-   - Definir estrategia incremental por capacidades (feature flags, strangler, coexistencia).
+Usar cuando se migre, revise o planifique un módulo/componente del sistema legacy Node/Express + Vue 2 hacia Angular + .NET, manteniendo el comportamiento observable.
 
-## Flujo de trabajo
-1. Leer el `.md` del módulo y detectar:
-   - funcionalidades, endpoints, reglas, tablas/objetos, pendientes DDL.
-2. Para cada funcionalidad, crear ficha de migración:
-   - contrato actual, invariantes, cambios permitidos, riesgos, pruebas de regresión.
-3. Consolidar dependencias técnicas:
-   - frontend, backend, DB, integraciones externas, autenticación/autorización.
-4. Diseñar estrategia por fases:
-   - Fase 0 (baseline + tests)
-   - Fase 1 (paridad funcional)
-   - Fase 2 (hardening/performance)
-5. Definir plan de verificación:
-   - casos críticos, contratos API, validaciones DB, criterios de rollback.
-6. Emitir salida final con estado:
-   - `listo-para-implementar` o `pendiente-validacion`.
+## Hard Rules
 
-## Formato de salida (obligatorio)
-Por cada funcionalidad del módulo:
-- `id_funcionalidad`
-- `nombre`
-- `observado_as_is`
-- `contrato_migracion_to_be`
-- `invariantes_negocio` (no negociables)
-- `componentes_afectados` (FE/BE/DB)
-- `riesgos_migracion`
-- `plan_pruebas_regresion`
-- `criterio_aceptacion`
-- `estado` (`listo-para-implementar` | `pendiente-validacion`)
+- Fuente primaria legacy: `/Users/zodiako/DEV/oracle/` (`front-tarificador/` y `back-tarificador/`).
+- Fuente secundaria: `doc migracion/modules/` y los contratos/tests existentes del repositorio nuevo.
+- Leer primero el componente Vue, sus hijos, servicio Axios, router/store y backend Express (`routes.js`, `controller.js`, helpers y SQL).
+- No inventar reglas: separar `observado_as_is`, `decision_to_be` y `riesgo_migracion`.
+- Preservar contratos, nombres de campos, estados, validaciones, errores, permisos, ordenamientos y efectos laterales, salvo corrección explícita aprobada.
+- Toda operación de escritura debe tener equivalente identificable en el backend nuevo y prueba de regresión.
+- No tocar la base legacy ni ejecutar mutaciones contra ella durante el análisis.
 
-Y a nivel módulo:
-- `resumen_dependencias`
-- `secuencia_fases_migracion`
-- `bloqueantes` (incluyendo `pendiente_ddl`)
-- `estrategia_rollback`
+## Decision Gates
 
-## Checklist de calidad
-- [ ] Toda funcionalidad AS-IS tiene contrato TO-BE
-- [ ] Se preservan invariantes de negocio
-- [ ] Endpoints y contratos de respuesta están cubiertos
-- [ ] Objetos DB están trazados y con estado DDL explícito
-- [ ] Riesgos y mitigaciones definidos
-- [ ] Existe estrategia de rollback por fase
+| Situación | Acción |
+|---|---|
+| Existe documentación AS-IS | Validarla contra código legacy; el código gana ante contradicción documentada. |
+| Falta contrato o DDL | Marcar `pendiente-validacion`; no asumir tipos, nullability ni catálogos. |
+| Módulo con varios componentes | Migrar en orden: contrato/API, repositorio, endpoint, servicio Angular, componente/presentación. |
+| Dependencia compartida | Identificarla y aislarla antes de duplicar lógica. |
 
-## Comandos
-```bash
-# Buscar módulos documentados
-glob "docs/modulos/**/funcionalidades/*.md"
+## Execution Steps
 
-# Localizar pendientes DDL
-grep "pendiente_ddl|registro_ddl_modulo" docs/modulos -n
-```
+1. Definir alcance con rutas concretas de `front-tarificador` y `back-tarificador`.
+2. Construir matriz Actor → Vue/componentes → servicio → endpoint → controller/SQL → tabla/vista/package Oracle.
+3. Registrar comportamiento: inputs, outputs, loading, errores, permisos, validaciones, paginación, exportación y navegación.
+4. Mapear a Angular/.NET: componente, modelos, servicio HTTP, controller, DTOs, repository y consultas/procedures.
+5. Implementar por capas, preservando primero el contrato legacy; reutilizar patrones existentes del nuevo frontend.
+6. Crear pruebas de contrato, casos felices, errores, permisos y regresión de datos.
+7. Comparar manualmente o automáticamente respuestas legacy/nuevo cuando sea posible.
+8. Reportar bloqueantes, diferencias intencionales y criterio de aceptación antes de cerrar.
 
-## Recursos
-- **Referencia base**: `/.agents/skills/modulos/SKILL.md`
-- **Fuente funcional**: `docs/modulos/<modulo>/funcionalidades/<archivo>.md`
+## Output Contract
+
+Entregar por funcionalidad:
+- `id`, `nombre`, `rutas_legacy`, `componentes_legacy`, `endpoints_legacy`.
+- `observado_as_is`, `mapeo_to_be`, `invariantes`, `componentes_nuevos`.
+- `riesgos`, `pendientes`, `pruebas_regresion`, `criterio_aceptacion`, `estado`.
+
+A nivel módulo incluir dependencias, secuencia de migración, diferencias aprobadas y rollback.
+
+## References
+
+- `doc migracion/modules/` — documentación AS-IS y trazabilidad.
+- `/Users/zodiako/DEV/oracle/front-tarificador/` — Vue 2 legacy.
+- `/Users/zodiako/DEV/oracle/back-tarificador/` — Node/Express legacy.
+- `.agents/skills/veolia-migration-review/SKILL.md` — auditoría de paridad.
+- `.claude/skills/veolia-ui-style/SKILL.md` — convenciones Angular.

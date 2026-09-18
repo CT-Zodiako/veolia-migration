@@ -145,6 +145,7 @@ export class LayoutComponent implements OnInit {
     switch (url) {
       case '/': return 'Dashboard';
       case '/usuarios': return 'Gestión de Usuarios';
+      case '/formularios': return 'Formularios';
       case '/aps': return 'Configuración APS';
       case '/empresas': return 'Configuración Empresas';
       case '/asignacion-sistema': return 'Asignación de Sistemas';
@@ -211,6 +212,8 @@ export class LayoutComponent implements OnInit {
       case '/cvna': return 'SUI 853 - CVNA';
       case '/cva': return 'SUI 853 - CVA';
       case '/cdft': return 'SUI 853 - CDFT';
+      case '/fac': return 'SUI 853 - FAC';
+      case '/facturacionServicioAseo': return 'SUI 853 - Comercial';
       default: return '';
     }
   }

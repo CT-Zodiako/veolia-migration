@@ -1,0 +1,31 @@
+<section class="card-section">
+  <app-parametros-consulta [(aps)]="aps" [(anno)]="anno" [(mes)]="mes"
+    [wrapInCard]="false" [mostrarBoton]="false" [autoConsultar]="true"
+    (consultar)="consultar()" (parametrosIncompletos)="clear()"></app-parametros-consulta>
+</section>
+<section class="card-section">
+  <nav aria-label="Vistas de Comercial" class="tabs">
+    <button type="button" [class.active]="tab === 'detail'" [attr.aria-pressed]="tab === 'detail'" (click)="tab = 'detail'">Detalle</button>
+    <button type="button" [class.active]="tab === 'summary'" [attr.aria-pressed]="tab === 'summary'" (click)="tab = 'summary'">Resumen</button>
+  </nav>
+  <p *ngIf="!queried">Seleccioná APS, año y mes para consultar.</p>
+  <ng-container *ngIf="queried && tab === 'detail'">
+    <p *ngIf="detailLoading" role="status">Cargando detalle…</p>
+    <div *ngIf="detailError" class="error-message" role="alert">{{ detailError }} <button type="button" (click)="consultar()">Reintentar</button></div>
+    <p *ngIf="!detailLoading && !detailError && !rows.length">No hay registros para los parámetros seleccionados.</p>
+    <app-tabla-avanzada *ngIf="!detailLoading && !detailError && rows.length" [columnas]="detailColumns" [rows]="rows"
+      storageKey="sui853-comercial-detail" nombreExportar="SUI853_Comercial_Detalle"></app-tabla-avanzada>
+  </ng-container>
+  <ng-container *ngIf="queried && tab === 'summary'">
+    <p class="scope-note">Resumen global del formato F853GR02. El servicio legacy no filtra este resumen por APS, año ni mes.</p>
+    <p *ngIf="summaryLoading" role="status">Cargando resumen…</p>
+    <div *ngIf="summaryError" class="error-message" role="alert">{{ summaryError }} <button type="button" (click)="consultar()">Reintentar</button></div>
+    <ng-container *ngIf="!summaryLoading && !summaryError">
+      <h3 *ngIf="summary?.meta?.dialogHeader || summary?.title">{{ summary?.meta?.dialogHeader || summary?.title }}</h3>
+      <p *ngIf="!summaryRows.length">No hay registros en el resumen.</p>
+      <app-tabla-avanzada *ngIf="summaryRows.length" [columnas]="summaryColumns" [rows]="summaryRows"
+        storageKey="sui853-comercial-summary" nombreExportar="SUI853_Comercial_Resumen"></app-tabla-avanzada>
+      <details *ngIf="summary"><summary>Metadatos del formato</summary><pre>{{ summaryMetadata | json }}</pre></details>
+    </ng-container>
+  </ng-container>
+</section>
