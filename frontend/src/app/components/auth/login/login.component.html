@@ -41,28 +41,46 @@
 
       <p *ngIf="validating" role="status" aria-live="polite">Validando credenciales...</p>
 
-      <div class="form-group" *ngIf="credentialsValidated && sistemas.length > 0">
-        <label>Sistema</label>
-        <p-select
-          [options]="sistemas"
-          [disabled]="loading || validating || !credentialsValidated"
-          [(ngModel)]="idSistema"
-          name="sistema"
-          optionLabel="SIST_NOMBRE"
-          optionValue="SIST_ID"
-          placeholder="Seleccione un sistema"
-          appendTo="body"
-          [style]="{width: '100%'}"
-        ></p-select>
-      </div>
-
       <p-button
         type="submit"
-        label="{{ loading ? 'Ingresando...' : 'Ingresar' }}"
-        [loading]="loading"
-        [disabled]="loading || validating || !credentialsValidated || !idSistema"
+        [label]="credentialsValidated ? 'Seleccionar sistema' : 'Ingresar'"
+        [loading]="loading || validating"
+        [disabled]="loading || validating || !credentialsValidated || !sistemas.length"
         styleClass="w-full"
       ></p-button>
     </form>
+
+    <p-dialog
+      [(visible)]="showSistemaDialog"
+      header="Seleccioná el sistema"
+      [modal]="true"
+      [closable]="false"
+      [draggable]="false"
+      [style]="{ width: 'min(92vw, 28rem)' }"
+    >
+      <p class="dialog-description">Tus credenciales son correctas. Elegí el sistema con el que querés ingresar.</p>
+      <div class="form-group">
+        <label for="login-sistema">Sistema</label>
+        <p-select
+          inputId="login-sistema"
+          [options]="sistemas"
+          [(ngModel)]="idSistema"
+          name="sistemaDialog"
+          optionLabel="SIST_NOMBRE"
+          optionValue="SIST_ID"
+          placeholder="Seleccione un sistema"
+          [style]="{width: '100%'}"
+        ></p-select>
+      </div>
+      <ng-template pTemplate="footer">
+        <p-button
+          label="Continuar"
+          icon="pi pi-arrow-right"
+          [loading]="loading"
+          [disabled]="loading || !idSistema"
+          (onClick)="login()"
+        ></p-button>
+      </ng-template>
+    </p-dialog>
   </div>
 </div>

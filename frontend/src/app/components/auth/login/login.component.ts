@@ -3,13 +3,14 @@ import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { DialogModule } from 'primeng/dialog';
 import { CommonPrimeNgModules } from '../../../shared/primeng-imports';
 import { AuthService, Sistema } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules],
+  imports: [CommonModule, FormsModule, DialogModule, ...CommonPrimeNgModules],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -22,6 +23,7 @@ export class LoginComponent {
   loading = false;
   validating = false;
   credentialsValidated = false;
+  showSistemaDialog = false;
   private validationVersion = 0;
   private validationTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly destroyRef = inject(DestroyRef);
@@ -72,7 +74,11 @@ export class LoginComponent {
           this.credentialsValidated = true;
           this.sistemas = sistemas;
           this.idSistema = sistemas.length === 1 ? sistemas[0].SIST_ID : null;
-          if (!sistemas.length) this.error = 'No tiene sistemas activos asignados';
+          if (!sistemas.length) {
+            this.error = 'No tiene sistemas activos asignados';
+          } else {
+            this.showSistemaDialog = true;
+          }
         },
         error: (err) => {
           if (version !== this.validationVersion) return;
@@ -84,6 +90,12 @@ export class LoginComponent {
 
   ngOnDestroy(): void {
     if (this.validationTimer !== null) clearTimeout(this.validationTimer);
+  }
+
+  openSistemaDialog(): void {
+    if (this.credentialsValidated && this.sistemas.length > 0) {
+      this.showSistemaDialog = true;
+    }
   }
 
   login(): void {
@@ -125,10 +137,12 @@ export class LoginComponent {
         this.loading = false;
 
         if (err.status === 401) {
+          this.showSistemaDialog = false;
           this.onCredentialsChange();
           this.error = 'Usuario o Pass Incorrecto';
           this.password = '';
         } else if (err.status === 404) {
+          this.showSistemaDialog = false;
           this.onCredentialsChange();
           this.error = 'Usuario no existe o inactivo';
           this.email = '';
