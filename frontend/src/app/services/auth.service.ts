@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, map } from 'rxjs';
 import { AuthState } from '../state';
 
 export interface LoginRequest {
@@ -83,7 +83,9 @@ export class AuthService {
   }
 
   validateCredentials(correo: string, pass: string): Observable<Sistema[]> {
-    return this.http.post<Sistema[]>(`${this.baseUrl}/validate-credentials`, { correo, pass });
+    return this.http.post<Sistema[] | { data?: Sistema[] }>(`${this.baseUrl}/validate-credentials`, { correo, pass }).pipe(
+      map(response => Array.isArray(response) ? response : (Array.isArray(response.data) ? response.data : []))
+    );
   }
 
   login(request: LoginRequest): Observable<LoginResponse> {
