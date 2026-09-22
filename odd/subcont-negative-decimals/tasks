@@ -1,0 +1,8 @@
+# Reconciled task mirror: Subsidios y Contribuciones decimal editing
+
+- [x] Reproduce and trace frontend input/backend persistence restrictions.
+- [x] Fix the edit control and/or API validation without changing unrelated modules.
+- [x] Add focused regression coverage and run frontend/backend checks.
+- [ ] Review acceptance evidence.
+
+Evidence: native signed decimal input with step=any implemented; Angular ngc and git diff --check passed. Browser and live Oracle persistence remain pending.

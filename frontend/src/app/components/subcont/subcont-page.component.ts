@@ -154,6 +154,15 @@ export class SubContPageComponent implements OnInit {
     this.editingClase.set(null);
   }
 
+  onEditingValorChange(value: number | string | null): void {
+    if (value === null || value === '') {
+      this.editingValor.set(null);
+      return;
+    }
+    const parsed = typeof value === 'number' ? value : Number(value);
+    this.editingValor.set(Number.isFinite(parsed) ? parsed : null);
+  }
+
   confirmarGuardar(item: ClaseItem): void {
     this.confirmation.confirm({
       header: 'Guardar valor',

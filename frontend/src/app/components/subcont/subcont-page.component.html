@@ -21,15 +21,18 @@
       <tr>
         <td>{{ item.nombre }}</td>
         <td class="text-right">
-          <p-inputnumber
-            *ngIf="editingClase() === item.clase; else valorReadonly"
-            [ngModel]="editingValor()"
-            (ngModelChange)="editingValor.set($event)"
-            mode="decimal"
-            suffix="%"
-            [minFractionDigits]="0"
-            [maxFractionDigits]="4"
-          ></p-inputnumber>
+          <div *ngIf="editingClase() === item.clase; else valorReadonly" class="valor-editor">
+            <input
+              pInputText
+              type="number"
+              step="any"
+              inputmode="decimal"
+              [ngModel]="editingValor()"
+              (ngModelChange)="onEditingValorChange($event)"
+              aria-label="Valor de subsidio o contribución"
+            />
+            <span aria-hidden="true">%</span>
+          </div>
           <ng-template #valorReadonly>{{ item.valor !== null ? (item.valor + '%') : '-' }}</ng-template>
         </td>
         <td class="actions">

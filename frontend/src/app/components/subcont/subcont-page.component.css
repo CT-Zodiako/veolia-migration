@@ -20,3 +20,15 @@
 .text-right {
   text-align: right;
 }
+
+.valor-editor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.valor-editor input {
+  width: 10rem;
+  text-align: right;
+}
