@@ -29,8 +29,10 @@ ORDER BY s.SIST_NOMBRE";
         return rows.Select(ToDictionaryObject).ToList();
     }
 
-    public async Task<object?> LoginAsync(string correo, string pass, int idSistema, CancellationToken cancellationToken)
+    private static async Task<Dictionary<string, object?>?> ValidateUserAsync(System.Data.IDbConnection connection, string correo, string pass, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(correo) || string.IsNullOrEmpty(pass)) return null;
+
         const string userSql = @"
 SELECT
     SISU_ID,
@@ -43,23 +45,50 @@ FROM AUGE_SISUSUARIO
 WHERE LOWER(SISU_CORREO) = LOWER(:correo)
   AND SISU_ESTADO = 1";
 
-        using var connection = await OpenConnectionAsync(cancellationToken);
-        var userRow = await connection.QueryFirstOrDefaultAsync(userSql, new { correo });
-        if (userRow is null)
-        {
-            return new LoginRepositoryResult(LoginOutcomeKind.InvalidCredentials, "Correo o contraseña inválida");
-        }
+        var userRow = await connection.QueryFirstOrDefaultAsync(new CommandDefinition(userSql, new { correo }, cancellationToken: cancellationToken));
+        if (userRow is null) return null;
 
         var user = ToDictionary(userRow);
         user.TryGetValue("SISU_PASS", out object? storedHashObj);
         var storedHash = storedHashObj as string;
-        if (string.IsNullOrWhiteSpace(storedHash) || !BCrypt.Net.BCrypt.Verify(pass, storedHash))
+        if (string.IsNullOrWhiteSpace(storedHash)) return null;
+        try
         {
-            return new LoginRepositoryResult(LoginOutcomeKind.InvalidCredentials, "Correo o contraseña inválida");
+            if (!BCrypt.Net.BCrypt.Verify(pass, storedHash)) return null;
+        }
+        catch (BCrypt.Net.SaltParseException)
+        {
+            return null;
         }
 
         user.Remove("SISU_PASS");
-        var sisuId = ReadLong(user, "SISU_ID");
+        return ReadLong(user, "SISU_ID") > 0 ? user : null;
+    }
+
+    public async Task<IReadOnlyList<object>?> ValidateCredentialsAsync(string correo, string pass, CancellationToken cancellationToken)
+    {
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var user = await ValidateUserAsync(connection, correo, pass, cancellationToken);
+        if (user is null) return null;
+
+        const string sql = @"
+SELECT DISTINCT s.SIST_ID, s.SIST_NOMBRE
+FROM AUGE_USUASISTEMA us
+INNER JOIN AUGE_SISTEMA s ON s.SIST_ID = us.SIST_ID
+WHERE us.USUA_ID = :sisuId
+  AND us.USSI_ESTADO = 1
+  AND s.SIST_ESTADO = 1
+ORDER BY s.SIST_NOMBRE";
+        var rows = await connection.QueryAsync(new CommandDefinition(sql,
+            new { sisuId = ReadLong(user, "SISU_ID") }, cancellationToken: cancellationToken));
+        return rows.Select(ToDictionaryObject).ToList();
+    }
+
+    public async Task<object?> LoginAsync(string correo, string pass, int idSistema, CancellationToken cancellationToken)
+    {
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var user = await ValidateUserAsync(connection, correo, pass, cancellationToken);
+        var sisuId = user is null ? 0 : ReadLong(user, "SISU_ID");
         if (sisuId <= 0)
         {
             return new LoginRepositoryResult(LoginOutcomeKind.InvalidCredentials, "Correo o contraseña inválida");

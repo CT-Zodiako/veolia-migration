@@ -82,6 +82,10 @@ export class AuthService {
     return this.http.get<Sistema[]>(`${this.baseUrl}/getSistemasByCorreo?correo=${correo}`);
   }
 
+  validateCredentials(correo: string, pass: string): Observable<Sistema[]> {
+    return this.http.post<Sistema[]>(`${this.baseUrl}/validate-credentials`, { correo, pass });
+  }
+
   login(request: LoginRequest): Observable<LoginResponse> {
     this.authState.setLoading(true);
     this.authState.setError(null);

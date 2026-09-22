@@ -77,6 +77,7 @@ export const routes: Routes = [
       { path: 'aps', component: ApsConfigComponent },
       { path: 'empresas', component: EmpresasConfigComponent },
       { path: 'formularios', loadComponent: () => import('./components/sui853-configuracion/formularios.component').then(m => m.FormulariosComponent) },
+      { path: 'cargaGenerica', canActivate: [AuthGuard], loadComponent: () => import('./components/sui853-configuracion/carga-generica.component').then(m => m.CargaGenericaComponent) },
       { path: 'apsEmpresa', component: ApsEmpresaComponent },
       { path: 'apsDocumentos', component: ApsDocumentosComponent },
       { path: 'residuosGenerados', component: ResiduosGeneradosComponent },

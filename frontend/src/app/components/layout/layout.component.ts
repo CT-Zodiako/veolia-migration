@@ -143,9 +143,11 @@ export class LayoutComponent implements OnInit {
   getPageTitle(): string {
     const url = this.router.url.split('?')[0];
     switch (url) {
+      case '/residuosGenerados': return 'Residuos Generados';
       case '/': return 'Dashboard';
       case '/usuarios': return 'Gestión de Usuarios';
       case '/formularios': return 'Formularios';
+      case '/cargaGenerica': return 'SUI 853 - Carga genérica';
       case '/aps': return 'Configuración APS';
       case '/empresas': return 'Configuración Empresas';
       case '/asignacion-sistema': return 'Asignación de Sistemas';

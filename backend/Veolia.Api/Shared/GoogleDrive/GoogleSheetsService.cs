@@ -20,6 +20,25 @@ public sealed class GoogleSheetsService : IGoogleSheetsService
         client = new Lazy<Task<SheetsService>>(CreateClientAsync);
     }
 
+    public async Task<IReadOnlyList<GoogleSheetMetadata>> ListMetadataAsync(string spreadsheetId, CancellationToken cancellationToken)
+    {
+        var sheets = await client.Value;
+        var request = sheets.Spreadsheets.Get(spreadsheetId);
+        request.Fields = "sheets(properties(sheetId,title,index,gridProperties(rowCount,columnCount)))";
+        var response = await request.ExecuteAsync(cancellationToken);
+        return (response.Sheets ?? []).Where(s => s.Properties is not null).Select(s =>
+            new GoogleSheetMetadata(s.Properties.SheetId ?? 0, s.Properties.Title ?? "", s.Properties.Index ?? 0,
+                s.Properties.GridProperties?.RowCount ?? 0, s.Properties.GridProperties?.ColumnCount ?? 0)).ToList();
+    }
+
+    public async Task<IReadOnlyList<string>> ReadHeadersAsync(string spreadsheetId, string tabTitle, CancellationToken cancellationToken)
+    {
+        var sheets = await client.Value;
+        var request = sheets.Spreadsheets.Values.Get(spreadsheetId, $"'{tabTitle.Replace("'", "''")}'!1:1");
+        var response = await request.ExecuteAsync(cancellationToken);
+        return response.Values is { Count: > 0 } ? response.Values[0].Select(v => v?.ToString() ?? "").ToList() : [];
+    }
+
     public async Task<IReadOnlyList<string>> ListTabTitlesAsync(string spreadsheetId, CancellationToken cancellationToken)
     {
         var sheets = await client.Value;
@@ -46,7 +65,7 @@ public sealed class GoogleSheetsService : IGoogleSheetsService
         var response = await request.ExecuteAsync(cancellationToken);
         var values = response.Values ?? [];
 
-        if (values.Count < 2)
+        if (values.Count == 0)
         {
             return new GoogleSheetTabData { SheetTitle = tabTitle };
         }

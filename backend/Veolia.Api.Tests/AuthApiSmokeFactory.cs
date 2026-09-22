@@ -109,6 +109,11 @@ internal sealed class StubLoginRepository : ILoginRepository
         this.connectionFactory = connectionFactory;
     }
 
+    public Task<IReadOnlyList<object>?> ValidateCredentialsAsync(string correo, string pass, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<object>?>([
+            new Dictionary<string, object> { ["SIST_ID"] = 10, ["SIST_NOMBRE"] = "Operaciones" }
+        ]);
+
     public Task<IReadOnlyList<object>> GetSistemasByCorreoAsync(string correo, CancellationToken cancellationToken)
         => Task.FromResult<IReadOnlyList<object>>([
             new Dictionary<string, object> { ["SIST_ID"] = 10, ["SIST_NOMBRE"] = "Operaciones" }

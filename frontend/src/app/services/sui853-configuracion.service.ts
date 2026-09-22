@@ -47,6 +47,33 @@ export interface FormularioRow {
   ORDEN_DATA: number | null;
 }
 
+export interface DriveSheet {
+  sheetId: number;
+  title: string;
+  index: number;
+  rowCount: number;
+  columnCount: number;
+}
+
+export interface CargaDriveRequest {
+  sheetId: string;
+  sheetTitle: string;
+  owner: 'SUI';
+  tableName: string;
+  previewOnly: boolean;
+  selectedColumns?: string[];
+}
+
+export interface CargaDrivePreview {
+  driveHeaders: string[];
+  tableColumns: { COLUMN_NAME: string; DATA_TYPE: string; COLUMN_ID: number }[];
+  commonColumns: string[];
+}
+
+export interface CargaDriveResult {
+  insertResult: { inserted: number };
+}
+
 @Injectable({ providedIn: 'root' })
 export class Sui853ConfiguracionService {
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/sui853Configuracion`;
@@ -59,6 +86,24 @@ export class Sui853ConfiguracionService {
       'Content-Type': 'application/json',
       'x-access-token': token || ''
     });
+  }
+
+  tablasSui(): Observable<LegacyEnvelope<string[]>> {
+    return this.http.post<LegacyEnvelope<string[]>>(`${this.baseUrl}/tablasSui`, {}, { headers: this.getHeaders() });
+  }
+
+  listarHojasDrive(sheetId: string): Observable<LegacyEnvelope<{ sheets: DriveSheet[] }>> {
+    return this.http.post<LegacyEnvelope<{ sheets: DriveSheet[] }>>(`${this.baseUrl}/listarHojasDrive`, { sheetId }, { headers: this.getHeaders() });
+  }
+
+  cargaDriveDinamica(request: CargaDriveRequest & { previewOnly: true }): Observable<LegacyEnvelope<CargaDrivePreview>>;
+  cargaDriveDinamica(request: CargaDriveRequest & { previewOnly: false }): Observable<LegacyEnvelope<CargaDriveResult>>;
+  cargaDriveDinamica(request: CargaDriveRequest): Observable<LegacyEnvelope<CargaDrivePreview | CargaDriveResult>> {
+    return this.http.post<LegacyEnvelope<CargaDrivePreview | CargaDriveResult>>(`${this.baseUrl}/cargaDriveDinamica`, { ...request, owner: 'SUI' }, { headers: this.getHeaders() });
+  }
+
+  truncateTable(tableName: string): Observable<LegacyEnvelope<unknown>> {
+    return this.http.post<LegacyEnvelope<unknown>>(`${this.baseUrl}/truncateTable`, { owner: 'SUI', tableName, confirm: true }, { headers: this.getHeaders() });
   }
 
   getFormularios(): Observable<LegacyEnvelope<FormularioRow[]>> {

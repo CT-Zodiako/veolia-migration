@@ -1,0 +1,14 @@
+:host { display: block; color: var(--color-text-primary); }
+.card-section { background: var(--color-bg-card); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 20px; margin-bottom: 20px; }
+.field { display: flex; flex-direction: column; gap: 10px; }
+h2, legend { font-size: 1rem; font-weight: 600; color: var(--color-brand-strong); }
+p { color: var(--color-text-secondary); line-height: 1.5; }
+input:not([type=checkbox]), select { width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-bg-card); color: var(--color-text-primary); }
+fieldset { min-width: 0; border: 1px solid var(--color-border); border-radius: 8px; }
+.check { display: flex; gap: 8px; align-items: center; padding: 6px; overflow-wrap: anywhere; }
+li { overflow-wrap: anywhere; margin-bottom: 6px; }
+.error-message { background: var(--color-bg-danger-soft); border: 1px solid var(--color-border-danger-soft); color: var(--color-brand-accent); padding: 12px; border-radius: 8px; }
+.success-message { background: var(--color-bg-success-soft); border: 1px solid var(--color-border-success-soft); color: var(--color-text-success); padding: 12px; border-radius: 8px; }
+.danger-zone { border: 1px solid var(--color-border-danger-soft); }
+:focus-visible { outline: 2px solid var(--color-brand-accent); outline-offset: 3px; }

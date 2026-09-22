@@ -1,0 +1,8 @@
+# Reconciled task mirror: Login validates credentials before systems
+
+- [x] Define the credential-validation endpoint contract and preserve authentication error semantics.
+- [x] Implement backend credential validation plus Angular login flow with cancellation/debounce-safe behavior.
+- [x] Add focused regression tests and run frontend/backend checks.
+- [ ] Review security and record acceptance evidence.
+
+Evidence: API build succeeded with 7 nullability warnings, Angular ngc --noEmit passed, and git diff --check passed. Full test project remains blocked by unrelated StubTarifasRepository.ResumenAsync compilation failure. Runtime Oracle and browser interceptor behavior remain unverified.

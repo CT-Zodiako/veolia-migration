@@ -7,6 +7,16 @@ namespace Veolia.Api.Modules.Auth.Login;
 [Route("api/v1/auth")]
 public class LoginController(ILoginRepository loginRepository, AuthContractMapper contractMapper, IConfiguration configuration) : ControllerBase
 {
+    [HttpPost("validate-credentials")]
+    public async Task<IActionResult> ValidateCredentials([FromBody] ValidateCredentialsRequest request, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var sistemas = await loginRepository.ValidateCredentialsAsync(request.correo, request.pass, cancellationToken);
+        return sistemas is null
+            ? Unauthorized(contractMapper.MapLoginError(401, "Correo o contraseña inválida"))
+            : Ok(sistemas);
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
@@ -106,5 +116,6 @@ public class LoginController(ILoginRepository loginRepository, AuthContractMappe
     }
 }
 
+public sealed record ValidateCredentialsRequest(string correo, string pass);
 public sealed record LoginRequest(string correo, string pass, int idSistema);
 public sealed record SwitchSistemaRequest(int idSistema);

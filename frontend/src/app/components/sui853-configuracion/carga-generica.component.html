@@ -1,0 +1,53 @@
+<section class="card-section" [attr.aria-busy]="busy">
+  <p>Importe datos de Google Sheets a una tabla del esquema SUI. La carga agrega registros; no reemplaza los existentes.</p>
+  <p *ngIf="busy" role="status">Procesando solicitud…</p>
+  <p *ngIf="error" class="error-message" role="alert">{{ error }}</p>
+  <p *ngIf="success" class="success-message" role="status">{{ success }}</p>
+  <div class="fields">
+    <div class="field">
+      <label for="spreadsheet-id">ID del documento de Google Sheets</label>
+      <input id="spreadsheet-id" pInputText [(ngModel)]="sheetId" (ngModelChange)="sourceChanged()" [disabled]="locked" autocomplete="off" />
+      <p-button label="Buscar pestañas" [disabled]="locked || !sheetId.trim()" (onClick)="listSheets()" />
+    </div>
+    <div class="field">
+      <label for="sheet-title">Pestaña de origen</label>
+      <select id="sheet-title" [(ngModel)]="sheetTitle" (ngModelChange)="invalidatePreview()" [disabled]="locked || !sheets.length">
+        <option value="">Seleccione una pestaña</option>
+        <option *ngFor="let sheet of sheets" [value]="sheet.title">{{ sheet.title }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sui-table">Tabla de destino (SUI)</label>
+      <select id="sui-table" [(ngModel)]="tableName" (ngModelChange)="invalidatePreview()" [disabled]="locked || !tables.length">
+        <option value="">Seleccione una tabla</option>
+        <option *ngFor="let table of tables" [value]="table">{{ table }}</option>
+      </select>
+      <p-button label="Actualizar tablas" severity="secondary" [disabled]="locked" (onClick)="loadTables()" />
+      <span *ngIf="!busy && !tables.length">No hay tablas disponibles. Puede volver a consultar.</span>
+    </div>
+  </div>
+  <p-button label="Previsualizar columnas" icon="pi pi-search" [disabled]="locked || !validSource || !validTable" (onClick)="showPreview()" />
+</section>
+
+<section *ngIf="preview as result" class="card-section">
+  <div class="fields">
+    <div><h2>Encabezados de Google</h2><ul><li *ngFor="let header of result.driveHeaders">{{ header }}</li></ul></div>
+    <div><h2>Columnas de Oracle</h2><ul><li *ngFor="let column of result.tableColumns">{{ column.COLUMN_NAME }} · {{ column.DATA_TYPE }}</li></ul></div>
+    <fieldset [disabled]="locked">
+      <legend>Columnas comunes a cargar</legend>
+      <label *ngFor="let column of result.commonColumns" class="check">
+        <input type="checkbox" [checked]="selectedColumns.includes(column)" (change)="toggleColumn(column, $any($event.target).checked)" />
+        {{ column }}
+      </label>
+      <p *ngIf="!result.commonColumns.length">No hay columnas comunes. Revise los encabezados y la tabla seleccionada.</p>
+    </fieldset>
+  </div>
+  <p>Destino: SUI.{{ tableName }} · {{ selectedColumns.length }} columnas seleccionadas. Se agregarán todas las filas de la pestaña.</p>
+  <p-button label="Cargar datos" icon="pi pi-upload" [disabled]="!canLoad" [loading]="busy" (onClick)="load()" />
+</section>
+
+<section class="card-section danger-zone">
+  <h2>Vaciar tabla de destino</h2>
+  <p>Elimina todos los registros de la tabla seleccionada, sin posibilidad de deshacer. No es necesario para cargar datos.</p>
+  <p-button [label]="validTable ? 'Vaciar SUI.' + tableName : 'Vaciar tabla'" severity="danger" icon="pi pi-trash" [disabled]="locked || !validTable" (onClick)="confirmTruncate()" />
+</section>

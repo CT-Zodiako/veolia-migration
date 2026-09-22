@@ -1,0 +1,48 @@
+<section class="card-section" aria-label="Parámetros de consulta">
+  <div class="selectors">
+    <div><label for="residuos-aps">APS</label>
+      <p-select inputId="residuos-aps" [options]="options" [(ngModel)]="selectedApsId" (ngModelChange)="consultar()"
+        optionLabel="label" optionValue="value" [filter]="true" filterBy="label" filterPlaceholder="Buscar APS"
+        placeholder="Seleccione APS" [showClear]="true" [disabled]="catalogLoading" [style]="{width: '100%'}" />
+    </div>
+    <div><label for="residuos-year">Año</label>
+      <p-select inputId="residuos-year" [options]="years" [(ngModel)]="year" (ngModelChange)="consultar()"
+        placeholder="Seleccione año" [showClear]="true" [style]="{width: '100%'}" />
+    </div>
+    <div><label for="residuos-month">Mes</label>
+      <p-select inputId="residuos-month" [options]="months" [(ngModel)]="month" (ngModelChange)="consultar()"
+        optionLabel="label" optionValue="value" placeholder="Seleccione mes" [showClear]="true" [style]="{width: '100%'}" />
+    </div>
+  </div>
+  <p *ngIf="catalogLoading" role="status">Cargando catálogo APS...</p>
+  <div *ngIf="catalogError" class="error-message" role="alert">{{ catalogError }} <p-button label="Reintentar catálogo" (onClick)="loadCatalog()" /></div>
+  <p *ngIf="!catalogLoading && !catalogError && !options.length" role="status">No hay APS disponibles.</p>
+  <p *ngIf="!queried">Seleccione APS, año y mes para consultar.</p>
+</section>
+
+<ng-template #cell let-value let-col="col">{{ formatCell(value, col.field) }}</ng-template>
+<section *ngIf="queried" class="card-section" aria-labelledby="detail-title" [attr.aria-busy]="detailLoading">
+  <h2 id="detail-title">Detalle</h2>
+  <p *ngIf="detailLoading" role="status">Cargando detalle...</p>
+  <div *ngIf="detailError" class="error-message" role="alert">{{ detailError }} <p-button label="Reintentar consulta" (onClick)="consultar()" /></div>
+  <p *ngIf="!detailLoading && !detailError && !rows.length" role="status">No hay registros para los parámetros seleccionados.</p>
+  <app-tabla-avanzada *ngIf="!detailLoading && !detailError && rows.length" [columnas]="detailColumns" [rows]="rows"
+    [cellTemplate]="cell" storageKey="operaciones-residuos-detalle" nombreExportar="Residuos-generados-detalle" />
+</section>
+
+<section *ngIf="queried" class="card-section" aria-labelledby="summary-title" [attr.aria-busy]="summaryLoading">
+  <h2 id="summary-title">Resumen</h2>
+  <p>Reporte global F853GR02: no se limita por APS, año ni mes.</p>
+  <p *ngIf="summaryLoading" role="status">Cargando resumen...</p>
+  <div *ngIf="summaryError" class="error-message" role="alert">{{ summaryError }} <p-button label="Reintentar consulta" (onClick)="consultar()" /></div>
+  <p *ngIf="!summaryLoading && !summaryError && !summary" role="status">No hay resumen disponible.</p>
+  <ng-container *ngIf="!summaryLoading && !summaryError">
+    <section *ngFor="let table of summaryTables">
+      <h3>{{ table.title }}</h3>
+      <p *ngIf="!table.rows.length" role="status">No hay registros en esta sección.</p>
+      <app-tabla-avanzada *ngIf="table.columns.length" [columnas]="table.columns" [rows]="table.rows" [cellTemplate]="cell"
+        [storageKey]="'operaciones-residuos-resumen-' + table.key" [nombreExportar]="'Residuos-resumen-' + table.key" />
+    </section>
+    <details *ngIf="summary"><summary>Datos y metadatos originales del reporte</summary><pre>{{ summary | json }}</pre></details>
+  </ng-container>
+</section>

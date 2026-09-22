@@ -17,7 +17,8 @@
           [(ngModel)]="email"
           name="email"
           placeholder="usuario@veolia.com"
-          (input)="onEmailChange()"
+          (ngModelChange)="onCredentialsChange()"
+          [disabled]="loading"
           required
           style="width: 100%"
         />
@@ -30,16 +31,22 @@
           type="password"
           [(ngModel)]="password"
           name="password"
+          (ngModelChange)="onCredentialsChange()"
+          (blur)="validateCredentials()"
+          [disabled]="loading"
           placeholder="••••••••"
           required
           style="width: 100%"
         />
       </div>
 
-      <div class="form-group">
+      <p *ngIf="validating" role="status" aria-live="polite">Validando credenciales...</p>
+
+      <div class="form-group" *ngIf="credentialsValidated && sistemas.length > 0">
         <label>Sistema</label>
         <p-select
           [options]="sistemas"
+          [disabled]="loading || validating || !credentialsValidated"
           [(ngModel)]="idSistema"
           name="sistema"
           optionLabel="SIST_NOMBRE"
@@ -54,6 +61,7 @@
         type="submit"
         label="{{ loading ? 'Ingresando...' : 'Ingresar' }}"
         [loading]="loading"
+        [disabled]="loading || validating || !credentialsValidated || !idSistema"
         styleClass="w-full"
       ></p-button>
     </form>

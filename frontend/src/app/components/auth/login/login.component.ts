@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../../shared/primeng-imports';
@@ -19,6 +20,10 @@ export class LoginComponent {
   sistemas: Sistema[] = [];
   error = '';
   loading = false;
+  validating = false;
+  credentialsValidated = false;
+  private validationVersion = 0;
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
@@ -29,33 +34,47 @@ export class LoginComponent {
     return re.test(email);
   }
 
-  onEmailChange(): void {
-    if (this.email.length < 4) {
-      this.sistemas = [];
-      this.idSistema = null;
-      return;
-    }
+  onCredentialsChange(): void {
+    this.validationVersion++;
+    this.credentialsValidated = false;
+    this.validating = false;
+    this.sistemas = [];
+    this.idSistema = null;
+    this.error = '';
+  }
 
-    this.authService.getSistemasByCorreo(this.email).subscribe({
-      next: (sistemas: Sistema[]) => {
-        this.sistemas = sistemas;
-        if (sistemas.length === 1) {
-          this.idSistema = sistemas[0].SIST_ID;
-        } else if (sistemas.length === 0) {
-          this.idSistema = null;
+  validateCredentials(): void {
+    if (this.loading || this.validating || this.credentialsValidated) return;
+    this.onCredentialsChange();
+    if (!this.isValidEmail(this.email) || !this.password) return;
+
+    const version = this.validationVersion;
+    this.validating = true;
+    this.authService.validateCredentials(this.email, this.password)
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (sistemas: Sistema[]) => {
+          if (version !== this.validationVersion) return;
+          this.validating = false;
+          this.credentialsValidated = true;
+          this.sistemas = sistemas;
+          this.idSistema = sistemas.length === 1 ? sistemas[0].SIST_ID : null;
+          if (!sistemas.length) this.error = 'No tiene sistemas activos asignados';
+        },
+        error: (err) => {
+          if (version !== this.validationVersion) return;
+          this.validating = false;
+          this.error = err.status === 401 ? 'Usuario o Pass Incorrecto' : 'Error de conexión';
         }
-      },
-      error: () => {
-        this.sistemas = [];
-        this.idSistema = null;
-      }
-    });
+      });
   }
 
   login(): void {
     this.error = '';
 
-    if (!this.email || !this.password || !this.idSistema) {
+    if (this.loading || this.validating) return;
+
+    if (!this.credentialsValidated || !this.email || !this.password ||
+        !this.sistemas.some(sistema => sistema.SIST_ID === this.idSistema)) {
       this.error = 'Complete todos los campos';
       return;
     }
@@ -70,7 +89,7 @@ export class LoginComponent {
     this.authService.login({
       correo: this.email,
       pass: this.password,
-      idSistema: this.idSistema
+      idSistema: this.idSistema!
     }).subscribe({
       next: (response: any) => {
         this.loading = false;
@@ -88,9 +107,11 @@ export class LoginComponent {
         this.loading = false;
 
         if (err.status === 401) {
+          this.onCredentialsChange();
           this.error = 'Usuario o Pass Incorrecto';
           this.password = '';
         } else if (err.status === 404) {
+          this.onCredentialsChange();
           this.error = 'Usuario no existe o inactivo';
           this.email = '';
           this.password = '';

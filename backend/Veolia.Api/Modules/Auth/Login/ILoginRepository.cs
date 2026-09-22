@@ -2,6 +2,8 @@ namespace Veolia.Api.Modules.Auth.Login;
 
 public interface ILoginRepository
 {
+    Task<IReadOnlyList<object>?> ValidateCredentialsAsync(string correo, string pass, CancellationToken cancellationToken);
+
     // F-AUTH-01 Login + selección de sistema
     Task<IReadOnlyList<object>> GetSistemasByCorreoAsync(string correo, CancellationToken cancellationToken);
     Task<object?> LoginAsync(string correo, string pass, int idSistema, CancellationToken cancellationToken);

@@ -1,0 +1,11 @@
+# Reconciled task mirror: SUI853 Carga genérica
+
+Decision: safe mode—preview/load supported; truncate requires explicit confirmation and authentication; destination restricted to SUI.
+
+- [x] Document and freeze the legacy contract and security decisions.
+- [x] Extend the .NET Google Sheets/data-access layer and implement authenticated API endpoints.
+- [x] Add Angular service, component, route, and menu mapping for menu ID 30006.
+- [x] Add focused backend/frontend regression tests and validate build/type checks.
+- [ ] Run review and record parity differences, risks, and acceptance evidence.
+
+Evidence: 20 backend tests passed, Angular ngc template/type compilation passed, git diff --check passed. Live Oracle/Google integration remains pending; SQLite NU1903 and existing nullability warnings remain.

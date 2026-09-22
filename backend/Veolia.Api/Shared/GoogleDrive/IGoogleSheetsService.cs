@@ -8,6 +8,9 @@ namespace Veolia.Api.Infrastructure.GoogleDrive;
 /// </summary>
 public interface IGoogleSheetsService
 {
+    Task<IReadOnlyList<GoogleSheetMetadata>> ListMetadataAsync(string spreadsheetId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<string>> ReadHeadersAsync(string spreadsheetId, string tabTitle, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<string>> ListTabTitlesAsync(string spreadsheetId, CancellationToken cancellationToken);
 
     Task<GoogleSheetTabData> ReadTabAsync(string spreadsheetId, string tabTitle, CancellationToken cancellationToken);

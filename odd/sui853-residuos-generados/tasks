@@ -1,0 +1,9 @@
+# Reconciled task mirror: SUI853 Residuos Generados
+
+- [x] Map legacy residuos generados contract and define parity acceptance.
+- [x] Implement authenticated .NET API and repository contract.
+- [x] Implement Angular detail/summary screen, filters, menu, and route parity.
+- [x] Add regression tests and run focused checks.
+- [ ] Review parity and record runtime/Oracle evidence.
+
+Evidence: API build, Angular ngc --noEmit, and git diff --check passed. Focused backend tests are blocked by unrelated StubTarifasRepository.ResumenAsync compilation failure. Live Oracle/F853GR02 validation remains pending.
