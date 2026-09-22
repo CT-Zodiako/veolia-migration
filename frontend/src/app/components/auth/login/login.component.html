@@ -8,7 +8,7 @@
       {{ error }}
     </div>
 
-    <form (ngSubmit)="login()">
+    <form (ngSubmit)="validateCredentials()">
       <div class="form-group">
         <label>Correo electrónico</label>
         <input
@@ -43,9 +43,9 @@
 
       <p-button
         type="submit"
-        [label]="credentialsValidated ? 'Seleccionar sistema' : 'Ingresar'"
+        label="Ingresar"
         [loading]="loading || validating"
-        [disabled]="loading || validating || !credentialsValidated || !sistemas.length"
+        [disabled]="loading || validating"
         styleClass="w-full"
       ></p-button>
     </form>
