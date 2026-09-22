@@ -23,6 +23,7 @@ export class LoginComponent {
   validating = false;
   credentialsValidated = false;
   private validationVersion = 0;
+  private validationTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly authService = inject(AuthService);
@@ -35,12 +36,25 @@ export class LoginComponent {
   }
 
   onCredentialsChange(): void {
+    if (this.validationTimer !== null) {
+      clearTimeout(this.validationTimer);
+      this.validationTimer = null;
+    }
     this.validationVersion++;
     this.credentialsValidated = false;
     this.validating = false;
     this.sistemas = [];
     this.idSistema = null;
     this.error = '';
+  }
+
+  onPasswordChange(): void {
+    this.onCredentialsChange();
+    if (!this.isValidEmail(this.email) || !this.password) return;
+    this.validationTimer = setTimeout(() => {
+      this.validationTimer = null;
+      this.validateCredentials();
+    }, 500);
   }
 
   validateCredentials(): void {
@@ -66,6 +80,10 @@ export class LoginComponent {
           this.error = err.status === 401 ? 'Usuario o Pass Incorrecto' : 'Error de conexión';
         }
       });
+  }
+
+  ngOnDestroy(): void {
+    if (this.validationTimer !== null) clearTimeout(this.validationTimer);
   }
 
   login(): void {
