@@ -91,6 +91,12 @@ export class LoginComponent {
     }
   }
 
+  selectSistema(idSistema: number): void {
+    if (this.loading || !this.credentialsValidated) return;
+    this.idSistema = idSistema;
+    this.login();
+  }
+
   login(): void {
     this.error = '';
 

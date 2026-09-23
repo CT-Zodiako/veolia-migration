@@ -95,6 +95,17 @@ form ::ng-deep .p-button {
   margin-top: 8px;
 }
 
+.system-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.system-options ::ng-deep .system-option {
+  width: 100%;
+  justify-content: space-between;
+}
+
 .btn-login {
   width: 100%;
   padding: 14px;

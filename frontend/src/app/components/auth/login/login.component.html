@@ -58,29 +58,18 @@
       [draggable]="false"
       [style]="{ width: 'min(92vw, 28rem)' }"
     >
-      <p class="dialog-description">Tus credenciales son correctas. Elegí el sistema con el que querés ingresar.</p>
-      <div class="form-group">
-        <label for="login-sistema">Sistema</label>
-        <p-select
-          inputId="login-sistema"
-          [options]="sistemas"
-          [(ngModel)]="idSistema"
-          name="sistemaDialog"
-          optionLabel="SIST_NOMBRE"
-          optionValue="SIST_ID"
-          placeholder="Seleccione un sistema"
-          [style]="{width: '100%'}"
-        ></p-select>
-      </div>
-      <ng-template pTemplate="footer">
+      <p class="dialog-description">Tus credenciales son correctas. Elegí el sistema al que querés ingresar.</p>
+      <div class="system-options" role="list" aria-label="Sistemas disponibles">
         <p-button
-          label="Continuar"
+          *ngFor="let sistema of sistemas"
+          [label]="sistema.SIST_NOMBRE"
           icon="pi pi-arrow-right"
-          [loading]="loading"
-          [disabled]="loading || !idSistema"
-          (onClick)="login()"
+          [loading]="loading && idSistema === sistema.SIST_ID"
+          [disabled]="loading"
+          styleClass="system-option"
+          (onClick)="selectSistema(sistema.SIST_ID)"
         ></p-button>
-      </ng-template>
+      </div>
     </p-dialog>
   </div>
 </div>
