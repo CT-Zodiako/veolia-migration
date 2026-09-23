@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
@@ -27,6 +27,7 @@ export class LoginComponent {
   showSistemaDialog = false;
   private validationVersion = 0;
   private readonly destroyRef = inject(DestroyRef);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
@@ -66,7 +67,9 @@ export class LoginComponent {
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
-          if (version === this.validationVersion) this.validating = false;
+          if (version !== this.validationVersion || this.destroyRef.destroyed) return;
+          this.validating = false;
+          this.changeDetectorRef.markForCheck();
         })
       )
       .subscribe({
@@ -81,12 +84,14 @@ export class LoginComponent {
           } else {
             this.showSistemaDialog = true;
           }
+          this.changeDetectorRef.markForCheck();
         },
         error: (err) => {
           if (version !== this.validationVersion) return;
           this.validating = false;
           this.showSistemaDialog = false;
           this.error = err.status === 401 ? 'Usuario o Pass Incorrecto' : 'Error de conexión';
+          this.changeDetectorRef.markForCheck();
         }
       });
   }
