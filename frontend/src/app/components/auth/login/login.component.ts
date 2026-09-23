@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
@@ -57,7 +58,13 @@ export class LoginComponent {
     const version = this.validationVersion;
     this.validating = true;
     this.authService.validateCredentials(this.email, this.password)
-      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          if (version === this.validationVersion) this.validating = false;
+        })
+      )
+      .subscribe({
         next: (sistemas: Sistema[]) => {
           if (version !== this.validationVersion) return;
           this.validating = false;
