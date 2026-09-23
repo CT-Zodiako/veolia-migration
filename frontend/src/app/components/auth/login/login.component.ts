@@ -39,6 +39,7 @@ export class LoginComponent {
 
   onCredentialsChange(): void {
     this.validationVersion++;
+    this.showSistemaDialog = false;
     this.credentialsValidated = false;
     this.validating = false;
     this.sistemas = [];
@@ -51,7 +52,11 @@ export class LoginComponent {
   }
 
   validateCredentials(): void {
-    if (this.loading || this.validating || this.credentialsValidated) return;
+    if (this.loading || this.validating) return;
+    if (this.credentialsValidated) {
+      this.openSistemaDialog();
+      return;
+    }
     this.onCredentialsChange();
     if (!this.isValidEmail(this.email) || !this.password) return;
 
@@ -80,6 +85,7 @@ export class LoginComponent {
         error: (err) => {
           if (version !== this.validationVersion) return;
           this.validating = false;
+          this.showSistemaDialog = false;
           this.error = err.status === 401 ? 'Usuario o Pass Incorrecto' : 'Error de conexión';
         }
       });
