@@ -39,7 +39,7 @@ El esquema `RELIQ` no existe en la base de desarrollo.
 |---|---|---|---|
 | 30001 | APS Empresa | Revisado y corregido | 6017621 |
 | 30002 | APS Documentos | Revisado y corregido | 6017621 |
-| 30003 | Formularios | Revisado y corregido | 1d19aa0 |
+| 30003 | Formularios | Revisado y corregido (decisión abierta: actualizar restringido a SUI853) | 1d19aa0 |
 | 30004 | Cargue Residuos | **Migrado** (antes no existía) | a59c197 |
 | 30005 | Cargue Facturación | **Migrado** (antes era un stub) | a59c197 |
 | 30006 | Carga genérica | Revisado y corregido | a59c197, 1d19aa0 |
@@ -119,4 +119,4 @@ Antes de desplegar, seguir la lista de `docs/deployment-iis.md` (secreto JWT, re
 | Frontend | `cd frontend && npm test` | 599 pasan en 109 archivos, ninguna omitida |
 | Build | `cd frontend && npx ng build` | OK |
 
-Todas las pantallas y grupos de endpoints migrados tienen pruebas cuyo valor esperado sale del legacy. No queda ninguna diferencia con el legacy sin resolver: cada una se corrigió o quedó como mejora aceptada (`odd/tasks/legacy-characterization-tests.md`, S8-S10).
+Todas las pantallas y grupos de endpoints migrados tienen pruebas cuyo valor esperado sale del legacy. Todas las diferencias detectadas por esas pruebas se corrigieron o quedaron como mejora aceptada (`odd/tasks/legacy-characterization-tests.md`, S8-S10). Queda **una decisión abierta**: `updateFormulario` (30003) sigue permitido solo al sistema SUI853, mientras que el legacy no restringía por sistema.
