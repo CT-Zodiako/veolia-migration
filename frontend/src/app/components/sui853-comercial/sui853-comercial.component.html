@@ -1,7 +1,22 @@
-<section class="card-section">
-  <app-parametros-consulta [(aps)]="aps" [(anno)]="anno" [(mes)]="mes"
-    [wrapInCard]="false" [mostrarBoton]="false" [autoConsultar]="true"
-    (consultar)="consultar()" (parametrosIncompletos)="clear()"></app-parametros-consulta>
+<section class="card-section" aria-label="Parámetros de consulta">
+  <div class="selectors">
+    <div><label for="comercial-aps">APS</label>
+      <p-select inputId="comercial-aps" [options]="options" [(ngModel)]="selectedApsId" (ngModelChange)="consultar()"
+        optionLabel="label" optionValue="value" [filter]="true" filterBy="label" filterPlaceholder="Buscar APS"
+        placeholder="Seleccione APS" [showClear]="true" [disabled]="catalogLoading" [style]="{width: '100%'}" />
+    </div>
+    <div><label for="comercial-year">Año</label>
+      <p-select inputId="comercial-year" [options]="years" [(ngModel)]="year" (ngModelChange)="consultar()"
+        placeholder="Seleccione año" [showClear]="true" [style]="{width: '100%'}" />
+    </div>
+    <div><label for="comercial-month">Mes</label>
+      <p-select inputId="comercial-month" [options]="months" [(ngModel)]="month" (ngModelChange)="consultar()"
+        optionLabel="label" optionValue="value" placeholder="Seleccione mes" [showClear]="true" [style]="{width: '100%'}" />
+    </div>
+  </div>
+  <p *ngIf="catalogLoading" role="status">Cargando catálogo APS...</p>
+  <div *ngIf="catalogError" class="error-message" role="alert">{{ catalogError }} <button type="button" (click)="loadCatalog()">Reintentar catálogo</button></div>
+  <p *ngIf="!catalogLoading && !catalogError && !options.length" role="status">No hay APS disponibles.</p>
 </section>
 <section class="card-section">
   <nav aria-label="Vistas de Comercial" class="tabs">
@@ -13,16 +28,28 @@
     <p *ngIf="detailLoading" role="status">Cargando detalle…</p>
     <div *ngIf="detailError" class="error-message" role="alert">{{ detailError }} <button type="button" (click)="consultar()">Reintentar</button></div>
     <p *ngIf="!detailLoading && !detailError && !rows.length">No hay registros para los parámetros seleccionados.</p>
-    <app-tabla-avanzada *ngIf="!detailLoading && !detailError && rows.length" [columnas]="detailColumns" [rows]="rows"
-      storageKey="sui853-comercial-detail" nombreExportar="SUI853_Comercial_Detalle"></app-tabla-avanzada>
+    <ng-container *ngIf="!detailLoading && !detailError && rows.length">
+      <div class="filters" role="group" aria-label="Filtros por columna">
+        <div *ngFor="let field of filterFields"><label [for]="'comercial-filter-' + field">{{ field }}</label>
+          <input pInputText type="text" [id]="'comercial-filter-' + field" placeholder="Contiene"
+            [(ngModel)]="filters[field]" (ngModelChange)="applyFilters()" />
+        </div>
+        <p-button icon="pi pi-sliders-h" label="Exportar (custom)" size="small" [disabled]="!filteredRows.length"
+          ariaLabel="Exportar columnas seleccionadas" (onClick)="exportVisible = true" />
+      </div>
+      <p *ngIf="!filteredRows.length">No hay registros que coincidan con los filtros.</p>
+      <app-tabla-avanzada *ngIf="filteredRows.length" [columnas]="detailColumns" [rows]="displayRows" [autoWidth]="true"
+        storageKey="sui853-comercial-detail" [nombreExportar]="exportFileName"></app-tabla-avanzada>
+      <app-sui853-export-csv-dialog [(visible)]="exportVisible" [columns]="exportColumns" [rows]="exportRows"
+        [defaultFilename]="exportFileName" [initiallyUnchecked]="exportUnchecked" />
+    </ng-container>
   </ng-container>
   <ng-container *ngIf="queried && tab === 'summary'">
-    <p class="scope-note">Resumen global del formato F853GR02. El servicio legacy no filtra este resumen por APS, año ni mes.</p>
     <p *ngIf="summaryLoading" role="status">Cargando resumen…</p>
     <div *ngIf="summaryError" class="error-message" role="alert">{{ summaryError }} <button type="button" (click)="consultar()">Reintentar</button></div>
     <ng-container *ngIf="!summaryLoading && !summaryError">
       <h3 *ngIf="summary?.meta?.dialogHeader || summary?.title">{{ summary?.meta?.dialogHeader || summary?.title }}</h3>
-      <p *ngIf="!summaryRows.length">No hay registros en el resumen.</p>
+      <p *ngIf="!summaryRows.length">No hay registros en el resumen para la APS, año y mes seleccionados.</p>
       <app-tabla-avanzada *ngIf="summaryRows.length" [columnas]="summaryColumns" [rows]="summaryRows"
         storageKey="sui853-comercial-summary" nombreExportar="SUI853_Comercial_Resumen"></app-tabla-avanzada>
       <details *ngIf="summary"><summary>Metadatos del formato</summary><pre>{{ summaryMetadata | json }}</pre></details>

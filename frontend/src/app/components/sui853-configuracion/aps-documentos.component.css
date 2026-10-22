@@ -17,3 +17,11 @@ td {
 .error {
   color: #b00020;
 }
+
+.num {
+  text-align: right;
+}
+
+th input {
+  width: 100%;
+}
