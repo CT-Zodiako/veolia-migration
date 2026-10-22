@@ -36,6 +36,8 @@ export class SubcontProyPageComponent {
   guardando = signal(false);
   editando = signal(false);
   items = signal<SubcontItem[]>([]);
+  readonly pageSize = 15;
+  readonly rowsPerPageOptions = [15, 30, 50, 100];
   clasesUso = signal<ClaseUso[]>([]);
 
   private itemsSnapshot: SubcontItem[] = [];
@@ -117,9 +119,10 @@ export class SubcontProyPageComponent {
     const mes = this.mes();
     if (!apsaId || !proyId || !anno || !mes) return;
 
+    // Legacy SubsidiosContribuciones.vue:146-151 consulta el mes anterior, pero
+    // postDescuentoCosto (:170-173) guarda en el mes SELECCIONADO.
     this.guardando.set(true);
-    const periodo = periodoAnterior(anno, mes);
-    this.service.editarPorcSubCon({ apsaId, proyId, anno: periodo.anno, mes: periodo.mes, items: this.items() }).subscribe({
+    this.service.editarPorcSubCon({ apsaId, proyId, anno, mes, items: this.items() }).subscribe({
       next: (r) => {
         this.guardando.set(false);
         this.messages.add({ severity: r.status ? 'success' : 'error', summary: 'Subsidios y Contribuciones', detail: r.message });

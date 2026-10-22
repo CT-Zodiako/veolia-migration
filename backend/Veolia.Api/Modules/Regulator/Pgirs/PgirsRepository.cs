@@ -1,4 +1,5 @@
     using System.Data;
+    using System.Data.Common;
     using Dapper;
     using Veolia.Api.Infrastructure.Data;
 
@@ -65,7 +66,7 @@
                       AND PGRIMES = :mes
                       AND PGRIVARIABLE = :codVariable";
 
-                using var connection = _connectionFactory.CreateConnection();
+                using var connection = await OpenConnectionAsync();
                 using var transaction = connection.BeginTransaction();
 
                 try
@@ -114,7 +115,7 @@
                     new VariablePgiros { CodVariable = 26, Valor = data.Mancestas, Frecuencia = data.MancestasFrecuencia }
                 };
 
-                using var connection = _connectionFactory.CreateConnection();
+                using var connection = await OpenConnectionAsync();
                 using var transaction = connection.BeginTransaction();
 
                 try
@@ -147,6 +148,23 @@
                     transaction.Rollback();
                     throw;
                 }
+            }
+
+            // BeginTransaction() exige una conexión abierta (ODP.NET lanza "Connection must be open");
+            // igual que el resto de repositorios, se abre antes de iniciar la transacción.
+            private async Task<IDbConnection> OpenConnectionAsync()
+            {
+                var connection = _connectionFactory.CreateConnection();
+                if (connection is DbConnection dbConnection)
+                {
+                    await dbConnection.OpenAsync();
+                }
+                else
+                {
+                    connection.Open();
+                }
+
+                return connection;
             }
         }
 

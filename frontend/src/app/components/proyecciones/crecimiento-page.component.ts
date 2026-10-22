@@ -12,6 +12,13 @@ import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { ProyeccionSelectorComponent } from '../shared/proyeccion-selector.component';
 import { TablaAvanzadaComponent } from '../shared/tabla-avanzada.component';
 import { columnasDesdeFilas, FilaDinamica } from '../shared/tabla-columnas.util';
+import {
+  ItemCrecimiento,
+  mapearDescuentosDrive,
+  mapearPropiaDrive,
+  mapearTercerosDrive,
+  mapearUsuariosDrive
+} from './crecimiento-drive.mapper';
 
 @Component({
   selector: 'app-crecimiento-page',
@@ -81,25 +88,43 @@ export class CrecimientoPageComponent {
   }
 
   guardarUsuarios(): void {
-    this.guardarTab(this.service.registrarCrecimientoUsuarios({ apsaId: this.apsaId(), proyId: this.proyId(), items: this.usuarios() }), 'Usuarios');
+    this.guardarTab('Usuarios', mapearUsuariosDrive, this.usuarios(), body => this.service.registrarCrecimientoUsuarios(body));
   }
 
   guardarPropia(): void {
-    this.guardarTab(this.service.registrarCrecimientoInfPropia({ apsaId: this.apsaId(), proyId: this.proyId(), items: this.propia() }), 'Información Propia');
+    this.guardarTab('Información Propia', mapearPropiaDrive, this.propia(), body => this.service.registrarCrecimientoInfPropia(body));
   }
 
   guardarTerceros(): void {
-    this.guardarTab(this.service.registrarCrecimientoInfTerceros({ apsaId: this.apsaId(), proyId: this.proyId(), items: this.terceros() }), 'Información Terceros');
+    this.guardarTab('Información Terceros', mapearTercerosDrive, this.terceros(), body => this.service.registrarCrecimientoInfTerceros(body));
   }
 
   guardarDescuentos(): void {
-    this.guardarTab(this.service.registrarDescuento({ apsaId: this.apsaId(), proyId: this.proyId(), items: this.descuentos() }), 'Descuentos');
+    this.guardarTab('Descuentos', mapearDescuentosDrive, this.descuentos(), body => this.service.registrarDescuento(body));
   }
 
-  private guardarTab(req$: ReturnType<ProyeccionesService['registrarCrecimientoUsuarios']>, etiqueta: string): void {
-    if (!this.apsaId() || !this.proyId()) return;
+  // Las filas de Drive vienen con las cabeceras de la hoja; se traducen a los campos del
+  // request antes de enviarlas (ver crecimiento-drive.mapper.ts).
+  private guardarTab(
+    etiqueta: string,
+    mapear: (filas: FilaDinamica[]) => ItemCrecimiento[],
+    filas: FilaDinamica[],
+    enviar: (body: { apsaId: number; proyId: number; items: ItemCrecimiento[] }) => ReturnType<ProyeccionesService['registrarCrecimientoUsuarios']>
+  ): void {
+    const apsaId = this.apsaId();
+    const proyId = this.proyId();
+    if (!apsaId || !proyId) return;
+
+    let items: ItemCrecimiento[];
+    try {
+      items = mapear(filas);
+    } catch (error) {
+      this.messages.add({ severity: 'error', summary: etiqueta, detail: (error as Error).message });
+      return;
+    }
+
     this.guardando.set(true);
-    req$.subscribe({
+    enviar({ apsaId, proyId, items }).subscribe({
       next: (r) => {
         this.guardando.set(false);
         this.messages.add({ severity: r.status ? 'success' : 'error', summary: etiqueta, detail: r.message });

@@ -190,8 +190,8 @@ export class LayoutComponent implements OnInit {
       case '/gerencial/poda': return 'Costo de Poda';
       case '/gerencial/descuento-costos': return 'Act. Descuento Costos';
       case '/suministros/verificacion': return 'Verificación';
-      case '/pgirs/resumen': return 'PGIRS - Resumen';
-      case '/pgirs/informe-variables': return 'PGIRS - Informe Variables';
+      case '/pgirs/resumen': return 'Informe PGIRS';
+      case '/pgirs/informe-variables': return 'Resumen variables PGIRS';
       case '/pgirs/variables': return 'Variables PGIRS';
       case '/suministros/cargue-mensual': return 'Cargue Mensual';
       case '/suministros/cargue-semestral': return 'Cargue Semestral';

@@ -94,4 +94,19 @@ describe('SidebarMenuService', () => {
       ['Cargue Facturación Mes', '/informesGeneradosMes']
     ]);
   });
+
+  // Legacy MenuService.js:320-336: 2002 "Informe PGIRS" opens InformePgirs.vue, 2003 "Resumen variables PGIRS"
+  // opens ResumenPgirs.vue; the new screens show the same data, only the labels were crossed.
+  it('labels the PGIRS options like legacy', () => {
+    const items = service.getFlatPermittedItems(
+      [{ id: 2001, label: 'a' }, { id: 2002, label: 'b' }, { id: 2003, label: 'c' }],
+      new Set([2001, 2002, 2003])
+    );
+
+    expect(items.map((item) => [item.label, item.path])).toEqual([
+      ['Variables PGIRS', '/pgirs/variables'],
+      ['Informe PGIRS', '/pgirs/resumen'],
+      ['Resumen variables PGIRS', '/pgirs/informe-variables']
+    ]);
+  });
 });

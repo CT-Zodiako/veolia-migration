@@ -15,6 +15,7 @@ public sealed class ProyeccionCreateRequest
 {
     public long ApsaId { get; set; }
     public string ProyNombre { get; set; } = string.Empty;
+    public string? ProyDescripcion { get; set; }
     public int ProyTipo100 { get; set; } = 1;
     public int ProyAnnoDes { get; set; }
     public int ProyMesDes { get; set; }
@@ -26,6 +27,7 @@ public sealed class ProyeccionUpdateRequest
 {
     public long ApsaId { get; set; }
     public string ProyNombre { get; set; } = string.Empty;
+    public string? ProyDescripcion { get; set; }
     public int ProyTipo100 { get; set; } = 1;
     public int ProyAnnoDes { get; set; }
     public int ProyMesDes { get; set; }
@@ -183,6 +185,9 @@ public sealed class ClaseUsoItem
 // SEMESTRE, CODTIPOPRED, CODUSO). PROY_ID/COD_APS vienen del request wrapper.
 public sealed class CrecimientoUsuariosItem
 {
+    // COD_APS viene de la hoja de Drive como en el legacy (controller.js:345,355);
+    // si la hoja no lo trae se usa el APS seleccionado.
+    public decimal? CodAps { get; set; }
     public int Anno { get; set; }
     public int Semestre { get; set; }
     public decimal? Coduso { get; set; }
@@ -201,6 +206,7 @@ public sealed class CrecimientoUsuariosItem
 // de tarifas propias.
 public sealed class CrecimientoPropiaItem
 {
+    public decimal? CodAps { get; set; }
     public string? NomAps { get; set; }
     public decimal? CodEmpresa { get; set; }
     public string? NomEmpresa { get; set; }
@@ -254,6 +260,7 @@ public sealed class CrecimientoPropiaItem
 // las columnas C_* (variables del competidor/tercero).
 public sealed class CrecimientoTercerosItem
 {
+    public decimal? CodAps { get; set; }
     public string? NomAps { get; set; }
     public decimal? CodEmpresa { get; set; }
     public string? NomEmpresa { get; set; }
@@ -301,6 +308,7 @@ public sealed class CrecimientoTercerosItem
 // PROY_DESCUENTOS: sin ID sustituto, clave natural (PROY_ID, ANNO, MES).
 public sealed class DescuentosItem
 {
+    public decimal? CodAps { get; set; }
     public string? NomAps { get; set; }
     public int Anno { get; set; }
     public int Mes { get; set; }
@@ -333,6 +341,13 @@ public sealed class CrecimientoDriveTabResponse
     public IReadOnlyList<string> Columns { get; set; } = Array.Empty<string>();
     public IReadOnlyList<Dictionary<string, object?>> Rows { get; set; } = Array.Empty<Dictionary<string, object?>>();
     public string? Error { get; set; }
+}
+
+// Legacy getLastTarifas (controller.js:186-207): VPRO_LASTARIFA.LAST_TARIFA "YYYY-MM".
+public sealed record UltimaTarifaResponse
+{
+    public int Anno { get; init; }
+    public int Mes { get; init; }
 }
 
 public sealed class EjecutarProyeccionResponse

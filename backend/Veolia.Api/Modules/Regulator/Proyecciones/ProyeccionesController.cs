@@ -13,6 +13,9 @@ public sealed class ProyeccionesController(
     ISubcontProyRepository subcontProyRepository,
     IEjecucionProyeccionRepository ejecucionProyeccionRepository) : ControllerBase
 {
+    // Legacy formCrear.vue:184 exige descripción para crear y actualizar ("Todos los datos son obligatorios").
+    private const string DescripcionObligatoria = "La descripción de la proyección es obligatoria.";
+
     [HttpPost("consulta")]
     public async Task<IActionResult> Consulta([FromBody] ProyeccionConsultaRequest request, CancellationToken cancellationToken)
     {
@@ -76,6 +79,9 @@ public sealed class ProyeccionesController(
         if (string.IsNullOrWhiteSpace(request.ProyNombre))
             return BadRequest(Envelope(false, null, "El nombre de la proyección es obligatorio."));
 
+        if (string.IsNullOrWhiteSpace(request.ProyDescripcion))
+            return BadRequest(Envelope(false, null, DescripcionObligatoria));
+
         if (request.ProyAnnoDes > request.ProyAnnoHas || (request.ProyAnnoDes == request.ProyAnnoHas && request.ProyMesDes > request.ProyMesHas))
             return BadRequest(Envelope(false, null, "El período inicial no puede ser posterior al período final."));
 
@@ -95,6 +101,9 @@ public sealed class ProyeccionesController(
     {
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
+
+        if (string.IsNullOrWhiteSpace(request.ProyDescripcion))
+            return BadRequest(Envelope(false, null, DescripcionObligatoria));
 
         try
         {
@@ -174,10 +183,6 @@ public sealed class ProyeccionesController(
         {
             var result = await lineaTiempoRepository.UpsertAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (InvalidOperationException ex) when (ex.Message == "PROYECCION_BLOQUEADA")
-        {
-            return Conflict(Envelope(false, null, "No se puede modificar una proyección ya certificada (línea bloqueada)."));
         }
         catch (Exception ex)
         {

@@ -100,20 +100,22 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
     {
         const string insertSql = @"
             INSERT INTO PROY_PROYECCION
-            (PROYID, APS, PROYNOMBRE, PROYTIPO100, PROYANNODES, PROYMESDES, PROYANNOHAS, PROYMESHAS, PROYESTADO, USUARIO, PROYFECHA)
-            VALUES (SPROY_PROYECCION.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, 1, :8, SYSDATE)
-            RETURNING PROYID INTO :9";
+            (PROYID, APS, PROYNOMBRE, PROYDESCRIPCION, PROYTIPO100, PROYANNODES, PROYMESDES, PROYANNOHAS, PROYMESHAS, PROYESTADO, USUARIO, PROYFECHA)
+            VALUES (SPROY_PROYECCION.NEXTVAL, :1, :2, :3, :4, :5, :6, :7, :8, 1, :9, SYSDATE)
+            RETURNING PROYID INTO :10";
 
+        // Legacy registro (proyecciones/controller.js:18) escribe PROYDESCRIPCION.
         var parameters = new DynamicParameters();
         parameters.Add("1", request.ApsaId);
         parameters.Add("2", request.ProyNombre);
-        parameters.Add("3", request.ProyTipo100);
-        parameters.Add("4", request.ProyAnnoDes);
-        parameters.Add("5", request.ProyMesDes);
-        parameters.Add("6", request.ProyAnnoHas);
-        parameters.Add("7", request.ProyMesHas);
-        parameters.Add("8", usuarioId);
-        parameters.Add("9", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
+        parameters.Add("3", request.ProyDescripcion);
+        parameters.Add("4", request.ProyTipo100);
+        parameters.Add("5", request.ProyAnnoDes);
+        parameters.Add("6", request.ProyMesDes);
+        parameters.Add("7", request.ProyAnnoHas);
+        parameters.Add("8", request.ProyMesHas);
+        parameters.Add("9", usuarioId);
+        parameters.Add("10", dbType: System.Data.DbType.Int64, direction: System.Data.ParameterDirection.Output);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.ExecuteAsync(new CommandDefinition(insertSql, parameters, cancellationToken: cancellationToken));
@@ -126,33 +128,31 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
         {
             Success = true,
             Message = "Proyección creada correctamente.",
-            Id = parameters.Get<long>("9")
+            Id = parameters.Get<long>("10")
         };
     }
 
     public async Task<MutationResponse> EditarAsync(long proyId, ProyeccionUpdateRequest request, CancellationToken cancellationToken)
     {
+        // Legacy modificar (proyecciones/controller.js:145): solo nombre, descripción, tipo y
+        // horizonte hasta. El APS y el "Desde" (última tarifa al crear) quedan fijos.
         const string sql = @"
             UPDATE PROY_PROYECCION
-               SET APS = :1,
-                   PROYNOMBRE = :2,
+               SET PROYNOMBRE = :1,
+                   PROYDESCRIPCION = :2,
                    PROYTIPO100 = :3,
-                   PROYANNODES = :4,
-                   PROYMESDES = :5,
-                   PROYANNOHAS = :6,
-                   PROYMESHAS = :7
-             WHERE PROYID = :8
+                   PROYANNOHAS = :4,
+                   PROYMESHAS = :5
+             WHERE PROYID = :6
                AND PROYESTADO = 1";
 
         var parameters = new DynamicParameters();
-        parameters.Add("1", request.ApsaId);
-        parameters.Add("2", request.ProyNombre);
+        parameters.Add("1", request.ProyNombre);
+        parameters.Add("2", request.ProyDescripcion);
         parameters.Add("3", request.ProyTipo100);
-        parameters.Add("4", request.ProyAnnoDes);
-        parameters.Add("5", request.ProyMesDes);
-        parameters.Add("6", request.ProyAnnoHas);
-        parameters.Add("7", request.ProyMesHas);
-        parameters.Add("8", proyId);
+        parameters.Add("4", request.ProyAnnoHas);
+        parameters.Add("5", request.ProyMesHas);
+        parameters.Add("6", proyId);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
@@ -183,31 +183,25 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
 
     public async Task<IReadOnlyList<object>> UltimasTarifasAsync(long apsaId, CancellationToken cancellationToken)
     {
-        // Código muerto (no lo llama ningún componente hoy -- ver ultimasTarifas() en
-        // proyecciones.service.ts), pero corregido para que sea correcto si se usa a futuro:
-        // PROY_DETLINEATIEMPO real no tiene ANNO/MES/APSA_ID, tiene PROYANNO/PROYMES/APS
-        // (verificado contra Oracle real vía USER_TAB_COLUMNS).
-        const string sql = @"
-            SELECT D.PROYANNO AS ANNO,
-                   D.PROYMES AS MES,
-                   D.DELTIPC,
-                   D.DELTIPCC,
-                   D.DELTSMLV,
-                   D.DELTIOEXP,
-                   D.DELTFACPRODUC,
-                   D.DELTINDIPCC,
-                   D.DELTIPCCS
-              FROM PROY_DETLINEATIEMPO D
-             WHERE D.APS = :1
-             ORDER BY D.PROYANNO DESC, D.PROYMES DESC
-             FETCH FIRST 1 ROWS ONLY";
+        // Legacy getLastTarifas (proyecciones/controller.js:186-207): "SELECT last_tarifa FROM
+        // vpro_lastarifa WHERE apsa_id = :1", primera fila, LAST_TARIFA = "YYYY-MM". Alimenta el
+        // "Desde" fijo de Crear Proyección (formCrear.vue:292-297).
+        const string sql = "SELECT LAST_TARIFA FROM VPRO_LASTARIFA WHERE APSA_ID = :1";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", apsaId);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        var rows = await connection.QueryAsync(sql, parameters);
-        return rows.Select(ToDictionaryObject).ToList();
+        var lastTarifa = await connection.QueryFirstOrDefaultAsync<string>(sql, parameters);
+        var partes = lastTarifa?.Split('-');
+        if (partes is not { Length: >= 2 }
+            || !int.TryParse(partes[0], out var anno)
+            || !int.TryParse(partes[1], out var mes))
+        {
+            return [];
+        }
+
+        return [new UltimaTarifaResponse { Anno = anno, Mes = mes }];
     }
 
     private async Task<System.Data.IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)
@@ -224,16 +218,5 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
         }
 
         return connection;
-    }
-
-    private static object ToDictionaryObject(dynamic row)
-    {
-        if (row is IDictionary<string, object> dictionary)
-        {
-            return new Dictionary<string, object>(dictionary, StringComparer.OrdinalIgnoreCase);
-        }
-
-        var objectDictionary = (IDictionary<string, object>)row;
-        return new Dictionary<string, object>(objectDictionary, StringComparer.OrdinalIgnoreCase);
     }
 }

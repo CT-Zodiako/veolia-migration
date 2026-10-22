@@ -9,25 +9,29 @@
     [value]="filteredRows"
     [loading]="loading()"
     [paginator]="true"
-    [rows]="10"
+    [rows]="pageSize"
+    [rowsPerPageOptions]="rowsPerPageOptions"
     [tableStyle]="{ 'min-width': '100%' }"
   >
     <ng-template pTemplate="header">
       <tr>
-        <th>ID</th>
-        <th>APS</th>
-        <th>Nombre</th>
-        <th>Descripción</th>
-        <th>Tipo Proy</th>
-        <th>Desde</th>
-        <th>Hasta</th>
-        <th>Usuario</th>
+        <th pSortableColumn="proyId">ID <p-sortIcon field="proyId"></p-sortIcon></th>
+        <th pSortableColumn="apsaNombre">APS <p-sortIcon field="apsaNombre"></p-sortIcon></th>
+        <th pSortableColumn="proyNombre">Nombre <p-sortIcon field="proyNombre"></p-sortIcon></th>
+        <th pSortableColumn="proyDescripcion">Descripción <p-sortIcon field="proyDescripcion"></p-sortIcon></th>
+        <th pSortableColumn="proyTipoNombre">Tipo Proy <p-sortIcon field="proyTipoNombre"></p-sortIcon></th>
+        <th pSortableColumn="desde">Desde <p-sortIcon field="desde"></p-sortIcon></th>
+        <th pSortableColumn="hasta">Horizonte Hasta <p-sortIcon field="hasta"></p-sortIcon></th>
+        <th pSortableColumn="sisuCorreo">Usuario <p-sortIcon field="sisuCorreo"></p-sortIcon></th>
         <th>Acciones</th>
       </tr>
       <tr class="filter-row">
-        <th></th>
         <th>
-          <input pInputText type="text" class="column-filter-input" placeholder="Buscar"
+          <input pInputText type="text" class="column-filter-input" placeholder="ID"
+            (input)="idFilter = $any($event.target).value" />
+        </th>
+        <th>
+          <input pInputText type="text" class="column-filter-input" placeholder="APS"
             (input)="apsFilter = $any($event.target).value" />
         </th>
         <th>
@@ -35,10 +39,16 @@
             (input)="nombreFilter = $any($event.target).value" />
         </th>
         <th></th>
+        <th>
+          <input pInputText type="text" class="column-filter-input" placeholder="Tipo"
+            (input)="tipoFilter = $any($event.target).value" />
+        </th>
         <th></th>
         <th></th>
-        <th></th>
-        <th></th>
+        <th>
+          <input pInputText type="text" class="column-filter-input" placeholder="Usuarios"
+            (input)="usuarioFilter = $any($event.target).value" />
+        </th>
         <th></th>
       </tr>
     </ng-template>
@@ -49,8 +59,8 @@
         <td>{{ row.proyNombre }}</td>
         <td>{{ row.proyDescripcion }}</td>
         <td>{{ row.proyTipoNombre }}</td>
-        <td>{{ row.proyAnnoDes }}/{{ row.proyMesDes }}</td>
-        <td>{{ row.proyAnnoHas }}/{{ row.proyMesHas }}</td>
+        <td class="text-right">{{ row.desde }}</td>
+        <td class="text-right">{{ row.hasta }}</td>
         <td>{{ row.sisuCorreo }}</td>
         <td class="actions-cell">
           <p-button icon="pi pi-pencil" severity="info" size="small" (onClick)="editar(row)"></p-button>
@@ -61,24 +71,30 @@
   </p-table>
 </p-card>
 
-<p-dialog [visible]="showDialog()" [modal]="true" [closable]="true" [style]="{ width: '42rem' }" header="Proyección" (visibleChange)="showDialog.set($event)">
+<p-dialog [visible]="showDialog()" [modal]="true" [closable]="true" [style]="{ width: '42rem' }" [header]="editingId() ? 'Actualizar Proyección' : 'Nueva Proyección'" (visibleChange)="showDialog.set($event)">
   <div class="form-grid">
-    <app-aps-selector [selectedAps]="form.apsaId || null" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+    <ng-container *ngIf="editingId(); else apsEditable">
+      <label>APS</label>
+      <input pInputText name="proyApsNombre" [value]="form.apsaNombre" readonly />
+    </ng-container>
+    <ng-template #apsEditable>
+      <app-aps-selector [selectedAps]="form.apsaId || null" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+    </ng-template>
     <label>Nombre</label>
-    <input pInputText [(ngModel)]="form.proyNombre" />
+    <input pInputText name="proyNombre" [(ngModel)]="form.proyNombre" />
+    <label>Desde (último cálculo de tarifas)</label>
+    <input pInputText name="proyDesde" [value]="desdeTexto()" readonly />
+    <label>Descripción</label>
+    <textarea pTextarea name="proyDescripcion" rows="4" [(ngModel)]="form.proyDescripcion"></textarea>
     <label>Tipo Proyección</label>
     <p-select [options]="tipoOptions" optionLabel="label" optionValue="value" [(ngModel)]="form.proyTipo100" [style]="{ width: '100%' }"></p-select>
-    <label>Año desde</label>
-    <p-inputNumber [(ngModel)]="form.proyAnnoDes"></p-inputNumber>
-    <label>Mes desde</label>
-    <p-inputNumber [(ngModel)]="form.proyMesDes" [min]="1" [max]="12"></p-inputNumber>
-    <label>Año hasta</label>
-    <p-inputNumber [(ngModel)]="form.proyAnnoHas"></p-inputNumber>
-    <label>Mes hasta</label>
-    <p-inputNumber [(ngModel)]="form.proyMesHas" [min]="1" [max]="12"></p-inputNumber>
+    <label>Horizonte hasta (año)</label>
+    <p-inputNumber [(ngModel)]="form.horizonteAnno" [useGrouping]="false"></p-inputNumber>
+    <label>Horizonte hasta (mes)</label>
+    <p-inputNumber [(ngModel)]="form.horizonteMes" [min]="1" [max]="12"></p-inputNumber>
   </div>
   <ng-template pTemplate="footer">
     <p-button label="Cancelar" severity="secondary" (onClick)="showDialog.set(false)"></p-button>
-    <p-button label="Guardar" icon="pi pi-save" [loading]="saving()" (onClick)="guardar()"></p-button>
+    <p-button [label]="editingId() ? 'Actualizar' : 'Guardar'" icon="pi pi-save" [loading]="saving()" (onClick)="guardar()"></p-button>
   </ng-template>
 </p-dialog>

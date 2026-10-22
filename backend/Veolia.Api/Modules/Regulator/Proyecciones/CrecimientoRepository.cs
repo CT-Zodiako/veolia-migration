@@ -205,7 +205,7 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
         {
             await connection.ExecuteAsync(new CommandDefinition(
                 "DELETE FROM PROY_USUARIOS WHERE PROY_ID = :1 AND COD_APS = :2",
-                new DynamicParameters(new Dictionary<string, object?> { ["1"] = request.ProyId, ["2"] = request.ApsaId }),
+                new DynamicParameters(new Dictionary<string, object?> { ["1"] = request.ProyId, ["2"] = CodAps(request.Items.FirstOrDefault()?.CodAps, request.ApsaId) }),
                 transaction: transaction, cancellationToken: cancellationToken));
 
             const string insertSql = @"
@@ -217,7 +217,7 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("1", request.ProyId);
-                parameters.Add("2", request.ApsaId);
+                parameters.Add("2", CodAps(item.CodAps, request.ApsaId));
                 parameters.Add("3", item.Anno);
                 parameters.Add("4", item.Semestre);
                 parameters.Add("5", item.Coduso);
@@ -251,7 +251,7 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
         {
             await connection.ExecuteAsync(new CommandDefinition(
                 "DELETE FROM PROY_PROPIA WHERE PROY_ID = :1 AND COD_APS = :2",
-                new DynamicParameters(new Dictionary<string, object?> { ["1"] = request.ProyId, ["2"] = request.ApsaId }),
+                new DynamicParameters(new Dictionary<string, object?> { ["1"] = request.ProyId, ["2"] = CodAps(request.Items.FirstOrDefault()?.CodAps, request.ApsaId) }),
                 transaction: transaction, cancellationToken: cancellationToken));
 
             const string insertSql = @"
@@ -263,7 +263,7 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("1", request.ProyId);
-                parameters.Add("2", request.ApsaId);
+                parameters.Add("2", CodAps(item.CodAps, request.ApsaId));
                 parameters.Add("3", item.NomAps);
                 parameters.Add("4", item.CodEmpresa);
                 parameters.Add("5", item.NomEmpresa);
@@ -332,7 +332,7 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
         {
             await connection.ExecuteAsync(new CommandDefinition(
                 "DELETE FROM PROY_COMPETIDOR WHERE PROY_ID = :1 AND COD_APS = :2",
-                new DynamicParameters(new Dictionary<string, object?> { ["1"] = request.ProyId, ["2"] = request.ApsaId }),
+                new DynamicParameters(new Dictionary<string, object?> { ["1"] = request.ProyId, ["2"] = CodAps(request.Items.FirstOrDefault()?.CodAps, request.ApsaId) }),
                 transaction: transaction, cancellationToken: cancellationToken));
 
             const string insertSql = @"
@@ -344,7 +344,7 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("1", request.ProyId);
-                parameters.Add("2", request.ApsaId);
+                parameters.Add("2", CodAps(item.CodAps, request.ApsaId));
                 parameters.Add("3", item.NomAps);
                 parameters.Add("4", item.CodEmpresa);
                 parameters.Add("5", item.NomEmpresa);
@@ -422,7 +422,7 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("1", request.ProyId);
-                parameters.Add("2", request.ApsaId);
+                parameters.Add("2", CodAps(item.CodAps, request.ApsaId));
                 parameters.Add("3", item.NomAps);
                 parameters.Add("4", item.Anno);
                 parameters.Add("5", item.Mes);
@@ -446,6 +446,10 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
             return new MutationResponse { Success = false, Message = $"Error al guardar descuentos: {ex.Message}", Id = request.ProyId };
         }
     }
+
+    // Legacy (proyecciones/controller.js:345,355,435,565,640): COD_APS sale de la hoja de Drive
+    // (fila.COD_APS; el DELETE usa la primera fila). Si la hoja no lo trae, el APS seleccionado.
+    private static decimal CodAps(decimal? codApsHoja, long apsaId) => codApsHoja ?? apsaId;
 
     private async Task<System.Data.IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)
     {

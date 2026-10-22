@@ -37,6 +37,7 @@ public sealed class ProyeccionesContractSmokeTests(AuthApiSmokeFactory factory) 
         {
             apsaId = 1,
             proyNombre = "Proyección Test",
+            proyDescripcion = "Descripción Test",
             proyAnnoDes = 2025,
             proyMesDes = 1,
             proyAnnoHas = 2026,
@@ -66,6 +67,7 @@ public sealed class ProyeccionesContractSmokeTests(AuthApiSmokeFactory factory) 
         var response = await PutWithTokenAsync("/api/v1/proyecciones/editar/1", new
         {
             proyNombre = "Proyección Editada",
+            proyDescripcion = "Descripción Editada",
             proyAnnoDes = 2025,
             proyMesDes = 1,
             proyAnnoHas = 2026,
