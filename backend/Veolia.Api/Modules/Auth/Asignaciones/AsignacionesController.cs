@@ -1,14 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
+using Veolia.Api.Infrastructure.Auth;
 
 namespace Veolia.Api.Modules.Auth.Asignaciones;
 
 [ApiController]
 [Route("api/v1/auth")]
-public class AsignacionesController(IAsignacionesRepository asignacionesRepository, AuthContractMapper contractMapper) : ControllerBase
+public class AsignacionesController(
+    IAsignacionesRepository asignacionesRepository,
+    AuthContractMapper contractMapper,
+    IUserAdminAuthorization userAdminAuthorization) : ControllerBase
 {
     [HttpPost("getApsAsignadas")]
     public async Task<IActionResult> GetApsAsignadas([FromBody] IdRequest request, CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireSelfOrAdminAsync(Request, request.id, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         try
         {
             var (asignadas, sinAsignar) = await asignacionesRepository.GetApsAsignadasAsync(request.id, cancellationToken);
@@ -27,6 +36,11 @@ public class AsignacionesController(IAsignacionesRepository asignacionesReposito
     [HttpPost("setApsxUsuario")]
     public async Task<IActionResult> SetApsxUsuario([FromBody] SetApsxUsuarioRequest request, CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireAdminAsync(Request, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         try
         {
             var response = await asignacionesRepository.SetApsxUsuarioAsync(request.id, request.outAps, request.inAps, cancellationToken);
@@ -49,6 +63,11 @@ public class AsignacionesController(IAsignacionesRepository asignacionesReposito
     [HttpPost("getSistemasPorUsuario")]
     public async Task<IActionResult> GetSistemasPorUsuario([FromBody] GetSistemasPorUsuarioRequest request, CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireAdminAsync(Request, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         var (sisuId, asignados, sinAsignar) = await asignacionesRepository.GetSistemasPorUsuarioAsync(request.correo, cancellationToken);
         return Ok(new { sisuId, asignados, sinAsignar });
     }
@@ -56,6 +75,11 @@ public class AsignacionesController(IAsignacionesRepository asignacionesReposito
     [HttpPost("asignarSistema")]
     public async Task<IActionResult> AsignarSistema([FromBody] AsignarSistemaRequest request, CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireAdminAsync(Request, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         var message = await asignacionesRepository.AsignarSistemaAsync(request.sisuId, request.asignados, request.noAsignados, cancellationToken);
         return Ok(contractMapper.MapAsignarSistemaSuccess(message));
     }

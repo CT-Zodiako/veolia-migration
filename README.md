@@ -22,6 +22,14 @@ cp .env.example .env
 
 Editar `.env` y completar passwords reales locales.
 
+El backend además exige `Auth__JwtSecret` (clave HMAC de los tokens de sesión, mínimo 32 caracteres). Sin ella, o si es más corta, la API no arranca y muestra: `Auth:JwtSecret is not configured or is shorter than 32 characters...`. No hay valor por defecto en el código. Para desarrollo local, generar un valor aleatorio propio y exportarlo en la terminal donde se corre el backend (no versionarlo):
+
+```bash
+export Auth__JwtSecret="$(openssl rand -base64 48)"
+```
+
+Cambiar el secreto invalida los tokens emitidos: hay que volver a iniciar sesión.
+
 ## 2) Levantar Oracle local
 
 ```bash
@@ -103,3 +111,4 @@ npm test
 - No se versiona `.env`.
 - La connection string del backend se toma de `ConnectionStrings__Oracle` por variable de entorno.
 - No hay password hardcodeado en código.
+- El secreto de los JWT se toma de `Auth__JwtSecret` (mínimo 32 caracteres); no hay fallback en código. En IIS se configura según `docs/deployment-iis.md`.

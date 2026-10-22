@@ -239,10 +239,22 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         Assert.Equal("Error", payload.GetProperty("data").GetString());
     }
 
+    // TO-BE hardening (S10 "Exigir token en las 6 anónimas"): legacy left this route anonymous.
     [Fact]
-    public async Task RQ_APS_CONF_05_UsuarioPorAps_WithoutToken_RemainsUnprotected()
+    public async Task RQ_APS_CONF_05_UsuarioPorAps_WithoutToken_Returns403AndDoesNotCallRepository()
     {
-        var response = await client.PostAsJsonAsync("/api/v1/aps/usuarioPorAPS", new { aps = 1 });
+        var response = await client.PostAsJsonAsync("/api/v1/aps/usuarioPorAPS", new { aps = 8051 });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("GetUsuarioPorAps:8051", factory.ApsRepository.Calls);
+    }
+
+    [Fact]
+    public async Task RQ_APS_CONF_05_UsuarioPorAps_WithToken_ReturnsUsersArray()
+    {
+        var response = await PostWithTokenAsync("/api/v1/aps/usuarioPorAPS", new { aps = 1 });
         var payload = await ReadJsonAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -255,7 +267,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     [Fact]
     public async Task RQ_APS_CONF_05_UsuarioPorAps_InvalidAps_Returns500LegacyError()
     {
-        var response = await client.PostAsJsonAsync("/api/v1/aps/usuarioPorAPS", new { aps = 0 });
+        var response = await PostWithTokenAsync("/api/v1/aps/usuarioPorAPS", new { aps = 0 });
         var payload = await ReadJsonAsync(response);
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -265,7 +277,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     [Fact]
     public async Task RQ_APS_CONF_05_UsuarioPorAps_NoUsers_ReturnsEmptyArray()
     {
-        var response = await client.PostAsJsonAsync("/api/v1/aps/usuarioPorAPS", new { aps = 404 });
+        var response = await PostWithTokenAsync("/api/v1/aps/usuarioPorAPS", new { aps = 404 });
         var payload = await ReadJsonAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

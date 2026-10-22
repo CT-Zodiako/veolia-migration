@@ -1,8 +1,6 @@
 using Dapper;
 using System.Data.Common;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
+using Veolia.Api.Infrastructure.Auth;
 using Veolia.Api.Infrastructure.Data;
 
 namespace Veolia.Api.Modules.Auth.Login;
@@ -222,31 +220,5 @@ ORDER BY SIST_NOMBRE";
     }
 
     private string BuildParityJwtToken(long sisuId, int idSistema)
-    {
-        var headerJson = JsonSerializer.Serialize(new { alg = "HS256", typ = "JWT" });
-        var payloadJson = JsonSerializer.Serialize(new
-        {
-            SISU_ID = sisuId,
-            idSistema,
-            iat = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            exp = DateTimeOffset.UtcNow.AddHours(12).ToUnixTimeSeconds()
-        });
-
-        var header = EncodeBase64Url(Encoding.UTF8.GetBytes(headerJson));
-        var payload = EncodeBase64Url(Encoding.UTF8.GetBytes(payloadJson));
-        var message = $"{header}.{payload}";
-
-        var secret = configuration["Auth:JwtSecret"] ?? "veolia-auth-core-parity-secret";
-        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
-        var signatureBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
-        var signature = EncodeBase64Url(signatureBytes);
-
-        return $"{message}.{signature}";
-    }
-
-    private static string EncodeBase64Url(byte[] input)
-        => Convert.ToBase64String(input)
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
+        => AuthJwt.Issue(AuthJwtSecret.Read(configuration), sisuId, idSistema, DateTimeOffset.UtcNow);
 }

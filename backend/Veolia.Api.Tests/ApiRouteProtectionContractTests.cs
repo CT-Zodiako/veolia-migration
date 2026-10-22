@@ -28,8 +28,43 @@ public sealed class ApiRouteProtectionContractTests(AuthApiSmokeFactory factory)
         { "POST", "/api/v1/sui853/comercial/residuosGeneradosInforme" },
         { "POST", "/api/v1/sui853/operaciones/residuosGenerados" },
         { "POST", "/api/v1/sui853Configuracion/vcfgapsempresa" },
-        { "POST", "/api/v1/sui853Configuracion/tablasSui" }
+        { "POST", "/api/v1/sui853Configuracion/tablasSui" },
+        // Anonymous in the legacy backend; token required since S10 "Exigir token en las 6 anónimas".
+        { "POST", "/api/v1/auth/registro" },
+        { "POST", "/api/v1/auth/getSistemasPorUsuario" },
+        { "POST", "/api/v1/auth/asignarSistema" },
+        { "POST", "/api/v1/auth/getMenuByUser" },
+        { "GET", "/api/v1/auth/allSistemas" },
+        { "POST", "/api/v1/aps/usuarioPorAPS" }
     };
+
+    [Theory]
+    [MemberData(nameof(PreviouslyUnverifiedRoutes))]
+    public async Task Route_WithExpiredToken_Returns401(string method, string url)
+    {
+        var response = await client.SendAsync(BuildRequest(method, url, TestJwt.BuildExpired()));
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("No Autorizado!", payload.GetProperty("message").GetString());
+    }
+
+    // Only the pre-login routes stay anonymous: they reach the controller without a token
+    // (the stub login repository answers), never the 403 of the token middleware.
+    [Theory]
+    [InlineData("/api/v1/auth/login")]
+    [InlineData("/api/v1/auth/validate-credentials")]
+    public async Task PreLoginRoute_WithoutToken_StaysAnonymous(string url)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent("{\"correo\":\"ada@veolia.com\",\"pass\":\"secret\",\"idSistema\":10}", Encoding.UTF8, "application/json")
+        };
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 
     [Theory]
     [MemberData(nameof(PreviouslyUnverifiedRoutes))]

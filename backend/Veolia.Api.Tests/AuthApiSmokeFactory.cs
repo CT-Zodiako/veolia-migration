@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using Dapper;
@@ -22,6 +23,10 @@ namespace Veolia.Api.Tests;
 public sealed class AuthApiSmokeFactory : WebApplicationFactory<Program>
 {
     internal StubSui853ReadmodelsRepository Sui853Repository { get; } = new();
+    internal StubUsuariosRepository UsuariosRepository { get; } = new();
+    internal StubMenuRepository MenuRepository { get; } = new();
+    internal StubAsignacionesRepository AsignacionesRepository { get; } = new();
+    internal StubApsRepository ApsRepository { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -35,16 +40,16 @@ public sealed class AuthApiSmokeFactory : WebApplicationFactory<Program>
             services.AddSingleton<ILoginRepository>(new StubLoginRepository(sqliteFactory));
 
             services.RemoveAll<IUsuariosRepository>();
-            services.AddSingleton<IUsuariosRepository>(new StubUsuariosRepository());
+            services.AddSingleton<IUsuariosRepository>(UsuariosRepository);
 
             services.RemoveAll<IMenuRepository>();
-            services.AddSingleton<IMenuRepository>(new StubMenuRepository());
+            services.AddSingleton<IMenuRepository>(MenuRepository);
 
             services.RemoveAll<IAsignacionesRepository>();
-            services.AddSingleton<IAsignacionesRepository>(new StubAsignacionesRepository());
+            services.AddSingleton<IAsignacionesRepository>(AsignacionesRepository);
 
             services.RemoveAll<IApsRepository>();
-            services.AddSingleton<IApsRepository>(new StubApsRepository());
+            services.AddSingleton<IApsRepository>(ApsRepository);
             services.RemoveAll<ApsContractMapper>();
             services.AddSingleton<ApsContractMapper>();
 
@@ -176,13 +181,24 @@ internal sealed class StubLoginRepository : ILoginRepository
         ]);
 }
 
+/// <summary>
+/// Records every call as "Method:arg" so authorization tests can prove a rejected request
+/// never reached the repository.
+/// </summary>
 internal sealed class StubUsuariosRepository : IUsuariosRepository
 {
+    internal ConcurrentQueue<string> Calls { get; } = new();
+
     public Task<(int Status, string Response, string Msg)> SetChangePassAsync(long sisuId, string oldPass, string newPass, string confirmPass, CancellationToken cancellationToken)
-        => Task.FromResult((200, "OK", "Contraseña actualizada"));
+    {
+        Calls.Enqueue($"SetChangePass:{sisuId}");
+        return Task.FromResult((200, "OK", "Contraseña actualizada"));
+    }
 
     public Task<IReadOnlyList<object>> GetAllUsersAsync(CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<object>>([
+    {
+        Calls.Enqueue("GetAllUsers");
+        return Task.FromResult<IReadOnlyList<object>>([
             new Dictionary<string, object>
             {
                 ["SISU_ID"] = 101,
@@ -192,55 +208,95 @@ internal sealed class StubUsuariosRepository : IUsuariosRepository
                 ["SISU_ESTADO"] = 1
             }
         ]);
+    }
 
     public Task<Veolia.Api.Modules.Auth.UserMutationRepositoryResult> RegistroAsync(string nombre, string apellido, string correo, string password, int estado, CancellationToken cancellationToken)
-        => Task.FromResult(correo.Contains("duplicate", StringComparison.OrdinalIgnoreCase)
+    {
+        Calls.Enqueue($"Registro:{correo}");
+        return Task.FromResult(correo.Contains("duplicate", StringComparison.OrdinalIgnoreCase)
             ? new Veolia.Api.Modules.Auth.UserMutationRepositoryResult(true, null, "El correo ya se encuentra registrado")
             : new Veolia.Api.Modules.Auth.UserMutationRepositoryResult(false, new { rowsAffected = 1 }));
+    }
 
     public Task<Veolia.Api.Modules.Auth.UserMutationRepositoryResult> UpdateUsuarioAsync(long id, string nombre, string apellido, string correo, int estado, CancellationToken cancellationToken)
-        => Task.FromResult(correo.Contains("duplicate", StringComparison.OrdinalIgnoreCase)
+    {
+        Calls.Enqueue($"UpdateUsuario:{id}");
+        return Task.FromResult(correo.Contains("duplicate", StringComparison.OrdinalIgnoreCase)
             ? new Veolia.Api.Modules.Auth.UserMutationRepositoryResult(true, null, "El correo ya se encuentra registrado")
             : new Veolia.Api.Modules.Auth.UserMutationRepositoryResult(false, new { rowsAffected = 1 }));
+    }
 
     public Task<IReadOnlyList<object>> GetUserByIdAsync(long id, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<object>>([
+    {
+        Calls.Enqueue($"GetUserById:{id}");
+        return Task.FromResult<IReadOnlyList<object>>([
             new Dictionary<string, object> { ["SISU_ID"] = id, ["SISU_CORREO"] = "ada@veolia.com" }
         ]);
+    }
 
     public Task<string> ResetPassAsync(long id, CancellationToken cancellationToken)
-        => Task.FromResult("abc123");
+    {
+        Calls.Enqueue($"ResetPass:{id}");
+        return Task.FromResult("abc123");
+    }
 }
 
 internal sealed class StubMenuRepository : IMenuRepository
 {
+    internal ConcurrentQueue<string> Calls { get; } = new();
+
+    // Menu permissions as stored in AUGE_USUAMENU: the admin test user holds menu 204
+    // "Usuarios" of system 1 (VEO-Regulator); the non-admin user only regular options.
     public Task<IReadOnlyList<long>> GetUserMenuAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
+    {
+        Calls.Enqueue($"GetUserMenu:{sisuId}:{idSistema}");
+        return Task.FromResult<IReadOnlyList<long>>(sisuId == TestJwt.AdminSisuId && idSistema == 1
+            ? [100, 204]
+            : [11, 22]);
+    }
 
     public Task<IReadOnlyList<object>> GetGeneralMenuTreeAsync(long sisuId, int idSistema, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<object>>([
-            new Dictionary<string, object> { ["MENU_ID"] = 11, ["MENU_NOMBRE"] = "Dashboard" }
+    {
+        Calls.Enqueue($"GetGeneralMenuTree:{sisuId}:{idSistema}");
+        return Task.FromResult<IReadOnlyList<object>>([
+            new Dictionary<string, object> { ["id"] = idSistema * 100, ["label"] = $"Menu sistema {idSistema}" }
         ]);
+    }
 
     public Task<IReadOnlyList<long>> GetMenuByUserAsync(int idSistema, long sisuId, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
+    {
+        Calls.Enqueue($"GetMenuByUser:{sisuId}:{idSistema}");
+        return Task.FromResult<IReadOnlyList<long>>([11, 22]);
+    }
 
     public Task<IReadOnlyList<long>> GetMenuUserOptionsAsync(long id, CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<long>>([11, 22]);
+    {
+        Calls.Enqueue($"GetMenuUserOptions:{id}");
+        return Task.FromResult<IReadOnlyList<long>>([11, 22]);
+    }
 
     public Task<object?> UptUserMenuAsync(long id, IReadOnlyList<long> options, int sistema, CancellationToken cancellationToken)
-        => Task.FromResult<object?>(new { rowsAffected = 2 });
+    {
+        Calls.Enqueue($"UptUserMenu:{id}");
+        return Task.FromResult<object?>(new { rowsAffected = 2 });
+    }
 
     public Task<IReadOnlyList<object>> GetMenuCatalogAsync(CancellationToken cancellationToken)
-        => Task.FromResult<IReadOnlyList<object>>([
+    {
+        Calls.Enqueue("GetMenuCatalog");
+        return Task.FromResult<IReadOnlyList<object>>([
             new Dictionary<string, object> { ["MENU_ID"] = 11, ["MENU_NOMBRE"] = "Dashboard" }
         ]);
+    }
 }
 
 internal sealed class StubAsignacionesRepository : IAsignacionesRepository
 {
+    internal ConcurrentQueue<string> Calls { get; } = new();
+
     public Task<(IReadOnlyList<object> Asignadas, IReadOnlyList<object> SinAsignar)> GetApsAsignadasAsync(long id, CancellationToken cancellationToken)
     {
+        Calls.Enqueue($"GetApsAsignadas:{id}");
         if (id == 500)
         {
             throw new InvalidOperationException("Simulated getApsAsignadas failure");
@@ -254,6 +310,7 @@ internal sealed class StubAsignacionesRepository : IAsignacionesRepository
 
     public Task<object?> SetApsxUsuarioAsync(long id, IReadOnlyList<long> outAps, IReadOnlyList<long> inAps, CancellationToken cancellationToken)
     {
+        Calls.Enqueue($"SetApsxUsuario:{id}");
         if (id == 500)
         {
             throw new InvalidOperationException("Simulated setApsxUsuario failure");
@@ -263,18 +320,26 @@ internal sealed class StubAsignacionesRepository : IAsignacionesRepository
     }
 
     public Task<(long SisuId, IReadOnlyList<object> Asignados, IReadOnlyList<object> SinAsignar)> GetSistemasPorUsuarioAsync(string correo, CancellationToken cancellationToken)
-        => Task.FromResult<(long, IReadOnlyList<object>, IReadOnlyList<object>)>((
+    {
+        Calls.Enqueue($"GetSistemasPorUsuario:{correo}");
+        return Task.FromResult<(long, IReadOnlyList<object>, IReadOnlyList<object>)>((
             1,
             [new Dictionary<string, object> { ["SIST_ID"] = 10, ["SIST_NOMBRE"] = "Operaciones" }],
             [new Dictionary<string, object> { ["SIST_ID"] = 20, ["SIST_NOMBRE"] = "Finanzas" }]
         ));
+    }
 
     public Task<string> AsignarSistemaAsync(long sisuId, IReadOnlyList<long> asignados, IReadOnlyList<long> noAsignados, CancellationToken cancellationToken)
-        => Task.FromResult("Sistemas actualizados");
+    {
+        Calls.Enqueue($"AsignarSistema:{sisuId}");
+        return Task.FromResult("Sistemas actualizados");
+    }
 }
 
 internal sealed class StubApsRepository : IApsRepository
 {
+    internal ConcurrentQueue<string> Calls { get; } = new();
+
     private static readonly IReadOnlyList<object> ApsCatalog =
     [
         new Dictionary<string, object>
@@ -371,6 +436,7 @@ internal sealed class StubApsRepository : IApsRepository
 
     public Task<IReadOnlyList<object>> GetUsuarioPorApsAsync(long apsId, CancellationToken cancellationToken)
     {
+        Calls.Enqueue($"GetUsuarioPorAps:{apsId}");
         if (apsId <= 0 || apsId == 500)
         {
             throw new InvalidOperationException("Simulated get usuario por aps failure");

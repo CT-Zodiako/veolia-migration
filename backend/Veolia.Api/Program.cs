@@ -97,23 +97,22 @@ builder.Services.AddSingleton<IGoogleSheetsService, GoogleSheetsService>();
 
 var app = builder.Build();
 
+// Fail fast: without a strong Auth:JwtSecret no token can be issued or verified.
+AuthJwtSecret.EnsureConfigured(app.Configuration);
+
 app.UseCors("FrontendPolicy");
 
-// Every /api/v1 route requires a verified, non-revoked token (legacy authJwt.verificarToken).
-// Deny by default: a new controller is protected without touching this file. Only the
-// routes below stay anonymous, matching the legacy routes that never called verificarToken.
-// Reliquidaciones and SUI853 were unprotected in the legacy backend; protecting them is an
-// intentional TO-BE hardening.
+// Every /api/v1 route requires a verified, non-expired, non-revoked token (legacy
+// authJwt.verificarToken). Deny by default: a new controller is protected without touching this
+// file. Only the pre-login routes below stay anonymous. Intentional TO-BE hardening: the legacy
+// backend also left registro, getSistemasPorUsuario, asignarSistema, getMenuByUser, allSistemas
+// and aps/usuarioPorAPS anonymous (S10), plus Reliquidaciones and SUI853; all of them require a
+// token now. User-management endpoints additionally require the user-admin permission
+// (IUserAdminAuthorization).
 var anonymousApiRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 {
     "/api/v1/auth/login",
-    "/api/v1/auth/validate-credentials",
-    "/api/v1/auth/registro",
-    "/api/v1/auth/getSistemasPorUsuario",
-    "/api/v1/auth/asignarSistema",
-    "/api/v1/auth/getMenuByUser",
-    "/api/v1/auth/allSistemas",
-    "/api/v1/aps/usuarioPorAPS"
+    "/api/v1/auth/validate-credentials"
 };
 
 app.UseWhen(

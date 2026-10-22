@@ -246,25 +246,197 @@ public sealed class AuthContractSmokeTests(AuthApiSmokeFactory factory) : IClass
         Assert.Equal(JsonValueKind.Array, payload.ValueKind);
     }
 
+    // TO-BE hardening (S10 "Exigir token en las 6 anónimas"): the legacy route was anonymous and
+    // leaked sisuId + systems for any e-mail.
     [Fact]
-    public async Task R_AUTH_07_GetSistemasPorUsuario_WithoutToken_IsUnprotectedAndReturnsShape()
+    public async Task R_AUTH_07_GetSistemasPorUsuario_WithoutToken_Returns403AndDoesNotCallRepository()
     {
-        var response = await client.PostAsJsonAsync("/api/v1/auth/getSistemasPorUsuario", new { correo = "ada@veolia.com" });
+        var response = await client.PostAsJsonAsync("/api/v1/auth/getSistemasPorUsuario", new { correo = "anonymous-07@veolia.com" });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("GetSistemasPorUsuario:anonymous-07@veolia.com", factory.AsignacionesRepository.Calls);
+    }
+
+    [Fact]
+    public async Task R_AUTH_07_GetSistemasPorUsuario_WithToken_ReturnsShape()
+    {
+        var response = await PostWithTokenAsync("/api/v1/auth/getSistemasPorUsuario", new { correo = "ada@veolia.com" });
         var payload = await ReadJsonAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(payload.TryGetProperty("sisuId", out _));
         Assert.True(payload.TryGetProperty("asignados", out _));
         Assert.True(payload.TryGetProperty("sinAsignar", out _));
     }
 
     [Fact]
-    public async Task R_AUTH_08_GetMenuByUser_WithoutToken_IsUnprotectedAndReturnsArray()
+    public async Task R_AUTH_08_GetMenuByUser_WithoutToken_Returns403AndDoesNotCallRepository()
     {
-        var response = await client.PostAsJsonAsync("/api/v1/auth/getMenuByUser", new { idSistema = 10, sisuId = 101 });
+        var response = await client.PostAsJsonAsync("/api/v1/auth/getMenuByUser", new { idSistema = 10, sisuId = 9081 });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("GetMenuByUser:9081:10", factory.MenuRepository.Calls);
+    }
+
+    [Fact]
+    public async Task R_AUTH_08_GetMenuByUser_WithToken_ReturnsArray()
+    {
+        var response = await PostWithTokenAsync("/api/v1/auth/getMenuByUser", new { idSistema = 10, sisuId = 101 });
         var payload = await ReadJsonAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(JsonValueKind.Array, payload.ValueKind);
+    }
+
+    [Fact]
+    public async Task R_AUTH_05_Registro_WithoutToken_Returns403AndDoesNotCallRepository()
+    {
+        var response = await client.PostAsJsonAsync("/api/v1/auth/registro", new
+        {
+            nombre = "Eve",
+            apellido = "Anon",
+            correo = "anonymous-05@veolia.com",
+            password = "secret",
+            estado = 1
+        });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("Registro:anonymous-05@veolia.com", factory.UsuariosRepository.Calls);
+    }
+
+    [Fact]
+    public async Task R_AUTH_07_AsignarSistema_WithoutToken_Returns403AndDoesNotCallRepository()
+    {
+        var response = await client.PostAsJsonAsync("/api/v1/auth/asignarSistema", new
+        {
+            sisuId = 9071,
+            asignados = new[] { 1L },
+            noAsignados = Array.Empty<long>()
+        });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("AsignarSistema:9071", factory.AsignacionesRepository.Calls);
+    }
+
+    [Fact]
+    public async Task R_AUTH_07_AsignarSistema_WithToken_ReturnsLegacySuccessShape()
+    {
+        var response = await PostWithTokenAsync("/api/v1/auth/asignarSistema", new
+        {
+            sisuId = 9072,
+            asignados = new[] { 1L },
+            noAsignados = Array.Empty<long>()
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("AsignarSistema:9072", factory.AsignacionesRepository.Calls);
+    }
+
+    [Fact]
+    public async Task R_AUTH_08_AllSistemas_WithoutToken_Returns403()
+    {
+        var response = await client.GetAsync("/api/v1/auth/allSistemas");
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task R_AUTH_08_AllSistemas_WithToken_ReturnsArray()
+    {
+        var response = await GetWithTokenAsync("/api/v1/auth/allSistemas");
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(JsonValueKind.Array, payload.ValueKind);
+        Assert.True(payload[0].TryGetProperty("SIST_ID", out _));
+    }
+
+    // Legacy jwt.verify enforced expiresIn; an expired token is rejected before the controller runs.
+    [Fact]
+    public async Task R_AUTH_09_ExpiredToken_Returns401AndDoesNotCallRepository()
+    {
+        var response = await PostWithTokenAsync("/api/v1/auth/getMenuUserOptions", new { id = 9091 }, TestJwt.BuildExpired());
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("No Autorizado!", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("GetMenuUserOptions:9091", factory.MenuRepository.Calls);
+    }
+
+    // Secure default: a token without exp never expires, so it is rejected.
+    [Fact]
+    public async Task R_AUTH_09_TokenWithoutExp_Returns401AndDoesNotCallRepository()
+    {
+        var response = await PostWithTokenAsync("/api/v1/auth/getMenuUserOptions", new { id = 9092 }, TestJwt.BuildWithoutExp());
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("No Autorizado!", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("GetMenuUserOptions:9092", factory.MenuRepository.Calls);
+    }
+
+    [Fact]
+    public async Task R_AUTH_09_TokenWithFutureExp_IsAccepted()
+    {
+        var response = await PostWithTokenAsync("/api/v1/auth/getMenuUserOptions", new { id = 9093 }, TestJwt.Build());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("GetMenuUserOptions:9093", factory.MenuRepository.Calls);
+    }
+
+    // Login keeps issuing 12 h tokens; the middleware accepts them while valid and rejects them after.
+    [Fact]
+    public async Task R_AUTH_01_IssuedToken_Lasts12HoursAndExpiresAfterwards()
+    {
+        var issuedAt = DateTimeOffset.UtcNow;
+        var token = Veolia.Api.Infrastructure.Auth.AuthJwt.Issue(TestJwt.Secret, 101, 10, issuedAt);
+
+        var payloadJson = Encoding.UTF8.GetString(Base64UrlDecode(token.Split('.')[1]));
+        using var payloadDoc = JsonDocument.Parse(payloadJson);
+        var claims = payloadDoc.RootElement;
+        Assert.Equal(101, claims.GetProperty("SISU_ID").GetInt64());
+        Assert.Equal(10, claims.GetProperty("idSistema").GetInt32());
+        Assert.Equal(12 * 60 * 60, claims.GetProperty("exp").GetInt64() - claims.GetProperty("iat").GetInt64());
+
+        var validResponse = await PostWithTokenAsync("/api/v1/auth/getUserMenu", new { }, token);
+        Assert.Equal(HttpStatusCode.OK, validResponse.StatusCode);
+
+        var staleToken = Veolia.Api.Infrastructure.Auth.AuthJwt.Issue(TestJwt.Secret, 101, 10, issuedAt.AddHours(-12).AddSeconds(-1));
+        var staleResponse = await PostWithTokenAsync("/api/v1/auth/getUserMenu", new { }, staleToken);
+        var stalePayload = await ReadJsonAsync(staleResponse);
+        Assert.Equal(HttpStatusCode.Unauthorized, staleResponse.StatusCode);
+        Assert.Equal("No Autorizado!", stalePayload.GetProperty("message").GetString());
+    }
+
+    // R1: legacy INSERT (auth/controller.js) and the only DDL (AUGE_SISUSUARIO.sql) have no SISU_FECHA.
+    [Fact]
+    public void R_AUTH_05_RegistroInsert_WritesOnlyLegacyColumns()
+    {
+        var sql = Veolia.Api.Modules.Auth.Usuarios.UsuariosRepository.RegistroInsertSql;
+        var columnList = sql[(sql.IndexOf('(') + 1)..sql.IndexOf(')')];
+        var columns = columnList.Split(',').Select(column => column.Trim()).ToArray();
+
+        Assert.Equal(
+            ["SISU_ID", "SISU_NOMBRES", "SISU_APELLIDOS", "SISU_CORREO", "SISU_PASS", "SISU_ESTADO"],
+            columns);
+        Assert.DoesNotContain("SISU_FECHA", sql, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("SYSDATE", sql, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static byte[] Base64UrlDecode(string input)
+    {
+        var normalized = input.Replace('-', '+').Replace('_', '/');
+        return Convert.FromBase64String(normalized.PadRight(normalized.Length + (4 - normalized.Length % 4) % 4, '='));
     }
 
     [Fact]

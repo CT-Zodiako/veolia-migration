@@ -1,7 +1,5 @@
 using Dapper;
 using System.Data.Common;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Veolia.Api.Infrastructure.Data;
 
@@ -33,7 +31,9 @@ public sealed class AuthJwtParityMiddleware(RequestDelegate next)
             return;
         }
 
-        if (!VerifyJwtSignature(token, configuration))
+        // Legacy jwt.verify: bad signature or expired token -> 401 "No Autorizado!".
+        if (!AuthJwt.HasValidSignature(token, AuthJwtSecret.Read(configuration))
+            || !AuthJwt.IsLive(token, DateTimeOffset.UtcNow))
         {
             await WriteParityErrorAsync(context, StatusCodes.Status401Unauthorized, UnauthorizedMessage);
             return;
@@ -50,32 +50,6 @@ public sealed class AuthJwtParityMiddleware(RequestDelegate next)
 
     private static bool LooksLikeJwt(string token)
         => token.Split('.').Length == 3;
-
-    private static bool VerifyJwtSignature(string token, IConfiguration configuration)
-    {
-        var secret = configuration["Auth:JwtSecret"] ?? "veolia-auth-core-parity-secret";
-
-        var parts = token.Split('.');
-        if (parts.Length != 3)
-        {
-            return false;
-        }
-
-        var message = $"{parts[0]}.{parts[1]}";
-        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
-        var signatureBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
-        var expectedSignature = EncodeBase64Url(signatureBytes);
-
-        return CryptographicOperations.FixedTimeEquals(
-            Encoding.UTF8.GetBytes(expectedSignature),
-            Encoding.UTF8.GetBytes(parts[2]));
-    }
-
-    private static string EncodeBase64Url(byte[] input)
-        => Convert.ToBase64String(input)
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
 
     private static async Task<bool> IsDeadTokenAsync(
         IOracleConnectionFactory connectionFactory,
