@@ -13,7 +13,11 @@ public sealed class AuthJwtParityMiddleware(RequestDelegate next)
     private const string MissingTokenMessage = "No existe token de verificacion";
     private const string UnauthorizedMessage = "No Autorizado!";
 
-    public async Task InvokeAsync(HttpContext context, IOracleConnectionFactory connectionFactory, IConfiguration configuration)
+    public async Task InvokeAsync(
+        HttpContext context,
+        IOracleConnectionFactory connectionFactory,
+        IConfiguration configuration,
+        ILogger<AuthJwtParityMiddleware> logger)
     {
         var token = context.Request.Headers[AccessTokenHeader].FirstOrDefault();
 
@@ -35,7 +39,7 @@ public sealed class AuthJwtParityMiddleware(RequestDelegate next)
             return;
         }
 
-        if (await IsDeadTokenAsync(connectionFactory, token, context.RequestAborted))
+        if (await IsDeadTokenAsync(connectionFactory, logger, token, context.RequestAborted))
         {
             await WriteParityErrorAsync(context, StatusCodes.Status401Unauthorized, UnauthorizedMessage);
             return;
@@ -75,42 +79,41 @@ public sealed class AuthJwtParityMiddleware(RequestDelegate next)
 
     private static async Task<bool> IsDeadTokenAsync(
         IOracleConnectionFactory connectionFactory,
+        ILogger logger,
         string token,
         CancellationToken cancellationToken)
     {
-        using var connection = connectionFactory.CreateConnection();
-        if (connection is DbConnection dbConnection)
-        {
-            await dbConnection.OpenAsync(cancellationToken);
-        }
-        else
-        {
-            connection.Open();
-        }
-
         // AS-IS parity with legacy authJwt.js: SELECT * FROM AUGE_DEADTOKEN WHERE DTKN_TOKEN = :1
         const string sql = "SELECT COUNT(1) FROM AUGE_DEADTOKEN WHERE DTKN_TOKEN = :token";
 
         try
         {
+            using var connection = connectionFactory.CreateConnection();
+            if (connection is DbConnection dbConnection)
+            {
+                await dbConnection.OpenAsync(cancellationToken);
+            }
+            else
+            {
+                connection.Open();
+            }
+
             var deadTokenCount = await connection.ExecuteScalarAsync<int>(
                 new CommandDefinition(sql, new { token }, cancellationToken: cancellationToken));
             return deadTokenCount > 0;
         }
         catch (Exception ex)
         {
-            // ORA-01013 / cancellation: the client aborted the request (typical
-            // on page reload with in-flight calls). Not a real failure: treat
-            // as not-dead without polluting the log.
-            if (cancellationToken.IsCancellationRequested)
+            // Fail closed: if revocation cannot be verified, the token is rejected.
+            // Accepting it would let a logged-out token through whenever Oracle or
+            // AUGE_DEADTOKEN is unavailable (the legacy backend also aborted the request).
+            // A client-aborted request (ORA-01013 / cancellation) is rejected without logging.
+            if (!cancellationToken.IsCancellationRequested)
             {
-                return false;
+                logger.LogError(ex, "Dead-token lookup failed; rejecting request (fail closed)");
             }
 
-            // Legacy environments may not have the dead-token table available.
-            // Treat as not-dead rather than locking every request out.
-            Console.WriteLine($"[IsDeadTokenAsync] Fallo consulta '{sql}': {ex.Message}");
-            return false;
+            return true;
         }
     }
 

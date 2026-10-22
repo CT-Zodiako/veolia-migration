@@ -2,6 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Veolia.Api.Tests;
 
@@ -92,6 +95,63 @@ public sealed class AuthContractSmokeTests(AuthApiSmokeFactory factory) : IClass
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task R_AUTH_02_DeadTokenLookupFails_Returns401FailClosed()
+    {
+        // Isolated host: dropping the table must not affect the shared class fixture.
+        using var isolatedFactory = new AuthApiSmokeFactory();
+        using var isolatedClient = isolatedFactory.CreateClient();
+        var connectionFactory = isolatedFactory.Services
+            .GetRequiredService<Veolia.Api.Infrastructure.Data.IOracleConnectionFactory>();
+        using (var connection = connectionFactory.CreateConnection())
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "DROP TABLE AUGE_DEADTOKEN;";
+            command.ExecuteNonQuery();
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/auth/getSistemasByCorreo?correo=ada@veolia.com");
+        request.Headers.Add("x-access-token", TestJwt.Build());
+
+        var response = await isolatedClient.SendAsync(request);
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("No Autorizado!", payload.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task R_AUTH_02_DeadTokenConnectionFails_Returns401FailClosed()
+    {
+        using var isolatedFactory = new AuthApiSmokeFactory().WithWebHostBuilder(builder =>
+            builder.ConfigureServices(services =>
+            {
+                services.RemoveAll<Veolia.Api.Infrastructure.Data.IOracleConnectionFactory>();
+                services.AddSingleton<Veolia.Api.Infrastructure.Data.IOracleConnectionFactory>(
+                    new ThrowingOracleConnectionFactory());
+            }));
+        using var isolatedClient = isolatedFactory.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/tarifas/resumen")
+        {
+            Content = JsonContent.Create(new { aps = 1, anno = 2026, mes = 4 })
+        };
+        request.Headers.Add("x-access-token", TestJwt.Build());
+
+        var response = await isolatedClient.SendAsync(request);
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("No Autorizado!", payload.GetProperty("message").GetString());
+    }
+
+    private sealed class ThrowingOracleConnectionFactory : Veolia.Api.Infrastructure.Data.IOracleConnectionFactory
+    {
+        public System.Data.IDbConnection CreateConnection()
+            => throw new InvalidOperationException("Simulated Oracle outage");
     }
 
     [Fact]
