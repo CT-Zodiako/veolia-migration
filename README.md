@@ -75,6 +75,29 @@ La UI queda en `http://localhost:4200` y muestra:
    - HTTP `503` + mensaje claro si falla conexión
 4. En la UI principal, ambas líneas deben verse en estado OK.
 
+## 6) Pruebas automáticas
+
+Backend (contratos con stubs SQLite, sin Oracle):
+
+```bash
+dotnet test backend/Veolia.Api.Tests
+```
+
+Las pruebas de integración contra Oracle real (`[OracleFact]`) se omiten por defecto y
+aparecen como *skipped*. Para ejecutarlas con `ConnectionStrings:Oracle` configurado:
+
+```bash
+VEOLIA_ORACLE_TESTS=1 dotnet test backend/Veolia.Api.Tests
+```
+
+Con la variable activa, una base inaccesible hace fallar la prueba en lugar de omitirla.
+
+Frontend (Vitest vía `@angular/build:unit-test`), desde `frontend/`:
+
+```bash
+npm test
+```
+
 ## Notas de seguridad
 
 - No se versiona `.env`.
