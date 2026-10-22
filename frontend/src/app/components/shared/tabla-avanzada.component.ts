@@ -10,6 +10,9 @@ export interface TablaColumn {
   header: string;
   numero?: boolean;
   filtrable?: boolean;
+  /** Opt-in: redondea el valor mostrado a N decimales y muestra null como 0
+   *  (legacy `redondearDosDecimales`). Sin esta propiedad la celda se muestra tal cual. */
+  decimales?: number;
 }
 
 interface ColumnaPreset {
@@ -17,6 +20,16 @@ interface ColumnaPreset {
   campos: string[];
   ocultas: string[];
   fijadas: string[];
+}
+
+/** Valor a mostrar en una celda: redondeado solo si la columna pide `decimales`
+ *  (mismo cálculo que el legacy `Math.round(Number(n || 0) * 100) / 100`). */
+export function valorMostrado(value: unknown, col: TablaColumn): unknown {
+  if (col.decimales === undefined) {
+    return value;
+  }
+  const factor = 10 ** col.decimales;
+  return Math.round(Number(value || 0) * factor) / factor;
 }
 
 export class ColumnasState {
@@ -246,6 +259,8 @@ export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges,
   get rowsExportables(): Record<string, unknown>[] {
     return this.filaExportable ? this.rows.filter(this.filaExportable) : this.rows;
   }
+
+  readonly valorMostrado = valorMostrado;
 
   columnasState!: ColumnasState;
   compacta = true;

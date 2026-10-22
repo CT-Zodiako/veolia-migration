@@ -166,7 +166,7 @@
             [ngTemplateOutlet]="cellTemplate"
             [ngTemplateOutletContext]="{ $implicit: row[col.field], row: row, col: col }"
           ></ng-container>
-          <ng-template #celdaDefault>{{ row[col.field] }}</ng-template>
+          <ng-template #celdaDefault>{{ valorMostrado(row[col.field], col) }}</ng-template>
         </td>
         <td *ngIf="accionesTemplate && accionesPosicion === 'fin'">
           <ng-container
