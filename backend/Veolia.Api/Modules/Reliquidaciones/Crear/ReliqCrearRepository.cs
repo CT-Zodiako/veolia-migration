@@ -71,11 +71,9 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
             await connection.ExecuteAsync(new CommandDefinition(ejecutarExtraccionSql, extraccionParams, transaction: transaction, cancellationToken: cancellationToken));
             var resultadoExtraccion = extraccionParams.Get<string>("1");
 
-            if (!string.IsNullOrWhiteSpace(resultadoExtraccion) &&
-                !string.Equals(resultadoExtraccion, "STUB_OK", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(resultadoExtraccion, "OK", StringComparison.OrdinalIgnoreCase))
+            if (!ExtraccionExitosa(resultadoExtraccion))
             {
-                throw new InvalidOperationException($"RELIQ.PK_RELI.freli_extraccion retornó: {resultadoExtraccion}");
+                throw new ReliqExtraccionFallidaException(resultadoExtraccion);
             }
 
             transaction.Commit();
@@ -190,6 +188,11 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
         return rowsByAps.ToList();
     }
 
+    // Legacy (reliq/controller.js: `if (resPlRaw.ret !== "ok") return;`): only the exact
+    // "ok" counts as a successful extraction; anything else rolls the transaction back.
+    public static bool ExtraccionExitosa(string? resultado)
+        => string.Equals(resultado, "ok", StringComparison.Ordinal);
+
     // Catalog parity with legacy RELQESTADO (NUMBER): the frontend and the
     // SELECT CASE speak text ('Creada'/'Aplicada'); Oracle stores 1/2.
     private static int EstadoCatalogoAOracle(string? estado)
@@ -255,4 +258,10 @@ public sealed class ReliqCrearRepository(IOracleConnectionFactory connectionFact
 
         return oracleConnection;
     }
+}
+
+public sealed class ReliqExtraccionFallidaException(string? resultado)
+    : InvalidOperationException($"La extracción de la reliquidación no se completó (resultado: '{resultado}').")
+{
+    public string? Resultado { get; } = resultado;
 }

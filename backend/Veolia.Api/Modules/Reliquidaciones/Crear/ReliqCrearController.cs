@@ -17,6 +17,9 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         if (request.ApsaId <= 0)
             return UnprocessableEntity(Envelope("error", null, "apsaId es obligatorio."));
 
+        if (request.UsuSolicita <= 0 || request.UsuAprueba <= 0)
+            return UnprocessableEntity(Envelope("error", null, "usuSolicita y usuAprueba son obligatorios."));
+
         var relqNombre = (string.IsNullOrWhiteSpace(request.RelqNombre) ? request.Nombre : request.RelqNombre) ?? string.Empty;
         var relqDescripcion = request.RelqDescripcion ?? request.Descripcion;
         var relqDesde = (string.IsNullOrWhiteSpace(request.RelqDesde) ? request.Desde : request.RelqDesde) ?? string.Empty;
@@ -44,6 +47,10 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         {
             var created = await repository.CrearAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope("ok", created, "Reliquidación creada correctamente."));
+        }
+        catch (ReliqExtraccionFallidaException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, ex.Message));
         }
         catch (Exception ex)
         {
