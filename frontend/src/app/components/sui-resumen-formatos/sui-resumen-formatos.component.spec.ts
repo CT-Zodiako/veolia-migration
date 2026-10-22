@@ -86,7 +86,7 @@ describe('SuiResumenFormatosComponent (804 Resumen formatos, legacy ResumenForma
   });
 
   // ResumenFormatos.vue:20-65: subtitles of each tab.
-  it.skip('PARITY-FINDING: legacy F23 subtitle reads "...limpieza de vias y áreas públicas" (ResumenFormatos.vue:20-65); new writes "vías"', async () => {
+  it('legacy F23 subtitle reads "...limpieza de vias y áreas públicas" (ResumenFormatos.vue:20-65)', async () => {
     const { component } = await crear();
 
     expect(component.formatos.map((f) => f.titulo)).toEqual([
@@ -99,7 +99,7 @@ describe('SuiResumenFormatosComponent (804 Resumen formatos, legacy ResumenForma
   });
 
   // components/TableResumenAps/Formato*.vue: only the listed columns, in that order, with the legacy headers and redondeo per column.
-  it.skip('PARITY-FINDING: legacy shows only the curated columns of components/TableResumenAps/Formato*.vue with their headers and redondeo; new builds a column per SELECT * key (APSA_ID, *_FECHA and USUARIO included) with no rounding', async () => {
+  it('legacy shows only the curated columns of components/TableResumenAps/Formato*.vue with their headers and redondeo', async () => {
     const ctx = await crear();
     await cargar(ctx);
 
@@ -110,7 +110,7 @@ describe('SuiResumenFormatosComponent (804 Resumen formatos, legacy ResumenForma
   }, RENDER_TIMEOUT_MS);
 
   // components/TableResumenAps/Formato*.vue:9,13: 10 rows per page; [10, 20, 100, 200] except Formato24 [10, 20, 50].
-  it.skip('PARITY-FINDING: legacy grids page 10 rows with [10,20,100,200] (Formato24: [10,20,50]) (components/TableResumenAps/Formato*.vue:9-13); new uses the tabla default [10,20,50] everywhere', async () => {
+  it('legacy grids page 10 rows with [10,20,100,200] (Formato24: [10,20,50]) (components/TableResumenAps/Formato*.vue:9-13)', async () => {
     const ctx = await crear();
     await cargar(ctx);
 
@@ -120,7 +120,7 @@ describe('SuiResumenFormatosComponent (804 Resumen formatos, legacy ResumenForma
   }, RENDER_TIMEOUT_MS);
 
   // ResumenFormatos.vue:8-12: link "Explicación formatos y formularios" to assets/layout/planos/Explicación formatos y formularios.xlsx.
-  it.skip('PARITY-FINDING: legacy shows the "Explicación formatos y formularios" link to assets/layout/planos/Explicación formatos y formularios.xlsx (ResumenFormatos.vue:8-12); new has no link', async () => {
+  it('legacy shows the "Explicación formatos y formularios" link to assets/layout/planos/Explicación formatos y formularios.xlsx (ResumenFormatos.vue:8-12)', async () => {
     const { fixture } = await crear();
 
     const link = Array.from(fixture.nativeElement.querySelectorAll('a') as NodeListOf<HTMLAnchorElement>)

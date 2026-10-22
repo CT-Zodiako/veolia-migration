@@ -53,7 +53,7 @@ describe('AutorizacionReversionesComponent (3002, legacy AutorizacionReversiones
   });
 
   // AutorizacionReversiones.vue:72-74: on success the user sees "Se guardo la Autorizacion correctamente".
-  it.skip('PARITY-FINDING: legacy success message is "Se guardo la Autorizacion correctamente" (AutorizacionReversiones.vue:74); new shows "Autorización creada correctamente"', () => {
+  it('legacy success message is "Se guardo la Autorizacion correctamente" (AutorizacionReversiones.vue:74)', () => {
     const { fixture, component } = crear();
     component.descripcion = 'Corrección F24';
 
@@ -64,18 +64,20 @@ describe('AutorizacionReversionesComponent (3002, legacy AutorizacionReversiones
   });
 
   // AutorizacionReversiones.vue:59-72 has no validation: Guardar always posts, even with an empty textarea (descripcion null).
-  it.skip('PARITY-FINDING: legacy posts the authorization even with an empty description (AutorizacionReversiones.vue:59-72, no validation); new blocks it with "Debe seleccionar APS, año, mes y descripción"', () => {
+  // Accepted deviation: parity-review-all T23 (Reversiones DataAnnotations, group E of legacy-characterization-tests S9;
+  // descripción required): an empty description is not posted.
+  it('blocks the authorization without a description', () => {
     const { fixture, component, service } = crear();
 
     component.autorizar();
     fixture.detectChanges();
 
-    expect(service.autorizarReversion).toHaveBeenCalledWith(expect.objectContaining({ aps: 7, anno: 2025, mes: 12 }));
-    expect(fixture.nativeElement.textContent).not.toContain('Debe seleccionar APS, año, mes y descripción');
+    expect(service.autorizarReversion).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Debe seleccionar APS, año, mes y descripción');
   });
 
   // AutorizacionReversiones.vue:15-30: textarea placeholder "Motivo de Autorizacion Reversión..." and button "Guardar".
-  it.skip('PARITY-FINDING: legacy textarea placeholder is "Motivo de Autorizacion Reversión..." and the button reads "Guardar" (AutorizacionReversiones.vue:15-30); new has no placeholder and the button reads "Autorizar"', () => {
+  it('legacy textarea placeholder is "Motivo de Autorizacion Reversión..." and the button reads "Guardar" (AutorizacionReversiones.vue:15-30)', () => {
     const { fixture } = crear();
     fixture.detectChanges();
 

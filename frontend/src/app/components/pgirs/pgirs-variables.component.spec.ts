@@ -92,7 +92,7 @@ describe('PgirsVariablesComponent (Variables PGIRS 2001, legacy tableVariablesPG
 
   // tableVariablesPGRIS.vue:22-66: columns COD APS, APS, AÑO, MES (month name), VARIABLE, FRECUENCIA, VALOR, USUARIO (e-mail),
   // FECHA INGRESO (dd/mm/yyyy), TIPO INGRESO (MANUAL orange, :392-396).
-  it.skip('PARITY-FINDING: legacy Variables PGIRS grid shows COD APS / APS (name) / AÑO / MES (month name) / VARIABLE / FRECUENCIA / VALOR / USUARIO (e-mail) / FECHA INGRESO dd/mm/yyyy / TIPO INGRESO (tableVariablesPGRIS.vue:22-66); new shows APS ID / Año / Mes / Variable / Valor / Frecuencia / Fecha / Usuario (id) / Ingreso, no APS name, no month name, raw date', () => {
+  it('legacy Variables PGIRS grid shows COD APS / APS (name) / AÑO / MES (month name) / VARIABLE / FRECUENCIA / VALOR / USUARIO (e-mail) / FECHA INGRESO dd/mm/yyyy / TIPO INGRESO (tableVariablesPGRIS.vue:22-66)', () => {
     const { component } = crear();
 
     expect(component.columnasVariables.map((c) => [c.field, c.header.trim()])).toEqual([
@@ -103,7 +103,7 @@ describe('PgirsVariablesComponent (Variables PGIRS 2001, legacy tableVariablesPG
   });
 
   // tableVariablesPGRIS.vue:11-14: 15 rows per page with [15, 30, 50, 100].
-  it.skip('PARITY-FINDING: legacy Variables PGIRS pages 15 rows with [15,30,50,100] (tableVariablesPGRIS.vue:11-14); new uses the tabla default 10/[10,20,50]', () => {
+  it('legacy Variables PGIRS pages 15 rows with [15,30,50,100] (tableVariablesPGRIS.vue:11-14)', () => {
     const { fixture, component } = crear();
     component.consultar();
     fixture.detectChanges();
@@ -114,7 +114,7 @@ describe('PgirsVariablesComponent (Variables PGIRS 2001, legacy tableVariablesPG
   });
 
   // tableVariablesPGRIS.vue:17-18,261-265: "Nuevo" is disabled once the period already has variables.
-  it.skip('PARITY-FINDING: legacy disables "Nuevo" when the period already has variables (tableVariablesPGRIS.vue:17-18,261-265); new "Nueva Variable" is always enabled', () => {
+  it('legacy disables "Nuevo" when the period already has variables (tableVariablesPGRIS.vue:17-18,261-265)', () => {
     const { fixture, component } = crear();
     component.consultar();
     fixture.detectChanges();
@@ -127,10 +127,10 @@ describe('PgirsVariablesComponent (Variables PGIRS 2001, legacy tableVariablesPG
   // tableVariablesPGRIS.vue:318-364: "Nuevo" creates the seven variables at once (LBL, CESPED, PODA, LAVADO, PLAYAS,
   // INSCESTAS, MANCESTAS, each with its frecuencia); if any value or frecuencia is missing it shows "Este campo es obligatorio"
   // and sends nothing.
-  it.skip('PARITY-FINDING: legacy "Nuevo" requires and sends all seven variables with their frecuencias in one request, rejecting partial input with "Este campo es obligatorio" (tableVariablesPGRIS.vue:318-364); new creates one variable per save', () => {
+  it('legacy "Nuevo" requires and sends all seven variables with their frecuencias in one request, rejecting partial input with "Este campo es obligatorio" (tableVariablesPGRIS.vue:318-364)', () => {
     const { fixture, component, service, add } = crear([]);
     component.abrirNuevaVariable();
-    component.newForm.set({ apsId: 7, anno: 2026, mes: 1, variable: 'LBL', valor: 1.5, frecuencia: 1 });
+    component.newForm.set({ ...component.newForm(), lbl: 1.5, lblFrecuencia: 1 });
 
     component.guardarNuevaVariable();
     fixture.detectChanges();
@@ -138,5 +138,25 @@ describe('PgirsVariablesComponent (Variables PGIRS 2001, legacy tableVariablesPG
     expect(service.guardarVariables).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain('Este campo es obligatorio');
     expect(add).not.toHaveBeenCalledWith(expect.objectContaining({ severity: 'success' }));
+  });
+
+  // tableVariablesPGRIS.vue:330-360: with every value and frecuencia filled, one nuevoVariablesPGRIS request carries the
+  // seven variables for the month before the selected one (Jan 2026 -> Dec 2025).
+  it('sends the seven variables with their frecuencias in one request for the previous month', () => {
+    const { component, service } = crear([]);
+    component.abrirNuevaVariable();
+    component.newForm.set({
+      lbl: 1.5, lblFrecuencia: 1, cesped: 2, cespedFrecuencia: 2, poda: 3, podaFrecuencia: 3, lavado: 4, lavadoFrecuencia: 1,
+      playas: 5, playasFrecuencia: 2, inscestas: 6, inscestasFrecuencia: 3, mancestas: 7, mancestasFrecuencia: 1
+    });
+
+    component.guardarNuevaVariable();
+
+    expect(service.guardarVariables).toHaveBeenCalledTimes(1);
+    expect(service.guardarVariables).toHaveBeenCalledWith({
+      apsId: 7, anno: 2025, mes: 12,
+      lbl: 1.5, lblFrecuencia: '1', cesped: 2, cespedFrecuencia: '2', poda: 3, podaFrecuencia: '3', lavado: 4, lavadoFrecuencia: '1',
+      playas: 5, playasFrecuencia: '2', inscestas: 6, inscestasFrecuencia: '3', mancestas: 7, mancestasFrecuencia: '1'
+    });
   });
 });

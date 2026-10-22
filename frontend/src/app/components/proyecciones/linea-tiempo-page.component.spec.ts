@@ -78,7 +78,7 @@ describe('LineaTiempoPageComponent (902 Líneas de tiempo, legacy editarLineadeT
   });
 
   // seleccionarProyeccion.vue:64-79,150-160: every generated row carries DELTIPC..DELTIPCCS = 0 (dataRow defaults).
-  it.skip('PARITY-FINDING: legacy generated timeline rows start with DELTIPC, DELTIPCC, DELTSMLV, DELTIOEXP, DELTFACPRODUC, DELTINDIPCC, DELTIPCCS = 0 (seleccionarProyeccion.vue:64-79); new rows omit them, so a first save inserts NULLs', () => {
+  it('legacy generated timeline rows start with DELTIPC, DELTIPCC, DELTSMLV, DELTIOEXP, DELTFACPRODUC, DELTINDIPCC, DELTIPCCS = 0 (seleccionarProyeccion.vue:64-79)', () => {
     const { component } = crear([]);
 
     for (const row of component.rows()) {
@@ -87,14 +87,14 @@ describe('LineaTiempoPageComponent (902 Líneas de tiempo, legacy editarLineadeT
   });
 
   // seleccionarProyeccion.vue:150-160: the generation loop runs while year <= PROYANNOHAS and its break never fires
-  // (tempMes is reset to 1 before comparing with PROYMESHAS), so it emits every month up to December of the Hasta year.
-  it.skip('PARITY-FINDING: legacy generates the new timeline up to December of the Hasta year (seleccionarProyeccion.vue:150-160 loop never breaks on PROYMESHAS): Nov 2025..Dec 2026 = 14 rows; new stops at the Hasta month (Nov 2025..Feb 2026 = 4 rows)', () => {
+  // (tempMes is reset to 1 before comparing with PROYMESHAS), so legacy emits every month up to December of the Hasta year.
+  // Accepted deviation: legacy-characterization-tests S8/S9 (legacy bug "timeline generated to December" not replicated):
+  // the new timeline stops at the Hasta month (Nov 2025..Feb 2026 = 4 rows).
+  it('generates the new timeline from Desde up to the Hasta month', () => {
     const { component } = crear([]);
 
     const periodos = component.rows().map((r) => `${r.anno}-${r.mes}`);
-    expect(periodos.length).toBe(14);
-    expect(periodos[0]).toBe('2025-11');
-    expect(periodos[13]).toBe('2026-12');
+    expect(periodos).toEqual(['2025-11', '2025-12', '2026-1', '2026-2']);
   });
 
   // editarLineadeTiempo.vue:198-211 + ProyService.js:150-170: Guardar posts the whole grid with the isnew flag and reloads.
@@ -119,7 +119,7 @@ describe('LineaTiempoPageComponent (902 Líneas de tiempo, legacy editarLineadeT
   });
 
   // ProyService.js:158-177: toasts "Guardado Correctamente" on success and "Error al Guardar" on failure.
-  it.skip('PARITY-FINDING: legacy save toasts are "Guardado Correctamente" / "Error al Guardar" (ProyService.js:158-177); new shows the backend message ("Línea de tiempo guardada correctamente.")', () => {
+  it('legacy save toasts are "Guardado Correctamente" / "Error al Guardar" (ProyService.js:158-177)', () => {
     const ok = crear([FILA(11)]);
     ok.component.guardar();
     expect(ok.add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success', summary: 'Guardado Correctamente' }));
@@ -132,7 +132,7 @@ describe('LineaTiempoPageComponent (902 Líneas de tiempo, legacy editarLineadeT
 
   // editarLineadeTiempo.vue:23-158: columns AÑO, MES, IPC, IPCC, SMLV, IOEXP, FACT PROD, IND IPCC and IPC TCL only when the
   // APS is 1034 (:138-145).
-  it.skip('PARITY-FINDING: legacy timeline headers are AÑO/MES/IPC/IPCC/SMLV/IOEXP/FACT PROD/IND IPCC and IPC TCL appears only for APS 1034 (editarLineadeTiempo.vue:23-158); new always shows IPC TCL with headers Año/Mes/Fact Prod/Ind IPCC', () => {
+  it('legacy timeline headers are AÑO/MES/IPC/IPCC/SMLV/IOEXP/FACT PROD/IND IPCC and IPC TCL appears only for APS 1034 (editarLineadeTiempo.vue:23-158)', () => {
     const otra = crear([FILA(11)], 3);
     expect(otra.component.columnas.map((c) => c.header)).toEqual(['AÑO', 'MES', 'IPC', 'IPCC', 'SMLV', 'IOEXP', 'FACT PROD', 'IND IPCC']);
 
@@ -142,7 +142,7 @@ describe('LineaTiempoPageComponent (902 Líneas de tiempo, legacy editarLineadeT
   });
 
   // editarLineadeTiempo.vue:4-15,237-243: values shown with toFixed(5) (0 stays 0); 24 rows per page with [24].
-  it.skip('PARITY-FINDING: legacy timeline shows values with toFixed(5) and pages 24 rows with [24] (editarLineadeTiempo.vue:4-15,237-243); new shows raw values with 10/[10,20,50]', () => {
+  it('legacy timeline shows values with toFixed(5) and pages 24 rows with [24] (editarLineadeTiempo.vue:4-15,237-243)', () => {
     const { fixture } = crear([FILA(11)]);
 
     const tabla = fixture.debugElement.query(By.directive(TablaAvanzadaComponent)).componentInstance as TablaAvanzadaComponent;

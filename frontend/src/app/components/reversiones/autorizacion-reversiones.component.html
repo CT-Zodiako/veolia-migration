@@ -15,12 +15,12 @@
   <div class="card-section">
     <div class="form-group">
       <label>Descripción</label>
-      <textarea pTextarea [(ngModel)]="descripcion" name="descripcion" rows="4" required style="width: 100%"></textarea>
+      <textarea pTextarea [(ngModel)]="descripcion" name="descripcion" rows="4" placeholder="Motivo de Autorizacion Reversión..." required style="width: 100%"></textarea>
     </div>
 
     <p-button
       icon="pi pi-check"
-      label="{{ loading ? 'Procesando...' : 'Autorizar' }}"
+      label="Guardar"
       [loading]="loading"
       (click)="autorizar()"
       styleClass="w-full"

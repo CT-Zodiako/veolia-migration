@@ -38,7 +38,7 @@ describe('FormatoTableComponent (unused SUI format grid)', () => {
 
   // tablesFormatosFormularios/Formato19.vue:13,26-150: headers NJ, CRTJ, QRTJ; redondeo CRTJ 2 and QRTJ 5 decimals;
   // page sizes [10, 20, 100, 200].
-  it.skip('PARITY-FINDING: legacy format grids show curated headers (NJ, CRTJ, QRTJ), redondeo (CRTJ 2, QRTJ 5) and [10,20,100,200] (tablesFormatosFormularios/Formato19.vue:9-150); FormatoTableComponent shows raw keys, raw values and no page-size options (component unused)', () => {
+  it('legacy format grids show curated headers (NJ, CRTJ, QRTJ), redondeo (CRTJ 2, QRTJ 5) and [10,20,100,200] (tablesFormatosFormularios/Formato19.vue:9-150)', () => {
     const { headers, cells, table } = render([FILA]);
 
     expect(headers).toEqual(['NJ', 'CRTJ', 'QRTJ']);

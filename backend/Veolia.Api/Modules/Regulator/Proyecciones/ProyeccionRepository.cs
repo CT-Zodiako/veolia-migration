@@ -78,6 +78,7 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
             SELECT P.PROYID AS ProyId,
                    P.APS AS ApsaId,
                    P.PROYNOMBRE AS ProyNombre,
+                   P.PROYDESCRIPCION AS ProyDescripcion,
                    P.PROYTIPO100 AS ProyTipo100,
                    P.PROYANNODES AS ProyAnnoDes,
                    P.PROYMESDES AS ProyMesDes,
@@ -135,7 +136,8 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
     public async Task<MutationResponse> EditarAsync(long proyId, ProyeccionUpdateRequest request, CancellationToken cancellationToken)
     {
         // Legacy modificar (proyecciones/controller.js:145): solo nombre, descripción, tipo y
-        // horizonte hasta. El APS y el "Desde" (última tarifa al crear) quedan fijos.
+        // horizonte hasta, por PROYID sin condición de PROYESTADO. El APS y el "Desde" (última
+        // tarifa al crear) quedan fijos.
         const string sql = @"
             UPDATE PROY_PROYECCION
                SET PROYNOMBRE = :1,
@@ -143,8 +145,7 @@ public sealed class ProyeccionRepository(IOracleConnectionFactory connectionFact
                    PROYTIPO100 = :3,
                    PROYANNOHAS = :4,
                    PROYMESHAS = :5
-             WHERE PROYID = :6
-               AND PROYESTADO = 1";
+             WHERE PROYID = :6";
 
         var parameters = new DynamicParameters();
         parameters.Add("1", request.ProyNombre);

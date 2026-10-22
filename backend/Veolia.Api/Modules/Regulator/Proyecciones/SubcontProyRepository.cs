@@ -65,7 +65,7 @@ public sealed class SubcontProyRepository(IOracleConnectionFactory connectionFac
             }
 
             transaction.Commit();
-            return new MutationResponse { Success = true, Message = "Subsidios/contribuciones guardados.", Id = request.ProyId };
+            return new MutationResponse { Success = true, Message = "Porcentajes de subsidios y contribuciones editados correctamente", Id = request.ProyId };
         }
         catch (Exception ex)
         {

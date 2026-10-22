@@ -11,6 +11,7 @@ import { PgirsService } from '../../services/pgirs.service';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { fechaIngresoLegacy, nombreMesLegacy } from './pgirs-formato';
 
 const PGIRS_VARIABLE_CATALOGO: { codVariable: number; label: string; valorKey: string; frecuenciaKey: string }[] = [
   { codVariable: 11, label: 'LBL', valorKey: 'lbl', frecuenciaKey: 'lblFrecuencia' },
@@ -35,17 +36,30 @@ const FRECUENCIA_OPTIONS = [
   { value: 3, label: 'Anual' }
 ];
 
+// Legacy tableVariablesPGRIS.vue:22-66 (sin filtros por columna).
 const COLUMNAS_VARIABLES: TablaColumn[] = [
-  { field: 'APSAID', header: 'APS ID' },
-  { field: 'PGRIANNO', header: 'Año' },
-  { field: 'PGRIMES', header: 'Mes' },
-  { field: 'PGRIVARIABLE', header: 'Variable', filtrable: true },
-  { field: 'PGRIVALOR', header: 'Valor', numero: true },
-  { field: 'PGRIFRECUENCIA', header: 'Frecuencia' },
-  { field: 'PGRIFECHA', header: 'Fecha' },
-  { field: 'PGRIUSUARIO', header: 'Usuario' },
-  { field: 'PGRINGRESO', header: 'Ingreso' }
+  { field: 'APSAID', header: 'COD APS' },
+  { field: 'APSA_NOMAPS', header: 'APS' },
+  { field: 'ANNOREAL', header: 'AÑO' },
+  { field: 'MESREAL', header: 'MES' },
+  { field: 'PGRIVARIABLE', header: 'VARIABLE' },
+  { field: 'PGRIFRECUENCIA', header: 'FRECUENCIA' },
+  { field: 'PGRIVALOR', header: 'VALOR', numero: true },
+  { field: 'SISU_CORREO', header: 'USUARIO' },
+  { field: 'PGRIFECHA', header: 'FECHA INGRESO' },
+  { field: 'PGRINGRESO', header: 'TIPO INGRESO' }
 ];
+
+/** Nuevo (legacy nuevoElemento): valor + frecuencia de las siete variables, keyed like NuevoVariablesRequestDto. */
+type NuevoForm = Record<string, string | number | null>;
+
+function formularioVacio(): NuevoForm {
+  return Object.fromEntries(PGIRS_VARIABLE_CATALOGO.flatMap(v => [[v.valorKey, ''], [v.frecuenciaKey, null]]));
+}
+
+function vacio(valor: string | number | null | undefined): boolean {
+  return valor === '' || valor === null || valor === undefined;
+}
 
 @Component({
   selector: 'app-pgirs-variables',
@@ -73,14 +87,27 @@ export class PgirsVariablesComponent {
   editingFrecuencia = signal<number>(1);
 
   newDialogVisible = signal(false);
-  newForm = signal<{ apsId: number | null; anno: number | null; mes: number | null; variable: string; valor: string | number; frecuencia: string | number }>({
-    apsId: null,
-    anno: null,
-    mes: null,
-    variable: '',
-    valor: '',
-    frecuencia: ''
-  });
+  newForm = signal<NuevoForm>(formularioVacio());
+  /** Legacy tableVariablesPGRIS.vue:322-331: "Este campo es obligatorio" bajo cada variable. */
+  newFormError = signal('');
+
+  readonly seccionesNuevo = [
+    { titulo: 'Barridos', variables: [{ ...PGIRS_VARIABLE_CATALOGO[0], etiqueta: 'LBL' }] },
+    {
+      titulo: 'CLUS',
+      variables: PGIRS_VARIABLE_CATALOGO.slice(1).map(v => ({
+        ...v,
+        etiqueta: ({ INSCESTAS: 'INS CESTAS', MANCESTAS: 'MAN CESTAS' } as Record<string, string>)[v.label] ?? v.label
+      }))
+    }
+  ];
+
+  readonly fechaIngreso = fechaIngresoLegacy;
+  readonly nombreMes = nombreMesLegacy;
+
+  // Legacy definirColor (tableVariablesPGRIS.vue:392-396): TIPO INGRESO "MANUAL" en naranja.
+  cellClassVariables = (row: Record<string, unknown>, col: TablaColumn): string =>
+    col.field === 'PGRINGRESO' && row['PGRINGRESO'] === 'MANUAL' ? 'color-orange' : '';
 
   constructor(
     @Inject(PgirsService) private readonly service: PgirsService,
@@ -161,44 +188,38 @@ export class PgirsVariablesComponent {
   }
 
   abrirNuevaVariable(): void {
-    this.newForm.set({
-      apsId: this.aps(),
-      anno: this.anno(),
-      mes: this.mes(),
-      variable: '',
-      valor: '',
-      frecuencia: ''
-    });
+    this.newForm.set(formularioVacio());
+    this.newFormError.set('');
     this.newDialogVisible.set(true);
   }
 
+  actualizarNuevo(campo: string, valor: string | number | null): void {
+    this.newForm.set({ ...this.newForm(), [campo]: valor });
+  }
+
+  // Legacy guardarNuevoElemento (tableVariablesPGRIS.vue:318-364): exige las siete variables con su
+  // frecuencia y las envía en una sola petición para el mes anterior al seleccionado.
   guardarNuevaVariable(): void {
+    const apsId = this.aps();
+    const anno = this.anno();
+    const mes = this.mes();
+    if (!apsId || !anno || !mes) {
+      this.messages.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un APS' });
+      return;
+    }
+
     const form = this.newForm();
-    if (!form.apsId || !form.anno || !form.mes || !form.variable || form.valor === '' || form.valor === null || !form.frecuencia) {
-      this.messages.add({ severity: 'warn', summary: 'PGIRS', detail: 'Complete todos los campos' });
+    if (this.variableOptions.some(v => vacio(form[v.valorKey]) || vacio(form[v.frecuenciaKey]))) {
+      this.newFormError.set('Este campo es obligatorio');
       return;
     }
 
-    const catalogo = this.variableOptions.find(v => v.label === form.variable);
-    if (!catalogo) {
-      this.messages.add({ severity: 'error', summary: 'PGIRS', detail: 'Variable no reconocida' });
-      return;
+    const periodo = periodoAnterior(anno, mes);
+    const payload: Record<string, unknown> = { apsId, anno: periodo.anno, mes: periodo.mes };
+    for (const v of this.variableOptions) {
+      payload[v.valorKey] = Number(form[v.valorKey]);
+      payload[v.frecuenciaKey] = String(form[v.frecuenciaKey]);
     }
-
-    const frecuenciaValida = this.frecuenciaOptions.some(f => f.value === Number(form.frecuencia));
-    if (!frecuenciaValida) {
-      this.messages.add({ severity: 'error', summary: 'PGIRS', detail: 'Frecuencia no válida' });
-      return;
-    }
-
-    const periodo = periodoAnterior(form.anno, form.mes);
-    const payload: Record<string, unknown> = {
-      apsId: form.apsId,
-      anno: periodo.anno,
-      mes: periodo.mes,
-      [catalogo.valorKey]: Number(form.valor),
-      [catalogo.frecuenciaKey]: String(form.frecuencia)
-    };
 
     this.service.guardarVariables(payload).subscribe({
       next: () => {

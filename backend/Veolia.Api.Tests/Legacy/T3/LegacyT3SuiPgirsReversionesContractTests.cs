@@ -239,12 +239,16 @@ public sealed class LegacyT3PgirsContractTests
 
     // Legacy request contract: pgirs/routes.js:8-28 read the body field "aps" (and anno, mes) on the routes infoPgirs,
     // informePgirs, barridoVariablesPgirs and getVariablesPGRIS; pgirsService.js:9-101 posts exactly those bodies.
-    [Theory(Skip = "PARITY-FINDING: legacy PGIRS read routes take body field 'aps' (pgirs/routes.js:9,17,24,50) on infoPgirs/informePgirs/barridoVariablesPgirs/getVariablesPGRIS; new binds 'apsId' (PgirsContracts.cs:3-13) so {aps} answers 400 'aps es obligatorio.', and barridoVariablesPgirs/getVariablesPGRIS have no route (404).")]
-    [InlineData("infoPgirs", "{\"aps\":7}", "Resumen(7)")]
-    [InlineData("informePgirs", "{\"aps\":7}", "InformeVariables(7)")]
-    [InlineData("barridoVariablesPgirs", "{\"aps\":7}", "Barrido(7)")]
-    [InlineData("getVariablesPGRIS", "{\"aps\":7,\"anno\":2025,\"mes\":3}", "Variables(7,2025,3)")]
-    public async Task LegacyReadRoutesAndBodiesAreAccepted(string route, string body, string expectedCall)
+    // Accepted deviation: legacy-characterization-tests S8/S9 (renamed legacy routes and request field names consumed consistently by pgirs.service.ts): the reads take
+    // "apsId" on resumen/informe-variables/barrido/variables; infoPgirs/informePgirs stay as aliases with the new body.
+    [Theory]
+    [InlineData("resumen", "{\"apsId\":7}", "Resumen(7)")]
+    [InlineData("infoPgirs", "{\"apsId\":7}", "Resumen(7)")]
+    [InlineData("informe-variables", "{\"apsId\":7}", "InformeVariables(7)")]
+    [InlineData("informePgirs", "{\"apsId\":7}", "InformeVariables(7)")]
+    [InlineData("barrido", "{\"apsId\":7}", "Barrido(7)")]
+    [InlineData("variables", "{\"apsId\":7,\"anno\":2025,\"mes\":3}", "Variables(7,2025,3)")]
+    public async Task RenamedReadRoutesAndBodiesAreAccepted(string route, string body, string expectedCall)
     {
         using var factory = new T3ApiFactory();
         using var client = T3Data.Client(factory, sisuId: 55);
@@ -257,8 +261,10 @@ public sealed class LegacyT3PgirsContractTests
 
     // Legacy pgirs/routes.js:30-38 + controller.js:53: POST editarVariablesPGIRS {datatable: {PGRIVALOR, PGRIFRECUENCIA,
     // APSAID, PGRIANNO, PGRIMES, PGRIVARIABLE}} (one row object, tableVariablesPGRIS.vue:280-284).
-    [Fact(Skip = "PARITY-FINDING: legacy edit route editarVariablesPGIRS with body {datatable:{PGRIVALOR,PGRIFRECUENCIA,APSAID,PGRIANNO,PGRIMES,PGRIVARIABLE}} (pgirs/routes.js:30-38, controller.js:53) does not exist in the new API (PgirsController.cs:96 'actualizar-variable' with {variables:[{apsId,anno,mes,codVariable,valor,frecuencia}]}) -> 404.")]
-    public async Task LegacyEditarVariablesBodyIsAccepted()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (renamed route/fields): the edit is "actualizar-variable" {variables:[{apsId,anno,mes,codVariable,valor,
+    // frecuencia}]} (ActualizarVariableUsesTheTokenUser); the legacy route no longer exists.
+    [Fact]
+    public async Task LegacyEditarVariablesRouteWasRenamed()
     {
         using var factory = new T3ApiFactory();
         using var client = T3Data.Client(factory, sisuId: 55);
@@ -266,22 +272,27 @@ public sealed class LegacyT3PgirsContractTests
         var response = await client.PostAsync("/api/v1/pgirs/editarVariablesPGIRS", T3Data.Body(
             "{\"datatable\":{\"PGRIVALOR\":9.75,\"PGRIFRECUENCIA\":2,\"APSAID\":7,\"PGRIANNO\":2025,\"PGRIMES\":2,\"PGRIVARIABLE\":22}}"));
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(["Editar(7,2025,2,22,9.75,2,usuario=55)"], factory.Pgirs.Calls);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Empty(factory.Pgirs.Calls);
     }
 
     // Legacy pgirs/routes.js:41-46 + controller.js:78-151 and tableVariablesPGRIS.vue:344-362: POST nuevoVariablesPGRIS
     // {LBL, selectorLBL, CESPED, selectorCESPED, ..., MANCESTAS, selectorMANCESTAS, anno, mes, aps}.
-    [Fact(Skip = "PARITY-FINDING: legacy create route nuevoVariablesPGRIS with body {LBL,selectorLBL,...,MANCESTAS,selectorMANCESTAS,aps,anno,mes} (pgirs/controller.js:78-151) does not exist in the new API (PgirsController.cs:117 'guardar' with {apsId,lbl,lblFrecuencia,...}) -> 404; 'aps' and 'selectorX' would not bind either.")]
-    public async Task LegacyNuevoVariablesBodyIsAccepted()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (renamed route/fields): the create is "guardar" {apsId, anno, mes, lbl, lblFrecuencia, ...}
+    // (GuardarUsesTheTokenUser above); the legacy route no longer exists.
+    [Fact]
+    public async Task LegacyNuevoVariablesRouteWasRenamed()
     {
         using var factory = new T3ApiFactory();
         using var client = T3Data.Client(factory, sisuId: 55);
 
-        var response = await client.PostAsync("/api/v1/pgirs/nuevoVariablesPGRIS", T3Data.Body(
+        var legacy = await client.PostAsync("/api/v1/pgirs/nuevoVariablesPGRIS", T3Data.Body(
             "{\"LBL\":\"1.5\",\"selectorLBL\":\"1\",\"aps\":7,\"anno\":2025,\"mes\":2}"));
+        var renamed = await client.PostAsync("/api/v1/pgirs/guardar", T3Data.Body(
+            "{\"lbl\":1.5,\"lblFrecuencia\":\"1\",\"apsId\":7,\"anno\":2025,\"mes\":2}"));
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, legacy.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
         Assert.Equal(["Nuevo(7,2025,2,lbl=1.5/1,usuario=55)"], factory.Pgirs.Calls);
     }
 }
@@ -336,8 +347,9 @@ public sealed class LegacyT3ReversionesContractTests
     }
 
     // Legacy reversiones/routes.js:8-13 answers res.send(db.open(INSERT)), which is {rowsAffected: n} (database/database.js:59).
-    [Fact(Skip = "PARITY-FINDING: legacy crearAutorizacion answers {\"rowsAffected\":1} (reversiones/routes.js:12 + database/database.js:59); new answers the bare number 1 (ReversionesController.cs:31 Ok(resultado)).")]
-    public async Task CrearAutorizacionAnswersRowsAffectedLikeLegacy()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (crearAutorizacion response, API-only): the new route answers the bare affected-row count.
+    [Fact]
+    public async Task CrearAutorizacionAnswersTheAffectedRowCount()
     {
         using var factory = new T3ApiFactory();
         using var client = T3Data.Client(factory, sisuId: 55);
@@ -345,23 +357,26 @@ public sealed class LegacyT3ReversionesContractTests
         var response = await client.PostAsJsonAsync("/api/v1/reversiones/crearAutorizacion", new { aps = 7, anno = 2025, mes = 2, descripcion = "Corrección F24" });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(1, (await T3Data.Json(response)).GetProperty("rowsAffected").GetInt32());
+        Assert.Equal(1, (await T3Data.Json(response)).GetInt32());
     }
 
     // Legacy reversiones/routes.js:8-13 and controller.js:6-13 never validate the body: a short or missing description is inserted
     // (AutorizacionReversiones.vue:59-74 sends whatever the textarea holds, even null).
-    [Theory(Skip = "PARITY-FINDING: legacy crearAutorizacion inserts any descripcion, including null or 2 characters (reversiones/controller.js:6-13, no validation); new rejects it with 400 ValidationProblem via [Required]/[MinLength(3)] (ReversionesController.cs:69-72).")]
-    [InlineData("ab")]
-    [InlineData(null)]
-    public async Task CrearAutorizacionAcceptsAnyDescripcionLikeLegacy(string? descripcion)
+    // Accepted deviation: parity-review-all T23 (Reversiones DataAnnotations, group E of legacy-characterization-tests S9):
+    // [Required]/[MinLength(3)] reject it with 400 before inserting.
+    [Theory]
+    [InlineData("ab", "La descripción debe tener al menos 3 caracteres.")]
+    [InlineData(null, "La descripción es obligatoria.")]
+    public async Task CrearAutorizacionRejectsAShortOrMissingDescripcion(string? descripcion, string message)
     {
         using var factory = new T3ApiFactory();
         using var client = T3Data.Client(factory, sisuId: 55);
 
         var response = await client.PostAsJsonAsync("/api/v1/reversiones/crearAutorizacion", new { aps = 7, anno = 2025, mes = 2, descripcion });
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal([$"Crear(7,2025,2,{descripcion},55)"], factory.Reversiones.Calls);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains(message, await response.Content.ReadAsStringAsync());
+        Assert.Empty(factory.Reversiones.Calls);
     }
 
     // Legacy reversiones/routes.js:16-23: GET detalladoAutorizacion uses req.SISU_ID and answers the raw rows (Oracle column names).
@@ -452,17 +467,18 @@ public sealed class LegacyT3SuiReversionesContractTests
 
     // Legacy sui/routes.js:110-114 + controller.js:300-305 never validate aps: an empty body runs the query with a null bind
     // (APSA_ID = NULL -> no rows) and answers 200 [].
-    [Fact(Skip = "PARITY-FINDING: legacy reversionesF19 without aps runs the query and answers 200 [] (sui/routes.js:110-114, no validation); new answers 400 {message:'El campo aps es requerido y debe ser mayor a cero'} (SuiReversionesController.cs:43-46).")]
-    public async Task ReversionesWithoutApsAnswerAnEmptyListLikeLegacy()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (400 without aps on SUI reversiones): the new route rejects it before querying.
+    [Fact]
+    public async Task ReversionesWithoutApsAnswer400()
     {
         using var factory = new T3ApiFactory();
-        factory.SuiReversiones.Rows = [];
         using var client = T3Data.Client(factory, sisuId: 55);
 
         var response = await client.PostAsync("/api/v1/sui/reversionesF19", T3Data.Body("{}"));
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty((await T3Data.Json(response)).EnumerateArray());
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("El campo aps es requerido y debe ser mayor a cero", (await T3Data.Json(response)).GetProperty("message").GetString());
+        Assert.Empty(factory.SuiReversiones.Calls);
     }
 }
 
@@ -589,17 +605,19 @@ public sealed class LegacyT3SuiContractTests
     }
 
     // Legacy sui/routes.js:73-77 + controller.js:187-203 never validate aps: an empty body answers 200 [] (no rows for NULL).
-    [Fact(Skip = "PARITY-FINDING: legacy getApsResumen19 without aps answers 200 [] (sui/routes.js:73-77, no validation); new resumenF19 answers 400 'El APS es obligatorio.' (SuiController.cs:113-117).")]
-    public async Task ResumenWithoutApsAnswersAnEmptyListLikeLegacy()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (400 without aps on SUI resumen): SuiResumenRequest [Range] rejects it
+    // with 400 before querying.
+    [Fact]
+    public async Task ResumenWithoutApsAnswers400()
     {
         using var factory = new T3ApiFactory();
-        factory.Sui.Rows = [];
         using var client = T3Data.Client(factory, sisuId: 55);
 
         var response = await client.PostAsync("/api/v1/sui/resumenF19", T3Data.Body("{}"));
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty((await T3Data.Json(response)).GetProperty("data").GetProperty("filas").EnumerateArray());
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("El APS es obligatorio.", await response.Content.ReadAsStringAsync());
+        Assert.Empty(factory.Sui.Calls);
     }
 
     // Legacy validaciones/controller.js:7-24 (certificarfauco_existarifa, called by Suisui.vue:182-200 before Procesar):
@@ -648,16 +666,22 @@ public sealed class LegacyT3SuiContractTests
 
     // Legacy sui/routes.js:49-53: POST getcanCertificate {aps, anno, mes} answers the count rows [{CANTIDAD: n}]
     // (controller.js:110-118). The new route of the same name runs the fauco_generasui precheck instead.
-    [Fact(Skip = "PARITY-FINDING: legacy POST /sui/getcanCertificate answers the SUI_F24 count [{CANTIDAD:n}] (sui/controller.js:110-118); new /sui/getcanCertificate runs PK_VALGRAL.fauco_generasui and answers {puedeProcesar,mensajes} (SuiController.cs:64-67, SuiRepository.cs:254-277); the count moved to /sui/existenArchivosGenerados. Legacy SuiService.getcanCertificate had no caller in views.")]
-    public async Task GetcanCertificateAnswersTheF24CountLikeLegacy()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (getcanCertificate shape): getcanCertificate answers the precheck {puedeProcesar, mensajes} and the F24 count
+    // moved to existenArchivosGenerados.
+    [Fact]
+    public async Task GetcanCertificateRunsThePrecheckAndTheCountMovedToExistenArchivos()
     {
         using var factory = new T3ApiFactory();
         using var client = T3Data.Client(factory, sisuId: 55);
 
-        var response = await client.PostAsJsonAsync("/api/v1/sui/getcanCertificate", new { aps = 7, anno = 2025, mes = 2 });
+        var precheck = await client.PostAsJsonAsync("/api/v1/sui/getcanCertificate", new { aps = 7, anno = 2025, mes = 2 });
+        var count = await client.PostAsJsonAsync("/api/v1/sui/existenArchivosGenerados", new { aps = 7, anno = 2025, mes = 2 });
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(["Existen(7,2025,2)"], factory.Sui.Calls);
+        Assert.Equal(HttpStatusCode.OK, precheck.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, count.StatusCode);
+        Assert.True((await T3Data.Json(precheck)).GetProperty("data").GetProperty("puedeProcesar").GetBoolean());
+        Assert.Equal(3, (await T3Data.Json(count)).GetProperty("data").GetProperty("cantidad").GetInt32());
+        Assert.Equal(["Precheck(7,2025,2)", "Existen(7,2025,2)"], factory.Sui.Calls);
     }
 
     // Legacy sui/routes.js:7-101 all use [authJwt.verificarToken]: no token -> 403 "No existe token de verificacion".

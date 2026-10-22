@@ -339,6 +339,10 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
+        // Legacy proyecciones/controller.js:750-755: sin elementos no se borra nada.
+        if (request.Items is null || request.Items.Count == 0)
+            return BadRequest(Envelope(false, null, "El parámetro 'data' debe ser un array válido con al menos un elemento"));
+
         try
         {
             var result = await subcontProyRepository.UpsertSubcontAsync(request, tokenContext.SisuId, cancellationToken);

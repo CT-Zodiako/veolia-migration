@@ -39,7 +39,7 @@ function columnas(defs: ColumnaLegacy[], textos: string[]): TablaColumn[] {
  * Legacy components/tablesFormatosFormularios/Formato{19,23,24,35,36}.vue: curated columns, headers and
  * redondeo(valor, n) per column (null shown as 0). F24_CENTROIDE used redondeo(…, 55), i.e. unrounded.
  */
-const COLUMNAS_SUI: Record<SuiFormato, TablaColumn[]> = {
+export const COLUMNAS_SUI: Record<SuiFormato, TablaColumn[]> = {
   F19: columnas([['F19_NJ', 'NJ'], ['F19_NDJ', 'NDJ'], ['F19_CRTJ', 'CRTJ', 2], ['F19_CDFJ', 'CDFJ', 2], ['F19_QRTJ', 'QRTJ', 5],
     ['F19_QRJ', 'QRJ', 5], ['F19_QBLJ', 'QBLJ', 5], ['F19_QLUJ', 'QLUJ', 5], ['F19_QNAZ', 'QNAZ', 5], ['F19_QAJ', 'QAJ', 5]], []),
   F23: columnas([['EMPR_EMPR', 'Empresas'], ['F23_ID', 'IDNOMAPS'], ['F23_NUAP', 'NUAP'], ['F23_N', 'N'], ['F23_CP', 'CP', 2],

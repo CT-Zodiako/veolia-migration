@@ -79,14 +79,14 @@ describe('SuiReversionesComponent (805 Reversiones SUI, legacy ReversionesSui.vu
   }, RENDER_TIMEOUT_MS);
 
   // ReversionesSui.vue:13-63: tab labels.
-  it.skip('PARITY-FINDING: legacy tabs are [REV Formato 19, REV Formulario 23, REV Formulario 24, REV Formulario 35, REV Formulario 36] (ReversionesSui.vue:13-63); new labels drop the REV prefix', async () => {
+  it('legacy tabs are [REV Formato 19, REV Formulario 23, REV Formulario 24, REV Formulario 35, REV Formulario 36] (ReversionesSui.vue:13-63)', async () => {
     const { component } = await crear();
 
     expect(component.formatos.map((f) => f.label)).toEqual(['REV Formato 19', 'REV Formulario 23', 'REV Formulario 24', 'REV Formulario 35', 'REV Formulario 36']);
   });
 
   // ReversionesSui.vue:17-62: subtitles of each tab.
-  it.skip('PARITY-FINDING: legacy F23 subtitle reads "...limpieza de vias y áreas públicas" (ReversionesSui.vue:17-62); new writes "vías"', async () => {
+  it('legacy F23 subtitle reads "...limpieza de vias y áreas públicas" (ReversionesSui.vue:17-62)', async () => {
     const { component } = await crear();
 
     expect(component.formatos.map((f) => f.titulo)).toEqual([
@@ -99,7 +99,7 @@ describe('SuiReversionesComponent (805 Reversiones SUI, legacy ReversionesSui.vu
   });
 
   // components/TableReversionesAps/Formato*.vue: only the listed columns, in that order, with the legacy headers and redondeo per column.
-  it.skip('PARITY-FINDING: legacy shows only the curated columns of components/TableReversionesAps/Formato*.vue with their headers and redondeo; new builds a column per SELECT * key (APSA_ID, *_FECHA and USUARIO included) with no rounding', async () => {
+  it('legacy shows only the curated columns of components/TableReversionesAps/Formato*.vue with their headers and redondeo', async () => {
     const ctx = await crear();
     await cargar(ctx);
 
@@ -110,7 +110,7 @@ describe('SuiReversionesComponent (805 Reversiones SUI, legacy ReversionesSui.vu
   }, RENDER_TIMEOUT_MS);
 
   // components/TableReversionesAps/Formato*.vue:9,13: 10 rows per page; [10, 20, 100, 200] except Formato24 [10, 20, 50].
-  it.skip('PARITY-FINDING: legacy grids page 10 rows with [10,20,100,200] (Formato24: [10,20,50]) (components/TableReversionesAps/Formato*.vue:9-13); new uses the tabla default [10,20,50] everywhere', async () => {
+  it('legacy grids page 10 rows with [10,20,100,200] (Formato24: [10,20,50]) (components/TableReversionesAps/Formato*.vue:9-13)', async () => {
     const ctx = await crear();
     await cargar(ctx);
 
@@ -120,7 +120,7 @@ describe('SuiReversionesComponent (805 Reversiones SUI, legacy ReversionesSui.vu
   }, RENDER_TIMEOUT_MS);
 
   // ReversionesSui.vue:8-9: link "Explicación formatos y formularios" to assets/layout/planos/Explicación formatos y formularios.xlsx.
-  it.skip('PARITY-FINDING: legacy shows the "Explicación formatos y formularios" link to assets/layout/planos/Explicación formatos y formularios.xlsx (ReversionesSui.vue:8-9); new has no link', async () => {
+  it('legacy shows the "Explicación formatos y formularios" link to assets/layout/planos/Explicación formatos y formularios.xlsx (ReversionesSui.vue:8-9)', async () => {
     const { fixture } = await crear();
 
     const link = Array.from(fixture.nativeElement.querySelectorAll('a') as NodeListOf<HTMLAnchorElement>)

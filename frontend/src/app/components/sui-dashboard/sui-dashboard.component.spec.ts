@@ -80,7 +80,7 @@ describe('SuiDashboardComponent (803, legacy DashBoard.vue)', () => {
   });
 
   // DashBoard.vue:14-22: 15 rows per page, [15, 30, 50, 100]; the legacy grid has no column filters.
-  it.skip('PARITY-FINDING: legacy SUI dashboard pages 15 rows with [15,30,50,100] and has no column filters (DashBoard.vue:14-108); new uses the tabla default 10/[10,20,50] and filters every column', () => {
+  it('legacy SUI dashboard pages 15 rows with [15,30,50,100] and has no column filters (DashBoard.vue:14-108)', () => {
     const { fixture, component } = crear();
     component.consultar();
     fixture.detectChanges();

@@ -59,6 +59,8 @@
     [cellTemplate]="celda"
     [accionesTemplate]="acciones"
     [loading]="loading()"
+    [filasPorPagina]="24"
+    [rowsPerPageOptionsList]="[24]"
   ></app-tabla-avanzada>
 
   <ng-template #celda let-value let-row="row" let-col="col">
@@ -76,7 +78,7 @@
           [maxFractionDigits]="5"
           class="w-full"
         ></p-inputNumber>
-        <ng-template #valorReadonly>{{ value ?? 0 }}</ng-template>
+        <ng-template #valorReadonly>{{ redondear(value) }}</ng-template>
       </ng-container>
     </ng-container>
   </ng-template>

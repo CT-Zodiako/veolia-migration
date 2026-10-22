@@ -69,7 +69,7 @@ public sealed class LegacyT3ProyeccionesContractTests
 
     // Legacy proyecciones/controller.js:183-187 (consultaruna): "SELECT * FROM proy_proyeccion WHERE PROYID = :1" returns every
     // column, PROYDESCRIPCION included.
-    [Fact(Skip = "PARITY-FINDING: legacy consultaproy answers SELECT * (PROYDESCRIPCION included, proyecciones/controller.js:183-187); new consultaproy selects no PROYDESCRIPCION and ProyeccionDetail has no ProyDescripcion (ProyeccionRepository.cs:73-93, ProyeccionesContracts.cs ProyeccionDetail). No Angular component calls consultaProy today.")]
+    [Fact]
     public async Task ConsultaProyReturnsTheDescripcionLikeLegacy()
     {
         var db = new RecordingDb(_ => new DataTable());
@@ -85,7 +85,7 @@ public sealed class LegacyT3ProyeccionesContractTests
 
     // Legacy proyecciones/controller.js:145-150 (modificar): "UPDATE proy_proyeccion SET PROYNOMBRE = :1, PROYDESCRIPCION = :2,
     // PROYTIPO100 =:3, PROYANNOHAS =:4, PROYMESHAS = :5 WHERE PROYID =:6" -- no PROYESTADO condition.
-    [Fact(Skip = "PARITY-FINDING: legacy modificar updates by PROYID only (proyecciones/controller.js:145-146); new adds 'AND PROYESTADO = 1' (ProyeccionRepository.cs EditarAsync), so a proyección whose PROYESTADO is not 1 is not edited ('No se encontró la proyección.'). parity-review T21 P5 is still UNCERTAIN (not approved).")]
+    [Fact]
     public async Task EditarUpdatesByProyIdOnlyLikeLegacy()
     {
         var db = new RecordingDb(_ => 1);
@@ -191,7 +191,7 @@ public sealed class LegacyT3ProyeccionesContractTests
     // Legacy SELECT * (controller.js:620,637,654,670) returns COD_APS, shown as the first "APS" column of every Variables grid
     // (components/proyecciones/CrecimientoUsuarios.vue:6, CrecimientoInfPropia.vue, CrecimientoInfTercero.vue,
     // CrecimientoDescuentosCostos.vue: field="COD_APS").
-    [Fact(Skip = "PARITY-FINDING: legacy consultarproyeccion* answer SELECT * (COD_APS included, shown as column 'APS' in CrecimientoUsuarios/InfPropia/InfTercero/DescuentosCostos.vue); new consultarcrecimiento SELECTs omit COD_APS in all four tables (CrecimientoRepository.cs SqlUsuarios/SqlPropia/SqlTerceros/SqlDescuentos), so the APS column is lost.")]
+    [Fact]
     public async Task CrecimientoConsultaReturnsCodApsLikeLegacy()
     {
         var db = new RecordingDb(_ => new DataTable());
@@ -251,7 +251,7 @@ public sealed class LegacyT3ProyeccionesContractTests
     }
 
     // Legacy proyecciones/controller.js:783-786: success answers "Porcentajes de subsidios y contribuciones editados correctamente".
-    [Fact(Skip = "PARITY-FINDING: legacy editarPorcSubCon success message is 'Porcentajes de subsidios y contribuciones editados correctamente' (proyecciones/controller.js:785); new answers 'Subsidios/contribuciones guardados.' (SubcontProyRepository.cs UpsertSubcontAsync).")]
+    [Fact]
     public async Task SubcontUpsertAnswersTheLegacySuccessMessage()
     {
         var db = new RecordingDb(_ => 1);
@@ -345,7 +345,7 @@ public sealed class LegacyT3ProyeccionesContractTests
 
     // Legacy proyecciones/controller.js:750-755: an empty or non-array data answers 400 "El parámetro 'data' debe ser un array
     // válido con al menos un elemento" before deleting anything.
-    [Fact(Skip = "PARITY-FINDING: legacy editarPorcSubCon with an empty data array answers 400 \"El parámetro 'data' debe ser un array válido con al menos un elemento\" and deletes nothing (proyecciones/controller.js:750-755); new accepts items [] and its repository DELETEs the period's PROY_SUBSCONTEMP rows and commits (ProyeccionesController.cs EditarPorcSubCon has no check, SubcontProyRepository.cs UpsertSubcontAsync).")]
+    [Fact]
     public async Task EditarPorcSubConRejectsAnEmptyListLikeLegacy()
     {
         using var factory = new T3ProyApiFactory();
@@ -360,16 +360,22 @@ public sealed class LegacyT3ProyeccionesContractTests
 
     // Legacy proyecciones/routes.js:103-112 + controller.js:262-301: POST consultarcrecimiento {apsaid} reads
     // PROY_CRECIMIENTO_VBLES and the Drive sheets of the APS.
-    [Fact(Skip = "PARITY-FINDING: legacy POST consultarcrecimiento {apsaid} answers the Drive sheets of the APS (proyecciones/controller.js:262-301); new consultarcrecimiento {proyId} answers the stored PROY_* rows of a proyección and the Drive read moved to /cargardesdedrive {apsaId} (ProyeccionesController.cs ConsultarCrecimiento/CargarDesdeDrive).")]
-    public async Task ConsultarCrecimientoReadsTheDriveSheetsOfTheApsLikeLegacy()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (consultarcrecimiento contract): consultarcrecimiento {proyId}
+    // answers the stored PROY_* rows of the proyección and the Drive read moved to cargardesdedrive {apsaId}.
+    [Fact]
+    public async Task ConsultarCrecimientoReadsStoredRowsAndDriveMovedToCargarDesdeDrive()
     {
         using var factory = new T3ProyApiFactory();
         using var client = T3Data.Client(factory, sisuId: 55);
 
-        var response = await client.PostAsync("/api/v1/proyecciones/consultarcrecimiento", T3Data.Body("{\"apsaid\":3}"));
+        var stored = await client.PostAsync("/api/v1/proyecciones/consultarcrecimiento", T3Data.Body("{\"proyId\":8}"));
+        var drive = await client.PostAsync("/api/v1/proyecciones/cargardesdedrive", T3Data.Body("{\"apsaId\":3}"));
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(["Drive(3)"], factory.Calls);
+        Assert.Equal(HttpStatusCode.OK, stored.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, drive.StatusCode);
+        Assert.True((await T3Data.Json(stored)).GetProperty("status").GetBoolean());
+        Assert.True((await T3Data.Json(drive)).GetProperty("status").GetBoolean());
+        Assert.Equal(["Crecimiento(8)", "Drive(3)"], factory.Calls);
     }
 
     // Legacy request bodies (proyecciones/routes.js and ProyService.js): consulta {aps} (routes.js:7), ultimastarifas {aps} (:82),
@@ -377,17 +383,19 @@ public sealed class LegacyT3ProyeccionesContractTests
     // tipo, annos, meses} (:59), registrarlineatiempo {datatable:[{PROYID, APS, PROYANNO, PROYMES, DELT*}], isnew} (:91),
     // consultasubcont {apsa_id, proy_id, anno, mes} (:240), editarPorcSubCon {aps, anno, mes, proy_id, data:[{CLAS_CLASE,
     // SUCO_VALOR}]} (:246), ejecutarproyectar {apsa_id, proy_id} (:229), registrardescuento {datos_descuentos, proy_id} (:148).
-    [Theory(Skip = "PARITY-FINDING: legacy Proyecciones request field names (aps, nombre, descripcion, tipo, annosDesde, mesesDesde, annos, meses, datatable/isnew, apsa_id, proy_id, data, datos_descuentos) are not bound by the new DTOs (apsaId, proyNombre, proyDescripcion, proyTipo100, proyAnnoDes..., rows/isNew, items) -> ids arrive as 0 (400 or wrong query). The Angular client uses the new names consistently.")]
-    [InlineData("POST", "consulta", "{\"aps\":3}", "Consulta(3)")]
-    [InlineData("POST", "ultimastarifas", "{\"aps\":3}", "UltimasTarifas(3)")]
-    [InlineData("POST", "crear", "{\"aps\":3,\"nombre\":\"Proy\",\"descripcion\":\"Base\",\"tipo\":2,\"annosDesde\":2025,\"mesesDesde\":4,\"annos\":2026,\"meses\":3}", "Crear(3,Proy,Base,2,2025,4,2026,3,55)")]
-    [InlineData("PUT", "editar/8", "{\"idProy\":8,\"nombre\":\"Proy\",\"descripcion\":\"Base\",\"tipo\":2,\"annos\":2026,\"meses\":3}", "Editar(8,Proy,Base,2,2026,3)")]
-    [InlineData("POST", "registrarlineatiempo", "{\"isnew\":true,\"datatable\":[{\"PROYID\":8,\"APS\":3,\"PROYANNO\":2025,\"PROYMES\":4,\"DELTIPC\":1.1}]}", "LineaTiempoUpsert(8,3,True,2025-4:1.1,55)")]
-    [InlineData("POST", "consultasubcont", "{\"apsa_id\":3,\"proy_id\":8,\"anno\":2025,\"mes\":1}", "Subcont(3,8,2025,1)")]
-    [InlineData("POST", "editarPorcSubCon", "{\"aps\":3,\"anno\":2025,\"mes\":1,\"proy_id\":8,\"data\":[{\"CLAS_CLASE\":1,\"SUCO_VALOR\":0.5}]}", "SubcontUpsert(8,3,2025,1,1:0.5,55)")]
-    [InlineData("POST", "ejecutarproyectar", "{\"apsa_id\":3,\"proy_id\":8}", "Ejecutar(8,3,55)")]
-    [InlineData("POST", "registrardescuento", "{\"proy_id\":8,\"datos_descuentos\":[{\"COD_APS\":3,\"ANNO\":2025,\"MES\":4,\"D_CCS\":1}]}", "Descuentos(8,1 rows,55)")]
-    public async Task LegacyRequestBodiesAreBound(string method, string route, string body, string expectedCall)
+    // Accepted deviation: legacy-characterization-tests S8/S9 (renamed legacy request field names consumed consistently by the
+    // new frontend, proyecciones.service.ts): the same values arrive through the new camelCase DTO names.
+    [Theory]
+    [InlineData("POST", "consulta", "{\"apsaId\":3}", "Consulta(3)")]
+    [InlineData("POST", "ultimastarifas", "{\"apsaId\":3}", "UltimasTarifas(3)")]
+    [InlineData("POST", "crear", "{\"apsaId\":3,\"proyNombre\":\"Proy\",\"proyDescripcion\":\"Base\",\"proyTipo100\":2,\"proyAnnoDes\":2025,\"proyMesDes\":4,\"proyAnnoHas\":2026,\"proyMesHas\":3}", "Crear(3,Proy,Base,2,2025,4,2026,3,55)")]
+    [InlineData("PUT", "editar/8", "{\"proyNombre\":\"Proy\",\"proyDescripcion\":\"Base\",\"proyTipo100\":2,\"proyAnnoHas\":2026,\"proyMesHas\":3}", "Editar(8,Proy,Base,2,2026,3)")]
+    [InlineData("POST", "registrarlineatiempo", "{\"proyId\":8,\"apsaId\":3,\"isNew\":true,\"rows\":[{\"anno\":2025,\"mes\":4,\"deltipc\":1.1}]}", "LineaTiempoUpsert(8,3,True,2025-4:1.1,55)")]
+    [InlineData("POST", "consultasubcont", "{\"apsaId\":3,\"proyId\":8,\"anno\":2025,\"mes\":1}", "Subcont(3,8,2025,1)")]
+    [InlineData("POST", "editarPorcSubCon", "{\"apsaId\":3,\"anno\":2025,\"mes\":1,\"proyId\":8,\"items\":[{\"clasClase\":1,\"sucoValor\":0.5}]}", "SubcontUpsert(8,3,2025,1,1:0.5,55)")]
+    [InlineData("POST", "ejecutarproyectar", "{\"apsaId\":3,\"proyId\":8}", "Ejecutar(8,3,55)")]
+    [InlineData("POST", "registrardescuento", "{\"proyId\":8,\"apsaId\":3,\"items\":[{\"ANNO\":2025,\"MES\":4,\"D_CCS\":1}]}", "Descuentos(8,1 rows,55)")]
+    public async Task RenamedRequestBodiesAreBound(string method, string route, string body, string expectedCall)
     {
         using var factory = new T3ProyApiFactory();
         using var client = T3Data.Client(factory, sisuId: 55);

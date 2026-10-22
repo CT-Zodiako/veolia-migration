@@ -87,7 +87,7 @@ describe('EjecutarPageComponent (904 Proyectar, legacy Proyectar.vue)', () => {
 
   // ProyService.js:547-558: success toast "Proceso ejecutado correctamente" (severity success); otherwise an error toast
   // "<res> Error al ejecutar la proyeccion ".
-  it.skip('PARITY-FINDING: legacy toasts "Proceso ejecutado correctamente" (success) or "<res> Error al ejecutar la proyeccion " (error) (ProyService.js:547-558); new shows the backend message with severity warn on failure', () => {
+  it('legacy toasts "Proceso ejecutado correctamente" (success) or "<res> Error al ejecutar la proyeccion " (error) (ProyService.js:547-558)', () => {
     const ok = crear(1);
     ok.component.ejecutar();
     expect(ok.add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success', summary: 'Proceso ejecutado correctamente' }));
@@ -100,7 +100,7 @@ describe('EjecutarPageComponent (904 Proyectar, legacy Proyectar.vue)', () => {
 
   // ConsultarLineasdeTiempo.vue:4-79,117-119: columns AÑO, MES, IPC, IPCC, SMLV, IOEXP, FACT PROD, IND IPCC (no IPC TCL),
   // values rounded to 5 decimals, 24 rows per page with [24].
-  it.skip('PARITY-FINDING: legacy Proyectar timeline shows AÑO/MES/IPC/IPCC/SMLV/IOEXP/FACT PROD/IND IPCC (no IPC TCL), rounded to 5 decimals, 24 rows [24] (ConsultarLineasdeTiempo.vue:4-119); new shows Año/Mes/.../Fact Prod/Ind IPCC/IPC TCL raw with 10/[10,20,50]', () => {
+  it('legacy Proyectar timeline shows AÑO/MES/IPC/IPCC/SMLV/IOEXP/FACT PROD/IND IPCC (no IPC TCL), rounded to 5 decimals, 24 rows [24] (ConsultarLineasdeTiempo.vue:4-119)', () => {
     const { fixture, component } = crear();
 
     expect(component.columnasLineaTiempo.map((c) => [c.field, c.header])).toEqual([
@@ -117,7 +117,7 @@ describe('EjecutarPageComponent (904 Proyectar, legacy Proyectar.vue)', () => {
 
   // Proyectar.vue:5-11,18-45: button "EJECUTAR"; tabs "Lineas de Tiempo", "Variables" and sub-tabs "USUARIOS",
   // "INFORMACION PROPIA", "INFORMACION TERCERO", "DESCUENTOS COSTO".
-  it.skip('PARITY-FINDING: legacy labels are EJECUTAR / Lineas de Tiempo / Variables / USUARIOS / INFORMACION PROPIA / INFORMACION TERCERO / DESCUENTOS COSTO (Proyectar.vue:10-39); new shows Ejecutar Proyección / Líneas de Tiempo / Usuarios / Info Propia / Info Terceros / Descuentos Costo', () => {
+  it('legacy labels are EJECUTAR / Lineas de Tiempo / Variables / USUARIOS / INFORMACION PROPIA / INFORMACION TERCERO / DESCUENTOS COSTO (Proyectar.vue:10-39)', () => {
     const { fixture } = crear();
 
     const tabs = Array.from(fixture.nativeElement.querySelectorAll('p-tab') as NodeListOf<HTMLElement>).map((t) => t.textContent?.trim());
@@ -128,7 +128,7 @@ describe('EjecutarPageComponent (904 Proyectar, legacy Proyectar.vue)', () => {
 
   // components/proyecciones/CrecimientoUsuarios.vue:3-50: Usuarios grid columns APS (COD_APS), AÑO, MES (SEMESTRE), COD_USO,
   // CLASE_USO, COD_FACTOR, VLR_FACTOR, COD_TIPRED, TIPO_PRED, CANTIDAD, TONELADAS; 15 rows with [15, 30, 50, 100].
-  it.skip('PARITY-FINDING: legacy Usuarios grid shows APS/AÑO/MES/COD_USO/CLASE_USO/COD_FACTOR/VLR_FACTOR/COD_TIPRED/TIPO_PRED/CANTIDAD/TONELADAS with 15/[15,30,50,100] (CrecimientoUsuarios.vue:3-50); new derives headers from the JSON keys (codAps, anno, semestre, ...) with 10/[10,20,50]', () => {
+  it('legacy Usuarios grid shows APS/AÑO/MES/COD_USO/CLASE_USO/COD_FACTOR/VLR_FACTOR/COD_TIPRED/TIPO_PRED/CANTIDAD/TONELADAS with 15/[15,30,50,100] (CrecimientoUsuarios.vue:3-50)', () => {
     const { component } = crear();
 
     expect(component.columnasUsuarios().map((c) => c.header)).toEqual([

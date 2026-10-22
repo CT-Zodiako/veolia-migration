@@ -24,7 +24,9 @@
       [cellClass]="cellClass"
       [autoWidth]="true"
       [loading]="loading()"
-          storageKey="sui-dashboard"
+      [filasPorPagina]="15"
+      [rowsPerPageOptionsList]="[15, 30, 50, 100]"
+      storageKey="sui-dashboard"
       nombreExportar="SUI_Dashboard">
     </app-tabla-avanzada>
   </div>

@@ -34,7 +34,7 @@
     </div>
     <div class="col-12 flex justify-content-end">
       <p-button
-        label="Ejecutar Proyección"
+        label="EJECUTAR"
         icon="pi pi-play"
         severity="success"
         [loading]="ejecutando()"
@@ -52,7 +52,7 @@
 <div class="card-section">
   <p-tabs value="0">
     <p-tablist>
-      <p-tab value="0">Líneas de Tiempo</p-tab>
+      <p-tab value="0">Lineas de Tiempo</p-tab>
       <p-tab value="1">Variables</p-tab>
     </p-tablist>
     <p-tabpanels>
@@ -68,16 +68,18 @@
           storageKey="proyectar-linea-tiempo"
           nombreExportar="LineaTiempo"
           [loading]="cargandoLineaTiempo()"
+          [filasPorPagina]="24"
+          [rowsPerPageOptionsList]="[24]"
         ></app-tabla-avanzada>
       </p-tabpanel>
 
       <p-tabpanel value="1">
         <p-tabs value="0">
           <p-tablist>
-            <p-tab value="0">Usuarios</p-tab>
-            <p-tab value="1">Info Propia</p-tab>
-            <p-tab value="2">Info Terceros</p-tab>
-            <p-tab value="3">Descuentos Costo</p-tab>
+            <p-tab value="0">USUARIOS</p-tab>
+            <p-tab value="1">INFORMACION PROPIA</p-tab>
+            <p-tab value="2">INFORMACION TERCERO</p-tab>
+            <p-tab value="3">DESCUENTOS COSTO</p-tab>
           </p-tablist>
           <p-tabpanels>
             <p-tabpanel value="0">
@@ -92,7 +94,11 @@
                 storageKey="proyectar-usuarios"
                 nombreExportar="Usuarios"
                 [loading]="cargandoCrecimiento()"
+                [filasPorPagina]="15"
+                [rowsPerPageOptionsList]="[15, 30, 50, 100]"
+                [cellTemplate]="celdaUsuario"
               ></app-tabla-avanzada>
+              <ng-template #celdaUsuario let-value let-col="col">{{ valorUsuario(value, col.field) }}</ng-template>
             </p-tabpanel>
             <p-tabpanel value="1">
               <div *ngIf="propia().length === 0" class="text-center py-4 text-secondary">

@@ -8,9 +8,10 @@ import { PgirsService } from '../../services/pgirs.service';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 
+// Legacy InformePgirs.vue:17-172: filtros solo en PERIODO (Clus) y PERIODO + SEMESTRE (Barrido).
 const COLUMNAS_CLUS: TablaColumn[] = [
   { field: 'APSID', header: 'APS' },
-  { field: 'APSA_NOMAPS', header: 'NOM APS', filtrable: true },
+  { field: 'APSA_NOMAPS', header: 'NOM APS' },
   { field: 'PERIODO', header: 'PERIODO', filtrable: true },
   { field: 'PODA', header: 'PODA', numero: true },
   { field: 'PODAPGIRS', header: 'PODA PGIRS', numero: true },
@@ -28,7 +29,7 @@ const COLUMNAS_CLUS: TablaColumn[] = [
 
 const COLUMNAS_BARRIDO: TablaColumn[] = [
   { field: 'APSID', header: 'APS' },
-  { field: 'APSA_NOMAPS', header: 'NOM APS', filtrable: true },
+  { field: 'APSA_NOMAPS', header: 'NOM APS' },
   { field: 'PERIODO', header: 'PERIODO', filtrable: true },
   { field: 'SEMESTRE', header: 'SEMESTRE', filtrable: true },
   { field: 'BARRIDO', header: 'BARRIDO', numero: true },
@@ -48,6 +49,11 @@ const CAMPO_COLOR: Record<string, string> = {
 
 const COLUMNAS_PGIRS_OBJETIVO = new Set([
   'PODAPGIRS', 'CESPEDPGIRS', 'LAVADOPGIRS', 'PLAYASPGIRS', 'CESTASINSPGIRS', 'CESTASMANPGIRS', 'BARRIDOPGIRS'
+]);
+
+const CAMPOS_DOS_DECIMALES = new Set([
+  'PODA', 'PODAPGIRS', 'CESPED', 'CESPEDPGIRS', 'LAVADO', 'LAVADOPGIRS', 'PLAYAS', 'PLAYASPGIRS',
+  'CESTASINS', 'CESTASINSPGIRS', 'CESTASMANPGIRS', 'BARRIDO', 'BARRIDOPGIRS'
 ]);
 
 @Component({
@@ -74,6 +80,11 @@ export class PgirsResumenComponent {
   errorBarrido = signal<string | null>(null);
 
   constructor(private readonly service: PgirsService) {}
+
+  // Legacy InformePgirs.vue:234-236 (fourDecimalPlaces = toFixed(2)) en cada medida salvo M CEST (:112-114).
+  valorMedido(value: unknown, field: string): unknown {
+    return CAMPOS_DOS_DECIMALES.has(field) ? parseFloat(String(value)).toFixed(2) : (value ?? '');
+  }
 
   onApsChange(apsId: number | null): void {
     this.aps.set(apsId);

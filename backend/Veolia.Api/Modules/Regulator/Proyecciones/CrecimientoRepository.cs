@@ -63,7 +63,8 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
     // --------------------------------------------------------------------
 
     private const string SqlUsuarios = @"
-        SELECT ANNO AS Anno,
+        SELECT COD_APS AS CodAps,
+               ANNO AS Anno,
                SEMESTRE AS Semestre,
                CODUSO AS Coduso,
                NOMCLASEUSO AS Nomclaseuso,
@@ -78,7 +79,8 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
          ORDER BY ANNO, SEMESTRE, CODTIPOPRED, CODUSO";
 
     private const string SqlPropia = @"
-        SELECT NOM_APS AS NomAps,
+        SELECT COD_APS AS CodAps,
+               NOM_APS AS NomAps,
                COD_EMPRESA AS CodEmpresa,
                NOM_EMPRESA AS NomEmpresa,
                ANNO AS Anno,
@@ -128,7 +130,8 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
          ORDER BY ANNO, MES";
 
     private const string SqlTerceros = @"
-        SELECT NOM_APS AS NomAps,
+        SELECT COD_APS AS CodAps,
+               NOM_APS AS NomAps,
                COD_EMPRESA AS CodEmpresa,
                NOM_EMPRESA AS NomEmpresa,
                ANNO AS Anno,
@@ -175,7 +178,8 @@ public sealed class CrecimientoRepository(IOracleConnectionFactory connectionFac
          ORDER BY COD_EMPRESA, ANNO, MES";
 
     private const string SqlDescuentos = @"
-        SELECT NOM_APS AS NomAps,
+        SELECT COD_APS AS CodAps,
+               NOM_APS AS NomAps,
                ANNO AS Anno,
                MES AS Mes,
                D_CCS AS Dccs,

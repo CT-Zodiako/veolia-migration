@@ -34,6 +34,11 @@
     storageKey="pgirs-resumen"
     nombreExportar="ResumenPGIRS"
     [cellClass]="cellClassResumen"
+    [cellTemplate]="celda"
     [loading]="loading()"
+    [filasPorPagina]="15"
+    [rowsPerPageOptionsList]="[15, 30, 50, 100]"
   ></app-tabla-avanzada>
+
+  <ng-template #celda let-value let-col="col">{{ col.field === 'PGRIFECHA' ? fechaIngreso(value) : (value ?? '') }}</ng-template>
 </div>

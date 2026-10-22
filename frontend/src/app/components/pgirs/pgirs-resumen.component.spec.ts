@@ -107,7 +107,7 @@ describe('PgirsResumenComponent (Informe PGIRS, legacy InformePgirs.vue)', () =>
 
   // InformePgirs.vue:38-121,161-169 + fourDecimalPlaces (:234-236, parseFloat(n).toFixed(2)): every measured column shows
   // 2 decimals except M CEST (:112-114), which is rendered raw.
-  it.skip('PARITY-FINDING: legacy Informe PGIRS shows every measure with toFixed(2) (InformePgirs.vue:234-236) except M CEST; new tabla shows raw values (no decimales on COLUMNAS_CLUS/COLUMNAS_BARRIDO)', () => {
+  it('legacy Informe PGIRS shows every measure with toFixed(2) (InformePgirs.vue:234-236) except M CEST', () => {
     const { fixture, component } = crear();
     component.onApsChange(7);
     fixture.detectChanges();
@@ -124,7 +124,7 @@ describe('PgirsResumenComponent (Informe PGIRS, legacy InformePgirs.vue)', () =>
 
   // InformePgirs.vue:17-19,134-136: 15 rows per page, [15, 30, 50, 100]; column filters only on PERIODO (Clus, :29-34)
   // and on PERIODO + SEMESTRE (Barrido, :145-156).
-  it.skip('PARITY-FINDING: legacy Informe PGIRS grids page 15 rows with [15,30,50,100] and filter only PERIODO (Clus) / PERIODO+SEMESTRE (Barrido) (InformePgirs.vue:17-34,134-156); new uses the tabla default 10/[10,20,50] and also filters NOM APS', () => {
+  it('legacy Informe PGIRS grids page 15 rows with [15,30,50,100] and filter only PERIODO (Clus) / PERIODO+SEMESTRE (Barrido) (InformePgirs.vue:17-34,134-156)', () => {
     const { fixture, component } = crear();
     component.onApsChange(7);
     fixture.detectChanges();

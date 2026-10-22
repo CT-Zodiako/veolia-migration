@@ -77,14 +77,14 @@ describe('PgirsInformeVariablesComponent (Resumen variables PGIRS, legacy Resume
   });
 
   // ResumenPgirs.vue:25,31,37,49,54: headers "APS", "INGRESO", "TIPO INGRESO", "FECHA INGRESO", "USUARIO".
-  it.skip('PARITY-FINDING: legacy Resumen variables PGIRS headers are APS / INGRESO / TIPO INGRESO / FECHA INGRESO / USUARIO (ResumenPgirs.vue:25-54); new shows Ingreso / Tipo Ingreso / Fecha Ingreso / Usuario', () => {
+  it('legacy Resumen variables PGIRS headers are APS / INGRESO / TIPO INGRESO / FECHA INGRESO / USUARIO (ResumenPgirs.vue:25-54)', () => {
     const { component } = crear();
 
     expect(component.columnasResumen.map((c) => c.header)).toEqual(['APS', 'INGRESO', 'TIPO INGRESO', 'FECHA INGRESO', 'USUARIO']);
   });
 
   // ResumenPgirs.vue:49-53,112-124 formatDateColumn: FECHA INGRESO is shown as dd/mm/yyyy and "N/A" when empty.
-  it.skip('PARITY-FINDING: legacy FECHA INGRESO is dd/mm/yyyy and "N/A" when empty (ResumenPgirs.vue:112-124); new shows the raw ISO value / blank', () => {
+  it('legacy FECHA INGRESO is dd/mm/yyyy and "N/A" when empty (ResumenPgirs.vue:112-124)', () => {
     const { fixture, component } = crear();
     component.onApsChange(7);
     fixture.detectChanges();
@@ -93,7 +93,7 @@ describe('PgirsInformeVariablesComponent (Resumen variables PGIRS, legacy Resume
   });
 
   // ResumenPgirs.vue:14-17: 15 rows per page with [15, 30, 50, 100].
-  it.skip('PARITY-FINDING: legacy Resumen variables PGIRS pages 15 rows with [15,30,50,100] (ResumenPgirs.vue:14-17); new uses the tabla default 10/[10,20,50]', () => {
+  it('legacy Resumen variables PGIRS pages 15 rows with [15,30,50,100] (ResumenPgirs.vue:14-17)', () => {
     const { fixture, component } = crear();
     component.onApsChange(7);
     fixture.detectChanges();

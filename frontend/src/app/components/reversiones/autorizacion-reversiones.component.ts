@@ -57,7 +57,8 @@ export class AutorizacionReversionesComponent implements OnInit {
       .subscribe({
         next: () => {
           this.loading = false;
-          this.success = 'Autorización creada correctamente';
+          // Legacy AutorizacionReversiones.vue:74.
+          this.success = 'Se guardo la Autorizacion correctamente';
           this.descripcion = '';
           this.cdr.detectChanges();
         },
