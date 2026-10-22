@@ -6,7 +6,7 @@ import { Sui853CftService } from '../../services/sui853-cft.service';
 import { Formato2Response } from '../../models/sui853-cft.model';
 
 // crlus.vue (legacy) — F853002, sin tabs, sin selector de parámetros. Se
-// envuelve en p-tabs de un solo tab (SEG1) igual que CFT/CSS Aprovechamiento
+// envuelve en p-tabs de un solo tab ("SEG 1", rótulo del legacy) igual que CFT/CSS Aprovechamiento
 // -- misma estructura para las 8 pantallas, lista para sumar más segmentos.
 @Component({
   selector: 'app-crlus-page',

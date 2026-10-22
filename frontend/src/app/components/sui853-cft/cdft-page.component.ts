@@ -1,4 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
@@ -6,7 +7,9 @@ import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.co
 import { Sui853CftService } from '../../services/sui853-cft.service';
 import { CdftRow } from '../../models/sui853-cft.model';
 
-const FORMATO_NUMERO = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// Legacy cdft.vue formatMoney()/formatNumber(): toLocaleString("es-CO",
+// { minimumFractionDigits: 2 }) -- sin máximo explícito, Intl usa 3.
+const FORMATO_NUMERO = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2 });
 
 // cdft.vue (legacy) — /cdft — pantalla distinta al resto de SUI853/CFT: no
 // consume SUI.f_render_formato2 (sin SIN_MOVIMIENTO/CON_MOVIMIENTO), consulta
@@ -33,7 +36,10 @@ export class CdftPageComponent implements OnInit {
     { field: 'qrtz', header: 'QRTZ', numero: true }
   ];
 
-  constructor(private readonly service: Sui853CftService) {}
+  constructor(
+    private readonly service: Sui853CftService,
+    private readonly messages: MessageService
+  ) {}
 
   ngOnInit(): void {
     this.consultar();
@@ -55,14 +61,50 @@ export class CdftPageComponent implements OnInit {
     return String(value);
   }
 
-  async copiar(value: unknown): Promise<void> {
-    const texto = value === null || value === undefined ? '' : String(value);
-    if (!texto) return;
+  // Legacy cdft.vue copyDisplay() (solo columnas numéricas): copia el valor
+  // mostrado como número plano (sin separador de miles, coma -> punto) y
+  // muestra un toast "Copiado".
+  async copiar(col: TablaColumn, value: unknown): Promise<void> {
+    if (!col.numero) return;
+    const mostrado = this.displayValue(col, value);
+    if (!mostrado) return;
+    const limpio = mostrado.replace(/\./g, '').replace(/,/g, '.');
+    const texto = Number.isFinite(Number(limpio)) ? limpio : mostrado;
     try {
-      await navigator.clipboard.writeText(texto);
+      await this.copiarAlPortapapeles(texto);
     } catch {
-      // Clipboard API bloqueada (permiso denegado, contexto no seguro, etc.) --
-      // no hay nada crítico que perder, se ignora en silencio.
+      // Ni la Clipboard API ni el fallback funcionaron -- nada crítico que perder.
+      return;
+    }
+    this.messages.add({ severity: 'success', summary: 'Copiado', detail: texto, life: 1800 });
+  }
+
+  // navigator.clipboard solo existe en contexto seguro (HTTPS/localhost);
+  // en un deploy por HTTP el legacy caía a textarea + execCommand('copy').
+  private async copiarAlPortapapeles(texto: string): Promise<void> {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(texto);
+        return;
+      } catch {
+        // Permiso denegado: probar el fallback.
+      }
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      if (!document.execCommand('copy')) {
+        throw new Error('execCommand("copy") no pudo copiar el valor.');
+      }
+    } finally {
+      textarea.remove();
     }
   }
 

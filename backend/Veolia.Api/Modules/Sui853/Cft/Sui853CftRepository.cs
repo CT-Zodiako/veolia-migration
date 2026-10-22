@@ -1,7 +1,8 @@
 using Dapper;
 using System.Data;
 using System.Data.Common;
-using System.Text.Json;
+using System.Text.Json.Nodes;
+using Oracle.ManagedDataAccess.Types;
 using Veolia.Api.Infrastructure.Data;
 
 namespace Veolia.Api.Modules.Sui853.Cft;
@@ -11,12 +12,7 @@ namespace Veolia.Api.Modules.Sui853.Cft;
 // el cliente). Ver doc migracion/modules/sui853/CFT.md.
 public sealed class Sui853CftRepository(IOracleConnectionFactory connectionFactory) : ISui853CftRepository
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
-    public async Task<Formato2ResponseDto?> GetFormatoAsync(string codigo, CancellationToken cancellationToken)
+    public async Task<JsonObject?> GetFormatoAsync(string codigo, CancellationToken cancellationToken)
     {
         const string sql = "SELECT SUI.f_render_formato2(:codigo) AS json FROM dual";
 
@@ -24,43 +20,24 @@ public sealed class Sui853CftRepository(IOracleConnectionFactory connectionFacto
         parameters.Add("codigo", codigo);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        var rows = await connection.QueryAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken, commandTimeout: 120));
+        var raw = await connection.ExecuteScalarAsync<object>(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken, commandTimeout: 120));
 
-        var first = rows.FirstOrDefault();
-        if (first is null)
+        var payload = Formato2Payload.Parse(raw is OracleClob clob ? clob.Value : raw?.ToString());
+        if (payload is not null)
         {
-            return null;
+            Formato2Payload.ApplyDialogHeader(payload, await GetTituloCompuestoAsync(connection, codigo, cancellationToken));
         }
 
-        var jsonValue = first.JSON;
-        var jsonString = jsonValue?.ToString();
-        if (string.IsNullOrWhiteSpace(jsonString))
-        {
-            return null;
-        }
-
-        var dto = JsonSerializer.Deserialize<Formato2ResponseDto>(jsonString, JsonOptions);
-        if (dto is not null)
-        {
-            var tituloCompuesto = await GetTituloCompuestoAsync(connection, codigo, cancellationToken);
-            if (!string.IsNullOrWhiteSpace(tituloCompuesto))
-            {
-                dto.Title = tituloCompuesto;
-            }
-        }
-
-        return dto;
+        return payload;
     }
 
     // El "title" que devuelve f_render_formato2() es solo el NOMBRE (ej. "SG1 -
     // CVA"). El legacy (back-tarificador/src/modules/sui853/CVA|CVNA/controller.js)
-    // muestra un texto más completo junto al botón de exportar
-    // (TablaScrollHorizontal.vue -> dialogHeaderValue), armado con una consulta
-    // aparte a sui.TCAT_DOCUMENTO: "{CODIGO} | {NOMBRE} | {DESCRIPCION}", ej.
+    // lo deja intacto y agrega meta.dialogHeader, que TablaScrollHorizontal.vue
+    // (dialogHeaderValue) muestra junto al botón de exportar y como header del
+    // detalle. Se arma con una consulta aparte a sui.TCAT_DOCUMENTO:
+    // "{CODIGO} | {NOMBRE} | {DESCRIPCION}", ej.
     // "F853S104 | SG1 - CVA | Generado automáticamente para SUI.TSEG1_CVA".
-    // Confirmado en vivo que NOMBRE == title (misma columna, dato redundante) y
-    // que el patrón es idéntico para los 14 códigos migrados -- se resuelve una
-    // sola vez acá para que las 14 pantallas lo hereden.
     private static async Task<string?> GetTituloCompuestoAsync(IDbConnection connection, string codigo, CancellationToken cancellationToken)
     {
         const string sql = @"

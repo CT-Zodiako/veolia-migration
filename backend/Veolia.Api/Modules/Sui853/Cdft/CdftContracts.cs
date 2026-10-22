@@ -6,8 +6,8 @@ namespace Veolia.Api.Modules.Sui853.Cdft;
 // Los nombres de propiedad son PascalCase sin [JsonPropertyName]: el
 // PropertyNamingPolicy camelCase por defecto configurado en Program.cs ya
 // serializa esto como el frontend lo espera (annoFiscal, nombreAps, etc.),
-// a diferencia de Formato2ResponseDto que sí necesita el atributo explícito
-// por mezclar SNAKE_CASE/camelCase reales del legacy.
+// a diferencia de Formato2Payload, que devuelve las claves reales del legacy
+// (mezcla SNAKE_CASE/camelCase) sin mapearlas.
 public sealed class CdftRowDto
 {
     public string AnnoFiscal { get; set; } = string.Empty;

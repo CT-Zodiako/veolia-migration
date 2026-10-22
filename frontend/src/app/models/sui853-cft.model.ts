@@ -1,15 +1,15 @@
-// Modelos para los 12 endpoints de SUI853/CFT. Los 12 ejecutan el mismo SQL
-// genérico en el backend (SELECT SUI.f_render_formato2(:codigo) AS json FROM
-// dual) y devuelven la misma forma de respuesta, cambiando solo el código de
-// formato SUI. Ver doc migracion/modules/sui853/CFT.md para el contrato real
-// por endpoint (columnas, fila de ejemplo) y
-// backend/Veolia.Api/Contracts/Sui853/Formato2ResponseDto.cs para el DTO
-// espejado acá.
+// Modelos para los 27 endpoints Formato2 de SUI853 (CFT/CVNA/CVA). Todos
+// ejecutan el mismo SQL genérico en el backend (SELECT
+// SUI.f_render_formato2(:codigo) AS json FROM dual) y devuelven el JSON de la
+// función sin pérdida (Formato2Payload en
+// backend/Veolia.Api/Modules/Sui853/Cft/Sui853CftContracts.cs) más
+// meta.dialogHeader, igual que el legacy. Ver doc migracion/modules/sui853/CFT.md.
 //
 // Los nombres de campo respetan EXACTAMENTE las claves JSON reales (mezcla de
 // SNAKE_CASE en las secciones de nivel superior — SIN_MOVIMIENTO/
 // CON_MOVIMIENTO — y camelCase/snake_case en las columnas — backgroundColor/
-// mouse_over), no se normalizan a una convención única.
+// mouse_over), no se normalizan a una convención única. Las claves no
+// modeladas llegan igual (índice genérico).
 
 export interface ApiEnvelope<T> {
   status: 'ok' | 'error' | boolean;
@@ -29,17 +29,26 @@ export interface TablaColumnaMeta {
   mouse_over: string | null;
 }
 
+// El legacy (TablaScrollHorizontal.vue) lee headersConFiltro/headersSinFiltro
+// cuando vienen y si no, headers.
 export interface TablaSeccion {
   tableTitle: string | null;
   tableColor: string | null;
-  headers: TablaColumnaMeta[];
+  headers?: TablaColumnaMeta[] | null;
+  headersConFiltro?: TablaColumnaMeta[] | null;
+  headersSinFiltro?: TablaColumnaMeta[] | null;
+  [key: string]: unknown;
 }
 
 export interface Formato2Response {
   title: string | null;
+  // meta.dialogHeader = "{CODIGO} | {NOMBRE} | {DESCRIPCION}" (sui.TCAT_DOCUMENTO).
+  meta?: Record<string, unknown> | null;
   SIN_MOVIMIENTO: TablaSeccion | null;
   CON_MOVIMIENTO: TablaSeccion | null;
-  data: Record<string, unknown>[];
+  // f_render_formato2 puede devolver "data": null.
+  data: Record<string, unknown>[] | null;
+  [key: string]: unknown;
 }
 
 // cdft.vue (legacy) — /cdft — pantalla distinta a las 12+ de Formato2 (no

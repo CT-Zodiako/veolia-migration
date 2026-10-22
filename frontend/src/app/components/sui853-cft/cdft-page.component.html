@@ -20,5 +20,6 @@
 </div>
 
 <ng-template #celdaTpl let-value let-col="col">
-  <span class="cdft-celda" [title]="'Clic para copiar: ' + displayValue(col, value)" (click)="copiar(value)">{{ displayValue(col, value) }}</span>
+  <span *ngIf="col.numero; else textoTpl" class="cdft-celda" [title]="'Clic para copiar: ' + displayValue(col, value)" (click)="copiar(col, value)">{{ displayValue(col, value) }}</span>
+  <ng-template #textoTpl>{{ displayValue(col, value) }}</ng-template>
 </ng-template>
