@@ -18,7 +18,7 @@ public sealed class CargaGenericaController(ICargaGenericaRepository repository,
 {
     [HttpPost("tablasSui")]
     public Task<IActionResult> Tables(CancellationToken ct) => Execute(async () =>
-        (object)await repository.TablesAsync(ct), ct);
+        (object)await repository.TablesAsync(ct), ct, anySystem: true);
 
     [HttpPost("listarHojasDrive")]
     public Task<IActionResult> Sheets(SheetRequest request, CancellationToken ct) => Execute(async () =>
@@ -72,12 +72,14 @@ public sealed class CargaGenericaController(ICargaGenericaRepository repository,
         return new { ok = true, source = "DB_TRUNCATE", owner = "SUI", tableName = table };
     }, ct);
 
-    private async Task<IActionResult> Execute(Func<Task<object>> action, CancellationToken ct)
+    // anySystem: legacy routes.js:53-57 listed the tables for any token; only the Drive/load/truncate steps keep the
+    // SUI 853 system check (odd/tasks/sui853-carga-generica.md).
+    private async Task<IActionResult> Execute(Func<Task<object>> action, CancellationToken ct, bool anySystem = false)
     {
         // Signature and revocation are checked by the controller-scoped middleware.
         if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out var context))
             return Unauthorized(new { status = 401, data = new { ok = false, code = "UNAUTHORIZED" } });
-        if (context.IdSistema != 3)
+        if (!anySystem && context.IdSistema != 3)
             return StatusCode(403, new { status = 403, data = new { ok = false, code = "WRONG_SYSTEM" } });
         try { return Ok(new { status = 200, data = await action() }); }
         catch (ArgumentException ex)

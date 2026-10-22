@@ -60,7 +60,7 @@ describe('FormulariosComponent (30003, legacy sui853/views/configuracion/formula
   });
 
   // formularios.vue displayDecimales: número/porcentaje with DECIMALES null read as 0; other formats show "—".
-  it.skip('PARITY-FINDING: a "numero" row with DECIMALES null shows "—"; legacy displayDecimales shows 0 for número/porcentaje', () => {
+  it('reads DECIMALES null as 0 for a "numero" row (legacy displayDecimales)', () => {
     const { component } = setup();
 
     expect(component.display('DECIMALES', component.rows[0].DECIMALES)).toBe(0);
@@ -105,7 +105,7 @@ describe('FormulariosComponent (30003, legacy sui853/views/configuracion/formula
   });
 
   // formularios.vue <DataTable :rows="10" :rowsPerPageOptions="[10, 30, 50, 100]">.
-  it.skip('PARITY-FINDING: paginator offers [10, 20, 50] instead of legacy [10, 30, 50, 100]', () => {
+  it('pages by 10 with the legacy [10, 30, 50, 100] options', () => {
     const { fixture } = setup();
     const table = fixture.debugElement.query(By.directive(Table)).componentInstance as Table;
 
@@ -114,7 +114,7 @@ describe('FormulariosComponent (30003, legacy sui853/views/configuracion/formula
   });
 
   // formularios.vue save(): toast { summary: "Guardado", detail: "Cambios aplicados." }.
-  it.skip('PARITY-FINDING: save success shows "Cambios guardados." instead of legacy toast "Guardado" / "Cambios aplicados."', () => {
+  it('shows the legacy save success "Guardado" / "Cambios aplicados."', () => {
     const { component, fixture, element } = setup();
 
     component.edit(component.rows[0]);
@@ -125,7 +125,7 @@ describe('FormulariosComponent (30003, legacy sui853/views/configuracion/formula
   });
 
   // formularios.vue save() catch: restores the previous row, closes nothing and toasts "No se pudo guardar. Intenta de nuevo.".
-  it.skip('PARITY-FINDING: save error shows "No se pudo guardar. El borrador se conserva; ..." instead of legacy "No se pudo guardar. Intenta de nuevo."', () => {
+  it('shows the legacy save error "No se pudo guardar. Intenta de nuevo." and keeps the previous row', () => {
     const { component, fixture, element } = setup(undefined, () => throwError(() => new Error('500')));
 
     component.edit(component.rows[0]);
@@ -135,6 +135,19 @@ describe('FormulariosComponent (30003, legacy sui853/views/configuracion/formula
 
     expect(element.textContent).toContain('No se pudo guardar. Intenta de nuevo.');
     expect(component.rows[0].HEADER_TXT).toBe('Valor');
+  });
+
+  // formularios.vue loadRows catch: toast "Error" / "No se pudo cargar la tabla." and an empty table.
+  it('shows the legacy load error "No se pudo cargar la tabla."', () => {
+    TestBed.configureTestingModule({
+      imports: [FormulariosComponent],
+      providers: [{ provide: Sui853ConfiguracionService, useValue: { getFormularios: () => throwError(() => new Error('500')) } }]
+    });
+    const fixture = TestBed.createComponent(FormulariosComponent);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('No se pudo cargar la tabla.');
+    expect(fixture.componentInstance.rows).toEqual([]);
   });
 
   // Approved: the legacy <h2 class="page-title">Formularios</h2> is the top-bar title (parity-review-all L20).

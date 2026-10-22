@@ -123,11 +123,20 @@ public sealed class CargaGenericaTests
     public async Task RequiresAuthenticatedSystemThreeContext(int? system, int expected)
     {
         var repo = new Repository(); var controller = Controller(repo, new Sheets(), system);
-        Assert.Equal(expected, Assert.IsAssignableFrom<ObjectResult>(await controller.Tables(default)).StatusCode);
         Assert.Equal(expected, Assert.IsAssignableFrom<ObjectResult>(await controller.Load(Request(), default)).StatusCode);
         Assert.Equal(expected, Assert.IsAssignableFrom<ObjectResult>(await controller.Truncate(new("SUI", "T", true), default)).StatusCode);
         Assert.False(repo.Called); Assert.False(repo.Truncated);
         Assert.NotNull(Attribute.GetCustomAttribute(typeof(CargaGenericaController), typeof(MiddlewareFilterAttribute)));
+    }
+
+    // Legacy sui853/configuracion tablasSui had no system restriction (legacy-characterization-tests S8, B16):
+    // any authenticated token lists the tables; loading and truncating stay SUI853-only.
+    [Fact]
+    public async Task TablesAreListedForAnyAuthenticatedSystem()
+    {
+        var controller = Controller(new Repository(), new Sheets(), 2);
+        Assert.IsType<OkObjectResult>(await controller.Tables(default));
+        Assert.Equal(401, Assert.IsAssignableFrom<ObjectResult>(await Controller(new Repository(), new Sheets(), null).Tables(default)).StatusCode);
     }
 
     [Theory]

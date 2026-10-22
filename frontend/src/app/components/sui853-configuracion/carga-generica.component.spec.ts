@@ -63,7 +63,7 @@ describe('CargaGenericaComponent (30006, legacy sui853/views/configuracion/cargu
 
   // cargueGenerico.vue:loadTables labels each option with row["OWNER||'.'||TABLE_NAME"] ("SUI.TGEN_A") under
   // "Tabla destino (OWNER.TABLA)".
-  it.skip('PARITY-FINDING: destination options show "TGEN_A" instead of the legacy "SUI.TGEN_A" (OWNER.TABLA)', () => {
+  it('labels each destination option OWNER.TABLA ("SUI.TGEN_A")', () => {
     const { element } = setup();
 
     expect(optionTexts(element, '#sui-table').slice(1)).toEqual(['SUI.TGEN_A', 'SUI.TGEN_B']);
@@ -82,7 +82,7 @@ describe('CargaGenericaComponent (30006, legacy sui853/views/configuracion/cargu
   });
 
   // cargueGenerico.vue:onBuscarHojas — "if (this.sheetOptions.length === 1) this.form.sheetTitle = this.sheetOptions[0].value".
-  it.skip('PARITY-FINDING: a spreadsheet with a single tab is not auto-selected (legacy selects it after "Buscar")', () => {
+  it('auto-selects the only tab of a spreadsheet after "Buscar"', () => {
     const ctx = setup([{ sheetId: 7, title: 'Única', index: 0, rowCount: 10, columnCount: 3 }]);
     ctx.component.sheetId = 'abc123';
     ctx.component.listSheets();
@@ -106,7 +106,7 @@ describe('CargaGenericaComponent (30006, legacy sui853/views/configuracion/cargu
 
   // cargueGenerico.vue (template "Selecciona columnas"): a table "Usar | Columna | Estado" with one row per Drive header,
   // Estado "Coincide ✔" for common columns and "No existe ⚠" otherwise, and the footer "Seleccionadas: N".
-  it.skip('PARITY-FINDING: the column step lacks the legacy "Usar | Columna | Estado" table with "Coincide ✔" / "No existe ⚠" per Drive header (new shows two lists and checkboxes for common columns only)', () => {
+  it('shows the "Usar | Columna | Estado" table with "Coincide ✔" / "No existe ⚠" per Drive header', () => {
     const ctx = setup();
     selectSource(ctx);
     ctx.component.showPreview();
@@ -134,7 +134,7 @@ describe('CargaGenericaComponent (30006, legacy sui853/views/configuracion/cargu
   });
 
   // cargueGenerico.vue:successMessage — "Proceso ejecutado correctamente. Filas insertadas: " + insertResult.inserted.
-  it.skip('PARITY-FINDING: load success message is "Carga completada: 42 filas insertadas. ..." instead of legacy "Proceso ejecutado correctamente. Filas insertadas: 42"', () => {
+  it('shows the legacy load success message "Proceso ejecutado correctamente. Filas insertadas: 42"', () => {
     const ctx = setup();
     selectSource(ctx);
     ctx.component.showPreview();
@@ -145,28 +145,67 @@ describe('CargaGenericaComponent (30006, legacy sui853/views/configuracion/cargu
   });
 
   // cargueGenerico.vue:onSubmit + configuracionService.js:9-20: truncateTable(owner, tableName) for the selected table.
-  // The confirmation dialog before emptying the table is the new screen's safeguard.
-  it('truncates the selected SUI table after confirmation', () => {
+  // The confirmation dialog before emptying the table is the new screen's safeguard (group E): rejecting it truncates
+  // and loads nothing.
+  it('neither truncates nor loads when the truncate confirmation is rejected', () => {
     const ctx = setup();
     selectSource(ctx);
+    ctx.component.showPreview();
+    ctx.component.truncateBeforeInsert = true;
 
-    ctx.component.confirmTruncate();
+    ctx.component.load();
+    ctx.confirmations[0].reject!();
+
     expect(ctx.service.truncateTable).not.toHaveBeenCalled();
-    ctx.confirmations[0].accept!();
+    expect(ctx.service.cargaDriveDinamica).toHaveBeenCalledTimes(1);
+  });
 
-    expect(ctx.service.truncateTable).toHaveBeenCalledWith('TGEN_A');
+  // cargueGenerico.vue lets the user tick a "No existe ⚠" header; legacy controller.js:1222-1226 dropped it, so only
+  // the common columns are sent (the new API rejects non-common ones, accepted S8/S9 group D).
+  it('sends only the common columns when a "No existe ⚠" header is ticked', () => {
+    const ctx = setup();
+    selectSource(ctx);
+    ctx.component.showPreview();
+    ctx.component.toggleColumn('EXTRA', true);
+
+    ctx.component.load();
+
+    expect(ctx.service.cargaDriveDinamica).toHaveBeenLastCalledWith({
+      sheetId: 'abc123', sheetTitle: 'Hoja 1', owner: 'SUI', tableName: 'TGEN_A', previewOnly: false, selectedColumns: ['ID', 'VALOR']
+    });
   });
 
   // cargueGenerico.vue (truncate-card + onSubmit step 1): an InputSwitch "Truncar tabla antes de cargar" makes the
   // same "Cargar datos e insertar" submit TRUNCATE the table first and then insert.
-  it.skip('PARITY-FINDING: no "Truncar tabla antes de cargar" switch; legacy truncated and then inserted in one submit, new needs a separate "Vaciar" action', () => {
+  it('offers the "Truncar tabla antes de cargar" switch', () => {
     const { element } = setup();
 
     expect(element.textContent).toContain('Truncar tabla antes de cargar');
   });
 
+  // cargueGenerico.vue:onSubmit — with truncateBeforeInsert on, the same submit truncates SUI.TABLE first and then
+  // inserts. The confirmation before truncating is approved (odd/tasks/sui853-carga-generica.md, group E).
+  it('truncates after confirmation and then loads when the switch is on', () => {
+    const ctx = setup();
+    selectSource(ctx);
+    ctx.component.showPreview();
+    ctx.component.truncateBeforeInsert = true;
+
+    ctx.component.load();
+    expect(ctx.service.truncateTable).not.toHaveBeenCalled();
+    expect(ctx.service.cargaDriveDinamica).toHaveBeenCalledTimes(1);
+    ctx.confirmations[0].accept!();
+    ctx.fixture.detectChanges();
+
+    expect(ctx.service.truncateTable).toHaveBeenCalledWith('TGEN_A');
+    expect(ctx.service.cargaDriveDinamica).toHaveBeenLastCalledWith({
+      sheetId: 'abc123', sheetTitle: 'Hoja 1', owner: 'SUI', tableName: 'TGEN_A', previewOnly: false, selectedColumns: ['ID', 'VALOR']
+    });
+    expect(ctx.element.textContent).toContain('Proceso ejecutado correctamente. Filas insertadas: 42');
+  });
+
   // Approved: the legacy <h1> is shown as the top-bar title (parity-review-all L20); legacy text "Carga genérica desde Google Drive".
-  it.skip('PARITY-FINDING: top-bar title "SUI 853 - Carga genérica" differs from legacy <h1> "Carga genérica desde Google Drive" (cargueGenerico.vue:8)', () => {
+  it('shows the legacy <h1> "Carga genérica desde Google Drive" as top-bar title (cargueGenerico.vue:8)', () => {
     expect(LayoutComponent.prototype.getPageTitle.call({ router: { url: '/cargaGenerica' } } as unknown as LayoutComponent))
       .toContain('Carga genérica desde Google Drive');
   });

@@ -39,7 +39,10 @@ public static class CargaGenericaValidation
     public static string[] Headers(IReadOnlyList<string> headers)
     {
         if (headers.Count == 0) throw new ArgumentException("La hoja no tiene encabezados.");
-        var names = headers.Select(Identifier).ToArray();
+        // Legacy controller.js:1167 only trims and upper-cases; headers that are not Oracle identifiers simply never
+        // match a table column. Only metadata column names reach the SQL text.
+        var names = headers.Select(h => h?.Trim().ToUpperInvariant() ?? "").ToArray();
+        if (names.Any(string.IsNullOrEmpty)) throw new ArgumentException("La hoja contiene encabezados vacíos.");
         if (names.Distinct(StringComparer.Ordinal).Count() != names.Length)
             throw new ArgumentException("La hoja contiene encabezados duplicados.");
         return names;

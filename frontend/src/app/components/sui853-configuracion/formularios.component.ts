@@ -15,11 +15,12 @@ import { FormularioRow, Sui853ConfiguracionService } from '../../services/sui853
       <p>Configuración global de columnas. La identidad FORMATO / SECCION / FIELD no se modifica.</p>
       <p-button label="Recargar" icon="pi pi-refresh" [disabled]="loading || saving || !!draft" (onClick)="load()" />
       <p *ngIf="error" class="error-message" role="alert">{{ error }}</p>
-      <p *ngIf="success" class="success-message" role="status">{{ success }}</p>
+      <p *ngIf="success" class="success-message" role="status"><strong>Guardado</strong> {{ success }}</p>
       <p *ngIf="loading" role="status">Cargando formularios…</p>
       <p *ngIf="!loading && !error && !rows.length" role="status">No hay registros.</p>
       <app-tabla-avanzada [columnas]="columns" [rows]="rows" [loading]="loading"
-        storageKey="sui853-formularios" nombreExportar="Formularios" [accionesTemplate]="actions" [cellTemplate]="cell" />
+        storageKey="sui853-formularios" nombreExportar="Formularios" [rowsPerPageOptionsList]="pageSizes"
+        [accionesTemplate]="actions" [cellTemplate]="cell" />
       <p *ngIf="saveError" class="error-message" role="alert">{{ saveError }}</p>
       <div *ngIf="draft" class="actions">
         <span>Enter para guardar · Ctrl+Enter en descripción · Escape para cancelar.</span>
@@ -95,6 +96,8 @@ export class FormulariosComponent implements OnInit {
     { field: 'MOSTRAR_HEADER', options: [{value:'S',label:'Sí'}, {value:'N',label:'No'}] },
     { field: 'INCLUIR_DATA', options: [{value:'S',label:'Sí'}, {value:'N',label:'No'}] }
   ];
+  // formularios.vue <DataTable :rows="10" :rowsPerPageOptions="[10, 30, 50, 100]">.
+  readonly pageSizes = [10, 30, 50, 100];
   readonly columns: TablaColumn[] = ['FORMATO', 'SECCION', 'FIELD', 'HEADER_TXT', 'BACKGROUND_COLOR', 'FILTER_FLAG', 'FORMATO_DATO', 'DECIMALES', 'ALINEACION', 'TOOLTIP', 'MOSTRAR_HEADER', 'INCLUIR_DATA', 'ORDEN_HEADER', 'ORDEN_DATA']
     .map(field => ({ field, header: field, filtrable: field !== 'TOOLTIP', numero: ['DECIMALES', 'ORDEN_HEADER', 'ORDEN_DATA'].includes(field) }));
 
@@ -106,9 +109,10 @@ export class FormulariosComponent implements OnInit {
       next: response => {
         this.loading = false;
         if (response.status !== 200 || !Array.isArray(response.data)) { this.error = 'Respuesta de formularios inválida.'; return; }
-        this.rows = response.data;
+        // formularios.vue loadRows: DECIMALES reads as 0 for número/porcentaje when null, and null otherwise.
+        this.rows = response.data.map(row => ({ ...row, DECIMALES: this.isNumeric(row.FORMATO_DATO) ? (row.DECIMALES ?? 0) : null }));
       },
-      error: () => { this.loading = false; this.error = 'No se pudieron cargar los formularios. Intente recargar.'; }
+      error: () => { this.loading = false; this.error = 'No se pudo cargar la tabla.'; }
     });
   }
   isEditing(row: FormularioRow): boolean { return !!this.draft && this.sameIdentity(row, this.draft); }
@@ -121,7 +125,8 @@ export class FormulariosComponent implements OnInit {
     this.draft.DECIMALES = this.numericFormat ? (row.DECIMALES ?? 0) : null;
   }
   cancel(): void { if (!this.saving) { this.draft = null; this.saveError = ''; } }
-  get numericFormat(): boolean { return ['numero', 'porcentaje'].includes(this.draft?.FORMATO_DATO ?? ''); }
+  get numericFormat(): boolean { return this.isNumeric(this.draft?.FORMATO_DATO); }
+  private isNumeric(format: string | null | undefined): boolean { return ['numero', 'porcentaje'].includes(format ?? ''); }
   setCatalog(field: typeof this.catalogs[number]['field'], value: string): void {
     if (!this.draft) return;
     this.draft[field] = value;
@@ -159,9 +164,9 @@ export class FormulariosComponent implements OnInit {
           this.saveError = 'No se recibió el registro actualizado. Cancele y recargue para verificar.'; return;
         }
         this.rows = this.rows.map(row => this.sameIdentity(row, submitted) ? response.data : row);
-        this.draft = null; this.success = 'Cambios guardados.';
+        this.draft = null; this.success = 'Cambios aplicados.';
       },
-      error: () => { this.saving = false; this.saveError = 'No se pudo guardar. El borrador se conserva; verifique los valores e intente nuevamente.'; }
+      error: () => { this.saving = false; this.saveError = 'No se pudo guardar. Intenta de nuevo.'; }
     });
   }
 }

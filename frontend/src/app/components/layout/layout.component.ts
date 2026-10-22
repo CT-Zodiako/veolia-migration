@@ -147,7 +147,7 @@ export class LayoutComponent implements OnInit {
       case '/': return 'Dashboard';
       case '/usuarios': return 'Gestión de Usuarios';
       case '/formularios': return 'Formularios';
-      case '/cargaGenerica': return 'SUI 853 - Carga genérica';
+      case '/cargaGenerica': return 'SUI 853 - Carga genérica desde Google Drive';
       case '/aps': return 'Configuración APS';
       case '/empresas': return 'Configuración Empresas';
       case '/asignacion-sistema': return 'Asignación de Sistemas';
@@ -204,10 +204,10 @@ export class LayoutComponent implements OnInit {
       case '/cssaprovechamiento': return 'SUI 853 - Estimación CSS';
       case '/crlus': return 'SUI 853 - CRLUS';
       case '/cbls': return 'SUI 853 - CBLS';
-      case '/cblusMinimo': return 'SUI 853 - CBLUS Mínimo';
-      case '/cblusMaximo': return 'SUI 853 - CBLUS Máximo';
+      case '/cblusMinimo': return 'SUI 853 - CBLUS MINIMO';
+      case '/cblusMaximo': return 'SUI 853 - CBLUS MAXIMO';
       case '/cblus': return 'SUI 853 - CBLUS';
-      case '/cbicsmaxmin': return 'SUI 853 - CBICS Mínimo y Máximo';
+      case '/cbicsmaxmin': return 'SUI 853 - CBICS MINIMO Y MAXIMO';
       case '/crtsMinimo': return 'SUI 853 - CRTs Mínimo';
       case '/crtsMaximo': return 'SUI 853 - CRTs Máximo';
       case '/crt': return 'SUI 853 - CRT';

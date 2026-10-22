@@ -14,9 +14,10 @@ public sealed class CdftRepository(IOracleConnectionFactory connectionFactory) :
         // ANNO_FISCAL es VARCHAR2 en Oracle (no numérico) — hay que bindear
         // el parámetro como string, sino el match contra la columna falla.
         //
-        // Los CAST(... AS NUMBER(18,6)) son defensivos: sin escala explícita,
-        // Dapper rompe con "Error parsing column N" cuando el valor es 0 (bug
-        // real ya visto en ReliqCargueRepository con columnas NUMBER/FLOAT).
+        // TO_BINARY_DOUBLE evita el "Error parsing column N" de Dapper (ODP.NET no
+        // convierte a decimal un NUMBER/FLOAT de más de 28 dígitos) sin redondear:
+        // el legacy (node-oracledb) devolvía estos NUMBER como double de JS, igual
+        // que aquí. Un CAST a NUMBER(18,6) redondeaba los valores a 6 decimales.
         //
         // Los alias de columna usan PascalCase sin guion bajo (AnnoFiscal,
         // NombreAps, ...) para que Dapper los mapee por nombre a CdftRowDto
@@ -24,9 +25,9 @@ public sealed class CdftRepository(IOracleConnectionFactory connectionFactory) :
         const string sql = @"
 SELECT ANNO_FISCAL AS AnnoFiscal,
        APS AS NombreAps,
-       CAST(CDFT_CORRIENTES AS NUMBER(18,6)) AS ValorCorriente,
-       CAST(CDFT_2018 AS NUMBER(18,6)) AS Valor2018,
-       CAST(QRTZ AS NUMBER(18,6)) AS Qrtz
+       TO_BINARY_DOUBLE(CDFT_CORRIENTES) AS ValorCorriente,
+       TO_BINARY_DOUBLE(CDFT_2018) AS Valor2018,
+       TO_BINARY_DOUBLE(QRTZ) AS Qrtz
   FROM SUI.TCDFT_QRT_ANUAL
  WHERE ANNO_FISCAL = :anno";
 

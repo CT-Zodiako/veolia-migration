@@ -113,9 +113,13 @@ public sealed class Sui853FormulariosContractTests
         Assert.IsType<UnauthorizedObjectResult>(await controller.Update(ValidRow(), default));
         Assert.False(repo.Called);
         controller = Controller(repo, 2);
-        Assert.Equal(403, Assert.IsType<ObjectResult>(await controller.List(default)).StatusCode);
         Assert.Equal(403, Assert.IsType<ObjectResult>(await controller.Update(ValidRow(), default)).StatusCode);
         Assert.False(repo.Called);
+
+        // Legacy getFormularios had no system restriction (legacy-characterization-tests S8, B16):
+        // any authenticated token reads the list; updates stay SUI853-only.
+        Assert.IsType<OkObjectResult>(await controller.List(default));
+        Assert.True(repo.Called);
     }
 
     [Fact]

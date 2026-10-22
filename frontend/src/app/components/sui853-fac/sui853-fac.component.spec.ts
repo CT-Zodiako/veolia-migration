@@ -82,7 +82,7 @@ describe('Sui853FacComponent (40001, legacy sui853/views/General/fac.vue)', () =
   });
 
   // fac.vue:73-86 + general.js:30-33 — a failed call is logged and the tab renders the empty config (no message).
-  it.skip('PARITY-FINDING: on a failed FAC call legacy renders the empty table in the "General" tab without a message; new replaces the table with "No se pudo cargar la información de FAC." and a "Reintentar" button', () => {
+  it('renders the empty table in the "General" tab without a message when the FAC call fails', () => {
     const { tabla, element } = setup(throwError(() => new Error('500')));
 
     expect(tabla()).toBeDefined();

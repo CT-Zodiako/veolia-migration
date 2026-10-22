@@ -153,7 +153,7 @@ describe('SUI853 Formato2 pages — legacy contract (T4)', () => {
     expect(tablas.map(tabla => tabla.loading)).toEqual(legacy.tabs.map(() => false));
   });
 
-  it.skip('PARITY-FINDING: loading text is "Cargando..." (shared sui853-formato2-tabla) instead of legacy "Cargando información…" (every Formato2 view, e.g. cft.vue:11)', () => {
+  it.skip('PARITY-FINDING: loading text is "Cargando..." (shared sui853-formato2-tabla) instead of legacy "Cargando información…" (every Formato2 view, e.g. cft.vue:11); fix is shared/sui853-formato2-tabla.component.html:3, outside the T6e edit surface', () => {
     const { service } = serviceAnswering(() => new Subject<unknown>());
     const { element } = render(CftPageComponent, service);
 
@@ -166,10 +166,17 @@ describe('SUI853 Formato2 pages — legacy contract (T4)', () => {
       expect(topBarTitle(legacy.route)).toBe(`SUI 853 - ${legacy.legacyTitle}`);
     });
 
-  it.skip('PARITY-FINDING: top-bar titles differ from the legacy <h1>: /cbls "SUI 853 - CBLS" vs cbls.vue "CFT"; /cblusMinimo "CBLUS Mínimo" vs "CBLUS MINIMO"; /cblusMaximo "CBLUS Máximo" vs "CBLUS MAXIMO"; /cbicsmaxmin "CBICS Mínimo y Máximo" vs "CBICS MINIMO Y MAXIMO"', () => {
-    for (const legacy of PAGES.filter(p => TITLE_FINDINGS.includes(p.view))) {
+  // cblusMinimo.vue:3, cblusMaximo.vue:3, cbicsmaxmin.vue:3 — the legacy <h1> text, upper-case without accents.
+  it('cblusMinimo.vue, cblusMaximo.vue and cbicsmaxmin.vue show the legacy <h1> text in the top bar', () => {
+    for (const legacy of PAGES.filter(p => TITLE_FINDINGS.includes(p.view) && p.view !== 'cbls.vue')) {
       expect(topBarTitle(legacy.route)).toBe(`SUI 853 - ${legacy.legacyTitle}`);
     }
+  });
+
+  // cbls.vue:3 shows <h1>CFT</h1>, a copy-paste bug of cft.vue.
+  // Accepted deviation: legacy-characterization-tests S8/S9 (group D, legacy bug not replicated): /cbls is titled CBLS.
+  it('cbls.vue keeps the CBLS top-bar title instead of the legacy copy-paste "CFT"', () => {
+    expect(topBarTitle('/cbls')).toBe('SUI 853 - CBLS');
   });
 
   it.each(SERVICE_ROUTES)('Sui853CftService.%s posts {} to api/v1/sui853/cft/%s', (method, route) => {

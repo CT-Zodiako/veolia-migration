@@ -9,7 +9,7 @@ public sealed class FormulariosController(IFormulariosRepository repository, ILo
 {
     [HttpPost("getFormularios")]
     public Task<IActionResult> List(CancellationToken cancellationToken)
-        => ExecuteAsync(async () => Ok(new { status = 200, data = await repository.ListAsync(cancellationToken) }), cancellationToken);
+        => ExecuteAsync(async () => Ok(new { status = 200, data = await repository.ListAsync(cancellationToken) }), cancellationToken, anySystem: true);
 
     [HttpPost("updateFormulario")]
     public Task<IActionResult> Update([FromBody] FormularioRow row, CancellationToken cancellationToken)
@@ -21,12 +21,13 @@ public sealed class FormulariosController(IFormulariosRepository repository, ILo
                 : Ok(new { status = 200, data = saved });
         }, cancellationToken);
 
-    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action, CancellationToken cancellationToken)
+    // anySystem: legacy routes.js (getFormularios) served the rows to any token; updates keep the SUI 853 check.
+    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action, CancellationToken cancellationToken, bool anySystem = false)
     {
         // Signature and expiry are checked by AuthJwtParityMiddleware before controller execution.
         if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out var context))
             return Unauthorized(new { status = 401, message = "No autorizado." });
-        if (context.IdSistema != 3)
+        if (!anySystem && context.IdSistema != 3)
             return StatusCode(403, new { status = 403, message = "Seleccione el sistema SUI 853." });
         try { return await action(); }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }

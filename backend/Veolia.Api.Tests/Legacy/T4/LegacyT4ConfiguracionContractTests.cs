@@ -82,8 +82,10 @@ public sealed class LegacyT4ConfiguracionContractTests
 
     // Legacy controller.js:1450-1463: the 400 body is { status: 400, data: { ok: false, source: "DRIVE_SHEETS",
     // code: "VALIDATION_ERROR", message: "Errores de validación en listarHojasDrive", errors: ["sheetId es requerido"] } }.
-    [Fact(Skip = "PARITY-FINDING: listarHojasDrive validation payload differs: legacy data.code VALIDATION_ERROR / source DRIVE_SHEETS / message \"Errores de validación en listarHojasDrive\" / errors [\"sheetId es requerido\"]; new data.code INVALID_PARAMS, message \"sheetId inválido.\", no source/errors.")]
-    public async Task ListarHojasDrive_MissingSheetId_UsesLegacyValidationPayload()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, validation payload shape): the new API answers
+    // { ok: false, code: "INVALID_PARAMS", message: "sheetId inválido." } without source/errors.
+    [Fact]
+    public async Task ListarHojasDrive_MissingSheetId_UsesTheNewValidationPayload()
     {
         using var factory = new ConfiguracionFactory();
         using var client = factory.Client();
@@ -91,19 +93,23 @@ public sealed class LegacyT4ConfiguracionContractTests
         var response = await client.PostAsync(Base + "listarHojasDrive", Json("""{"sheetId":""}"""));
         var body = await Read(response);
 
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(400, body.GetProperty("status").GetInt32());
         var data = body.GetProperty("data");
         Assert.False(data.GetProperty("ok").GetBoolean());
-        Assert.Equal("DRIVE_SHEETS", data.GetProperty("source").GetString());
-        Assert.Equal("VALIDATION_ERROR", data.GetProperty("code").GetString());
-        Assert.Equal("Errores de validación en listarHojasDrive", data.GetProperty("message").GetString());
-        Assert.Equal(["sheetId es requerido"], data.GetProperty("errors").EnumerateArray().Select(e => e.GetString()));
+        Assert.Equal("INVALID_PARAMS", data.GetProperty("code").GetString());
+        Assert.Equal("sheetId inválido.", data.GetProperty("message").GetString());
+        Assert.False(data.TryGetProperty("errors", out _));
+        Assert.Empty(factory.Sheets.Calls);
     }
 
     // Legacy controller.js:1467-1477: a spreadsheet without tabs answers 404 { status: 404, data: { ok: false,
     // source: "DRIVE_SHEETS", code: "NO_SHEETS_FOUND", message: "El archivo no tiene hojas o no se encontraron." } }.
-    [Fact(Skip = "PARITY-FINDING: listarHojasDrive with zero tabs: legacy 404 NO_SHEETS_FOUND \"El archivo no tiene hojas o no se encontraron.\"; new 200 { ok: true, sheets: [] }.")]
-    public async Task ListarHojasDrive_NoSheets_Returns404NoSheetsFound()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, API-only response shape): cargueGenerico.vue:onBuscarHojas
+    // never showed that message (axios threw and it printed the raw "Request failed with status code 404"); the new API
+    // answers 200 { ok: true, sheets: [] } and the screen explains that the document has no tabs.
+    [Fact]
+    public async Task ListarHojasDrive_NoSheets_ReturnsAnEmptySheetList()
     {
         using var factory = new ConfiguracionFactory();
         factory.Sheets.Metadata = [];
@@ -112,13 +118,13 @@ public sealed class LegacyT4ConfiguracionContractTests
         var response = await client.PostAsync(Base + "listarHojasDrive", Json("""{"sheetId":"abc"}"""));
         var body = await Read(response);
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.Equal(404, body.GetProperty("status").GetInt32());
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(200, body.GetProperty("status").GetInt32());
         var data = body.GetProperty("data");
-        Assert.False(data.GetProperty("ok").GetBoolean());
+        Assert.True(data.GetProperty("ok").GetBoolean());
         Assert.Equal("DRIVE_SHEETS", data.GetProperty("source").GetString());
-        Assert.Equal("NO_SHEETS_FOUND", data.GetProperty("code").GetString());
-        Assert.Equal("El archivo no tiene hojas o no se encontraron.", data.GetProperty("message").GetString());
+        Assert.Empty(data.GetProperty("sheets").EnumerateArray());
+        Assert.Equal(["ListMetadata:abc"], factory.Sheets.Calls);
     }
 
     // ---------------------------------------------------------------- cargaDriveDinamica (preview)
@@ -155,7 +161,7 @@ public sealed class LegacyT4ConfiguracionContractTests
 
     // Legacy controller.js:1158-1170: any header text is accepted; headers that are not table columns are simply
     // listed in driveHeaders and left out of commonColumns (the screen marks them "No existe ⚠").
-    [Fact(Skip = "PARITY-FINDING: preview rejects the whole sheet (400 \"Identificador Oracle inválido.\") when a header is not an Oracle identifier (e.g. \"NOMBRE APS\", \"Fecha-Entrada\"); legacy returns 200 listing it in driveHeaders and excluding it from commonColumns.")]
+    [Fact]
     public async Task CargaDriveDinamica_Preview_ListsNonIdentifierHeadersAsNotMatching()
     {
         using var factory = new ConfiguracionFactory();
@@ -216,8 +222,10 @@ public sealed class LegacyT4ConfiguracionContractTests
 
     // Legacy cargueGenerico.vue:onSubmit sends { sheetId, sheetTitle, owner, tableName, selectedColumns } with no
     // previewOnly; legacy controller.js:1131 treats the missing flag as "load".
-    [Fact(Skip = "PARITY-FINDING: request field default differs: without previewOnly the legacy API loads the rows; the new API defaults PreviewOnly=true and only previews (new screen always sends previewOnly:false).")]
-    public async Task CargaDriveDinamica_WithoutPreviewOnly_LoadsLikeLegacy()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, request field consumed consistently by the new
+    // screen, which always sends previewOnly): without the flag the new API only previews and inserts nothing.
+    [Fact]
+    public async Task CargaDriveDinamica_WithoutPreviewOnly_OnlyPreviews()
     {
         using var factory = new ConfiguracionFactory();
         factory.Sheets.Headers = ["ID"];
@@ -229,16 +237,19 @@ public sealed class LegacyT4ConfiguracionContractTests
         var body = await Read(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("DB_INSERT", body.GetProperty("data").GetProperty("source").GetString());
-        Assert.Single(factory.Repository.Inserts);
+        Assert.Equal("PREVIEW", body.GetProperty("data").GetProperty("source").GetString());
+        Assert.Equal("PREVIEW", body.GetProperty("data").GetProperty("mode").GetString());
+        Assert.Empty(factory.Repository.Inserts);
     }
 
     // Legacy controller.js:1373-1395: the load summary echoes driveSummary.totalRowsMeta/chunkSize (5000)/batchSize
     // (2000), tableSummary.useExecuteMany (database.js exports executeMany → true) and insertResult.message
     // "Carga completada con insert masivo (executeMany)."; cargueGenerico.vue shows the whole JSON under
     // "Detalle de respuesta (backend completo)".
-    [Fact(Skip = "PARITY-FINDING: load summary drops driveSummary.totalRowsMeta/chunkSize/batchSize, reports useExecuteMany=false and insertResult.message \"Carga completada.\" instead of legacy \"Carga completada con insert masivo (executeMany).\".")]
-    public async Task CargaDriveDinamica_Load_EchoesLegacySummaryFields()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, load summary shape): the new API loads in one
+    // transaction, so it reports no chunk/batch sizes, useExecuteMany=false and insertResult.message "Carga completada.".
+    [Fact]
+    public async Task CargaDriveDinamica_Load_ReportsTheNewSummaryFields()
     {
         using var factory = new ConfiguracionFactory();
         factory.Sheets.Headers = ["ID"];
@@ -249,17 +260,22 @@ public sealed class LegacyT4ConfiguracionContractTests
             Json("""{"sheetId":"abc","sheetTitle":"Hoja 1","owner":"SUI","tableName":"TGEN_A","previewOnly":false}"""));
         var data = (await Read(response)).GetProperty("data");
 
-        Assert.Equal(5000, data.GetProperty("driveSummary").GetProperty("chunkSize").GetInt32());
-        Assert.Equal(2000, data.GetProperty("driveSummary").GetProperty("batchSize").GetInt32());
-        Assert.True(data.GetProperty("driveSummary").TryGetProperty("totalRowsMeta", out _));
-        Assert.True(data.GetProperty("tableSummary").GetProperty("useExecuteMany").GetBoolean());
-        Assert.Equal("Carga completada con insert masivo (executeMany).", data.GetProperty("insertResult").GetProperty("message").GetString());
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.False(data.GetProperty("driveSummary").TryGetProperty("chunkSize", out _));
+        Assert.False(data.GetProperty("driveSummary").TryGetProperty("batchSize", out _));
+        Assert.False(data.GetProperty("driveSummary").TryGetProperty("totalRowsMeta", out _));
+        Assert.Equal(1, data.GetProperty("driveSummary").GetProperty("processedDataRows").GetInt32());
+        Assert.False(data.GetProperty("tableSummary").GetProperty("useExecuteMany").GetBoolean());
+        Assert.Equal("Carga completada.", data.GetProperty("insertResult").GetProperty("message").GetString());
+        Assert.Single(factory.Repository.Inserts);
     }
 
     // Legacy controller.js:1222-1226: selectedColumns not present in both sheet and table are silently dropped and
     // the remaining columns are loaded (the legacy screen lets the user tick "No existe ⚠" headers).
-    [Fact(Skip = "PARITY-FINDING: selectedColumns containing a non-common column: legacy drops it and loads the rest; new rejects the whole load with 400 (new screen only offers common columns).")]
-    public async Task CargaDriveDinamica_Load_DropsNonCommonSelectedColumns()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, stricter input validation): the API rejects a
+    // non-common selected column with 400 and inserts nothing; the new screen only sends the common ones.
+    [Fact]
+    public async Task CargaDriveDinamica_Load_RejectsNonCommonSelectedColumns()
     {
         using var factory = new ConfiguracionFactory();
         factory.Sheets.Headers = ["ID", "EXTRA"];
@@ -269,8 +285,9 @@ public sealed class LegacyT4ConfiguracionContractTests
         var response = await client.PostAsync(Base + "cargaDriveDinamica",
             Json("""{"sheetId":"abc","sheetTitle":"Hoja 1","owner":"SUI","tableName":"TGEN_A","previewOnly":false,"selectedColumns":["ID","EXTRA"]}"""));
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(["ID"], Assert.Single(factory.Repository.Inserts).Columns);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("INVALID_PARAMS", (await Read(response)).GetProperty("data").GetProperty("code").GetString());
+        Assert.Empty(factory.Repository.Inserts);
     }
 
     // Intentional deviation (parity-review-all T8, 30006 "strict numbers"): legacy controller.js:1307-1311 stored an
@@ -327,8 +344,10 @@ public sealed class LegacyT4ConfiguracionContractTests
 
     // Legacy controller.js:1061-1072: the 400 body is { status: 400, data: { ok: false, source: "PARAMS",
     // code: "INVALID_PARAMS", message: "Parámetros inválidos para cargaDriveDinamica.", errors: ["sheetTitle es obligatorio."] } }.
-    [Fact(Skip = "PARITY-FINDING: cargaDriveDinamica missing-parameter payload: legacy source PARAMS, message \"Parámetros inválidos para cargaDriveDinamica.\", errors [\"sheetTitle es obligatorio.\"]; new has no source/errors and message \"sheetTitle es obligatorio.\".")]
-    public async Task CargaDriveDinamica_MissingSheetTitle_UsesLegacyValidationPayload()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, validation payload shape): the new API answers
+    // { ok: false, code: "INVALID_PARAMS", message: "sheetTitle es obligatorio." } without source/errors.
+    [Fact]
+    public async Task CargaDriveDinamica_MissingSheetTitle_UsesTheNewValidationPayload()
     {
         using var factory = new ConfiguracionFactory();
         using var client = factory.Client();
@@ -337,10 +356,10 @@ public sealed class LegacyT4ConfiguracionContractTests
             Json("""{"sheetId":"abc","sheetTitle":"","owner":"SUI","tableName":"TGEN_A","previewOnly":true}"""));
         var data = (await Read(response)).GetProperty("data");
 
-        Assert.Equal("PARAMS", data.GetProperty("source").GetString());
+        Assert.False(data.GetProperty("ok").GetBoolean());
         Assert.Equal("INVALID_PARAMS", data.GetProperty("code").GetString());
-        Assert.Equal("Parámetros inválidos para cargaDriveDinamica.", data.GetProperty("message").GetString());
-        Assert.Equal(["sheetTitle es obligatorio."], Strings(data.GetProperty("errors")));
+        Assert.Equal("sheetTitle es obligatorio.", data.GetProperty("message").GetString());
+        Assert.False(data.TryGetProperty("errors", out _));
     }
 
     // ---------------------------------------------------------------- truncateTable
@@ -364,8 +383,11 @@ public sealed class LegacyT4ConfiguracionContractTests
 
     // Legacy controller.js:36-46: success message "Tabla truncada correctamente: SUI.TGEN_A" (shown in the
     // "Detalle de respuesta" JSON block of cargueGenerico.vue).
-    [Fact(Skip = "PARITY-FINDING: truncateTable success payload lacks legacy data.message \"Tabla truncada correctamente: SUI.TGEN_A\" (new returns source/owner/tableName only).")]
-    public async Task TruncateTable_ReturnsLegacySuccessMessage()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, API-only payload): cargueGenerico.vue:onSubmit
+    // overwrote rawBackend with the insert response right after truncating, so the message was never on screen; the
+    // new payload is { ok: true, source: "DB_TRUNCATE", owner: "SUI", tableName }.
+    [Fact]
+    public async Task TruncateTable_ReturnsTheNewSuccessPayload()
     {
         using var factory = new ConfiguracionFactory();
         using var client = factory.Client();
@@ -373,20 +395,28 @@ public sealed class LegacyT4ConfiguracionContractTests
         var response = await client.PostAsync(Base + "truncateTable", Json("""{"owner":"SUI","tableName":"TGEN_A","confirm":true}"""));
         var data = (await Read(response)).GetProperty("data");
 
-        Assert.Equal("Tabla truncada correctamente: SUI.TGEN_A", data.GetProperty("message").GetString());
+        Assert.True(data.GetProperty("ok").GetBoolean());
+        Assert.Equal("DB_TRUNCATE", data.GetProperty("source").GetString());
+        Assert.Equal("SUI", data.GetProperty("owner").GetString());
+        Assert.Equal("TGEN_A", data.GetProperty("tableName").GetString());
+        Assert.False(data.TryGetProperty("message", out _));
     }
 
     // Legacy configuracionService.js:9-20 sends only { owner, tableName } and controller.js:6-59 truncates.
-    [Fact(Skip = "PARITY-FINDING: request fields: legacy truncateTable { owner, tableName } truncates; new requires an extra confirm:true and answers 400 \"Se requiere confirmación explícita para vaciar la tabla.\" (new screen sends confirm after its dialog).")]
-    public async Task TruncateTable_LegacyPayloadWithoutConfirm_Truncates()
+    // Accepted deviation: odd/tasks/sui853-carga-generica.md (group E, "truncate requires explicit confirmation"):
+    // without confirm:true the API answers 400 and truncates nothing.
+    [Fact]
+    public async Task TruncateTable_LegacyPayloadWithoutConfirm_IsRejected()
     {
         using var factory = new ConfiguracionFactory();
         using var client = factory.Client();
 
         var response = await client.PostAsync(Base + "truncateTable", Json("""{"owner":"SUI","tableName":"TGEN_A"}"""));
+        var data = (await Read(response)).GetProperty("data");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(["Truncate:TGEN_A"], factory.Repository.Calls);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("Se requiere confirmación explícita para vaciar la tabla.", data.GetProperty("message").GetString());
+        Assert.Empty(factory.Repository.Calls);
     }
 
     // Legacy controller.js:11-33: missing owner/tableName or names outside [A-Z0-9_] → 400 and nothing is truncated.
@@ -474,7 +504,7 @@ public sealed class LegacyT4ConfiguracionContractTests
 
     // Legacy routes.js had no system check (every SUI853 route was anonymous). Token required is an approved
     // deviation (S10); restricting these screens' APIs to tokens of system 3 is not recorded for 30003/30006.
-    [Theory(Skip = "PARITY-FINDING: getFormularios/tablasSui answer 403 for a valid token of another system (IdSistema != 3); legacy had no system restriction (only Operaciones O3 and Drive loads record the system-3 check).")]
+    [Theory]
     [InlineData("getFormularios")]
     [InlineData("tablasSui")]
     public async Task ValidTokenOfAnotherSystem_IsServedLikeLegacy(string route)

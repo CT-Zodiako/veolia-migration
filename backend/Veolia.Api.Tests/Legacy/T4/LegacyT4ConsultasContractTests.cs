@@ -53,7 +53,7 @@ public sealed class LegacyT4ConsultasContractTests
 
     // Legacy operaciones/routes.js:7-11 + controller.js:6-30: POST residuosGenerados { apsId, year, month } →
     // SUI.TGEN_RESGENERADOS rows keyed by their Oracle column names. System-3 check is intentional (parity-review T11 O3).
-    [Fact(Skip = "PARITY-FINDING: every POST residuosGenerados answers 500 \"System.InvalidOperationException: Record type 'ResiduosGeneradosRequest' has validation metadata defined on property 'Month' that will be ignored\" ([property: ...] attributes on a positional record break MVC model binding); legacy returns the TGEN_RESGENERADOS rows.")]
+    [Fact]
     public async Task ResiduosGenerados_PassesApsYearMonthAndKeepsOracleKeys()
     {
         using var factory = new ConsultasFactory();
@@ -92,7 +92,7 @@ public sealed class LegacyT4ConsultasContractTests
 
     // Legacy operaciones/routes.js:12-16 + controller.js:31-52 (used by comercial/tgenComercial.vue:614):
     // POST residuosGeneradosInforme { apsId, year, month } → SELECT * FROM SUI.TGEN_COMERCIAL rows.
-    [Fact(Skip = "PARITY-FINDING: every POST residuosGeneradosInforme answers 500 \"System.InvalidOperationException: Record type 'ComercialRequest' has validation metadata defined on property 'Month' that will be ignored\" ([property: ...] attributes on a positional record break MVC model binding); legacy returns the TGEN_COMERCIAL rows.")]
+    [Fact]
     public async Task ComercialDetalle_PassesApsYearMonthAndKeepsOracleKeys()
     {
         using var factory = new ConsultasFactory();
@@ -210,7 +210,7 @@ file sealed class StubCdft : ICdftRepository
         Annos.Add(anno);
         return Task.FromResult<IReadOnlyList<CdftRowDto>>([new CdftRowDto
         {
-            AnnoFiscal = "2024", NombreAps = "APS Norte", ValorCorriente = 1234567.891m, Valor2018 = 987.5m, Qrtz = 0.123456m
+            AnnoFiscal = "2024", NombreAps = "APS Norte", ValorCorriente = 1234567.891, Valor2018 = 987.5, Qrtz = 0.123456
         }]);
     }
 }

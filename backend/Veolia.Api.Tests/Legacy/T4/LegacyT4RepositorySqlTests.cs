@@ -52,19 +52,21 @@ public sealed class LegacyT4RepositorySqlTests
             Assert.Matches($@"\b{source}\b", sql);
         Assert.Equal(new object?[] { "2024" }, command.Parameters.Select(p => p.Value).ToArray());
         var row = Assert.Single(rows);
-        Assert.Equal(("2024", "APS Norte", 1.5m, 2.25m, 0.75m), (row.AnnoFiscal, row.NombreAps, row.ValorCorriente, row.Valor2018, row.Qrtz));
+        Assert.Equal(("2024", "APS Norte", 1.5, 2.25, 0.75), (row.AnnoFiscal, row.NombreAps, row.ValorCorriente, row.Valor2018, row.Qrtz));
     }
 
-    // Legacy CVNA/controller.js:470-472 returns CDFT_CORRIENTES, CDFT_2018 and QRTZ unrounded (full Oracle NUMBER).
-    [Fact(Skip = "PARITY-FINDING: CdftRepository casts CDFT_CORRIENTES, CDFT_2018 and QRTZ to NUMBER(18,6): values with more than 6 decimals are rounded in Oracle; legacy returned the column values as stored (copy/export use the raw value).")]
+    // Legacy CVNA/controller.js:470-472 returns CDFT_CORRIENTES, CDFT_2018 and QRTZ unrounded (node-oracledb fetches
+    // NUMBER as a JS double). The values must reach the API with more than 6 decimals.
+    [Fact]
     public async Task Cdft_ReturnsValuesWithoutRounding()
     {
         var db = new T4RecordingConnection(_ => T4Tables.Of(["AnnoFiscal", "NombreAps", "ValorCorriente", "Valor2018", "Qrtz"],
-            ["2024", "APS Norte", 1m, 1m, 1m]));
+            ["2024", "APS Norte", 1234567.123456789d, 0.12345678912d, 0.000000123d]));
 
-        await new CdftRepository(new T4Factory(db)).GetByAnnoAsync(2024, default);
+        var row = Assert.Single(await new CdftRepository(new T4Factory(db)).GetByAnnoAsync(2024, default));
 
         Assert.DoesNotContain("CAST(", Assert.Single(db.Commands).CommandText);
+        Assert.Equal((1234567.123456789d, 0.12345678912d, 0.000000123d), (row.ValorCorriente, row.Valor2018, row.Qrtz));
     }
 
     // Legacy operaciones/controller.js:6-18: the 21 TGEN_RESGENERADOS columns, filtered APS = :1 AND ANNO = :2 AND MES = :3.
