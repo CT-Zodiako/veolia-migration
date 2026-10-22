@@ -44,4 +44,10 @@ describe('TablaAvanzadaComponent', () => {
 
     expect(celdas).toEqual(['1.23456', 'abc', '', '']);
   });
+
+  it('keeps the default paginator options 10/20/50 when the parent does not set them', () => {
+    const fixture = TestBed.createComponent(TablaAvanzadaComponent);
+
+    expect(fixture.componentInstance.rowsPerPageOptionsList).toEqual([10, 20, 50]);
+  });
 });

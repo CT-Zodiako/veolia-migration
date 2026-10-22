@@ -201,7 +201,7 @@ export class LayoutComponent implements OnInit {
       case '/tarifas': return 'Detallado Tarifas';
       case '/tarifas-general': return 'Detallado Tarifas';
       case '/cft': return 'SUI 853 - CFT';
-      case '/cssaprovechamiento': return 'SUI 853 - CSS Aprovechamiento';
+      case '/cssaprovechamiento': return 'SUI 853 - Estimación CSS';
       case '/crlus': return 'SUI 853 - CRLUS';
       case '/cbls': return 'SUI 853 - CBLS';
       case '/cblusMinimo': return 'SUI 853 - CBLUS Mínimo';
@@ -216,6 +216,9 @@ export class LayoutComponent implements OnInit {
       case '/cdft': return 'SUI 853 - CDFT';
       case '/fac': return 'SUI 853 - FAC';
       case '/facturacionServicioAseo': return 'SUI 853 - Comercial';
+      case '/cargueResiduos': return 'SUI 853 - Cargue Residuos';
+      case '/informesGenerados': return 'SUI 853 - Cargue Facturación';
+      case '/informesGeneradosMes': return 'SUI 853 - Cargue Facturación Mes';
       default: return '';
     }
   }

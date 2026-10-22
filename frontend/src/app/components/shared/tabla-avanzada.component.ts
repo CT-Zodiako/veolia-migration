@@ -215,8 +215,9 @@ export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges,
   @Input() scrollHeight = '390px';
   @Input() filasPorPagina = 10;
 
-  /** Opciones del paginador; en pantalla completa arranca en la máxima. */
-  readonly rowsPerPageOptionsList = [10, 20, 50];
+  /** Opciones del paginador; en pantalla completa arranca en la máxima.
+   *  Opt-in: el default se mantiene para todas las pantallas que no lo pasen. */
+  @Input() rowsPerPageOptionsList: number[] = [10, 20, 50];
 
   /** Filas por página efectivas: al entrar a pantalla completa se sugiere el
    *  máximo (50) pero el paginador sigue disponible para cambiarlo. */

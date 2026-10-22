@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { TablaAvanzadaComponent } from './tabla-avanzada.component';
 import { SimpleChange } from '@angular/core';
 import { Sui853Formato2TablaComponent } from './sui853-formato2-tabla.component';
 import { Formato2Response } from '../../models/sui853-cft.model';
@@ -136,5 +138,19 @@ describe('Sui853Formato2TablaComponent', () => {
     expect(component.displayValue(col('M'), 10)).toBe('10.00');
     expect(component.displayValue(col('T'), 'abc')).toBe('abc');
     expect(component.displayValue({ field: 'X', header: 'X' }, 7)).toBe('7.00');
+  });
+
+  // Legacy TablaScrollHorizontal.vue:156 `:rowsPerPageOptions="[10, 24, 50]"` with rows: 10 (:220).
+  it('uses the legacy paginator options 10/24/50 with 10 rows by default', () => {
+    const { fixture } = render({
+      title: 'T',
+      SIN_MOVIMIENTO: { tableTitle: null, tableColor: null, headers: [header('A')] },
+      CON_MOVIMIENTO: { tableTitle: null, tableColor: null, headers: [header('B')] },
+      data: [{ A: 1, B: 2 }]
+    });
+
+    const tabla = fixture.debugElement.query(By.directive(TablaAvanzadaComponent)).componentInstance as TablaAvanzadaComponent;
+    expect(tabla.rowsPerPageOptionsList).toEqual([10, 24, 50]);
+    expect(tabla.filasPorPagina).toBe(10);
   });
 });

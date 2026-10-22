@@ -65,6 +65,9 @@ export class Sui853Formato2TablaComponent implements OnChanges {
     return this.data?.title || null;
   }
 
+  /** Legacy TablaScrollHorizontal.vue:156 paginator options (rows default 10). */
+  readonly paginadorOpciones = [10, 24, 50];
+
   get nombreExportarEfectivo(): string {
     return this.nombreExportar || this.titulo || this.storageKey || 'formato2';
   }
