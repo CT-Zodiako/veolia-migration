@@ -156,3 +156,10 @@
   margin-bottom: 16px;
 }
 
+
+.nueva-clave {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}

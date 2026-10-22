@@ -7,14 +7,21 @@
   <div *ngIf="error" class="error-message">{{ error }}</div>
 
   <div class="table-container" *ngIf="!loading; else loadingTpl">
-    <p-table [value]="filteredEmpresas" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
+    <p-table
+      [value]="filteredEmpresas"
+      [tableStyle]="{ 'min-width': '50rem' }"
+      [paginator]="true"
+      [rows]="pageSize"
+      [rowsPerPageOptions]="rowsPerPageOptions"
+      sortField="EMPR_NOMBRE"
+      [sortOrder]="1">
       <ng-template pTemplate="header">
         <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Estado</th>
-          <th>Propia</th>
-          <th>NUAP</th>
+          <th pSortableColumn="EMPR_EMPR">ID <p-sortIcon field="EMPR_EMPR"></p-sortIcon></th>
+          <th pSortableColumn="EMPR_NOMBRE">Nombre <p-sortIcon field="EMPR_NOMBRE"></p-sortIcon></th>
+          <th pSortableColumn="EMPR_ESTADO">Estado <p-sortIcon field="EMPR_ESTADO"></p-sortIcon></th>
+          <th pSortableColumn="EMPR_PROPIA">Propia <p-sortIcon field="EMPR_PROPIA"></p-sortIcon></th>
+          <th pSortableColumn="EMPR_NUAP">NUAP <p-sortIcon field="EMPR_NUAP"></p-sortIcon></th>
           <th>Acciones</th>
         </tr>
         <tr class="filter-row">
@@ -39,8 +46,8 @@
           <td>{{ item.EMPR_NOMBRE }}</td>
           <td>
             <p-button
-              [label]="item.EMPR_ESTADO === 1 ? 'Activa' : 'Inactiva'"
-              [severity]="item.EMPR_ESTADO === 1 ? 'success' : 'secondary'"
+              [label]="isActiva(item) ? 'Activa' : 'Inactiva'"
+              [severity]="isActiva(item) ? 'success' : 'secondary'"
               size="small"
               (onClick)="toggleEstado(item)">
             </p-button>

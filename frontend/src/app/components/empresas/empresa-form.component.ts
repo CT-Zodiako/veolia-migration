@@ -43,7 +43,8 @@ export class EmpresaFormComponent implements OnChanges {
       nombre: normalizedNombre,
       estado: this.estado ? 1 : 0,
       propia: this.propia ? 1 : 0,
-      nuap: this.nuap.trim() || null
+      // EMPR_NUAP is NOT NULL DEFAULT '0'.
+      nuap: this.nuap.trim() || '0'
     });
   }
 
@@ -67,6 +68,7 @@ export class EmpresaFormComponent implements OnChanges {
       return value;
     }
 
-    return `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}`;
+    // Legacy EmpresaService.js: only the first letter is uppercased, the rest stays as typed.
+    return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
   }
 }

@@ -7,16 +7,20 @@
   <div *ngIf="error" class="error-message">{{ error }}</div>
 
   <div class="table-container" *ngIf="!loading; else loadingTpl">
-    <p-table [value]="filteredRellenos" [tableStyle]="{ 'min-width': '56rem', 'table-layout': 'fixed' }" [paginator]="true" [rows]="10">
+    <p-table [value]="filteredRellenos" [tableStyle]="{ 'min-width': '56rem', 'table-layout': 'fixed' }" [paginator]="true"
+      [rows]="pageSize"
+      [rowsPerPageOptions]="rowsPerPageOptions"
+      sortField="RELL_NOMRELLENO"
+      [sortOrder]="1">
       <ng-template pTemplate="header">
         <tr>
-          <th style="width: 70px">ID</th>
-          <th style="width: 180px">Nombre</th>
+          <th style="width: 70px" pSortableColumn="RELL_ID">ID <p-sortIcon field="RELL_ID"></p-sortIcon></th>
+          <th style="width: 180px" pSortableColumn="RELL_NOMRELLENO">Nombre <p-sortIcon field="RELL_NOMRELLENO"></p-sortIcon></th>
           <th>Descripción</th>
-          <th style="width: 110px">Estado</th>
-          <th style="width: 90px">Propio</th>
-          <th style="width: 100px">Regional</th>
-          <th style="width: 110px">NUSD</th>
+          <th style="width: 110px" pSortableColumn="RELL_ESTADO">Estado <p-sortIcon field="RELL_ESTADO"></p-sortIcon></th>
+          <th style="width: 90px" pSortableColumn="RELL_PROPIO">Propio <p-sortIcon field="RELL_PROPIO"></p-sortIcon></th>
+          <th style="width: 100px" pSortableColumn="RELL_REGIONAL">Regional <p-sortIcon field="RELL_REGIONAL"></p-sortIcon></th>
+          <th style="width: 110px" pSortableColumn="RELL_NUSD">NUSD <p-sortIcon field="RELL_NUSD"></p-sortIcon></th>
           <th style="width: 100px">Acciones</th>
         </tr>
         <tr class="filter-row">

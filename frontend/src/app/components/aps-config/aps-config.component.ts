@@ -19,6 +19,8 @@ export class ApsConfigComponent implements OnInit {
   showForm = false;
   selectedAps: ApsConfigItem | null = null;
   nombreFilter = '';
+  readonly pageSize = 15;
+  readonly rowsPerPageOptions = [15, 30, 50, 100];
 
   get filteredApsItems(): ApsConfigItem[] {
     const term = this.nombreFilter.trim().toLowerCase();

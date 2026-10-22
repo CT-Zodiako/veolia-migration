@@ -35,7 +35,7 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
                 request.nombre,
                 request.estado,
                 request.propia,
-                request.nuap,
+                NormalizeNuap(request.nuap),
                 tokenContext.SisuId,
                 cancellationToken);
 
@@ -80,7 +80,7 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
     {
         try
         {
-            var result = await empresasRepository.UpdateAsync(id, request.nombre, request.estado, request.propia, request.nuap, cancellationToken);
+            var result = await empresasRepository.UpdateAsync(id, request.nombre, request.estado, request.propia, NormalizeNuap(request.nuap), cancellationToken);
             return Ok(result);
         }
         catch (Exception ex)
@@ -128,6 +128,10 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
         var token = Request.Headers["x-access-token"].FirstOrDefault();
         return AuthTokenContextAccessor.TryRead(token, out tokenContext);
     }
+
+    // AUGE_EMPRESAS.EMPR_NUAP is NOT NULL DEFAULT '0': an explicit NULL bind skips the default.
+    private static string NormalizeNuap(string? nuap)
+        => string.IsNullOrWhiteSpace(nuap) ? "0" : nuap;
 
     private static object MapLegacyError(Exception ex)
     {

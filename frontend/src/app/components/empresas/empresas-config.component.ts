@@ -19,11 +19,18 @@ export class EmpresasConfigComponent implements OnInit {
   showForm = false;
   selectedEmpresa: EmpresaItem | null = null;
   nombreFilter = '';
+  readonly pageSize = 15;
+  readonly rowsPerPageOptions = [15, 30, 50, 100];
 
   get filteredEmpresas(): EmpresaItem[] {
     const term = this.nombreFilter.trim().toLowerCase();
     if (!term) return this.empresas;
     return this.empresas.filter(item => (item.EMPR_NOMBRE ?? '').toLowerCase().includes(term));
+  }
+
+  // EMPR_ESTADO is VARCHAR2: Oracle returns "1"/"0" (legacy emprGrid.vue used parseInt).
+  isActiva(item: EmpresaItem): boolean {
+    return Number(item.EMPR_ESTADO) === 1;
   }
 
   constructor(
@@ -111,7 +118,8 @@ export class EmpresasConfigComponent implements OnInit {
   toggleEstado(item: EmpresaItem): void {
     this.empresasService.toggleEstado(item.EMPR_EMPR).subscribe({
       next: () => {
-        item.EMPR_ESTADO = item.EMPR_ESTADO === 1 ? 0 : 1;
+        const nuevoEstado = this.isActiva(item) ? 0 : 1;
+        item.EMPR_ESTADO = typeof item.EMPR_ESTADO === 'string' ? String(nuevoEstado) : nuevoEstado;
         this.cdr.detectChanges();
       },
       error: err => {

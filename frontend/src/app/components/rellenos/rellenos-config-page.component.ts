@@ -20,6 +20,8 @@ export class RellenosConfigPageComponent implements OnInit {
   showForm = false;
   selectedRelleno: RellenoItem | null = null;
   nombreFilter = '';
+  readonly pageSize = 15;
+  readonly rowsPerPageOptions = [15, 30, 50, 100];
 
   get filteredRellenos(): RellenoItem[] {
     const term = this.nombreFilter.trim().toLowerCase();

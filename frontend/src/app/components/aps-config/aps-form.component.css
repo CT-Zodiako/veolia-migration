@@ -46,6 +46,12 @@
   padding: 8px 10px;
 }
 
+.radio-group {
+  display: flex;
+  gap: 16px;
+  padding-top: 8px;
+}
+
 .checks-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

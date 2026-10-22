@@ -8,7 +8,7 @@
     <form (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label>Nombre</label>
-        <input pInputText type="text" [(ngModel)]="nombre" name="nombre" required style="width: 100%" />
+        <input pInputText type="text" [(ngModel)]="nombre" name="nombre" required maxlength="30" style="width: 100%" />
       </div>
 
       <div class="form-row">
@@ -18,7 +18,12 @@
         </div>
         <div class="form-group">
           <label>Resolución</label>
-          <input pInputText type="number" [(ngModel)]="resolucion" name="resolucion" style="width: 100%" />
+          <div class="radio-group">
+            <div class="check-item" *ngFor="let opcion of resolucionOptions">
+              <p-radiobutton [(ngModel)]="resolucion" [value]="opcion" name="resolucion" [inputId]="'aps-res-' + opcion" required></p-radiobutton>
+              <label [for]="'aps-res-' + opcion">{{ opcion }}</label>
+            </div>
+          </div>
         </div>
       </div>
 
