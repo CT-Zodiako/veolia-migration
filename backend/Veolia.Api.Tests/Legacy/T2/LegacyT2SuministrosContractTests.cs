@@ -178,10 +178,10 @@ public sealed class LegacyT2SuministrosContractTests
         Assert.True(connection.Committed);
     }
 
-    // Legacy controller.js:374 and :472 only persist resumemes[0] (`let resmes = resumemes[0]`); extra CSV rows were ignored.
-    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, every CSV row persisted).
+    // Legacy controller.js:369-374 and :476-477 only persist resumemes[0] (`let resmes = resumemes[0]`); extra CSV rows
+    // were ignored. User decision (legacy-characterization-tests L8): the first row wins, as legacy.
     [Fact]
-    public async Task SetCargueInfPropiaPersistsEveryCsvRow()
+    public async Task SetCargueInfPropiaPersistsOnlyTheFirstCsvRowLikeLegacy()
     {
         var connection = new RecordingDbConnection(_ => 1);
         var repository = new SuministrosRepository(new RecordingConnectionFactory(connection));
@@ -193,9 +193,31 @@ public sealed class LegacyT2SuministrosContractTests
 
         var inserted = await repository.SetCargueInfPropiaAsync(request, TokenUser, CancellationToken.None);
 
-        Assert.Equal(2, inserted);
-        var inserts = connection.Commands.Where(c => c.CommandText.Contains("INSERT INTO AUCO_CARGUEPROPIO")).ToList();
-        Assert.Equal(new object?[] { 1m, 2m }, inserts.Select(c => c.Value("cp")));
+        Assert.Equal(1, inserted);
+        Assert.Single(connection.Commands, c => c.CommandText.StartsWith("DELETE FROM AUCO_CARGUEPROPIO"));
+        var insert = Assert.Single(connection.Commands, c => c.CommandText.Contains("INSERT INTO AUCO_CARGUEPROPIO"));
+        Assert.Equal(1m, insert.Value("cp"));
+        Assert.True(connection.Committed);
+    }
+
+    [Fact]
+    public async Task SetCargueInfCompetidorPersistsOnlyTheFirstCsvRowLikeLegacy()
+    {
+        var connection = new RecordingDbConnection(_ => 1);
+        var repository = new SuministrosRepository(new RecordingConnectionFactory(connection));
+        var request = new CargueCompetidorRequest(1014, new CargueEmpresaRef(2001, "COMPETIDOR"), 2026, 3,
+        [
+            new CargueCompetidorFila(1014, 2001, 2026, 2, 1m, 1m, 1m, 1m, 1m, 1m, 1m, 1m),
+            new CargueCompetidorFila(1014, 2001, 2026, 2, 2m, 2m, 2m, 2m, 2m, 2m, 2m, 2m)
+        ]);
+
+        var inserted = await repository.SetCargueInfCompetidorAsync(request, TokenUser, CancellationToken.None);
+
+        Assert.Equal(1, inserted);
+        Assert.Single(connection.Commands, c => c.CommandText.StartsWith("DELETE FROM AUCO_CARGUECOMPE"));
+        var insert = Assert.Single(connection.Commands, c => c.CommandText.Contains("INSERT INTO AUCO_CARGUECOMPE"));
+        Assert.Equal(1m, insert.Value("cp"));
+        Assert.True(connection.Committed);
     }
 
     // Legacy InfPropiaMensual.vue:380 sends no ESCENARIO when the template lacks the column (undefined dropped by JSON) and

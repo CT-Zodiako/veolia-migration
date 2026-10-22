@@ -73,7 +73,8 @@ VALUES (:aps, :empr, :anno, :mes, :cp, :mt3agua, :m2cc, :m2lav, :ti, :tm, :klp, 
         try
         {
             var inserted = 0;
-            foreach (var fila in request.resumemes)
+            // Legacy suministros/controller.js:369-374 / :476-477 persisted only resumemes[0]; extra CSV rows are ignored.
+            var fila = request.resumemes[0];
             {
                 await connection.ExecuteAsync(new CommandDefinition(deleteSql, new { aps = fila.aps, anno = fila.anno, mes = fila.mes }, transaction: transaction, cancellationToken: cancellationToken));
                 inserted += await connection.ExecuteAsync(new CommandDefinition(insertSql, new
@@ -173,7 +174,8 @@ VALUES (:aps, :empr, :anno, :mes, :cp, :mt3agua, :m2cc, :m2lav, :ti, :tm, :klp, 
         try
         {
             var inserted = 0;
-            foreach (var fila in request.resumemes)
+            // Legacy suministros/controller.js:369-374 / :476-477 persisted only resumemes[0]; extra CSV rows are ignored.
+            var fila = request.resumemes[0];
             {
                 await connection.ExecuteAsync(new CommandDefinition(deleteSql, new { aps = fila.aps, empr = fila.empr, anno = fila.anno, mes = fila.mes }, transaction: transaction, cancellationToken: cancellationToken));
                 inserted += await connection.ExecuteAsync(new CommandDefinition(insertSql, new

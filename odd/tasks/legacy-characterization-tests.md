@@ -12,6 +12,9 @@ Branch: `fix/auth-hardening-test-suite` (local commits only).
 - **S4** — A legacy-derived test that fails on the new code, and is not a recorded deviation, is a PARITY FINDING: do not change production code, do not weaken the assertion. Keep the test skipped with a reason starting `PARITY-FINDING:` (xUnit `Skip = "PARITY-FINDING: ..."`, Vitest `it.skip('PARITY-FINDING: ...')`) and report it. The user decides each finding (rule S3 of parity-review-all: report and ask).
 - **S5** — Tests only: no production code changes. Backend tests use WebApplicationFactory + stub repositories (or SQL/param seams already public), no Oracle. Every helper type in a test file is `file`-local. Frontend specs use TestBed with stubbed services, no network.
 - **S6** — Each test asserts every observable effect of its rule (status code, payload fields and casing, what the stub received, rendered columns/text).
+- **S8** — Findings decision (user, verbatim selections): GRAVES "Sí, todos (recomendado)"; FUNCIONALES "Sí, todos"; COSMÉTICOS "Sí, igual al legacy"; MEJORAS "Sí, aceptarlas (recomendado)". So every PARITY-FINDING in groups A, B and C is fixed to behave like legacy (unskip the test, observe RED, change production code, observe GREEN). Groups D and E are accepted: the skipped test is rewritten to assert the new behavior, citing this decision.
+- **S9** — Group D (accepted, rewrite the test) is exactly: renamed or removed legacy routes and legacy request field names that the new frontend already consumes consistently; API-only response shapes/messages the user never sees (load summaries, validation payload shapes, getcanCertificate shape, crearAutorizacion response, consultarcrecimiento contract, getapsDesCostUnico null id); stricter input validation (descripción min length, 409 duplicate indices, 422 empty Cargue save, 404 empty resumen comparar tarifas, 400 without aps on SUI resumen/reversiones); resetPass 10-char password; every CSV row persisted; the new Inicio dashboard; legacy bugs not replicated (horizonte hasta +1 month, timeline generated to December, legacy toasts printing undefined/[object Object]). Group E (already approved): carga genérica SUI-only scope and truncate confirm, Rellenos Descripción field, Índices duplicate guard and transactions, Reversiones DataAnnotations. Anything else is A/B/C and must be fixed.
+- **S10** — CSV rows (user, verbatim selection after T6b found that "every CSV row persisted" was false — each row deleted the period, so the last row won): "La primera, como el legacy (recomendado)". Información propia/competidor mensual persist only resumemes[0], like legacy suministros/controller.js:369-374, :476-477.
 - **S7** — Delivery: local work-unit commits, no push, no PR.
 
 ## Tasks
@@ -23,7 +26,13 @@ Branch: `fix/auth-hardening-test-suite` (local commits only).
 | T3 | S1-S6 | Regulator SUI/PGIRS/Reversiones/Proyecciones — backend `pgirs`, `reversiones` (+ untested `sui`, `sui-reversiones`, `proyecciones` endpoints); frontend `pgirs/*`, `sui-dashboard`, `sui-resumen-formatos`, `sui-reversiones`, `sui-integracion/formato-table`, `reversiones/autorizacion-reversiones`, `proyecciones/{ejecutar-page,linea-tiempo-page}` | worker | |
 | T4 | S1-S6 | SUI853 — backend untested endpoints of `sui853/*` and `sui853Configuracion`; frontend `sui853-cft/*` (13 pages, legacy contract), `sui853-fac`, `sui853-configuracion/{carga-generica,formularios}` | worker | |
 | T5 | S1-S6 | (split into T5a backend / T5b frontend after the first worker stalled with no output) Auth/usuarios/layout/shared/reliq — frontend `auth/*`, `layout/*`, `usuarios/{apsx-usuario,asignacion-sistema,permisos}`, `shared/*` (13); backend untested `auth`/`aps`/`empresas`/`rellenos`/`reliq*` endpoints | worker | |
-| T6 | S4 | Review PARITY-FINDINGs with the user and fix the approved ones test-first | ask | |
+| T6 | S4,S8 | Review PARITY-FINDINGs with the user — decided (S8, S9) | ask | c1d71ce |
+| T6a | S8,S9 | Fix/accept findings — Regulator informes/consultas (T1 area) | worker | |
+| T6b | S8,S9 | Fix/accept findings — Suministros backend + suministros screens (T2 area, part 1) | worker | |
+| T6c | S8,S9 | Fix/accept findings — Costos (incl. legacy charts), aprovechamiento, productividad, subcont, validaciones, índices (T2 area, part 2) | worker | |
+| T6d | S8,S9 | Fix/accept findings — PGIRS, SUI, Reversiones, Proyecciones (T3 area) | worker | |
+| T6e | S8,S9 | Fix/accept findings — SUI853 + layout titles (T4 area) | worker | |
+| T6f | S8,S9 | Fix/accept findings — auth, profile, usuarios, shared, APS/Empresas/Rellenos/Reliq (T5 area) | worker | |
 | T7 | S1 | Final coverage report (routes × tests, components × specs) and full suite run | inline | |
 
 ## Findings triage (T6)
@@ -44,4 +53,7 @@ Branch: `fix/auth-hardening-test-suite` (local commits only).
 - **L4** (evidence, T1 backend): 73 legacy-derived tests green; 4 PARITY-FINDINGs: tafna ROUND(VALOR,6) missing; general/paraindices 404 (dropped in July as duplicate of indices/catalogo, never recorded as approved); informes drops dataset keys (e.g. `grup`); getapsDesCostUnico rejects legacy {id:null} with 400.
 - **L5** (routing): first T5 worker (mvj3w90i) stalled 4 min generating one tool argument and wrote nothing; split into T5a backend (mvj4dh9b) and T5b frontend (mvj4dhex) with one small file per group/component.
 - **L6** (evidence, all test units committed): T4 3ac619c, T1 3837c06, T3 d7f0908, T2 674bd75, T5a 5506d2a, T5b 1f703bb. Full run on idle machine: backend 830 passed / 59 skipped (55 PARITY-FINDING + 4 Oracle opt-in), frontend 467 passed / 124 skipped (PARITY-FINDING) in 109 files, `ng build` OK. Findings triaged into groups A-E (section "Findings triage").
+- **L7** (user decision, T6): GRAVES "Sí, todos (recomendado)"; FUNCIONALES "Sí, todos"; COSMÉTICOS "Sí, igual al legacy"; MEJORAS "Sí, aceptarlas (recomendado)".
+- **L8** (evidence + decision): T6b found the D item "every CSV row persisted" was false (per-row DELETE of the same period → last row won). User chose the first row like legacy; fixed by parent test-first (RED 2 → GREEN 72/72).
+- **L9** (commits): 9b8e0f6 T6b, 1d19aa0 T6e (+ parent test updates CargaGenericaTests/Sui853FormulariosContractTests for B16), 982536e Formato2 loading text (parent), 18a3465 T6a, 6ab3c8d T6c, beddeca T6d.
 
