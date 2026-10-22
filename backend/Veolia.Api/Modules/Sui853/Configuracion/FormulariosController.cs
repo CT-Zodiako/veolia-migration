@@ -9,7 +9,7 @@ public sealed class FormulariosController(IFormulariosRepository repository, ILo
 {
     [HttpPost("getFormularios")]
     public Task<IActionResult> List(CancellationToken cancellationToken)
-        => ExecuteAsync(async () => Ok(new { status = 200, data = await repository.ListAsync(cancellationToken) }), cancellationToken, anySystem: true);
+        => ExecuteAsync(async () => Ok(new { status = 200, data = await repository.ListAsync(cancellationToken) }), cancellationToken);
 
     [HttpPost("updateFormulario")]
     public Task<IActionResult> Update([FromBody] FormularioRow row, CancellationToken cancellationToken)
@@ -21,14 +21,13 @@ public sealed class FormulariosController(IFormulariosRepository repository, ILo
                 : Ok(new { status = 200, data = saved });
         }, cancellationToken);
 
-    // anySystem: legacy routes.js (getFormularios) served the rows to any token; updates keep the SUI 853 check.
-    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action, CancellationToken cancellationToken, bool anySystem = false)
+    // Legacy routes.js:22-31 served getFormularios and updateFormulario to any system's token (user decision,
+    // legacy-characterization-tests S11); a valid token is still required.
+    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action, CancellationToken cancellationToken)
     {
         // Signature and expiry are checked by AuthJwtParityMiddleware before controller execution.
-        if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out var context))
+        if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out _))
             return Unauthorized(new { status = 401, message = "No autorizado." });
-        if (!anySystem && context.IdSistema != 3)
-            return StatusCode(403, new { status = 403, message = "Seleccione el sistema SUI 853." });
         try { return await action(); }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)

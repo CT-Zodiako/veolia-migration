@@ -112,14 +112,16 @@ public sealed class Sui853FormulariosContractTests
         Assert.IsType<UnauthorizedObjectResult>(await controller.List(default));
         Assert.IsType<UnauthorizedObjectResult>(await controller.Update(ValidRow(), default));
         Assert.False(repo.Called);
+        // Legacy sui853/configuracion/routes.js:22-31 had no system restriction on getFormularios or
+        // updateFormulario (legacy-characterization-tests S8 B16; user decision S11): any authenticated
+        // token reads and updates; the token itself is still required.
         controller = Controller(repo, 2);
-        Assert.Equal(403, Assert.IsType<ObjectResult>(await controller.Update(ValidRow(), default)).StatusCode);
-        Assert.False(repo.Called);
-
-        // Legacy getFormularios had no system restriction (legacy-characterization-tests S8, B16):
-        // any authenticated token reads the list; updates stay SUI853-only.
         Assert.IsType<OkObjectResult>(await controller.List(default));
         Assert.True(repo.Called);
+
+        var updateRepo = new StubRepository { Saved = ValidRow() };
+        Assert.IsType<OkObjectResult>(await Controller(updateRepo, 2).Update(ValidRow(), default));
+        Assert.True(updateRepo.Called);
     }
 
     [Fact]
