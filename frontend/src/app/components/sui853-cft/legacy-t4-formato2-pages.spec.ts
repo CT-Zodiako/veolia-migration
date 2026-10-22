@@ -153,7 +153,8 @@ describe('SUI853 Formato2 pages — legacy contract (T4)', () => {
     expect(tablas.map(tabla => tabla.loading)).toEqual(legacy.tabs.map(() => false));
   });
 
-  it.skip('PARITY-FINDING: loading text is "Cargando..." (shared sui853-formato2-tabla) instead of legacy "Cargando información…" (every Formato2 view, e.g. cft.vue:11); fix is shared/sui853-formato2-tabla.component.html:3, outside the T6e edit surface', () => {
+  // Legacy loading text of every Formato2 view, e.g. cft.vue:11.
+  it('shows the legacy loading text "Cargando información…"', () => {
     const { service } = serviceAnswering(() => new Subject<unknown>());
     const { element } = render(CftPageComponent, service);
 
