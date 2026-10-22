@@ -88,7 +88,7 @@ describe('ApsxUsuarioComponent (legacy components/usuarios/ApsxUsuario.vue)', ()
   });
 
   // Legacy AuthService.js:251 success toast.
-  it.skip('PARITY-FINDING: success message is "APS Asignadas Correctamente" (legacy AuthService.js:251); new sets "Asignaciones guardadas correctamente" and the reload (onUsuarioChange) clears it at once, so no success message is shown', () => {
+  it('success message is "APS Asignadas Correctamente" like legacy AuthService.js:251', () => {
     const { component } = setup();
     component.selectedUsuarioId = 7;
     component.onUsuarioChange();
@@ -97,7 +97,7 @@ describe('ApsxUsuarioComponent (legacy components/usuarios/ApsxUsuario.vue)', ()
   });
 
   // Legacy ApsxUsuario.vue:8-9 PickList headers.
-  it.skip('PARITY-FINDING: PickList headers are "APS SIN ASIGNAR" / "APS ASIGNADAS" (legacy ApsxUsuario.vue:8-9); new shows "Sin asignar" / "Asignadas"', () => {
+  it('PickList headers are "APS SIN ASIGNAR" / "APS ASIGNADAS" like legacy ApsxUsuario.vue:8-9', () => {
     const { fixture, component, el } = setup();
     component.selectedUsuarioId = 7;
     component.onUsuarioChange();

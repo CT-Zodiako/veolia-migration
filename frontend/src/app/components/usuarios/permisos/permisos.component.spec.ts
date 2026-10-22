@@ -70,7 +70,7 @@ describe('PermisosComponent (legacy components/usuarios/MenuxUsuario.vue)', () =
 
   // Legacy treeselect ALL_WITH_INDETERMINATE (MenuxUsuario.vue:52): checking a parent stores the parent and all its children,
   // and MenuService.js:663 needs the parent MENU_ID to show the group.
-  it.skip('PARITY-FINDING: checking a parent saves the parent id too (legacy MenuxUsuario.vue:52 ALL_WITH_INDETERMINATE); new saves only the children', () => {
+  it('checking a parent saves the parent id too like legacy MenuxUsuario.vue:52 ALL_WITH_INDETERMINATE', () => {
     const { component, authService } = setup();
     component.toggleMenuItem(200);
     component.guardar();
@@ -79,7 +79,7 @@ describe('PermisosComponent (legacy components/usuarios/MenuxUsuario.vue)', () =
   });
 
   // Legacy ALL_WITH_INDETERMINATE: a partially checked parent is stored too.
-  it.skip('PARITY-FINDING: a partially checked parent is saved (legacy MenuxUsuario.vue:52 ALL_WITH_INDETERMINATE); new drops it', () => {
+  it('a partially checked parent is saved like legacy MenuxUsuario.vue:52 ALL_WITH_INDETERMINATE', () => {
     const { component, authService } = setup();
     component.toggleMenuItem(201);
     component.guardar();
@@ -88,7 +88,7 @@ describe('PermisosComponent (legacy components/usuarios/MenuxUsuario.vue)', () =
   });
 
   // Legacy AuthService.js:306 success toast.
-  it.skip('PARITY-FINDING: success message is "Opciones Asignadas Correctamente" (legacy AuthService.js:306); new shows "Permisos actualizados correctamente"', () => {
+  it('success message is "Opciones Asignadas Correctamente" like legacy AuthService.js:306', () => {
     const { component } = setup([100]);
     component.guardar();
     expect(component.success).toBe('Opciones Asignadas Correctamente');

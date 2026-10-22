@@ -66,7 +66,7 @@ describe('ProfileComponent (legacy components/layout/AppProfile.vue)', () => {
   });
 
   // Legacy AppProfile.vue:17,23: menu labels "Cambiar Clave" and "Salir".
-  it.skip('PARITY-FINDING: profile menu labels are "Cambiar Clave" / "Salir" (legacy AppProfile.vue:17,23); new shows "Cambiar Contraseña" / "Cerrar Sesión"', () => {
+  it('profile menu labels are "Cambiar Clave" / "Salir" like legacy AppProfile.vue:17,23', () => {
     const { fixture, component, el } = setup();
     component.toggleDropdown();
     fixture.detectChanges();

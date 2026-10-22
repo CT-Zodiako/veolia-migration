@@ -62,14 +62,7 @@ export class AsignacionSistemaComponent implements OnInit {
     this.sisuId = null;
     this.listaSistema = [];
 
-    // El backend (GetSistemasPorUsuarioAsync) solo busca usuarios con SISU_ESTADO = 1;
-    // si está inactivo devuelve todo vacío en silencio, por eso lo detectamos antes de llamarlo.
-    const usuario = this.usuarios.find(u => u.SISU_CORREO === this.correo);
-    if (usuario && usuario.SISU_ESTADO !== 1) {
-      this.error = 'Este usuario está inactivo. Activalo desde la pestaña "Usuarios" antes de asignarle sistemas.';
-      return;
-    }
-
+    // Legacy auth/controller.js:440-447: inactive users are assigned systems too (no SISU_ESTADO filter).
     this.loading = true;
 
     this.authService.getSistemasPorUsuario(this.correo).subscribe({
@@ -103,9 +96,11 @@ export class AsignacionSistemaComponent implements OnInit {
 
     this.authService.asignarSistema(this.sisuId, asignados, noAsignados).subscribe({
       next: () => {
-        this.success = 'Asignaciones guardadas correctamente';
         this.loading = false;
         this.buscarSistemas();
+        // Legacy AuthService.js:339; set after the reload, which clears the messages.
+        this.success = 'Sistemas Asignados Correctamente';
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.error = err.error?.message || 'Error al guardar asignaciones';

@@ -84,11 +84,11 @@ WHEN NOT MATCHED THEN
 
     public async Task<(long SisuId, IReadOnlyList<object> Asignados, IReadOnlyList<object> SinAsignar)> GetSistemasPorUsuarioAsync(string correo, CancellationToken cancellationToken)
     {
+        // Legacy auth/controller.js:440-447: sin filtro SISU_ESTADO (también se asignan sistemas a usuarios inactivos).
         const string usuarioSql = @"
 SELECT SISU_ID
 FROM AUGE_SISUSUARIO
-WHERE LOWER(SISU_CORREO) = LOWER(:correo)
-  AND SISU_ESTADO = 1";
+WHERE LOWER(SISU_CORREO) = LOWER(:correo)";
 
         const string asignadosSql = @"
 SELECT

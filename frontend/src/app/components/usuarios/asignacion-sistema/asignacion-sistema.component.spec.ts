@@ -87,7 +87,7 @@ describe('AsignacionSistemaComponent (legacy components/usuarios/AsignacionSiste
   });
 
   // Legacy controller.js:440-447 looks the user up by correo without SISU_ESTADO, so inactive users get their systems.
-  it.skip('PARITY-FINDING: inactive users can be assigned systems (legacy controller.js:440-447 has no SISU_ESTADO filter); new blocks them with an error', () => {
+  it('inactive users can be assigned systems like legacy (controller.js:440-447 has no SISU_ESTADO filter)', () => {
     const { component, authService } = setup();
     component.correo = 'luis@veolia.com';
     component.buscarSistemas();
@@ -96,7 +96,7 @@ describe('AsignacionSistemaComponent (legacy components/usuarios/AsignacionSiste
   });
 
   // Legacy AuthService.js:339 success toast.
-  it.skip('PARITY-FINDING: success message is "Sistemas Asignados Correctamente" (legacy AuthService.js:339); new sets "Asignaciones guardadas correctamente" and the reload (buscarSistemas) clears it at once, so no success message is shown', () => {
+  it('success message is "Sistemas Asignados Correctamente" like legacy AuthService.js:339', () => {
     const { component } = setup();
     component.correo = 'ana@veolia.com';
     component.buscarSistemas();
@@ -105,7 +105,7 @@ describe('AsignacionSistemaComponent (legacy components/usuarios/AsignacionSiste
   });
 
   // Legacy AsignacionSistema.vue:8-9 PickList headers.
-  it.skip('PARITY-FINDING: PickList headers are "SISTEMA SIN ASIGNAR" / "SISTEMA ASIGNADAS" (legacy AsignacionSistema.vue:8-9); new shows "Sin asignar" / "Asignados"', () => {
+  it('PickList headers are "SISTEMA SIN ASIGNAR" / "SISTEMA ASIGNADAS" like legacy AsignacionSistema.vue:8-9', () => {
     const { fixture, component, el } = setup();
     component.correo = 'ana@veolia.com';
     component.buscarSistemas();

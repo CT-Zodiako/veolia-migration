@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Veolia.Api.Infrastructure.Data;
+using Veolia.Api.Modules.Auth.Asignaciones;
 using Veolia.Api.Modules.Auth.Login;
 using Veolia.Api.Modules.Auth.Menu;
 using Veolia.Api.Modules.Auth.Usuarios;
@@ -75,13 +76,14 @@ public sealed class LegacyT5AuthSqlContractTests
         Assert.True(BCrypt.Net.BCrypt.Verify(newPass, (string)binds["newPass"]!));
     }
 
-    // Legacy helpers/authhelper.js:17-20: the reset password is 6 lowercase hex characters (shown to the admin).
-    [Fact(Skip = "PARITY-FINDING: resetPass returns a 10-character mixed-case alphanumeric password (UsuariosRepository.GeneratePassword); legacy returned 6 lowercase hex characters (authhelper.js:17-20). Visible to the admin who reads it out; low severity, stronger than legacy. Not recorded in parity-review-all.")]
-    public async Task ResetPass_ReturnsSixHexCharactersLikeLegacy()
+    // Legacy helpers/authhelper.js:17-20: the reset password was 6 lowercase hex characters (shown to the admin).
+    // Accepted deviation: legacy-characterization-tests S8/S9 (resetPass 10-char password) — 10 unambiguous alphanumerics.
+    [Fact]
+    public async Task ResetPass_ReturnsTenAlphanumericCharacters_AcceptedDeviation()
     {
         var newPass = await new UsuariosRepository(new T5AuthRecFactory(new T5AuthRecConnection())).ResetPassAsync(44, default);
 
-        Assert.Matches("^[0-9a-f]{6}$", newPass);
+        Assert.Matches("^[A-HJ-NP-Za-km-z2-9]{10}$", newPass);
     }
 
     // Legacy controller.js:127-139: a.MENU_ID of AUGE_USUAMENU joined to AUGE_MENU of the system, user's active options of active menus.
@@ -185,6 +187,21 @@ public sealed class LegacyT5AuthSqlContractTests
         var (sql, binds) = Assert.Single(db.Commands);
         Assert.StartsWith("SELECT SIST_ID, SIST_NOMBRE FROM AUGE_SISTEMA WHERE SIST_ESTADO = 1", sql);
         Assert.Empty(binds);
+    }
+
+    // Legacy controller.js:440-447 (getSistemasPorUsuario): select sisu_id from auge_sisusuario where sisu_correo = :1 —
+    // no SISU_ESTADO filter, so inactive users can be assigned systems (AsignacionSistema.vue).
+    [Fact]
+    public async Task GetSistemasPorUsuarioSql_FindsTheUserWithoutEstadoFilterLikeLegacy()
+    {
+        var db = new T5AuthRecConnection();
+
+        await new AsignacionesRepository(new T5AuthRecFactory(db)).GetSistemasPorUsuarioAsync("luis@veolia.com", default);
+
+        var (sql, binds) = db.Commands[0];
+        Assert.Matches(@"^SELECT SISU_ID FROM AUGE_SISUSUARIO WHERE LOWER\(SISU_CORREO\) = LOWER\(:correo\)$", sql);
+        Assert.DoesNotContain("SISU_ESTADO", sql);
+        Assert.Equal("luis@veolia.com", binds["correo"]);
     }
 }
 

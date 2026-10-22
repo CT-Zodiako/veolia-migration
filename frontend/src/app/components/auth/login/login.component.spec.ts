@@ -106,7 +106,7 @@ describe('LoginComponent (legacy views/Auth/Login.vue)', () => {
   });
 
   // Legacy Login.vue:90 + 111-112: an invalid email shows "El email no es valido" and no request is sent.
-  it.skip('PARITY-FINDING: invalid email shows "El email no es valido" (legacy Login.vue:112); new submit is silent', () => {
+  it('invalid email shows "El email no es valido" like legacy Login.vue:112', () => {
     const { component, authService } = setup();
     component.email = 'ana@veolia';
     component.password = 'secreta';
@@ -116,7 +116,7 @@ describe('LoginComponent (legacy views/Auth/Login.vue)', () => {
   });
 
   // Legacy Login.vue:114-120: empty fields list "El email es obligatorio" / "El pass es obligatorio".
-  it.skip('PARITY-FINDING: empty email/password show "El email es obligatorio" and "El pass es obligatorio" (legacy Login.vue:115-120); new submit is silent', () => {
+  it('empty email/password show "El email es obligatorio" and "El pass es obligatorio" like legacy Login.vue:115-120', () => {
     const { component, authService } = setup();
     component.validateCredentials();
     expect(authService.validateCredentials).not.toHaveBeenCalled();

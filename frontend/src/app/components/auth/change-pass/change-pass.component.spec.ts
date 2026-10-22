@@ -64,7 +64,7 @@ describe('ChangePassComponent (legacy views/Auth/ChangePass.vue)', () => {
   });
 
   // Legacy ChangePass.vue:90: toast "Todos los campos son obligatorios".
-  it.skip('PARITY-FINDING: blank fields show "Todos los campos son obligatorios" (legacy ChangePass.vue:90); new shows "Complete todos los campos"', () => {
+  it('blank fields show "Todos los campos son obligatorios" like legacy ChangePass.vue:90', () => {
     const { component } = setup();
     component.changePassword();
     expect(component.error).toBe('Todos los campos son obligatorios');
@@ -98,7 +98,7 @@ describe('ChangePassComponent (legacy views/Auth/ChangePass.vue)', () => {
   });
 
   // Legacy AuthService.js:134: success toast "Clave cambiada".
-  it.skip('PARITY-FINDING: success shows "Clave cambiada" (legacy AuthService.js:134); new shows the server msg "Clave actualizada correctamente!"', () => {
+  it('success shows "Clave cambiada" like legacy AuthService.js:134', () => {
     const { component } = setup();
     component.oldPass = 'vieja';
     component.newPass = 'nueva1';

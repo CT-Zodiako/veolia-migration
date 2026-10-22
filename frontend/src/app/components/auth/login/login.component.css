@@ -134,6 +134,7 @@ form ::ng-deep .p-button {
 }
 
 .error-message {
+  white-space: pre-line;
   background: var(--color-bg-danger-soft);
   border: 1px solid var(--color-border-danger-soft);
   color: var(--color-brand-accent);
