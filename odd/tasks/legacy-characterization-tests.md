@@ -33,7 +33,7 @@ Branch: `fix/auth-hardening-test-suite` (local commits only).
 | T6d | S8,S9 | Fix/accept findings — PGIRS, SUI, Reversiones, Proyecciones (T3 area) | worker | |
 | T6e | S8,S9 | Fix/accept findings — SUI853 + layout titles (T4 area) | worker | |
 | T6f | S8,S9 | Fix/accept findings — auth, profile, usuarios, shared, APS/Empresas/Rellenos/Reliq (T5 area) | worker | |
-| T7 | S1 | Final coverage report (routes × tests, components × specs) and full suite run | inline | |
+| T7 | S1 | Final coverage report (routes × tests, components × specs) and full suite run — done | inline | see docs commit |
 
 ## Findings triage (T6)
 
@@ -56,4 +56,5 @@ Branch: `fix/auth-hardening-test-suite` (local commits only).
 - **L7** (user decision, T6): GRAVES "Sí, todos (recomendado)"; FUNCIONALES "Sí, todos"; COSMÉTICOS "Sí, igual al legacy"; MEJORAS "Sí, aceptarlas (recomendado)".
 - **L8** (evidence + decision): T6b found the D item "every CSV row persisted" was false (per-row DELETE of the same period → last row won). User chose the first row like legacy; fixed by parent test-first (RED 2 → GREEN 72/72).
 - **L9** (commits): 9b8e0f6 T6b, 1d19aa0 T6e (+ parent test updates CargaGenericaTests/Sui853FormulariosContractTests for B16), 982536e Formato2 loading text (parent), 18a3465 T6a, 6ab3c8d T6c, beddeca T6d.
+- **L10** (final check, idle machine): commits 8679cca + 858c070 (T6f). Backend 922 passed / 0 failed / 4 skipped (Oracle opt-in only); frontend 599 passed in 109 files, 0 skipped; `ng build` OK; 0 PARITY-FINDING skips remain. ESTADO-MIGRACION.md verdicts corrected (307, 10001, 20001 and every former "Revisado (OK)" with fixes). Open item for the user: updateFormulario (30003) still restricted to system 3 (legacy had no restriction; write path, not changed without a decision).
 
