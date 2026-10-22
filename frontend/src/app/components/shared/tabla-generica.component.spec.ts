@@ -43,22 +43,25 @@ describe('TablaGenericaComponent (legacy components/GenericTable.vue)', () => {
   });
 
   // Legacy formateoMiles (GenericTable.vue:72-77): integer part grouped (es-MX), decimals kept after ".": "1234,56" -> "1,234.56".
-  it.skip('PARITY-FINDING: numbers show as "1,234.56" (legacy GenericTable.vue:72-77 es-MX); new shows "1.234,56" (es-CO)', () => {
+  it('numbers show as "1,234.56" like legacy GenericTable.vue:72-77 es-MX', () => {
     const { cells } = render([{ VARIABLE: 'A', VALOR: '1234,56' }, { VARIABLE: 'B', VALOR: 1234567 }]);
     expect(cells('tbody tr td:nth-child(2)')).toEqual(['1,234.56', '1,234,567']);
   });
 
   // Legacy GenericTable.vue:17-24: a "%" value is drawn as a ProgressBar of that value.
-  it.skip('PARITY-FINDING: "%" values render as a progress bar (legacy GenericTable.vue:17-24); new prints the formatted text', () => {
+  it('"%" values render as a progress bar like legacy GenericTable.vue:17-24', () => {
     const { el } = render([{ VARIABLE: 'A', VALOR: '45,5%' }]);
     expect(el.querySelector('tbody td:nth-child(2) [role="progressbar"], tbody td:nth-child(2) p-progressbar')).not.toBeNull();
   });
 
-  // Pinned current formatting (es-CO, up to 6 decimals, "%" kept).
-  it('formats numbers in es-CO and keeps the "%" suffix', () => {
+  // Legacy formateoMiles (GenericTable.vue:72-77) and ProgressBar value (:17-24); was pinned to es-CO before
+  // legacy-characterization-tests S8 (group C fixed to legacy).
+  it('formats numbers like legacy formateoMiles and reads "%" values for the progress bar', () => {
     const { component } = render([]);
-    expect(component.formatearValor('1234,56')).toBe('1.234,56');
-    expect(component.formatearValor('45,5%')).toBe('45,5%');
+    expect(component.formatearValor('1234,56')).toBe('1,234.56');
+    expect(component.formatearValor('1.234,56')).toBe('1.234,56');
+    expect(component.porcentaje('45,5%')).toBe(45.5);
+    expect(component.porcentaje('12')).toBeNull();
     expect(component.formatearValor('texto')).toBe('texto');
     expect(component.formatearValor(null)).toBeNull();
   });

@@ -123,10 +123,10 @@ WHERE RELL_ID = :rellId";
 
     public async Task<object?> EliminarAsync(long id, CancellationToken cancellationToken)
     {
-        // Catálogo AS-IS de RELL_ESTADO: 1 = Activo, 2 = Inactivo (doc migracion/modules/rellenos/rellenos.md).
+        // RELL_ESTADO como el legacy: 1 = Activo, 0 = Inactivo (rellenos/controller.js:38, formRell.vue:154,166).
         const string sql = @"
 UPDATE AUCO_RELLENOS
-SET RELL_ESTADO = 2
+SET RELL_ESTADO = 0
 WHERE RELL_ID = :rellId";
 
         using var connection = await OpenConnectionAsync(cancellationToken);

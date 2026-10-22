@@ -37,8 +37,9 @@ export class AnnoSelectorComponent implements OnInit {
   @Input() label = 'Año';
   @Input() placeholder = 'Seleccione año';
   @Input() selectedAnno: number | null = null;
-  @Input() rangoInicio = 2020;
-  @Input() rangoFin = 2026;
+  // Legacy yearRange="2000:2030" (SelectorOnlyYear.vue:13, Selector.vue:23).
+  @Input() rangoInicio = 2000;
+  @Input() rangoFin = 2030;
 
   @Output() selectedAnnoChange = new EventEmitter<number | null>();
 

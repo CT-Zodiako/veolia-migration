@@ -12,7 +12,8 @@ describe('RellenoFormComponent', () => {
     expect(input.getAttribute('maxlength')).toBe('20');
   });
 
-  it('still emits the trimmed relleno with estado 1/2', () => {
+  // Legacy formRell.vue:154,166 stores inactive as 0 (legacy-characterization-tests S8, T14 L1).
+  it('still emits the trimmed relleno with estado 1/0 like legacy', () => {
     TestBed.configureTestingModule({ imports: [RellenoFormComponent] });
     const component = TestBed.createComponent(RellenoFormComponent).componentInstance;
     let emitted: unknown;
@@ -22,6 +23,6 @@ describe('RellenoFormComponent', () => {
     component.rell_estado = false;
     component.onSubmit();
 
-    expect(emitted).toEqual({ rell_nomrelleno: 'Doña Juana', rell_descripcion: 'Relleno', rell_estado: 2, rell_propio: 0, rell_regional: 0, rell_nusd: null });
+    expect(emitted).toEqual({ rell_nomrelleno: 'Doña Juana', rell_descripcion: 'Relleno', rell_estado: 0, rell_propio: 0, rell_regional: 0, rell_nusd: null });
   });
 });

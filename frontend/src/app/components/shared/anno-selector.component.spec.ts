@@ -62,7 +62,7 @@ describe('AnnoSelectorComponent (legacy SelectorOnlyYear.vue / Selector.vue)', (
   });
 
   // Legacy yearRange="2000:2030" (SelectorOnlyYear.vue:13, Selector.vue:23); new default is 2020-2026, so 2027+ cannot be chosen.
-  it.skip('PARITY-FINDING: default year range is 2000-2030 (legacy SelectorOnlyYear.vue:13, Selector.vue:23); new default 2020-2026 drops 2027-2030', () => {
+  it('default year range is 2000-2030 like legacy SelectorOnlyYear.vue:13, Selector.vue:23', () => {
     const { component } = setup();
     const values = component.annoOptions.map(o => o.value);
     expect(Math.max(...values)).toBe(2030);

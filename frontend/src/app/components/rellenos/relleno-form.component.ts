@@ -43,7 +43,8 @@ export class RellenoFormComponent implements OnChanges {
     this.save.emit({
       rell_nomrelleno: this.rell_nomrelleno.trim(),
       rell_descripcion: this.rell_descripcion.trim(),
-      rell_estado: this.rell_estado ? 1 : 2,
+      // Legacy formRell.vue:154,166: 1 = activo, 0 = inactivo.
+      rell_estado: this.rell_estado ? 1 : 0,
       rell_propio: this.rell_propio ? 1 : 0,
       rell_regional: this.rell_regional ? 1 : 0,
       rell_nusd: this.rell_nusd?.trim() || null

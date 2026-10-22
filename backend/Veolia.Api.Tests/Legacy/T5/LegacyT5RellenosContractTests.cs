@@ -116,15 +116,18 @@ public sealed class LegacyT5RellenosContractTests
             ((string)binds["rellNomrelleno"]!, (int)binds["rellEstado"]!, (string)binds["rellNusd"]!, (int)binds["rellPropio"]!, (int)binds["rellRegional"]!, (long)binds["usuaUsua"]!));
     }
 
-    // Legacy controller.js:8 binds RELL_DESCRIPCION with the name (the legacy form formRell.vue has no Descripción field).
-    [Fact(Skip = "PARITY-FINDING: RELL_DESCRIPCION is taken from a new required Descripción field (relleno-form.component.ts) and editar also overwrites it; legacy stored the name as description on create (controller.js:8) and never changed it on edit (controller.js:31). Without rell_descripcion the INSERT binds NULL. Not recorded in parity-review-all.")]
-    public async Task CrearSql_StoresTheNameAsDescriptionLikeLegacy()
+    // Legacy controller.js:8 bound RELL_DESCRIPCION with the name (legacy formRell.vue had no Descripción field).
+    // Accepted deviation: parity-review-all T14 / legacy-characterization-tests S9 group E (Rellenos Descripción field) —
+    // the description comes from the new Descripción field.
+    [Fact]
+    public async Task CrearSql_StoresTheDescripcionField_AcceptedDeviation()
     {
         var db = new T5RecConnection();
 
-        await new RellenosRepository(new T5RecFactory(db)).CrearAsync(new CrearRellenoRequest { rell_nomrelleno = "Nuevo", rell_estado = 1 }, 101, default);
+        await new RellenosRepository(new T5RecFactory(db)).CrearAsync(
+            new CrearRellenoRequest { rell_nomrelleno = "Nuevo", rell_descripcion = "Relleno nuevo", rell_estado = 1 }, 101, default);
 
-        Assert.Equal("Nuevo", Assert.Single(db.Commands).Binds["rellDescripcion"]);
+        Assert.Equal("Relleno nuevo", Assert.Single(db.Commands).Binds["rellDescripcion"]);
     }
 
     // Legacy controller.js:31-32: UPDATE auco_rellenos SET RELL_NOMRELLENO, RELL_ESTADO, RELL_NUSD, RELL_PROPIO, RELL_REGIONAL WHERE rell_id = id.
@@ -147,7 +150,7 @@ public sealed class LegacyT5RellenosContractTests
 
     // Legacy controller.js:38 meant a logical delete to estado 0 (column typo recorded as fixed); legacy formRell.vue:154,166
     // stores inactive as 0.
-    [Fact(Skip = "PARITY-FINDING: eliminar writes RELL_ESTADO = 2 (and the form sends 2 for inactive); legacy used 0 for inactive (controller.js:38, formRell.vue:154,166). Already recorded as UNCERTAIN T14 L1 (check DISTINCT RELL_ESTADO in production); not approved.")]
+    [Fact]
     public async Task EliminarSql_SetsEstadoZeroLikeLegacy()
     {
         var db = new T5RecConnection();

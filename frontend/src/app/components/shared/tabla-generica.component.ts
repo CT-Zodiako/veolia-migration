@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
+import { ProgressBarModule } from 'primeng/progressbar';
 
 export interface ColumnaGenerica {
   field: string;
@@ -14,12 +15,12 @@ export interface ColumnaGenerica {
  * reemplaza a `app-tabla-avanzada` (esa sigue siendo la tabla de uso general
  * con columnas movibles/exportables).
  */
-const FORMATO_NUMERO = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 6 });
+const FORMATO_MILES = new Intl.NumberFormat('es-MX');
 
 @Component({
   selector: 'app-tabla-generica',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ProgressBarModule],
   template: `
     <table class="tabla-generica">
       <thead>
@@ -30,7 +31,8 @@ const FORMATO_NUMERO = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 6
       <tbody>
         <tr *ngFor="let row of rows">
           <td *ngFor="let col of columnas" [class.celda-numero]="esNumerico(row[col.field])">
-            {{ formatearValor(row[col.field]) }}
+            <p-progressbar *ngIf="porcentaje(row[col.field]) !== null; else texto" [value]="porcentaje(row[col.field])"></p-progressbar>
+            <ng-template #texto>{{ formatearValor(row[col.field]) }}</ng-template>
           </td>
         </tr>
         <tr *ngIf="!rows.length">
@@ -74,28 +76,34 @@ export class TablaGenericaComponent {
   @Input() columnas: ColumnaGenerica[] = [];
   @Input() rows: Record<string, unknown>[] = [];
 
+  // Legacy GenericTable.vue:66-68: numbers and "%" values are right-aligned.
   esNumerico(value: unknown): boolean {
-    return this.parseNumero(value) !== null;
+    return this.esNumeroLegacy(value) || this.esPorcentaje(value);
   }
 
+  // Legacy GenericTable.vue:17-24: a "%" value is drawn as a ProgressBar of parseFloat(value without "%", "," -> ".").
+  porcentaje(value: unknown): number | null {
+    if (!this.esPorcentaje(value)) return null;
+    const numero = parseFloat(String(value).replace('%', '').replace(',', '.'));
+    return Number.isNaN(numero) ? 0 : numero;
+  }
+
+  // Legacy formateoMiles (GenericTable.vue:72-77): the integer part grouped with es-MX, the decimals kept after ".".
   formatearValor(value: unknown): unknown {
-    const numero = this.parseNumero(value);
-    if (numero === null) return value;
-    const esPorcentaje = String(value).includes('%');
-    const formateado = FORMATO_NUMERO.format(numero);
-    return esPorcentaje ? `${formateado}%` : formateado;
+    if (!this.esNumeroLegacy(value)) return value;
+    const [entero, decimales] = String(value).replace(',', '.').split('.');
+    const enteroFormateado = FORMATO_MILES.format(Number(entero));
+    return decimales ? `${enteroFormateado}.${decimales}` : enteroFormateado;
   }
 
-  // Los valores llegan tal cual los guarda el legacy: pueden venir como
-  // número JS o como string ya formateado en es-CO ("1.234,56"). Se
-  // normaliza a "." decimal para poder parsear con `Number(...)`, y el
-  // resultado se vuelve a formatear en es-CO (miles "." / decimales ",").
-  private parseNumero(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') return null;
-    const limpio = String(value).replace('%', '').trim();
-    if (limpio === '') return null;
-    const normalizado = limpio.includes(',') ? limpio.replace(/\./g, '').replace(',', '.') : limpio;
-    const numero = Number(normalizado);
-    return Number.isNaN(numero) ? null : numero;
+  private esPorcentaje(value: unknown): boolean {
+    return value !== null && value !== undefined && String(value).includes('%');
+  }
+
+  // Legacy GenericTable.vue:29: !isNaN(value.replace(",", ".")).
+  private esNumeroLegacy(value: unknown): boolean {
+    if (value === null || value === undefined || this.esPorcentaje(value)) return false;
+    const texto = String(value).trim();
+    return texto !== '' && !Number.isNaN(Number(texto.replace(',', '.')));
   }
 }

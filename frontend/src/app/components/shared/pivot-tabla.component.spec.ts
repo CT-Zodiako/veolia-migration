@@ -95,7 +95,7 @@ describe('PivotTablaComponent (legacy lib/TablaPivot.vue)', () => {
   });
 
   // Legacy TablaPivot.vue:20-21,276 (10 rows) and :160 (5 rows when pivoted).
-  it.skip('PARITY-FINDING: the pivot grid pages 10 rows (5 when pivoted) (legacy TablaPivot.vue:20-21,160,276); new shows every row without paginator', () => {
+  it('the pivot grid pages 10 rows (5 when pivoted) like legacy TablaPivot.vue:20-21,160,276', () => {
     const { fixture } = setup(Array.from({ length: 12 }, (_, i) => ({ ANNO: 2025, APS: `A${i}`, VALOR: i })), true);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
@@ -104,7 +104,7 @@ describe('PivotTablaComponent (legacy lib/TablaPivot.vue)', () => {
   });
 
   // Legacy TablaPivot.vue:247-256: pivoted top-level columns = all grouping keys first (grouping order), then the rest.
-  it.skip('PARITY-FINDING: pivoted top-level columns are the grouping keys first then the rest (legacy TablaPivot.vue:247-256); new keeps the original order and hides deeper grouping columns', () => {
+  it('pivoted top-level columns are the grouping keys first then the rest like legacy TablaPivot.vue:247-256', () => {
     const { fixture, component } = setup(DATOS, true);
     globalThis.ResizeObserver ??= class {
       observe() {}

@@ -53,11 +53,13 @@ describe('ParametrosConsultaComponent (legacy components/Selector.vue)', () => {
   });
 
   // Legacy Selector.vue:171-180 forwards each change; pinned: incomplete params emit parametrosIncompletos.
+  // The period starts on the current month (legacy Selector.vue:153-158), so clearing the year makes it incomplete.
   it('forwards each change and reports incomplete parameters', () => {
     const { component, log } = setup();
+    log.length = 0;
+    component.onAnnoChange(null);
     component.onApsChange(1);
-    component.onAnnoChange(2025);
-    expect(log).toEqual(['aps:1', 'incompletos', 'anno:2025', 'incompletos']);
+    expect(log).toEqual(['anno:null', 'incompletos', 'aps:1', 'incompletos']);
   });
 
   // Pinned: with autoConsultar, completing APS/año/mes triggers consultar and hides the button.
@@ -72,22 +74,27 @@ describe('ParametrosConsultaComponent (legacy components/Selector.vue)', () => {
   });
 
   // Pinned: without autoConsultar complete parameters do not query by themselves.
+  // Legacy Selector.vue:153-158 announces the default period without querying (no ChangeSelector on mount).
   it('does not query by itself without autoConsultar', () => {
     const { component, log } = setup({ mostrarAps: false });
+    const hoy = new Date();
+    expect(log).toEqual([`anno:${hoy.getFullYear()}`, `mes:${hoy.getMonth() + 1}`]);
+    log.length = 0;
     component.onAnnoChange(2025);
     component.onMesChange(6);
-    expect(log).toEqual(['anno:2025', 'incompletos', 'mes:6']);
+    expect(log).toEqual(['anno:2025', 'mes:6']);
   });
 
   // Pinned: the button emits consultar.
   it('emits consultar when the button is clicked', () => {
     const { log, el } = setup();
+    log.length = 0;
     (el.querySelector('p-button button') as HTMLButtonElement).click();
     expect(log).toEqual(['consultar']);
   });
 
   // Legacy Selector.vue:153-158: with no stored period the selector starts on the current month.
-  it.skip('PARITY-FINDING: with no saved period it starts on the current year/month (legacy Selector.vue:153-158); new starts empty', () => {
+  it('with no saved period it starts on the current year/month like legacy Selector.vue:153-158', () => {
     const { component } = setup();
     const hoy = new Date();
     expect(component.anno).toBe(hoy.getFullYear());

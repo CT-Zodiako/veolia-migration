@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ApsSelectorComponent } from './aps-selector.component';
 import { AnnoSelectorComponent } from './anno-selector.component';
 import { MesSelectorComponent } from './mes-selector.component';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 
 @Component({
   selector: 'app-parametros-consulta',
@@ -80,7 +81,7 @@ import { MesSelectorComponent } from './mes-selector.component';
     }
   `]
 })
-export class ParametrosConsultaComponent {
+export class ParametrosConsultaComponent implements OnInit {
   @Input() aps: number | null = null;
   @Output() apsChange = new EventEmitter<number | null>();
 
@@ -100,6 +101,23 @@ export class ParametrosConsultaComponent {
 
   @Output() consultar = new EventEmitter<void>();
   @Output() parametrosIncompletos = new EventEmitter<void>();
+
+  constructor(private readonly parametrosState: ParametrosConsultaStateService) {}
+
+  // Legacy Selector.vue:153-158: with no stored period the selector starts on the current month and stores it.
+  ngOnInit(): void {
+    const sinPeriodo = this.anno === null && this.mes === null
+      && this.parametrosState.getAnno() === null && this.parametrosState.getMes() === null;
+    if (!sinPeriodo) return;
+
+    const hoy = new Date();
+    this.anno = hoy.getFullYear();
+    this.mes = hoy.getMonth() + 1;
+    this.parametrosState.setAnno(this.anno);
+    this.parametrosState.setMes(this.mes);
+    this.annoChange.emit(this.anno);
+    this.mesChange.emit(this.mes);
+  }
 
   onApsChange(value: number | null): void {
     this.aps = value;

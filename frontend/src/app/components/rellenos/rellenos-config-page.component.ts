@@ -107,7 +107,8 @@ export class RellenosConfigPageComponent implements OnInit {
   }
 
   toggleEstado(item: RellenoItem): void {
-    const nuevoEstado = item.RELL_ESTADO === 1 ? 2 : 1;
+    // Legacy rellenos/controller.js:38, formRell.vue:154,166: inactivo = 0.
+    const nuevoEstado = item.RELL_ESTADO === 1 ? 0 : 1;
     const payload: EditarRellenoRequest = {
       rell_nomrelleno: item.RELL_NOMRELLENO,
       rell_descripcion: item.RELL_DESCRIPCION ?? '',

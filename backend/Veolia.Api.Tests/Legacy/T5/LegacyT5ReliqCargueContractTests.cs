@@ -145,17 +145,22 @@ public sealed class LegacyT5ReliqCargueContractTests
     }
 
     // Legacy controller.js:17-24: a NULL freli_jsongral result is JSON.parse(null) = null → 200 { ok: true, result: null }
-    // and the screen shows an empty resumen.
-    [Fact(Skip = "PARITY-FINDING: resumenCompararTarifas with no JSON returns 404 RELIQ_NOT_FOUND and the screen shows an error explaining Reliquidar must run first; legacy returned 200 with result null (empty resumen, no message). Not recorded in parity-review-all.")]
-    public async Task ResumenCompararTarifas_NullJsonReturns200LikeLegacy()
+    // and the screen showed an empty resumen. Accepted deviation: legacy-characterization-tests S8/S9 (404 empty resumen
+    // comparar tarifas) — the new API answers 404 RELIQ_NOT_FOUND.
+    [Fact]
+    public async Task ResumenCompararTarifas_NullJsonReturns404_AcceptedDeviation()
     {
         using var factory = new T5CargueFactory();
         factory.Repository.Empty = true;
         using var client = T5CargueFactory.Client(factory);
 
         var response = await client.PostAsJsonAsync("/api/v1/reliqCargue/resumenCompararTarifas", new { reliq = 9, apsaId = 3, anno = 2024, mes = 5 });
+        var body = await T5CargueFactory.Json(response);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("error", body.GetProperty("status").GetString());
+        Assert.Equal("RELIQ_NOT_FOUND", body.GetProperty("message").GetString());
+        Assert.Equal(["ResumenCompararTarifas:9:3:2024:5"], factory.Repository.Calls);
     }
 
     // Legacy routes.js:13-18 + controller.js:54-56: RELIQ.PK_RELIQUIDAR.freli_reliquidar(:p_reliq, :p_aps) and the raw
@@ -225,16 +230,20 @@ public sealed class LegacyT5ReliqCargueContractTests
         Assert.Empty(factory.Repository.Calls);
     }
 
-    // Legacy controller.js:388-414: an empty data array loops zero times and returns 200 [] (the tab shows "Guardado").
-    [Fact(Skip = "PARITY-FINDING: saving a Cargue tab with no rows returns 422 PAYLOAD_EMPTY (error toast); legacy updated nothing and returned 200 [] (success toast). Low severity, not recorded in parity-review-all.")]
-    public async Task Updates_EmptyDataReturns200LikeLegacy()
+    // Legacy controller.js:388-414: an empty data array looped zero times and returned 200 [] (the tab showed "Guardado").
+    // Accepted deviation: legacy-characterization-tests S8/S9 (422 empty Cargue save) — nothing reaches the repository.
+    [Fact]
+    public async Task Updates_EmptyDataReturns422_AcceptedDeviation()
     {
         using var factory = new T5CargueFactory();
         using var client = T5CargueFactory.Client(factory);
 
         var response = await client.PostAsJsonAsync("/api/v1/reliqCargue/updateResumenAdicional", new { data = Array.Empty<object>() });
+        var body = await T5CargueFactory.Json(response);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal("PAYLOAD_EMPTY", body.GetProperty("message").GetString());
+        Assert.Empty(factory.Repository.Calls);
     }
 }
 

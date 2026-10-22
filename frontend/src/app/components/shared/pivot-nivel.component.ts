@@ -16,6 +16,10 @@ export class PivotNivelComponent {
   @Input({ required: true }) columnas: PivotColumnDef[] = [];
   @Input({ required: true }) agrupaciones: string[] = [];
   @Input() nivel = 0;
+  // Top-level grid of TablaPivot (legacy TablaPivot.vue:11-23,247-256): paginated and showing every column,
+  // grouping keys first. Nested levels (ColumnasGenericas.vue) keep the filtered columns and no paginator.
+  @Input() raiz = false;
+  @Input() filasPorPagina = 10;
 
   expandedRowKeys: Record<string, boolean> = {};
 
@@ -39,6 +43,11 @@ export class PivotNivelComponent {
   // de agrupación que NO correspondan al nivel actual -- ya se muestran como el valor de
   // la fila padre en cada nivel de expansión.
   get columnasVisibles(): PivotColumnDef[] {
+    if (this.raiz) {
+      const claves = this.agrupaciones
+        .map((campo) => this.columnas.find((col) => col.field === campo) ?? { field: campo, headerName: campo, agrupable: true });
+      return [...claves, ...this.columnas.filter((col) => !this.agrupaciones.includes(col.field))];
+    }
     return this.columnas.filter((col) => {
       if (!this.agrupaciones.includes(col.field)) return true;
       return this.columnaAgrupacionActual === col.field;

@@ -40,4 +40,24 @@ describe('RellenosConfigPageComponent grid', () => {
     fixture.detectChanges();
     expect(nombres()).toEqual(['Doña Juana', 'Mondoñedo']);
   });
+
+  // Legacy rellenos/controller.js:38 and formRell.vue:154,166: inactive is RELL_ESTADO 0 (legacy-characterization-tests S8, T14 L1).
+  it('toggling an active relleno saves estado 0 like legacy', () => {
+    const editarRelleno = vi.fn(() => of({}));
+    TestBed.configureTestingModule({
+      imports: [RellenosConfigPageComponent],
+      providers: [
+        { provide: RellenosService, useValue: { getRellenos: vi.fn(() => of([relleno(1, 'Tunja')])), editarRelleno } },
+        { provide: ConfirmationService, useValue: { confirm: vi.fn() } }
+      ]
+    });
+    const fixture = TestBed.createComponent(RellenosConfigPageComponent);
+    fixture.detectChanges();
+    const item = relleno(1, 'Tunja');
+
+    fixture.componentInstance.toggleEstado(item);
+
+    expect(editarRelleno).toHaveBeenCalledWith(1, expect.objectContaining({ rell_estado: 0 }));
+    expect(item.RELL_ESTADO).toBe(0);
+  });
 });
