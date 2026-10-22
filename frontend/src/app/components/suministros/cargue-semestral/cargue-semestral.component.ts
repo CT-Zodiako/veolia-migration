@@ -62,7 +62,8 @@ export class CargueSemestralComponent {
   ];
 
   readonly filtrosValidos = computed(() => !!this.aps() && !!this.anno() && !!this.semestre());
-  readonly mostrarTabs = computed(() => this.filtrosValidos() && this.tarifasExistentes() === false);
+  // Legacy CargueSem.vue always shows the load tabs; existing tariffs only disable CERTIFICAR.
+  readonly mostrarTabs = computed(() => this.filtrosValidos());
 
   constructor(
     private readonly service: SuministrosService,

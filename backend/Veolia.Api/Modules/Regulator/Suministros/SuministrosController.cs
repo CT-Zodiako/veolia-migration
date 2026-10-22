@@ -232,8 +232,23 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
         ExecuteDataAsync(() => suministrosRepository.GetCanCertificateSemestralAsync(request, cancellationToken));
 
     [HttpPost("Certificar")]
-    public Task<IActionResult> Certificar([FromBody] CertificarRequest request, CancellationToken cancellationToken) =>
-        ExecuteDataAsync(() => suministrosRepository.CertificarAsync(request, cancellationToken));
+    public async Task<IActionResult> Certificar([FromBody] CertificarRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out var tokenContext))
+        {
+            return Unauthorized(new { message = "No Autorizado!" });
+        }
+
+        try
+        {
+            var result = await suministrosRepository.CertificarAsync(request, tokenContext.SisuId, cancellationToken);
+            return Ok(new { data = result });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+        }
+    }
 
     [HttpPost("Certificarsemestral")]
     public async Task<IActionResult> CertificarSemestral([FromBody] CertificarSemestralRequest request, CancellationToken cancellationToken)

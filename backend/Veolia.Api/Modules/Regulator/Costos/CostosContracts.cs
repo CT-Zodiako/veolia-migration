@@ -12,9 +12,6 @@ public sealed class ValidapreactualizaRequest
 
     [Range(2000, 2999, ErrorMessage = "El año debe estar entre 2000 y 2999.")]
     public int Anno { get; init; }
-
-    [Range(1, int.MaxValue, ErrorMessage = "El usuario es obligatorio.")]
-    public int Usuario { get; init; }
 }
 
 public sealed class CalculartarifasRequest
@@ -27,9 +24,6 @@ public sealed class CalculartarifasRequest
 
     [Range(2000, 2999, ErrorMessage = "El año debe estar entre 2000 y 2999.")]
     public int Anno { get; init; }
-
-    [Range(1, int.MaxValue, ErrorMessage = "El usuario es obligatorio.")]
-    public int Usuario { get; init; }
 }
 
 public sealed class CertificarTarifasRequest
@@ -42,9 +36,6 @@ public sealed class CertificarTarifasRequest
 
     [Range(2000, 2999, ErrorMessage = "El año debe estar entre 2000 y 2999.")]
     public int Anno { get; init; }
-
-    [Range(1, int.MaxValue, ErrorMessage = "El usuario es obligatorio.")]
-    public int Usuario { get; init; }
 }
 
 public sealed class CostoConsultaRequest

@@ -515,8 +515,28 @@ VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
         return await connection.ExecuteScalarAsync<int>(new CommandDefinition(sql, new { request.aps, request.anno, mesCierre }, cancellationToken: cancellationToken));
     }
 
-    public async Task<string?> CertificarAsync(CertificarRequest request, CancellationToken cancellationToken) =>
-        await ExecutePackageStringAsync("PK_CERTIFICACION.fauco_certificar", request.aps, request.anno, request.mes, cancellationToken);
+    // Legacy suministros/controller.js:623-640: fauco_certificar(aps, mes, anno, usuario) RETURN integer, then COMMIT.
+    public const string CertificarSql = "BEGIN :res := PK_CERTIFICACION.fauco_certificar(:1, :2, :3, :4); COMMIT; END;";
+
+    public static DynamicParameters BuildCertificarParameters(CertificarRequest request, long usuarioId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("res", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parameters.Add("1", request.aps);
+        parameters.Add("2", request.mes);
+        parameters.Add("3", request.anno);
+        parameters.Add("4", usuarioId);
+        return parameters;
+    }
+
+    public async Task<int?> CertificarAsync(CertificarRequest request, long usuarioId, CancellationToken cancellationToken)
+    {
+        var parameters = BuildCertificarParameters(request, usuarioId);
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        await connection.ExecuteAsync(new CommandDefinition(CertificarSql, parameters, cancellationToken: cancellationToken));
+        return parameters.Get<int?>("res");
+    }
 
     public async Task<int?> CertificarSemestralAsync(CertificarSemestralRequest request, long usuarioId, CancellationToken cancellationToken)
     {
@@ -607,19 +627,29 @@ VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
         return rows.ToList();
     }
 
+    // Legacy suministros/controller.js:1084: positional VALUES without a column list.
+    public const string NewCostoPodaSql = "INSERT INTO AUCO_PODATECHO VALUES (:1, :2, :3, :4, :5, 0, 0, 1, SYSDATE, :6)";
+
+    public static DynamicParameters BuildNewCostoPodaParameters(PodaNuevoRequest request, PodaNuevoItem item, long usuarioId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("1", request.aps);
+        parameters.Add("2", item.EMPR_EMPR);
+        parameters.Add("3", request.anno);
+        parameters.Add("4", request.mes);
+        parameters.Add("5", item.valor);
+        parameters.Add("6", usuarioId);
+        return parameters;
+    }
+
     public async Task NewCostoPodaAsync(PodaNuevoRequest request, long usuarioId, CancellationToken cancellationToken)
     {
-        const string sql = @"
-            INSERT INTO AUCO_PODATECHO
-            (APSA_ID, EMPR_EMPR, CPTE_ANNO, CPTE_MES, CPTE_VALORSUI, CPTE_VALORFACT, CPTE_VARIACION, CPTE_TIPINGRESO, CPTE_FECCREA, USUA_USUA)
-            VALUES (:aps, :emprEmpr, :anno, :mes, :valor, 0, 0, 1, SYSDATE, :usuario)";
-
         using var connection = await OpenConnectionAsync(cancellationToken);
         foreach (var item in request.datos)
         {
             await connection.ExecuteAsync(new CommandDefinition(
-                sql,
-                new { aps = request.aps, emprEmpr = item.EMPR_EMPR, anno = request.anno, mes = request.mes, valor = item.valor, usuario = usuarioId },
+                NewCostoPodaSql,
+                BuildNewCostoPodaParameters(request, item, usuarioId),
                 cancellationToken: cancellationToken));
         }
     }

@@ -5,6 +5,20 @@ namespace Veolia.Api.Modules.Regulator.Aprovechamiento;
 
 public sealed class AprovechamientoRepository(IOracleConnectionFactory connectionFactory) : IAprovechamientoRepository
 {
+    // Legacy suministros/controller.js:805: positional VALUES without a column list.
+    public const string InsertSql = "INSERT INTO aprov_activar VALUES(:1, :2, :3, :4, SYSDATE, :5)";
+
+    public static DynamicParameters BuildInsertParameters(int aps, int anno, int mes, int activar, long usuarioId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("1", aps);
+        parameters.Add("2", anno);
+        parameters.Add("3", mes);
+        parameters.Add("4", activar);
+        parameters.Add("5", usuarioId);
+        return parameters;
+    }
+
     public async Task<AprovechamientoResponseDto?> ConsultarAsync(int aps, int anno, int mes, CancellationToken cancellationToken = default)
     {
         const string sql = @"
@@ -34,12 +48,8 @@ WHERE APSID = :aps
 
         if (existente is null)
         {
-            const string insertSql = @"
-INSERT INTO APROV_ACTIVAR (APSID, APROANNO, APROMES, APROACTIVAR, APROFECHA, USUARIO)
-VALUES (:aps, :anno, :mes, :activar, SYSDATE, :usuario)";
-
             await connection.ExecuteAsync(new CommandDefinition(
-                insertSql, new { aps, anno, mes, activar = valorActivar, usuario = usuarioId }, cancellationToken: cancellationToken));
+                InsertSql, BuildInsertParameters(aps, anno, mes, valorActivar, usuarioId), cancellationToken: cancellationToken));
             return;
         }
 

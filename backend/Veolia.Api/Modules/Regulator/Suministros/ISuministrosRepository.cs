@@ -17,7 +17,7 @@ public interface ISuministrosRepository
     Task<int> GuardarQrtRuralAsync(QRTRuralRequest request, long usuarioId, CancellationToken cancellationToken);
     Task<IReadOnlyList<dynamic>> GetCanCertificateAsync(PrevalidarRequest request, CancellationToken cancellationToken);
     Task<int> GetCanCertificateSemestralAsync(PrevalidarSemestralRequest request, CancellationToken cancellationToken);
-    Task<string?> CertificarAsync(CertificarRequest request, CancellationToken cancellationToken);
+    Task<int?> CertificarAsync(CertificarRequest request, long usuarioId, CancellationToken cancellationToken);
     Task<int?> CertificarSemestralAsync(CertificarSemestralRequest request, long usuarioId, CancellationToken cancellationToken);
     Task<string?> CertificarMensualAsync(CertificarRequest request, CancellationToken cancellationToken);
     Task<PlCertificarSemestralResponse> PlCertificarSemestralAsync(CertificarSemestralRequest request, CancellationToken cancellationToken);

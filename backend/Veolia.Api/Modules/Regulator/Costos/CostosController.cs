@@ -13,43 +13,43 @@ public sealed class CostosController(ICostosRepository repository) : ControllerB
     [HttpPost("validapreactualiza")]
     public async Task<IActionResult> Validapreactualiza([FromBody] ValidapreactualizaRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.ValidapreactualizaAsync(request.Aps, request.Mes, request.Anno, request.Usuario, cancellationToken),
+            async usuario => await repository.ValidapreactualizaAsync(request.Aps, request.Mes, request.Anno, usuario, cancellationToken),
             "Validación previa ejecutada correctamente.");
 
     [HttpPost("calculartarifas")]
     public async Task<IActionResult> Calculartarifas([FromBody] CalculartarifasRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.CalculartarifasAsync(request.Aps, request.Mes, request.Anno, request.Usuario, cancellationToken),
+            async usuario => await repository.CalculartarifasAsync(request.Aps, request.Mes, request.Anno, usuario, cancellationToken),
             "Cálculo de tarifas ejecutado correctamente.");
 
     [HttpPost("prechecks")]
     public async Task<IActionResult> RunPrechecks([FromBody] ValidapreactualizaRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.RunPrechecksAsync(request.Aps, request.Mes, request.Anno, request.Usuario, cancellationToken),
+            async usuario => await repository.RunPrechecksAsync(request.Aps, request.Mes, request.Anno, usuario, cancellationToken),
             "Prechecks ejecutados correctamente.");
 
     [HttpPost("certificarTarifas")]
     public async Task<IActionResult> CertificarTarifas([FromBody] CertificarTarifasRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.CertificarTarifasAsync(request.Aps, request.Mes, request.Anno, request.Usuario, cancellationToken),
+            async usuario => await repository.CertificarTarifasAsync(request.Aps, request.Mes, request.Anno, usuario, cancellationToken),
             "Tarifas certificadas correctamente.");
 
     [HttpPost("consultar")]
     public async Task<IActionResult> ConsultarCostos([FromBody] CostoConsultaRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.ConsultarCostosAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
+            async _ => await repository.ConsultarCostosAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
             "Costos consultados correctamente.");
 
     [HttpPost("cosclus")]
     public async Task<IActionResult> ConsultarCostosClus([FromBody] CostoConsultaRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.ConsultarCostosClusAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
+            async _ => await repository.ConsultarCostosClusAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
             "Costos por clúster consultados correctamente.");
 
     [HttpPost("comportaclus")]
     public async Task<IActionResult> ConsultarComportaClus([FromBody] CostoConsultaRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.ConsultarComportaClusAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
+            async _ => await repository.ConsultarComportaClusAsync(request.Aps, request.Anno, request.Mes, cancellationToken),
             "Comportamiento histórico de clústeres consultado correctamente.");
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
@@ -58,9 +58,10 @@ public sealed class CostosController(ICostosRepository repository) : ControllerB
         return AuthTokenContextAccessor.TryRead(token, out tokenContext);
     }
 
-    private async Task<IActionResult> ExecuteAsync<T>(Func<Task<T>> action, string successMessage)
+    // Legacy costos routes take the user from the token (req.SISU_ID), never from the body.
+    private async Task<IActionResult> ExecuteAsync<T>(Func<int, Task<T>> action, string successMessage)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
         {
             var unauthorized = new ApiEnvelopeResponse<object>("error", new { }, "No autorizado.", HttpContext.TraceIdentifier, null);
             return Unauthorized(unauthorized);
@@ -68,7 +69,7 @@ public sealed class CostosController(ICostosRepository repository) : ControllerB
 
         try
         {
-            var data = await action();
+            var data = await action((int)tokenContext.SisuId);
             return Ok(new ApiEnvelopeResponse<T>("success", data, successMessage, HttpContext.TraceIdentifier, null));
         }
         catch (ValidationException ex)

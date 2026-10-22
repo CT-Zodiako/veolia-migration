@@ -115,7 +115,8 @@ export class CargueMensualComponent {
 
     this.service.certificar(payload).subscribe({
       next: (res) => {
-        if (res.data !== '1') {
+        // Legacy Cargue.vue:158: fauco_certificar returns an integer and only 1 means certified.
+        if (res.data !== 1) {
           this.error.set('Error al certificar tarifas.');
         } else {
           this.estado.set('Certificado correctamente.');

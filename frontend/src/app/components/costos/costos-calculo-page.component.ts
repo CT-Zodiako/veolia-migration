@@ -200,7 +200,7 @@ export class CostosCalculoPageComponent {
 
     this.loadingVerificar.set(true);
     this.costosService
-      .validapreactualiza(aps, periodo.mes, periodo.anno, this.getUsuarioId())
+      .validapreactualiza(aps, periodo.mes, periodo.anno)
       .pipe(finalize(() => this.loadingVerificar.set(false)))
       .subscribe({
         next: (resp) => {
@@ -260,7 +260,7 @@ export class CostosCalculoPageComponent {
 
     this.loadingCertificar.set(true);
     this.costosService
-      .certificarTarifas(aps, periodo.mes, periodo.anno, this.getUsuarioId())
+      .certificarTarifas(aps, periodo.mes, periodo.anno)
       .pipe(finalize(() => this.loadingCertificar.set(false)))
       .subscribe({
         next: () => {
@@ -273,8 +273,7 @@ export class CostosCalculoPageComponent {
   }
 
   private runPrechecksThenCalculate(aps: number, mes: number, anno: number): void {
-    const usuario = this.getUsuarioId();
-    this.costosService.runPrechecks(aps, mes, anno, usuario).subscribe({
+    this.costosService.runPrechecks(aps, mes, anno).subscribe({
       next: (prechecks) => {
         if (!prechecks.puedeCalcular) {
           // Legacy: un toast de error por cada precheck fallido y no calcula.
@@ -286,7 +285,7 @@ export class CostosCalculoPageComponent {
           return;
         }
         this.costosService
-          .calculartarifas(aps, mes, anno, usuario)
+          .calculartarifas(aps, mes, anno)
           .pipe(finalize(() => this.applyingVerificacion.set(false)))
           .subscribe({
             next: (resp) => {
@@ -335,17 +334,6 @@ export class CostosCalculoPageComponent {
       next: (data) => this.resumen.set(data || []),
       error: () => {}
     });
-  }
-
-  private getUsuarioId(): number {
-    try {
-      const raw = localStorage.getItem('usuario');
-      if (!raw) return 0;
-      const parsed = JSON.parse(raw);
-      return Number(parsed?.SISU_ID ?? 0);
-    } catch {
-      return 0;
-    }
   }
 
   private restoreState(): void {
