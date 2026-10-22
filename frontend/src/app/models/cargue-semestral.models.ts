@@ -21,7 +21,7 @@ export interface CarguePropiaSemFila {
   tafa: number;
   crtpro: number;
   cdfpro: number;
-  qrsmunrecp: number;
+  qrsmunrecp?: number;
 }
 
 export interface CarguePropiaSemRequest {
@@ -86,7 +86,7 @@ export interface QRTRuralRequest {
   aps: number;
   anno: number;
   semestre: number;
-  qrtRural: number;
+  qrtRural: number | null;
 }
 
 export interface PrevalidarSemestralRequest {

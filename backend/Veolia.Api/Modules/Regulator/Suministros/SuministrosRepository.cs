@@ -616,7 +616,7 @@ VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
     public async Task<IReadOnlyList<dynamic>> ConsultaCostoPodaAsync(PodaCatalogoRequest request, CancellationToken cancellationToken)
     {
         const string sql = @"
-            SELECT E.*
+            SELECT *
               FROM AUGE_EMPRESAS E
               JOIN AUCO_APSEMPRDIVI AE ON E.EMPR_EMPR = AE.EMPR_EMPR
              WHERE AE.APSA_ID = :aps

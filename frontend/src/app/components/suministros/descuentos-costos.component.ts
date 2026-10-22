@@ -29,8 +29,8 @@ export class DescuentosCostosComponent {
   readonly rows = signal<Record<string, unknown>[]>([]);
 
   readonly columnas: TablaColumn[] = [
-    { field: 'PARA_NOMBRE', header: 'Costo', filtrable: true },
-    { field: 'DESC_VALOR', header: 'Descuento', numero: true }
+    { field: 'PARA_NOMBRE', header: 'COSTO', filtrable: true },
+    { field: 'DESC_VALOR', header: 'DESCUENTO', numero: true }
   ];
 
   private readonly destroyRef = inject(DestroyRef);

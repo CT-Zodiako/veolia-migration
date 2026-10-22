@@ -34,29 +34,30 @@ interface FilaCsv {
   AFO_M6?: string;
 }
 
+// Legacy CargueComercialSemestral.vue:85-224.
 const columnasPreview: TablaColumn[] = [
-  { field: 'codaps', header: 'COD APS' },
-  { field: 'aps', header: 'NOM APS' },
-  { field: 'anno', header: 'AÑO' },
-  { field: 'semestre', header: 'SEMESTRE' },
-  { field: 'coduso', header: 'COD USO' },
-  { field: 'nomuso', header: 'NOM USO' },
-  { field: 'codfactor', header: 'COD FACTOR' },
-  { field: 'nomfact', header: 'NOM FACTOR' },
-  { field: 'codtipo', header: 'COD TIPO' },
-  { field: 'nomtipo', header: 'NOM TIPO' },
-  { field: 'susm1', header: 'SUS M1' },
-  { field: 'susm2', header: 'SUS M2' },
-  { field: 'susm3', header: 'SUS M3' },
-  { field: 'susm4', header: 'SUS M4' },
-  { field: 'susm5', header: 'SUS M5' },
-  { field: 'susm6', header: 'SUS M6' },
-  { field: 'afom1', header: 'AFO M1' },
-  { field: 'afom2', header: 'AFO M2' },
-  { field: 'afom3', header: 'AFO M3' },
-  { field: 'afom4', header: 'AFO M4' },
-  { field: 'afom5', header: 'AFO M5' },
-  { field: 'afom6', header: 'AFO M6' }
+  { field: 'codaps', header: 'Cod. Aps' },
+  { field: 'aps', header: 'APS' },
+  { field: 'anno', header: 'Año' },
+  { field: 'semestre', header: 'Semestre' },
+  { field: 'coduso', header: 'Cod. CU' },
+  { field: 'nomuso', header: 'Nombre CU' },
+  { field: 'codfactor', header: 'Cod. Factor' },
+  { field: 'nomfact', header: 'Nom. Factor' },
+  { field: 'codtipo', header: 'Cod. Tipo' },
+  { field: 'nomtipo', header: 'Nom. Tipo' },
+  { field: 'susm1', header: 'Sus M1' },
+  { field: 'susm2', header: 'Sus M2' },
+  { field: 'susm3', header: 'Sus M3' },
+  { field: 'susm4', header: 'Sus M4' },
+  { field: 'susm5', header: 'Sus M5' },
+  { field: 'susm6', header: 'Sus M6' },
+  { field: 'afom1', header: 'Afo M1' },
+  { field: 'afom2', header: 'Afo M2' },
+  { field: 'afom3', header: 'Afo M3' },
+  { field: 'afom4', header: 'Afo M4' },
+  { field: 'afom5', header: 'Afo M5' },
+  { field: 'afom6', header: 'Afo M6' }
 ];
 
 function aNumero(valor: string | undefined): number | null {
@@ -108,25 +109,22 @@ export class CargueComercialSemComponent {
     });
   }
 
+  // Legacy CargueComercialSemestral.vue:321-345: rows are checked in order and the first mismatch stops with one message.
   private procesarCsv(data: FilaCsv[]): void {
-    const errores: string[] = [];
-
-    data.forEach((fila, index) => {
-      const numeroFila = index + 1;
+    let error = '';
+    for (const fila of data) {
       if (aNumero(fila.CODAPS) !== this.aps) {
-        errores.push(`Fila ${numeroFila}: el APS del archivo no coincide con el APS seleccionado.`);
+        error = 'El APS Seleccionado no concuerda con el APS del archivo!';
+      } else if (aNumero(fila.ANNO) !== this.anno) {
+        error = 'El AÑO Seleccionado no concuerda con los del archivo!';
+      } else if (aNumero(fila.SEMESTRE) !== this.semestre) {
+        error = 'Existen meses fuera del rango del semestre Seleccionado no concuerda con los del archivo!';
       }
-      if (aNumero(fila.ANNO) !== this.anno) {
-        errores.push(`Fila ${numeroFila}: el año del archivo no coincide con el año seleccionado.`);
-      }
-      if (aNumero(fila.SEMESTRE) !== this.semestre) {
-        errores.push(`Fila ${numeroFila}: el semestre del archivo no coincide con el semestre seleccionado.`);
-      }
-    });
+      if (error) break;
+    }
 
-    this.errores.set(errores);
-
-    if (errores.length > 0) {
+    this.errores.set(error ? [error] : []);
+    if (error) {
       this.filas.set([]);
       return;
     }
@@ -182,7 +180,8 @@ export class CargueComercialSemComponent {
     this.guardando.set(true);
     this.service.filecarguecomercialsemestral({ filecontent: this.filas() }).subscribe({
       next: () => {
-        this.estado.set('Información de usuarios semestral guardada correctamente.');
+        // Legacy CargueService.js:31-36.
+        this.estado.set('Guardado Correctamente');
         this.guardando.set(false);
         this.limpiarCargue();
         this.guardado.emit();

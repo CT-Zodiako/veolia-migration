@@ -43,7 +43,7 @@ describe('InfRuralComponent (702 Inf. Rural) — legacy CargueSemestralRural.vue
   });
 
   // Legacy CargueSemestralRural.vue (guardarData): anno = year of (stDate - 1 month), not the semester selector year.
-  it.skip('PARITY-FINDING: anno is the selected year; legacy sent the year of the current date minus one month', () => {
+  it('sends the year of the current date minus one month like legacy', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(2026, 0, 15));
     const { component, service } = setup(5, 2026, 1);
@@ -55,7 +55,7 @@ describe('InfRuralComponent (702 Inf. Rural) — legacy CargueSemestralRural.vue
   });
 
   // Legacy sends the raw (possibly null) input; CargueSemestralRural.vue toasts "QRT Rural Guardado".
-  it.skip('PARITY-FINDING: a blank value is sent as 0 and the success text is not the legacy "QRT Rural Guardado"', () => {
+  it('sends a blank value as null and shows the legacy "QRT Rural Guardado"', () => {
     const { component, service } = setup();
 
     component.guardar();

@@ -60,7 +60,7 @@ describe('EjecutarReversionComponent (3001) — legacy views/suministros/Reversi
   });
 
   // Legacy CargueService.js:518-523 toasts "Periodo Reversado Correctamente".
-  it.skip('PARITY-FINDING: the success message is not the legacy "Periodo Reversado Correctamente"', () => {
+  it('shows the legacy success message "Periodo Reversado Correctamente"', () => {
     const { component } = setup();
     component.motivo = 'Error';
 
@@ -70,7 +70,7 @@ describe('EjecutarReversionComponent (3001) — legacy views/suministros/Reversi
   });
 
   // Legacy Reversiones.vue: an empty motivo shows "El valor es obligatorio".
-  it.skip('PARITY-FINDING: an empty motivo shows a different message than legacy "El valor es obligatorio"', () => {
+  it('rejects an empty motivo with the legacy "El valor es obligatorio"', () => {
     const { component, suministros } = setup();
     component.motivo = '   ';
 
@@ -81,7 +81,7 @@ describe('EjecutarReversionComponent (3001) — legacy views/suministros/Reversi
   });
 
   // Legacy Reversiones.vue:17-18: button "Reversar", textarea placeholder "Motivo de Reversión...".
-  it.skip('PARITY-FINDING: the action button is "Ejecutar Reversión" instead of legacy "Reversar"', () => {
+  it('labels the action button "Reversar" like legacy', () => {
     const { fixture } = setup();
 
     const boton = (fixture.nativeElement as HTMLElement).querySelector('p-button');

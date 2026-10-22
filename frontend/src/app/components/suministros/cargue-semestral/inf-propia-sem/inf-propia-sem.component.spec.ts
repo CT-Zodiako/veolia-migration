@@ -97,7 +97,7 @@ describe('InfPropiaSemComponent (702 Inf. Propia) — legacy InfPropiaSemestral.
     expect(service.setCargueInfPropiaSem).not.toHaveBeenCalled();
   });
 
-  it.skip('PARITY-FINDING: validation messages differ from legacy ("Existen meses fuera del rango del semestre Seleccionado no concuerda con los del archivo!")', async () => {
+  it('shows the legacy validation message "Existen meses fuera del rango del semestre Seleccionado no concuerda con los del archivo!"', async () => {
     const { fixture, component } = setup();
 
     await load(fixture, csv('1014;1023;2026;7;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16'));
@@ -106,7 +106,7 @@ describe('InfPropiaSemComponent (702 Inf. Propia) — legacy InfPropiaSemestral.
   });
 
   // Legacy InfPropiaSemestral.vue:107-206 column order: ..., QRS, QRSmunrecp, LBL, VL, ... CDFPRO.
-  it.skip('PARITY-FINDING: preview column order/header differs (legacy shows QRSmunrecp right after QRS)', async () => {
+  it('shows QRSmunrecp right after QRS like legacy', async () => {
     const { fixture } = setup();
     await load(fixture, csv(FILA));
 
@@ -119,7 +119,7 @@ describe('InfPropiaSemComponent (702 Inf. Propia) — legacy InfPropiaSemestral.
 
   // Legacy InfPropiaSemestral.vue reads element.QRSMUNRECP while the template header is QRSmunrecp: legacy sent no value
   // (undefined dropped by JSON) so PROP_QRSMUNRECP stayed empty.
-  it.skip('PARITY-FINDING: the unread QRSmunrecp column is sent as 0 instead of being left empty', async () => {
+  it('leaves the unread QRSmunrecp column empty like legacy', async () => {
     const { fixture, component, service } = setup();
     await load(fixture, csv(FILA));
 

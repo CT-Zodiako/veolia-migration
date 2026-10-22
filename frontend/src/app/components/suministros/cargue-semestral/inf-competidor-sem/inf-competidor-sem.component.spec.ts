@@ -92,7 +92,7 @@ describe('InfCompetidorSemComponent (702 Inf. Competidor) — legacy InfCompetid
     expect(service.setCargueInfCompetidorSemestral).not.toHaveBeenCalled();
   });
 
-  it.skip('PARITY-FINDING: validation messages differ from legacy ("La Empresa Seleccionada no concuerda con la Empresa del archivo!")', async () => {
+  it('shows the legacy validation message "La Empresa Seleccionada no concuerda con la Empresa del archivo!"', async () => {
     const { fixture, component } = setup();
 
     await load(fixture, csv('1014;9999;2026;8;1;2;3;4;5;6;7;8;9;10;11;12'));

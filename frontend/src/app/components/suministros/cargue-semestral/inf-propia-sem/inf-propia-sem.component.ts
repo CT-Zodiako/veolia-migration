@@ -34,6 +34,7 @@ interface FilaCsv {
   QRSMUNRECP?: string;
 }
 
+// Legacy InfPropiaSemestral.vue:107-206.
 const columnasPreview: TablaColumn[] = [
   { field: 'aps', header: 'APS' },
   { field: 'empr', header: 'EMPRESA' },
@@ -45,6 +46,7 @@ const columnasPreview: TablaColumn[] = [
   { field: 'qbl', header: 'QBL' },
   { field: 'qr', header: 'QR' },
   { field: 'qrs', header: 'QRS' },
+  { field: 'qrsmunrecp', header: 'QRSmunrecp' },
   { field: 'lbl', header: 'LBL' },
   { field: 'vl', header: 'VL' },
   { field: 'esce', header: 'ESCE' },
@@ -53,8 +55,7 @@ const columnasPreview: TablaColumn[] = [
   { field: 'naa', header: 'NAA' },
   { field: 'tafa', header: 'TAFA' },
   { field: 'crtpro', header: 'CRTPRO' },
-  { field: 'cdfpro', header: 'CDFPRO' },
-  { field: 'qrsmunrecp', header: 'QRSMUNRECP' }
+  { field: 'cdfpro', header: 'CDFPRO' }
 ];
 
 function aNumero(valor: string | undefined): number | null {
@@ -129,30 +130,25 @@ export class InfPropiaSemComponent implements OnChanges {
     });
   }
 
+  // Legacy InfPropiaSemestral.vue:344-400: rows are checked in order and the first mismatch stops with one message.
   private procesarCsv(data: FilaCsv[]): void {
-    const errores: string[] = [];
     const empresa = this.empresaSeleccionada();
-
-    data.forEach((fila, index) => {
-      const numeroFila = index + 1;
+    let error = '';
+    for (const fila of data) {
       if (aNumero(fila.CODAPS) !== this.aps) {
-        errores.push(`Fila ${numeroFila}: el APS del archivo no coincide con el APS seleccionado.`);
+        error = 'El APS Seleccionado no concuerda con el APS del archivo!';
+      } else if (aNumero(fila.CODEMPRESA) !== empresa) {
+        error = 'La Empresa Seleccionada no concuerda con la Empresa del archivo!';
+      } else if (aNumero(fila.ANNO) !== this.anno) {
+        error = 'El AÑO Seleccionado no concuerda con los del archivo!';
+      } else if (Math.ceil((aNumero(fila.MES) ?? 0) / 6) !== this.semestre) {
+        error = 'Existen meses fuera del rango del semestre Seleccionado no concuerda con los del archivo!';
       }
-      if (aNumero(fila.CODEMPRESA) !== empresa) {
-        errores.push(`Fila ${numeroFila}: la empresa del archivo no coincide con la empresa seleccionada.`);
-      }
-      if (aNumero(fila.ANNO) !== this.anno) {
-        errores.push(`Fila ${numeroFila}: el año del archivo no coincide con el año seleccionado.`);
-      }
-      const mes = aNumero(fila.MES) ?? 0;
-      if (Math.ceil(mes / 6) !== this.semestre) {
-        errores.push(`Fila ${numeroFila}: el mes ${fila.MES} está fuera del rango del semestre seleccionado.`);
-      }
-    });
+      if (error) break;
+    }
 
-    this.errores.set(errores);
-
-    if (errores.length > 0) {
+    this.errores.set(error ? [error] : []);
+    if (error) {
       this.filas.set([]);
       return;
     }
@@ -177,7 +173,8 @@ export class InfPropiaSemComponent implements OnChanges {
       tafa: aNumero(fila.TAFA) ?? 0,
       crtpro: aNumero(fila.CRTPRO) ?? 0,
       cdfpro: aNumero(fila.CDFPRO) ?? 0,
-      qrsmunrecp: aNumero(fila.QRSMUNRECP) ?? 0
+      // Legacy :429 reads element.QRSMUNRECP; the template header is QRSmunrecp, so the value stays empty.
+      qrsmunrecp: aNumero(fila.QRSMUNRECP) ?? undefined
     })));
   }
 

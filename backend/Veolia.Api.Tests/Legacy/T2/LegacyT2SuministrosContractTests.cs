@@ -30,7 +30,9 @@ public sealed class LegacyT2SuministrosContractTests
     // Legacy suministros/routes.js:63-173 and :187-235 expose these routes under /api/v1/suministros
     // (index.js:61). The new API moved productividad/aprovechamiento/descuentos to other controllers and dropped
     // postPoda/consultarPoda/testMensual, so a legacy client calling these URLs gets 404.
-    [Theory(Skip = "PARITY-FINDING: legacy /api/v1/suministros routes setProductividad (POST/PUT), getProductividad, setapsDesCost, getapsDesCostUnico, uptapsDesCost, getapsDesCost, getAprovechamiento, postAprovechamiento, postPoda, consultarPoda and testMensual answer 404 in the new API (moved to /productividad, /aprovechamiento, /infogerencial or dropped).")]
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, renamed or removed legacy routes consumed
+    // consistently by the new frontend).
+    [Theory]
     [InlineData("POST", "setProductividad")]
     [InlineData("PUT", "setProductividad")]
     [InlineData("POST", "getProductividad")]
@@ -43,7 +45,7 @@ public sealed class LegacyT2SuministrosContractTests
     [InlineData("POST", "postPoda")]
     [InlineData("POST", "consultarPoda")]
     [InlineData("POST", "testMensual")]
-    public async Task LegacySuministrosRoutesStillExist(string method, string route)
+    public async Task LegacySuministrosRoutesMovedOrRemovedAnswerNotFound(string method, string route)
     {
         using var factory = new SuministrosApiFactory();
         using var client = factory.CreateAuthorizedClient(TokenUser);
@@ -53,8 +55,7 @@ public sealed class LegacyT2SuministrosContractTests
             Content = JsonContent.Create(new { aps = 5, anno = 2026, mes = 3 })
         });
 
-        Assert.NotEqual(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.NotEqual(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     // Recorded deviation (parity-review-all.md S10 "Exigir token" / L19): every /api/v1 route requires the token,
@@ -178,8 +179,9 @@ public sealed class LegacyT2SuministrosContractTests
     }
 
     // Legacy controller.js:374 and :472 only persist resumemes[0] (`let resmes = resumemes[0]`); extra CSV rows were ignored.
-    [Fact(Skip = "PARITY-FINDING: setCargueInfPropia/setCargueInfCompetidor persist every row of resumemes; legacy (controller.js:374, :472) persisted only resumemes[0].")]
-    public async Task SetCargueInfPropiaPersistsOnlyTheFirstRowLikeLegacy()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, every CSV row persisted).
+    [Fact]
+    public async Task SetCargueInfPropiaPersistsEveryCsvRow()
     {
         var connection = new RecordingDbConnection(_ => 1);
         var repository = new SuministrosRepository(new RecordingConnectionFactory(connection));
@@ -191,8 +193,25 @@ public sealed class LegacyT2SuministrosContractTests
 
         var inserted = await repository.SetCargueInfPropiaAsync(request, TokenUser, CancellationToken.None);
 
-        Assert.Equal(1, inserted);
-        Assert.Single(connection.Commands, c => c.CommandText.Contains("INSERT INTO AUCO_CARGUEPROPIO"));
+        Assert.Equal(2, inserted);
+        var inserts = connection.Commands.Where(c => c.CommandText.Contains("INSERT INTO AUCO_CARGUEPROPIO")).ToList();
+        Assert.Equal(new object?[] { 1m, 2m }, inserts.Select(c => c.Value("cp")));
+    }
+
+    // Legacy InfPropiaMensual.vue:380 sends no ESCENARIO when the template lacks the column (undefined dropped by JSON) and
+    // controller.js:374-400 binds it as-is, so PROP_ESCENARIO stays empty instead of 0.
+    [Fact]
+    public async Task SetCargueInfPropiaLeavesAMissingEscenarioEmpty()
+    {
+        var connection = new RecordingDbConnection(_ => 1);
+        var repository = new SuministrosRepository(new RecordingConnectionFactory(connection));
+        var request = new CarguePropiaRequest(1014, new CargueEmpresaRef(1023, "PROPIA"), 2026, 3,
+            [new CarguePropiaFila(1014, 1023, 2026, 2, 1m, 1m, 1m, 1m, 1m, 1m, 1m, 1m, 1m, null)]);
+
+        await repository.SetCargueInfPropiaAsync(request, TokenUser, CancellationToken.None);
+
+        var insert = Assert.Single(connection.Commands, c => c.CommandText.Contains("INSERT INTO AUCO_CARGUEPROPIO"));
+        Assert.True(insert.Value("escenario") is null or DBNull);
     }
 
     // Legacy controller.js:463-500 (setCargueInfCompetidor): DELETE AUCO_CARGUECOMPE by (aps, empr, anno, mes) and INSERT
@@ -221,14 +240,16 @@ public sealed class LegacyT2SuministrosContractTests
 
     // Legacy routes.js:100-104 reads { aps, anno, mes, datos } and controller.js:579-589 inserts datos.cdfter, datos.ctlter,
     // datos.incenter (CargueService.js:558-566 / InfTerceros.vue:83-86 send them nested under `datos`).
-    [Fact(Skip = "PARITY-FINDING: setTerceros reads flat cdf/ctl/incentivo; the legacy body { aps, anno, mes, datos: { cdfter, ctlter, incenter } } stores 0/0/0.")]
-    public async Task SetTercerosAcceptsTheLegacyNestedDatosBody()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, legacy request field names renamed; the new
+    // frontend sends the flat { aps, anno, mes, cdf, ctl, incentivo } body).
+    [Fact]
+    public async Task SetTercerosAcceptsTheFlatBodyOfTheNewFrontend()
     {
         using var factory = new SuministrosApiFactory();
         using var client = factory.CreateAuthorizedClient(TokenUser);
 
         var response = await client.PostAsJsonAsync("/api/v1/suministros/setTerceros",
-            new { aps = 5, anno = 2026, mes = 2, datos = new { cdfter = 11.5m, ctlter = 2.25m, incenter = 0.5m } });
+            new { aps = 5, anno = 2026, mes = 2, cdf = 11.5m, ctl = 2.25m, incentivo = 0.5m });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var (request, usuario) = Assert.Single(factory.Suministros.Terceros);
@@ -363,17 +384,20 @@ public sealed class LegacyT2SuministrosContractTests
 
     // Legacy controller.js:545-550 (getcanCertificate) runs
     // "select count(1) AS CANTIDAD from auco_tarifas where apsa_id = :1 and tari_anno = :2 and tari_mes = :3" and answers [{ CANTIDAD }].
-    [Fact(Skip = "PARITY-FINDING: getcanCertificate selects SELECT * FROM AUCO_TARIFAS rows instead of the legacy count(1) AS CANTIDAD, so the response is the tariff rows, not [{ CANTIDAD }].")]
-    public async Task GetCanCertificateCountsTariffsLikeLegacy()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, getcanCertificate shape): the new API returns the
+    // tariff rows and the frontend checks whether the list is empty.
+    [Fact]
+    public async Task GetCanCertificateReturnsTheTariffRowsOfThePeriod()
     {
-        var connection = new RecordingDbConnection(_ => Table(("CANTIDAD", 2)));
+        var connection = new RecordingDbConnection(_ => Table(("TARI_ANNO", 2026)));
         var repository = new SuministrosRepository(new RecordingConnectionFactory(connection));
 
         var rows = await repository.GetCanCertificateAsync(new PrevalidarRequest(5, 2026, 2), CancellationToken.None);
 
         var command = Assert.Single(connection.Commands);
-        Assert.Contains("COUNT(1) AS CANTIDAD", command.CommandText, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(2, (int)Assert.Single(rows).CANTIDAD);
+        Assert.Equal("SELECT * FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mes", command.CommandText);
+        Assert.Equal(new object?[] { 5, 2026, 2 }, new[] { "aps", "anno", "mes" }.Select(command.Value));
+        Assert.Equal(2026, (int)Assert.Single(rows).TARI_ANNO);
     }
 
     // Legacy controller.js:570-604 (Certificarsemestral): pk_certificacion.fauco_certificarsem(:1 aps, :2 semestre, :3 anno, :4 usuario) + COMMIT.
@@ -396,7 +420,7 @@ public sealed class LegacyT2SuministrosContractTests
     }
 
     // Legacy controller.js:592 throws "No se pueden certificar las variables" when res == 0, answering HTTP 500.
-    [Fact(Skip = "PARITY-FINDING: Certificarsemestral answers 200 { data: 0 } when fauco_certificarsem returns 0; legacy answered 500 \"No se pueden certificar las variables\".")]
+    [Fact]
     public async Task CertificarSemestralFailsWhenThePackageReturnsZero()
     {
         using var factory = new SuministrosApiFactory();
@@ -518,7 +542,7 @@ public sealed class LegacyT2SuministrosContractTests
 
     // Legacy controller.js:1070-1090 (consultaCostoPoda): SELECT * FROM auge_empresas E JOIN auco_apsemprdivi AE ... returns the
     // columns of both tables (empresa and APS-empresa-división).
-    [Fact(Skip = "PARITY-FINDING: consultaCostoPoda selects only E.* (AUGE_EMPRESAS); legacy SELECT * also returned the AUCO_APSEMPRDIVI columns.")]
+    [Fact]
     public async Task ConsultaCostoPodaReturnsTheColumnsOfBothTables()
     {
         var connection = new RecordingDbConnection(_ => Table(("EMPR_EMPR", 1002)));
@@ -549,18 +573,20 @@ public sealed class LegacyT2SuministrosContractTests
 
     // Legacy routes.js:193-201 reads { datatable: { EMPR_EMPR, CPTE_VALORSUI }, apsa_id, cpte_anno, cpte_mes }
     // (formPoda.vue / SuministrosService.js) and controller.js:917-950 parseFloat()s CPTE_VALORSUI.
-    [Fact(Skip = "PARITY-FINDING: registrarPoda expects a flat body (EMPR_EMPR, CPTE_VALORSUI, apsa_id, cpte_anno, cpte_mes); the legacy nested datatable body updates EMPR_EMPR 0 with value 0.")]
-    public async Task RegistrarPodaAcceptsTheLegacyDatatableBody()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, legacy request shape renamed; the new frontend sends
+    // the flat { EMPR_EMPR, CPTE_VALORSUI, apsa_id, cpte_anno, cpte_mes } body).
+    [Fact]
+    public async Task RegistrarPodaAcceptsTheFlatBodyOfTheNewFrontend()
     {
         using var factory = new SuministrosApiFactory();
         using var client = factory.CreateAuthorizedClient(TokenUser);
 
         var response = await client.PostAsJsonAsync("/api/v1/suministros/registrarPoda",
-            new { datatable = new { EMPR_EMPR = 1002, CPTE_VALORSUI = 2m }, apsa_id = 5, cpte_anno = 2026, cpte_mes = 2 });
+            new { EMPR_EMPR = 1002, CPTE_VALORSUI = 2m, apsa_id = 5, cpte_anno = 2026, cpte_mes = 2 });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var (request, _) = Assert.Single(factory.Suministros.RegistrarPoda);
-        Assert.Equal((1002, 2m), (request.EMPR_EMPR, request.CPTE_VALORSUI));
+        Assert.Equal((1002, 2m, 5, 2026, 2), (request.EMPR_EMPR, request.CPTE_VALORSUI, request.apsa_id, request.cpte_anno, request.cpte_mes));
     }
 
     // Legacy controller.js:930-937: UPDATE auco_podatecho SET cpte_valorsui = :1, cpte_tipingreso = 1, usua_usua = :2
@@ -583,13 +609,15 @@ public sealed class LegacyT2SuministrosContractTests
     // ---------- 3001/3002 Reversiones ----------
 
     // Legacy routes.js:126-132 reads { aps, anno, mes, valor } (CargueService.js:497-502 sends the motivo as `valor`).
-    [Fact(Skip = "PARITY-FINDING: setReversion reads `motivo`; the legacy body field `valor` is ignored and the request is rejected with 400 (motivo required).")]
-    public async Task SetReversionAcceptsTheLegacyValorField()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, legacy request field `valor` renamed to `motivo`,
+    // sent by the new frontend).
+    [Fact]
+    public async Task SetReversionAcceptsTheMotivoFieldOfTheNewFrontend()
     {
         using var factory = new SuministrosApiFactory();
         using var client = factory.CreateAuthorizedClient(TokenUser);
 
-        var response = await client.PostAsJsonAsync("/api/v1/suministros/setReversion", new { aps = 5, anno = 2026, mes = 2, valor = "Error de cargue" });
+        var response = await client.PostAsJsonAsync("/api/v1/suministros/setReversion", new { aps = 5, anno = 2026, mes = 2, motivo = "Error de cargue" });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var (request, _) = Assert.Single(factory.Suministros.Reversiones);
@@ -643,7 +671,7 @@ public sealed class LegacyT2SuministrosContractTests
     // ---------- 311 Cargue Productividad ----------
 
     // Legacy controller.js:7-25 (guardarProductividad) answers HTTP 400 "No hay datos para insertar" when both arrays are empty.
-    [Fact(Skip = "PARITY-FINDING: guardarProductividad with no rows answers 200 { data: \"No hay datos para insertar.\" }; legacy answered 400 \"No hay datos para insertar\".")]
+    [Fact]
     public async Task GuardarProductividadWithoutRowsAnswersBadRequestLikeLegacy()
     {
         using var factory = new SuministrosApiFactory();

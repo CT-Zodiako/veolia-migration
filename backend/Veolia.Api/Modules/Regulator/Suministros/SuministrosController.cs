@@ -157,7 +157,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
         }
         catch (InvalidOperationException ex)
         {
-            return Ok(new { data = ex.Message });
+            // Legacy suministros/controller.js:10-25 answers HTTP 400 for empty data or a missing ANNO/MES.
+            return BadRequest(new { data = ex.Message, message = ex.Message });
         }
         catch
         {
@@ -261,6 +262,13 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
         try
         {
             var result = await suministrosRepository.CertificarSemestralAsync(request, tokenContext.SisuId, cancellationToken);
+            // Legacy suministros/controller.js:592: res == 0 throws "No se pueden certificar las variables" (HTTP 500).
+            if (result == 0)
+            {
+                const string mensaje = "No se pueden certificar las variables";
+                return StatusCode(StatusCodes.Status500InternalServerError, new { data = mensaje, message = mensaje });
+            }
+
             return Ok(new { data = result });
         }
         catch

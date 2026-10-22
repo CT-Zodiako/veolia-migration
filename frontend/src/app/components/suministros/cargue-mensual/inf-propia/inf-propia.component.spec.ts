@@ -95,7 +95,7 @@ describe('InfPropiaComponent (701 Inf. Propia) — legacy InfPropiaMensual.vue',
     expect(service.setCargueInfPropia).not.toHaveBeenCalled();
   });
 
-  it.skip('PARITY-FINDING: validation messages differ from legacy (one message, APS -> empresa -> AÑO y MES)', async () => {
+  it('shows one legacy validation message (APS -> empresa -> AÑO y MES)', async () => {
     const { fixture, component } = setup(1014, 2026, 1);
     component.empresaSeleccionada.set(1023);
 
@@ -122,7 +122,7 @@ describe('InfPropiaComponent (701 Inf. Propia) — legacy InfPropiaMensual.vue',
   });
 
   // Legacy InfPropiaMensual.vue:253-266 sends anno/mes = selected month - 1.
-  it.skip('PARITY-FINDING: the request anno/mes is the selected month instead of the previous one', async () => {
+  it('sends the request anno/mes of the previous month like legacy', async () => {
     const { fixture, component, service } = setup(1014, 2026, 1);
     component.empresaSeleccionada.set(1023);
     await load(fixture, csv('1014;1023;2026;01;10;20;30;40;50;60;70;80;90'));
@@ -135,7 +135,7 @@ describe('InfPropiaComponent (701 Inf. Propia) — legacy InfPropiaMensual.vue',
 
   // Legacy InfPropiaMensual.vue:380 maps escenario from the ESCENARIO column; plano_propio_mensual.csv has none, so legacy sent no
   // value (undefined is dropped by JSON) and PROP_ESCENARIO stayed empty.
-  it.skip('PARITY-FINDING: a missing ESCENARIO column is sent as 0 instead of being left empty', async () => {
+  it('leaves a missing ESCENARIO column empty like legacy', async () => {
     const { fixture, component, service } = setup(1014, 2026, 1);
     component.empresaSeleccionada.set(1023);
     await load(fixture, csv('1014;1023;2026;01;10;20;30;40;50;60;70;80;90'));
@@ -147,7 +147,7 @@ describe('InfPropiaComponent (701 Inf. Propia) — legacy InfPropiaMensual.vue',
   });
 
   // Legacy InfPropiaMensual.vue:363-384 previews the file values (ANNO/MES of the file).
-  it.skip('PARITY-FINDING: the preview shows the shifted previous period instead of the file ANNO/MES', async () => {
+  it('previews the file ANNO/MES like legacy', async () => {
     const { fixture, component } = setup(1014, 2026, 1);
     component.empresaSeleccionada.set(1023);
     await load(fixture, csv('1014;1023;2026;01;10;20;30;40;50;60;70;80;90'));
@@ -156,7 +156,7 @@ describe('InfPropiaComponent (701 Inf. Propia) — legacy InfPropiaMensual.vue',
   });
 
   // CargueService.js:247-250 toasts "Guardado Correctamente".
-  it.skip('PARITY-FINDING: the success message is not the legacy "Guardado Correctamente"', async () => {
+  it('shows the legacy success message "Guardado Correctamente"', async () => {
     const { fixture, component } = setup(1014, 2026, 1);
     component.empresaSeleccionada.set(1023);
     await load(fixture, csv('1014;1023;2026;01;10;20;30;40;50;60;70;80;90'));

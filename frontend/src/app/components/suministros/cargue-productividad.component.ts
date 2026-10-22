@@ -73,11 +73,12 @@ export class CargueProductividadComponent {
         this.terceros.set(res.data?.terceros || []);
         this.cargado.set(true);
         this.cargando.set(false);
-        this.messages.add({ severity: 'success', summary: 'Cargue Productividad', detail: 'Datos cargados desde Google Sheets.' });
+        // Legacy service/CargueProductividad.js:20-24.
+        this.messages.add({ severity: 'success', summary: 'Consulta realizada correctamente', life: 3000 });
       },
       error: (err) => {
         this.cargando.set(false);
-        this.messages.add({ severity: 'error', summary: 'Cargue Productividad', detail: err?.error?.message || 'Error al cargar los datos.' });
+        this.messages.add({ severity: 'error', summary: 'Error al consultar Cargue Productividad', detail: err?.error?.message, life: 3000 });
       }
     });
   }
@@ -101,11 +102,12 @@ export class CargueProductividadComponent {
     this.service.guardarProductividad(dataPropios, dataTerceros).subscribe({
       next: () => {
         this.guardando.set(false);
-        this.messages.add({ severity: 'success', summary: 'Cargue Productividad', detail: 'Datos guardados correctamente.' });
+        // Legacy service/CargueProductividad.js:53-57.
+        this.messages.add({ severity: 'success', summary: 'Cargue Productividad guardado correctamente', life: 3000 });
       },
       error: (err) => {
         this.guardando.set(false);
-        this.messages.add({ severity: 'error', summary: 'Cargue Productividad', detail: err?.error?.message || 'No se pudo guardar.' });
+        this.messages.add({ severity: 'error', summary: 'Error al guardar Cargue Productividad', detail: err?.error?.message, life: 3000 });
       }
     });
   }

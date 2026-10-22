@@ -38,13 +38,13 @@ public sealed class CargueProductividadService(
 
         if (propios.Count == 0 && terceros.Count == 0)
         {
-            throw new InvalidOperationException("No hay datos para insertar.");
+            throw new InvalidOperationException("No hay datos para insertar");
         }
 
         var anno = propios.FirstOrDefault()?.ANNO ?? terceros.FirstOrDefault()?.ANNO
-            ?? throw new InvalidOperationException("Falta ANNO para eliminar registros existentes.");
+            ?? throw new InvalidOperationException("Falta ANNO o MES para eliminar registros existentes");
         var mes = propios.FirstOrDefault()?.MES ?? terceros.FirstOrDefault()?.MES
-            ?? throw new InvalidOperationException("Falta MES para eliminar registros existentes.");
+            ?? throw new InvalidOperationException("Falta ANNO o MES para eliminar registros existentes");
 
         await suministrosRepository.ReemplazarProductividadAsync(anno, mes, propios, terceros, cancellationToken);
     }

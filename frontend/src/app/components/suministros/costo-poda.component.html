@@ -13,14 +13,15 @@
     <p-button label="Nuevo" icon="pi pi-plus-circle" severity="success" [disabled]="!!bloqueado()" (onClick)="abrirNuevo()"></p-button>
   </div>
 
-  <p-table [value]="items()" [loading]="loading()" [tableStyle]="{ 'min-width': '40rem' }">
+  <!-- Legacy Poda.vue:13-16: 15 rows, options 15/30/50/100. -->
+  <p-table [value]="items()" [loading]="loading()" [tableStyle]="{ 'min-width': '40rem' }" [paginator]="true" [rows]="15" [rowsPerPageOptions]="[15, 30, 50, 100]">
     <ng-template pTemplate="header">
       <tr>
-        <th>Empresa</th>
-        <th class="text-right">Costo Techo SUI</th>
-        <th class="text-right">Costo Facturación</th>
-        <th>Tipo Ingreso</th>
-        <th>Acciones</th>
+        <th>EMPRESA</th>
+        <th class="text-right">COSTO TECHO SUI</th>
+        <th class="text-right">COSTO FACTURACION</th>
+        <th>TIPO INGRESO</th>
+        <th>Opciones</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-item>
@@ -38,7 +39,7 @@
           <ng-template #valorReadonly>{{ item.CPTE_VALORSUI }}</ng-template>
         </td>
         <td class="text-right" [class.valor-excedido]="item.CPTE_VALORFACT > item.CPTE_VALORSUI">
-          {{ item.CPTE_VALORFACT }}
+          {{ formateoMiles(item.CPTE_VALORFACT) }}
         </td>
         <td>{{ item.CPTE_TIPINGRESO === 1 ? 'Manual' : 'Automático' }}</td>
         <td class="actions">

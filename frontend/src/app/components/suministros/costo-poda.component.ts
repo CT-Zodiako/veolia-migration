@@ -100,6 +100,14 @@ export class CostoPodaComponent {
       });
   }
 
+  // Legacy Poda.vue:243-249 (formateoMiles): integer part grouped with Intl es-MX, decimals kept as written.
+  formateoMiles(valor: number | string | null | undefined): string {
+    if (valor === null || valor === undefined) return '';
+    const [entero, decimales] = valor.toString().replace(',', '.').split('.');
+    const enteroFormateado = new Intl.NumberFormat('es-MX').format(Number(entero));
+    return decimales ? `${enteroFormateado}.${decimales}` : enteroFormateado;
+  }
+
   onApsChange(value: number | null): void {
     this.aps.set(value);
     this.consultar();

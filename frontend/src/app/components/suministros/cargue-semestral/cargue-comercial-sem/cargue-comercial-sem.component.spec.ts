@@ -87,7 +87,7 @@ describe('CargueComercialSemComponent (702 Inf. Usuarios) — legacy CargueComer
     expect(service.filecarguecomercialsemestral).not.toHaveBeenCalled();
   });
 
-  it.skip('PARITY-FINDING: validation messages differ from legacy ("Existen meses fuera del rango del semestre Seleccionado no concuerda con los del archivo!")', async () => {
+  it('shows the legacy validation message "Existen meses fuera del rango del semestre Seleccionado no concuerda con los del archivo!"', async () => {
     const { fixture, component } = setup();
 
     await load(fixture, csv('1024;X;2020;1;4;E;1;4;1;T;1;1;1;1;1;1;0;0;0;0;0;0'));
@@ -96,7 +96,7 @@ describe('CargueComercialSemComponent (702 Inf. Usuarios) — legacy CargueComer
   });
 
   // Legacy CargueComercialSemestral.vue:85-224 preview headers.
-  it.skip('PARITY-FINDING: preview headers differ from legacy (Cod. Aps, APS, Año, Semestre, Cod. CU, Nombre CU, ... Sus M1, Afo M1)', async () => {
+  it('uses the legacy preview headers Cod. Aps, APS, Año, Semestre, Cod. CU, Nombre CU, ... Sus M1, Afo M1', async () => {
     const { fixture } = setup();
     await load(fixture, csv(FILA));
 
@@ -108,7 +108,7 @@ describe('CargueComercialSemComponent (702 Inf. Usuarios) — legacy CargueComer
   });
 
   // CargueService.js:31-36 toasts "Guardado Correctamente".
-  it.skip('PARITY-FINDING: the success message is not the legacy "Guardado Correctamente"', async () => {
+  it('shows the legacy success message "Guardado Correctamente"', async () => {
     const { fixture, component } = setup();
     await load(fixture, csv(FILA));
 

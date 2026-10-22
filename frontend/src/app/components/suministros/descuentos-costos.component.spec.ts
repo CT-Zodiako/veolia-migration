@@ -51,7 +51,7 @@ describe('DescuentosCostosComponent (304) — legacy views/suministros/Descuento
   });
 
   // Legacy DescuentosDos.vue:15-30 headers COSTO / DESCUENTO.
-  it.skip('PARITY-FINDING: headers are "Costo"/"Descuento" instead of legacy "COSTO"/"DESCUENTO"', () => {
+  it('uses the legacy headers COSTO / DESCUENTO', () => {
     const { tabla } = setup();
 
     expect(tabla.columnas.map((c) => c.header)).toEqual(['COSTO', 'DESCUENTO']);

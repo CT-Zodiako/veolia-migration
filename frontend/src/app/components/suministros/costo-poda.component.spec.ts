@@ -95,14 +95,14 @@ describe('CostoPodaComponent (309) — legacy views/suministros/Poda.vue', () =>
   });
 
   // Legacy Poda.vue:23-44 headers EMPRESA, COSTO TECHO SUI, COSTO FACTURACION, TIPO INGRESO, Opciones.
-  it.skip('PARITY-FINDING: headers differ from legacy (EMPRESA, COSTO TECHO SUI, COSTO FACTURACION, TIPO INGRESO, Opciones)', () => {
+  it('uses the legacy headers EMPRESA, COSTO TECHO SUI, COSTO FACTURACION, TIPO INGRESO, Opciones', () => {
     const { el } = setup();
 
     expect(Array.from(el.querySelectorAll('thead th')).map((th) => th.textContent?.trim())).toEqual(['EMPRESA', 'COSTO TECHO SUI', 'COSTO FACTURACION', 'TIPO INGRESO', 'Opciones']);
   });
 
   // Legacy Poda.vue:35-38 + formateoMiles (:180-187): thousands with Intl es-MX, decimals kept.
-  it.skip('PARITY-FINDING: COSTO FACTURACION is not formatted with thousands separators like legacy formateoMiles', () => {
+  it('formats COSTO FACTURACION with thousands separators like legacy formateoMiles', () => {
     const { el } = setup();
 
     const fila = Array.from(el.querySelectorAll('tbody tr td')).map((td) => td.textContent?.trim());
@@ -110,7 +110,7 @@ describe('CostoPodaComponent (309) — legacy views/suministros/Poda.vue', () =>
   });
 
   // Legacy Poda.vue:12-15 paginates 15 rows with [15, 30, 50, 100].
-  it.skip('PARITY-FINDING: the grid has no paginator (legacy 15 rows, options 15/30/50/100)', () => {
+  it('paginates 15 rows with options 15/30/50/100 like legacy', () => {
     const { el } = setup();
 
     expect(el.querySelector('.p-paginator')).not.toBeNull();

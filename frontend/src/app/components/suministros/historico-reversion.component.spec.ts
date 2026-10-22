@@ -45,14 +45,14 @@ describe('HistoricoReversionComponent (3002) — legacy views/informes/DetaRever
   });
 
   // Legacy DetaReversion.vue:31-135 columns APS, AÑO, MES, FECHA, MOTIVO, USUARIO.
-  it.skip('PARITY-FINDING: columns differ from legacy (APS, AÑO, MES, FECHA, MOTIVO, USUARIO)', () => {
+  it('shows the legacy columns APS, AÑO, MES, FECHA, MOTIVO, USUARIO', () => {
     const { el } = setup();
 
     expect(headers(el)).toEqual(['APS', 'AÑO', 'MES', 'FECHA', 'MOTIVO', 'USUARIO']);
   });
 
   // Legacy DetaReversion.vue:9-30: Exportar button (CSV ';', file DetalleReversiones) and rows per page 10/20/50.
-  it.skip('PARITY-FINDING: no Exportar button and no 10/20/50 rows-per-page selector', () => {
+  it('offers Exportar and the legacy 10/20/50 rows-per-page selector', () => {
     const { el } = setup();
 
     expect(Array.from(el.querySelectorAll('button')).some((b) => b.textContent?.includes('Exportar'))).toBe(true);

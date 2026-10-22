@@ -54,7 +54,8 @@ export class InfTercerosComponent {
       incentivo: this.incentivo() ?? 0
     }).subscribe({
       next: () => {
-        this.estado.set('Información de terceros guardada correctamente.');
+        // Legacy CargueService.js:580-583.
+        this.estado.set('Guardado Correctamente');
         this.guardando.set(false);
         this.guardado.emit();
       },

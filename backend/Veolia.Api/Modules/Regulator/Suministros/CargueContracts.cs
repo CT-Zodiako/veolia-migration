@@ -96,7 +96,7 @@ public sealed record CarguePropiaFila(
     decimal klp,
     decimal t,
     decimal qa,
-    decimal escenario);
+    decimal? escenario);
 
 public sealed record CarguePropiaRequest(int aps, CargueEmpresaRef? empr, int anno, int mes, IReadOnlyList<CarguePropiaFila>? resumemes);
 
@@ -120,7 +120,7 @@ public sealed record CarguePropiaSemFila(
     decimal tafa,
     decimal crtpro,
     decimal cdfpro,
-    decimal qrsmunrecp);
+    decimal? qrsmunrecp);
 
 public sealed record CarguePropiaSemRequest(IReadOnlyList<CarguePropiaSemFila>? resumesem);
 
@@ -130,7 +130,7 @@ public sealed record PrevalidarRequest(int aps, int anno, int mes);
 
 public sealed record PrevalidarSemestralRequest(int aps, int anno, int semestre);
 
-public sealed record QRTRuralRequest(int aps, int anno, int semestre, decimal qrtRural);
+public sealed record QRTRuralRequest(int aps, int anno, int semestre, decimal? qrtRural);
 
 public sealed record TercerosRequest(int aps, int anno, int mes, decimal cdf, decimal ctl, decimal incentivo);
 

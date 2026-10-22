@@ -44,7 +44,9 @@ describe('InfTercerosComponent (701 Inf. Terceros) — legacy InfTerceros.vue', 
   });
 
   // Legacy CargueService.js:558-566 posts { aps, anno, mes, datos: { cdfter, ctlter, incenter } }.
-  it.skip('PARITY-FINDING: values are sent flat (cdf, ctl, incentivo) instead of legacy datos: { cdfter, ctlter, incenter }', () => {
+  // Accepted deviation: legacy-characterization-tests S8/S9 (group D, legacy request shape renamed; the backend
+  // TercerosRequest reads the flat { cdf, ctl, incentivo }).
+  it('sends the values flat (cdf, ctl, incentivo) as the new API expects', () => {
     const { component, service } = setup(5, 2026, 1);
     component.cdf.set(11.5);
     component.ctl.set(2.25);
@@ -53,11 +55,11 @@ describe('InfTercerosComponent (701 Inf. Terceros) — legacy InfTerceros.vue', 
     component.guardar();
 
     const payload = service.setTerceros.mock.calls[0][0] as Record<string, unknown>;
-    expect(payload['datos']).toEqual({ cdfter: 11.5, ctlter: 2.25, incenter: 0.5 });
+    expect(payload).toEqual({ aps: 5, anno: 2025, mes: 12, cdf: 11.5, ctl: 2.25, incentivo: 0.5 });
   });
 
   // CargueService.js:580-583 toasts "Guardado Correctamente".
-  it.skip('PARITY-FINDING: the success message is not the legacy "Guardado Correctamente"', () => {
+  it('shows the legacy success message "Guardado Correctamente"', () => {
     const { component } = setup();
 
     component.guardar();

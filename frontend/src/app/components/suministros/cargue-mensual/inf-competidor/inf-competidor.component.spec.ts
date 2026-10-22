@@ -86,7 +86,7 @@ describe('InfCompetidorComponent (701 Inf. Competidor) — legacy InfCompetidorM
     expect(service.setCargueInfCompetidor).not.toHaveBeenCalled();
   });
 
-  it.skip('PARITY-FINDING: validation messages differ from legacy ("La Empresa Seleccionada no concuerda con la Empresa del archivo!")', async () => {
+  it('shows the legacy validation message "La Empresa Seleccionada no concuerda con la Empresa del archivo!"', async () => {
     const { fixture, component } = setup();
 
     await load(fixture, csv('1014;9999;2026;1;10;20;30;40;50;60;70;1'));
@@ -108,7 +108,7 @@ describe('InfCompetidorComponent (701 Inf. Competidor) — legacy InfCompetidorM
   });
 
   // Legacy InfCompetidorMensual.vue (guardarData) sends anno/mes = selected month - 1.
-  it.skip('PARITY-FINDING: the request anno/mes is the selected month instead of the previous one', async () => {
+  it('sends the request anno/mes of the previous month like legacy', async () => {
     const { fixture, component, service } = setup();
     await load(fixture, csv(FILA));
 
@@ -119,7 +119,7 @@ describe('InfCompetidorComponent (701 Inf. Competidor) — legacy InfCompetidorM
   });
 
   // CargueService.js:351-354 toasts "Guardado Correctamente".
-  it.skip('PARITY-FINDING: the success message is not the legacy "Guardado Correctamente"', async () => {
+  it('shows the legacy success message "Guardado Correctamente"', async () => {
     const { fixture, component } = setup();
     await load(fixture, csv(FILA));
 

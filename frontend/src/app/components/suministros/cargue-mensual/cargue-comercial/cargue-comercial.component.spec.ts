@@ -87,7 +87,7 @@ describe('CargueComercialComponent (701 Inf. Usuarios) — legacy CargueComercia
     expect(tabla.columnas.map((c) => c.field)).toEqual(['codaps', 'aps', 'anno', 'mes', 'coduso', 'nomuso', 'codfactor', 'codtipo', 'tipo', 'tiponom', 'cantidad', 'toneladas']);
   });
 
-  it.skip('PARITY-FINDING: preview headers differ from legacy (COD APS/AÑO/COD USO/NOM USO/... instead of Cod. Aps/Año/Cod. CU/Nombre CU/...)', async () => {
+  it('uses the legacy preview headers Cod. Aps/Año/Cod. CU/Nombre CU/...', async () => {
     const { fixture } = setup();
 
     await load(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
@@ -110,7 +110,7 @@ describe('CargueComercialComponent (701 Inf. Usuarios) — legacy CargueComercia
     expect(service.filecarguecomercial).not.toHaveBeenCalled();
   });
 
-  it.skip('PARITY-FINDING: validation messages differ from legacy ("El APS Seleccionado no concuerda con el APS del archivo!" / "El AÑO y MES Seleccionado no concuerda con los del archivo!")', async () => {
+  it('shows the legacy validation messages "El APS Seleccionado no concuerda con el APS del archivo!" / "El AÑO y MES Seleccionado no concuerda con los del archivo!"', async () => {
     const apsDistinto = setup(1033, 2026, 1);
     await load(apsDistinto.fixture, csv('1099;OTRA;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
     // Legacy CargueComercial.vue:292-301: one message, APS checked first.
@@ -140,18 +140,20 @@ describe('CargueComercialComponent (701 Inf. Usuarios) — legacy CargueComercia
   });
 
   // Legacy CargueComercial.vue:374-379 sends resume as { N, NA, ND, TAFNA }.
-  it.skip('PARITY-FINDING: resume is sent with lowercase keys { n, nd, na, tafna } instead of legacy { N, NA, ND, TAFNA }', async () => {
+  // Accepted deviation: legacy-characterization-tests S8/S9 (group D, legacy request field names renamed; the backend
+  // CargueComercialResumen reads { n, nd, na, tafna }).
+  it('sends resume with the lowercase keys { n, nd, na, tafna } of the new API', async () => {
     const { fixture, component, service } = setup(1033, 2026, 1);
     await load(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
 
     component.guardar();
 
     const payload = service.filecarguecomercial.mock.calls[0][0] as Record<string, unknown>;
-    expect(payload['resume']).toEqual({ N: 10, NA: 0, ND: 0, TAFNA: 1.5 });
+    expect(payload['resume']).toEqual({ n: 10, na: 0, nd: 0, tafna: 1.5 });
   });
 
   // Legacy CargueComercial.vue:310-329 previews the file values as read (ANNO/MES of the file, i.e. the selected month).
-  it.skip('PARITY-FINDING: the preview shows the shifted previous period instead of the file ANNO/MES', async () => {
+  it('previews the file ANNO/MES like legacy', async () => {
     const { fixture, component } = setup(1033, 2026, 1);
     await load(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
 
@@ -159,7 +161,7 @@ describe('CargueComercialComponent (701 Inf. Usuarios) — legacy CargueComercia
   });
 
   // Legacy CargueComercial.vue:330-342 lists every TIPO 1 row (no aggregation by CODUSO).
-  it.skip('PARITY-FINDING: Resumen x Estratos aggregates rows by CODUSO; legacy listed every TIPO 1 row', async () => {
+  it('lists every TIPO 1 row in Resumen x Estratos like legacy', async () => {
     const { fixture, component } = setup(1033, 2026, 1);
     await load(fixture, csv(
       '1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5',
@@ -170,7 +172,7 @@ describe('CargueComercialComponent (701 Inf. Usuarios) — legacy CargueComercia
   });
 
   // Legacy CargueComercial.vue:410 shows "GUARDADO EXITOSAMENTE" after saving.
-  it.skip('PARITY-FINDING: the success message is "Información de usuarios guardada correctamente." instead of legacy "GUARDADO EXITOSAMENTE"', async () => {
+  it('shows the legacy success message "GUARDADO EXITOSAMENTE"', async () => {
     const { fixture, component } = setup(1033, 2026, 1);
     await load(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
 

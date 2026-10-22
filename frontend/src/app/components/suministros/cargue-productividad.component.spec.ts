@@ -102,7 +102,7 @@ describe('CargueProductividadComponent (311) — legacy CargueProductividad.vue'
 
   // Legacy service/CargueProductividad.js:16-27 and :46-57 toast "Consulta realizada correctamente" and
   // "Cargue Productividad guardado correctamente".
-  it.skip('PARITY-FINDING: success toasts differ from legacy ("Consulta realizada correctamente" / "Cargue Productividad guardado correctamente")', () => {
+  it('shows the legacy success toasts "Consulta realizada correctamente" / "Cargue Productividad guardado correctamente"', () => {
     const { fixture, component, add } = setup();
 
     component.cargar();
