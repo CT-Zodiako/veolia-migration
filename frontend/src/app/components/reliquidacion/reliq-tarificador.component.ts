@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { Observable, catchError, forkJoin, of } from 'rxjs';
 import { DialogModule } from 'primeng/dialog';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
@@ -256,25 +256,31 @@ export class ReliqTarificadorComponent {
     if (!this.selectedReliq()) return;
     const reliq = this.selectedReliq()!;
     this.loading.set(true);
+    // Legacy loaded each tab independently: one failing or empty resumen must not hide
+    // the others nor the estado (and with it the Aprobar button).
     forkJoin({
-      usuarios: this.tarificadorService.resumenUsuarios(reliq),
-      empresa: this.tarificadorService.resumenEmpresa(reliq),
-      adicional: this.tarificadorService.resumenAdicional(reliq),
-      relleno: this.tarificadorService.resumenRelleno(reliq),
-      aps: this.tarificadorService.resumenAps(reliq),
-      estado: this.tarificadorService.estadoReliquidacion(reliq)
+      usuarios: this.sinFallar(this.tarificadorService.resumenUsuarios(reliq)),
+      empresa: this.sinFallar(this.tarificadorService.resumenEmpresa(reliq)),
+      adicional: this.sinFallar(this.tarificadorService.resumenAdicional(reliq)),
+      relleno: this.sinFallar(this.tarificadorService.resumenRelleno(reliq)),
+      aps: this.sinFallar(this.tarificadorService.resumenAps(reliq)),
+      estado: this.sinFallar(this.tarificadorService.estadoReliquidacion(reliq))
     }).subscribe({
       next: (res) => {
-        this.resumenUsuariosRaw.set(res.usuarios.data?.resumen?.filas ?? []);
-        this.resumenEmpresaRaw.set(res.empresa.data?.resumen?.filas ?? []);
-        this.resumenAdicionalRaw.set(res.adicional.data?.resumen?.filas ?? []);
-        this.resumenRellenoRaw.set(res.relleno.data?.resumen?.filas ?? []);
-        this.resumenApsRaw.set(res.aps.data?.resumen?.filas ?? []);
-        this.estado.set(res.estado.data ?? null);
+        this.resumenUsuariosRaw.set(res.usuarios?.data?.resumen?.filas ?? []);
+        this.resumenEmpresaRaw.set(res.empresa?.data?.resumen?.filas ?? []);
+        this.resumenAdicionalRaw.set(res.adicional?.data?.resumen?.filas ?? []);
+        this.resumenRellenoRaw.set(res.relleno?.data?.resumen?.filas ?? []);
+        this.resumenApsRaw.set(res.aps?.data?.resumen?.filas ?? []);
+        this.estado.set(res.estado?.data ?? null);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  private sinFallar<T>(source: Observable<T>): Observable<T | null> {
+    return source.pipe(catchError(() => of(null)));
   }
 
   abrirAprobar(): void {
