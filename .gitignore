@@ -12,6 +12,8 @@ frontend/dist/
 **/appsettings.Development.json
 backend/Veolia.Api/Credentials/
 backend/Veolia.Api/Wallet_VEOM/
+# Oracle ADB wallets contain client credentials; never commit them.
+Wallet_*/
 
 # Pi subagent runtime artifacts
 .pi-subagents/

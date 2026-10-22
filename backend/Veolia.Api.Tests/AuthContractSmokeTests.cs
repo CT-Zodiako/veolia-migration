@@ -82,10 +82,35 @@ public sealed class AuthContractSmokeTests(AuthApiSmokeFactory factory) : IClass
         Assert.Equal(404, payload.GetProperty("status").GetInt32());
     }
 
+    // Intentional TO-BE deviation (odd/tasks/login-systems-validation.md): the legacy route was
+    // anonymous and allowed e-mail enumeration; pre-login lookup now goes through validate-credentials.
     [Fact]
-    public async Task R_AUTH_01_GetSistemasByCorreo_ReturnsArrayShape()
+    public async Task R_AUTH_01_GetSistemasByCorreo_WithoutToken_Returns403()
     {
         var response = await client.GetAsync("/api/v1/auth/getSistemasByCorreo?correo=ada@veolia.com");
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("No existe token de verificacion", payload.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task R_AUTH_02_UnsignedToken_Returns401LikeLegacyJwtVerify()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/auth/getSistemasByCorreo?correo=ada@veolia.com");
+        request.Headers.Add("x-access-token", TestJwt.BuildUnsigned());
+
+        var response = await client.SendAsync(request);
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("No Autorizado!", payload.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task R_AUTH_01_GetSistemasByCorreo_WithToken_ReturnsArrayShape()
+    {
+        var response = await GetWithTokenAsync("/api/v1/auth/getSistemasByCorreo?correo=ada@veolia.com");
         var payload = await ReadJsonAsync(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -345,15 +370,5 @@ public sealed class AuthContractSmokeTests(AuthApiSmokeFactory factory) : IClass
     }
 
     private static string BuildJwtToken()
-    {
-        var header = Base64UrlEncode("{\"alg\":\"none\",\"typ\":\"JWT\"}");
-        var payload = Base64UrlEncode($"{{\"SISU_ID\":101,\"idSistema\":10,\"jti\":\"{Guid.NewGuid():N}\"}}");
-        return $"{header}.{payload}.signature";
-    }
-
-    private static string Base64UrlEncode(string plain)
-        => Convert.ToBase64String(Encoding.UTF8.GetBytes(plain))
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
+        => TestJwt.Build();
 }

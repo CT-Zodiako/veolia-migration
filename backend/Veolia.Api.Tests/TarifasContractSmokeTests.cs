@@ -105,6 +105,28 @@ public sealed class TarifasContractSmokeTests(AuthApiSmokeFactory factory) : ICl
     }
 
     [Fact]
+    public async Task RQ_TARIFAS_06_Resumen_WithToken_ReturnsLegacyResumenColumns()
+    {
+        var response = await PostWithTokenAsync("/api/v1/tarifas/resumen", new { aps = 1, anno = 2026, mes = 4 });
+        var payload = await ReadJsonAsync(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(JsonValueKind.Array, payload.ValueKind);
+        Assert.Equal(1, payload.GetArrayLength());
+        Assert.Equal(1, payload[0].GetProperty("APSA_ID").GetInt64());
+        Assert.Equal(2026, payload[0].GetProperty("RETA_ANNO").GetInt32());
+        Assert.Equal(4, payload[0].GetProperty("RETA_MES").GetInt32());
+    }
+
+    [Fact]
+    public async Task RQ_TARIFAS_06_Resumen_WithoutToken_Returns403()
+    {
+        var response = await client.PostAsJsonAsync("/api/v1/tarifas/resumen", new { aps = 1, anno = 2026, mes = 4 });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task RQ_TARIFAS_05_BlacklistedToken_Returns401()
     {
         var token = BuildJwtToken();
@@ -144,15 +166,5 @@ public sealed class TarifasContractSmokeTests(AuthApiSmokeFactory factory) : ICl
     }
 
     private static string BuildJwtToken(long sisuId = 101, int idSistema = 10)
-    {
-        var header = Base64UrlEncode("{\"alg\":\"none\",\"typ\":\"JWT\"}");
-        var payload = Base64UrlEncode($"{{\"SISU_ID\":{sisuId},\"idSistema\":{idSistema},\"jti\":\"{Guid.NewGuid():N}\"}}");
-        return $"{header}.{payload}.signature";
-    }
-
-    private static string Base64UrlEncode(string plain)
-        => Convert.ToBase64String(Encoding.UTF8.GetBytes(plain))
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
+        => TestJwt.Build(sisuId, idSistema);
 }

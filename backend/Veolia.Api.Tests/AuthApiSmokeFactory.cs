@@ -25,6 +25,8 @@ public sealed class AuthApiSmokeFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("Auth:JwtSecret", TestJwt.Secret);
+
         builder.ConfigureServices(services =>
         {
             var sqliteFactory = new SqliteOracleConnectionFactory();
@@ -93,7 +95,8 @@ internal sealed class SqliteOracleConnectionFactory : IOracleConnectionFactory
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
         using var command = connection.CreateCommand();
-        command.CommandText = "CREATE TABLE IF NOT EXISTS AUGE_DEADTOKEN (TOKEN TEXT);";
+        // Mirrors the legacy AUGE_DEADTOKEN column queried by AuthJwtParityMiddleware.
+        command.CommandText = "CREATE TABLE IF NOT EXISTS AUGE_DEADTOKEN (DTKN_TOKEN TEXT);";
         command.ExecuteNonQuery();
     }
 
@@ -162,7 +165,7 @@ internal sealed class StubLoginRepository : ILoginRepository
             connection.Open();
         }
 
-        const string sql = "INSERT INTO AUGE_DEADTOKEN (TOKEN) VALUES (:token);";
+        const string sql = "INSERT INTO AUGE_DEADTOKEN (DTKN_TOKEN) VALUES (:token);";
         var rowsAffected = await connection.ExecuteAsync(new CommandDefinition(sql, new { token }, cancellationToken: cancellationToken));
         return new { rowsAffected };
     }
@@ -798,6 +801,29 @@ internal sealed class StubTarifasRepository : ITarifasRepository
                 ["TARI_MES"] = mes,
                 ["TACO_CONCEPTO"] = "Recolección",
                 ["TACO_VALOR"] = 20.123456m
+            }
+        ]);
+    }
+
+    public Task<IReadOnlyList<object>> ResumenAsync(long aps, int anno, int mes, CancellationToken cancellationToken)
+    {
+        if (aps <= 0 || anno <= 0 || mes <= 0)
+        {
+            throw new InvalidOperationException("Simulated resumen failure");
+        }
+
+        if (aps == 9999)
+        {
+            return Task.FromResult<IReadOnlyList<object>>([]);
+        }
+
+        // VAUCO_RESUMEN is filtered by RETA_ANNO/RETA_MES, not TARI_*, in the legacy query.
+        return Task.FromResult<IReadOnlyList<object>>([
+            new Dictionary<string, object>
+            {
+                ["APSA_ID"] = aps,
+                ["RETA_ANNO"] = anno,
+                ["RETA_MES"] = mes
             }
         ]);
     }

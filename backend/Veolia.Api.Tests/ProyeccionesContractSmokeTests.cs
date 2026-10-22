@@ -144,15 +144,5 @@ public sealed class ProyeccionesContractSmokeTests(AuthApiSmokeFactory factory) 
     }
 
     private static string BuildJwtToken(long sisuId = 101, int idSistema = 10)
-    {
-        var header = Base64UrlEncode("{\"alg\":\"none\",\"typ\":\"JWT\"}");
-        var payload = Base64UrlEncode($"{{\"SISU_ID\":{sisuId},\"idSistema\":{idSistema},\"jti\":\"{Guid.NewGuid():N}\"}}");
-        return $"{header}.{payload}.signature";
-    }
-
-    private static string Base64UrlEncode(string plain)
-        => Convert.ToBase64String(Encoding.UTF8.GetBytes(plain))
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
+        => TestJwt.Build(sisuId, idSistema);
 }

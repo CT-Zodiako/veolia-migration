@@ -81,7 +81,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         var response = await PostWithTokenAsync("/api/v1/aps/crear", new
         {
             nombre = "APS Centro",
-            idsui = 101,
+            idsui = "101",
             resolucion = 2024,
             propio = 1,
             relleno = 0,
@@ -101,7 +101,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     {
         var response = await PostWithTokenAsync("/api/v1/aps/crear", new
         {
-            idsui = 101,
+            idsui = "101",
             resolucion = 2024,
             propio = 1,
             relleno = 0,
@@ -120,7 +120,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         var response = await PostWithTokenAsync("/api/v1/aps/crear", new
         {
             nombre = "__SQL_ERROR__",
-            idsui = 101,
+            idsui = "101",
             resolucion = 2024,
             propio = 1,
             relleno = 0,
@@ -139,7 +139,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         var response = await PutWithTokenAsync("/api/v1/aps/editar/1", new
         {
             nombre = "APS Centro Editada",
-            idsui = 101,
+            idsui = "101",
             resolucion = 2025,
             propio = 1,
             relleno = 1,
@@ -160,7 +160,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         var response = await PutWithTokenAsync("/api/v1/aps/editar/4040", new
         {
             nombre = "APS Inexistente",
-            idsui = 101,
+            idsui = "101",
             resolucion = 2025,
             propio = 1,
             relleno = 1,
@@ -179,7 +179,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         var response = await PutWithTokenAsync("/api/v1/aps/editar/5000", new
         {
             nombre = "APS Error",
-            idsui = 101,
+            idsui = "101",
             resolucion = 2025,
             propio = 1,
             relleno = 1,
@@ -313,15 +313,5 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     }
 
     private static string BuildJwtToken(long sisuId = 101, int idSistema = 10)
-    {
-        var header = Base64UrlEncode("{\"alg\":\"none\",\"typ\":\"JWT\"}");
-        var payload = Base64UrlEncode($"{{\"SISU_ID\":{sisuId},\"idSistema\":{idSistema},\"jti\":\"{Guid.NewGuid():N}\"}}");
-        return $"{header}.{payload}.signature";
-    }
-
-    private static string Base64UrlEncode(string plain)
-        => Convert.ToBase64String(Encoding.UTF8.GetBytes(plain))
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
+        => TestJwt.Build(sisuId, idSistema);
 }
