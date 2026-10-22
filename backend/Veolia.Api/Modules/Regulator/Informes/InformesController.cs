@@ -23,7 +23,7 @@ public sealed class InformesController(IInformesRepository repository, ILogger<I
             async () =>
             {
                 var resultado = await repository.GetResumenVariablesAsync(aps, anno, mes, cancellationToken);
-                return resultado ?? new InformeCostosResponse(string.Empty, []);
+                return resultado ?? InformeDocument.Empty();
             },
             "Resumen de variables consultado correctamente.");
     }
@@ -41,7 +41,7 @@ public sealed class InformesController(IInformesRepository repository, ILogger<I
             async () =>
             {
                 var resultado = await repository.GetClusJsonAsync(aps, anno, mes, cancellationToken);
-                return resultado ?? new InformeCostosResponse(string.Empty, []);
+                return resultado ?? InformeDocument.Empty();
             },
             "Componentes CLUS consultados correctamente.");
     }

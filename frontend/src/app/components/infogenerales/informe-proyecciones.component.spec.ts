@@ -122,14 +122,15 @@ describe('InformeProyeccionesComponent (1001) - legacy InformeProyecciones.vue',
     }
   });
 
-  it.skip('PARITY-FINDING: column headers/order differ in the four tabs and Tarifas adds PROY_ID, APSA_ID and TARI_TCTERC; legacy Energia/Acueducto/Costos/Tarifas.vue', () => {
+  // Energia.vue:30-260, Acueducto.vue:30-265, Costos.vue:29-152, Tarifas.vue:29-218: headers and order.
+  it('shows the legacy headers in the legacy order (Tarifas without PROY_ID, APSA_ID, TARI_TCTERC)', () => {
     const { component } = crear();
 
     expect(columnasNuevas(component)).toEqual(LEGACY_COLUMNAS);
   });
 
   // Energia.vue:303-305 redondearDosDecimales on every numeric column (same in Acueducto/Costos/Tarifas.vue).
-  it.skip('PARITY-FINDING: numeric cells are not rounded to 2 decimals; legacy Energia.vue:303-305 redondearDosDecimales', () => {
+  it('rounds numeric cells to 2 decimals like legacy redondearDosDecimales', () => {
     const { fixture } = crear();
 
     const texto = fixture.nativeElement.textContent as string;
@@ -139,26 +140,31 @@ describe('InformeProyeccionesComponent (1001) - legacy InformeProyecciones.vue',
 
   // Energia.vue:9-16 (and the other three tabs): 24 rows per page; "contains" filters on Año, Mes, Clase uso,
   // Tipo tarifa and Factor prod (Energia.vue:30-115).
-  it.skip('PARITY-FINDING: paginator shows 10 rows and only Clase is filterable; legacy Energia.vue:10,30-115 showed 24 rows and filtered Año, Mes, Clase uso, Tipo tarifa, Factor prod', () => {
+  it('shows 24 rows per page and the legacy "contains" filters', () => {
     const { fixture, component } = crear();
 
     const tabla = fixture.debugElement.query(By.directive(TablaAvanzadaComponent)).componentInstance as TablaAvanzadaComponent;
     expect(tabla.filasPorPagina).toBe(24);
     expect(component.columnasEnergia.filter((c) => c.filtrable).map((c) => c.field)).toEqual(['FAEN_ANNO', 'FAEN_MES', 'CLAS_NOMBRE', 'TIPOTAR', 'FACTOR_PROD']);
+    // Acueducto.vue:31-109, Costos.vue:30-70, Tarifas.vue:30-108.
+    expect(component.columnasAcueducto.filter((c) => c.filtrable).map((c) => c.field)).toEqual(['FACU_ANNO', 'FACU_MES', 'CLAS_NOMBRE', 'TIPOTAR', 'FACTOR_PROD']);
+    expect(component.columnasCostos.filter((c) => c.filtrable).map((c) => c.field)).toEqual(['COST_ANNO', 'COST_MES', 'TIPO_FACT']);
+    expect(component.columnasTarifas.filter((c) => c.filtrable).map((c) => c.field)).toEqual(['TARI_ANNO', 'TARI_MES', 'CLAS_NOMBRE', 'TIPO_TAR', 'TIPO_FACT']);
   });
 
   // seleccionarProyeccion.vue:29-36 Calendar view="month" dateFormat="MM/yy" with Spanish month names (:96-109).
-  it.skip('PARITY-FINDING: horizonte shows "Enero 2025"; legacy seleccionarProyeccion.vue:29-36 Calendar MM/yy showed "Enero/2025"', () => {
+  it('shows horizonte desde as "Enero/2025" (Calendar MM/yy)', () => {
     const { component } = crear();
 
     expect(component.horizonteDesde()).toBe('Enero/2025');
   });
 
   // seleccionarProyeccion.vue:137 new Date(PROYANNOHAS, PROYMESHAS) (no -1): legacy showed the month after "hasta"
-  // (likely a legacy defect; reported for the user's decision).
-  it.skip('PARITY-FINDING: horizonte hasta shows the projection end month; legacy seleccionarProyeccion.vue:137 showed the following month (Diciembre 2025 -> Enero/2026)', () => {
+  // (Diciembre 2025 -> Enero/2026). Accepted deviation: legacy-characterization-tests S8/S9 (group D, legacy bug not
+  // replicated, "horizonte hasta +1 month"): the new screen shows the projection end month itself.
+  it('shows horizonte hasta as the projection end month (legacy +1 month bug not replicated)', () => {
     const { component } = crear();
 
-    expect(component.horizonteHasta()).toBe('Enero/2026');
+    expect(component.horizonteHasta()).toBe('Diciembre/2025');
   });
 });

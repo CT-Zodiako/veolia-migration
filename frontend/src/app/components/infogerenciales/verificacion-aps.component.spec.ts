@@ -4,7 +4,7 @@ import { VerificacionApsComponent } from './verificacion-aps.component';
 import { InfoGerencialService } from '../../services/infogerenciales.service';
 import { EmpresasService } from '../../services/empresas.service';
 import { AuthService } from '../../services/auth.service';
-import { estadoParametros } from './informes-gerenciales.spec-helpers';
+import { congelarHoy, estadoParametros } from './informes-gerenciales.spec-helpers';
 
 // Legacy 307 "Verificacion" (/verificacion): front-tarificador/src/views/suministros/Verificacion.vue. Three summaries
 // (Resumen Empresa / Resumen APS / Resumen Relleno) from infogerencial/infoemprdivi, infoapsemprdivi, infoapsrelleno for
@@ -14,7 +14,7 @@ const empresa = { EMPR_NOMBRE: 'EMPRESA UNO', INED_CBLJ: 1.234567, INED_QRSJ: 2 
 const aps = { EMPR_NOMBRE: 'EMPRESA UNO', IAED_QRTZ: 3, IAED_QALMACEN: 4, IAED_CPEET: 5, IAED_QRTET: 6 };
 const relleno = { RELL_NOMRELLENO: 'RELLENO SUR', IARE_QRS: 7, IARE_C: 8 };
 
-function crear() {
+function crear(estado = estadoParametros(2025, 3)) {
   const service = {
     infoemprdivi: vi.fn(() => of({ status: 'success', data: [empresa], message: 'OK' })),
     infoapsemprdivi: vi.fn(() => of({ status: 'success', data: [aps], message: 'OK' })),
@@ -26,7 +26,7 @@ function crear() {
       { provide: InfoGerencialService, useValue: service },
       { provide: EmpresasService, useValue: { getEmpresasPropias: vi.fn(() => of([])) } },
       { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [] })) } },
-      estadoParametros()
+      estado
     ]
   });
   const fixture = TestBed.createComponent(VerificacionApsComponent);
@@ -37,7 +37,7 @@ function crear() {
 function consultar(component: VerificacionApsComponent): void {
   component.onApsChange(5);
   component.onAnnoChange(2025);
-  component.onSemestreChange(1);
+  component.onMesChange(3);
 }
 
 const encabezados = (cols: { field: string; header: string }[]) => cols.map((c) => `${c.field}:${c.header}`);
@@ -68,34 +68,58 @@ describe('VerificacionApsComponent (307) - legacy Verificacion.vue', () => {
     fixture.detectChanges();
 
     for (const fn of [service.infoemprdivi, service.infoapsemprdivi, service.infoapsrelleno]) {
-      expect(fn.mock.calls).toEqual([1, 2, 3, 4, 5, 6].map((mes) => [5, 2025, mes]));
+      expect(fn).toHaveBeenLastCalledWith(5, 2025, 3);
+      expect(fn.mock.calls.every((c: number[]) => c.length === 3 && c[0] === 5)).toBe(true);
     }
     const texto = fixture.nativeElement.textContent as string;
     expect(texto).toContain('EMPRESA UNO');
-    expect(component.gruposRelleno()[0].filas[0]['IARE_C_QRSMUNRECP']).toBe(8);
+    expect(component.filasRelleno()[0]['IARE_C_QRSMUNRECP']).toBe(8);
   });
 
-  // Verificacion.vue:160-358 Resumen APS columns, including QALMACEN (:297), CPEET (:308) and QRTET (:319).
-  it.skip('PARITY-FINDING: Resumen APS drops the legacy columns QALMACEN, CPEET and QRTET (Verificacion.vue:297-325)', () => {
+  // Verificacion.vue:160-376 Resumen APS columns. QALMACEN (:296-306), CPEET (:307-317), QRTET (:318-328), NAA and NDA
+  // (:362-375) are commented out in legacy, so they are not shown. (The T1 finding claimed legacy showed them; the
+  // legacy source says otherwise -- the assertion now follows the legacy template.)
+  it('shows the legacy Resumen APS columns, without the columns commented out in legacy', () => {
     const { component } = crear();
 
     expect(encabezados(component.columnasAps)).toEqual([
       'EMPR_NOMBRE:EMPRESA', 'IAED_QRTZ:QRTZ', 'IAED_CPE:CPE', 'IAED_T:T', 'IAED_VACRTABC:VACRTABC', 'IAED_VACRT:VACRT',
       'IAED_CRTZ:CRTZ', 'IAED_QBL:QBL', 'IAED_QLU:QLU', 'IAED_QR:QR', 'IAED_TAFA:TAFA', 'IAED_ND:ND', 'IAED_NA:NA',
-      'IAED_QNA:QNA', 'IAED_TAFNA:TAFNA', 'IAED_QA:QA', 'IAED_APROVECHA:APROVECHA', 'IAED_QALMACEN:QALMACEN',
-      'IAED_CPEET:CPEET', 'IAED_QRTET:QRTET', 'IAED_CRTCOMP:CRTCOMP', 'IAED_CDFCOMP:CDFCOMP', 'IAED_QRSCOMP:QRSCOMP'
+      'IAED_QNA:QNA', 'IAED_TAFNA:TAFNA', 'IAED_QA:QA', 'IAED_APROVECHA:APROVECHA', 'IAED_CRTCOMP:CRTCOMP',
+      'IAED_CDFCOMP:CDFCOMP', 'IAED_QRSCOMP:QRSCOMP'
     ]);
   });
 
   // Verificacion.vue:7 uses the shared Selector (APS + month calendar, Selector.vue:14-21) and loads one month.
-  it.skip('PARITY-FINDING: the screen asks for a semester and loads 6 months; legacy Verificacion.vue:7,552-568 used the APS + month selector and loaded only that month', () => {
-    const { fixture } = crear();
+  it('uses the APS + month selector and loads only that month (no semester)', () => {
+    const { fixture, component, service } = crear();
+    consultar(component);
+    fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-mes-selector')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Semestre');
+    expect(service.infoemprdivi.mock.calls.filter((c: number[]) => c[1] === 2025 && c[2] !== 3)).toEqual([]);
+    expect(component.filasEmpresa()).toEqual([expect.objectContaining({ EMPR_NOMBRE: 'EMPRESA UNO' })]);
+  });
+
+  // Selector.vue:153-158 defaults the period to today and Verificacion.vue:534-536,545 loads on mount with the stored APS.
+  describe('on entry', () => {
+    beforeEach(congelarHoy);
+    afterEach(() => vi.useRealTimers());
+
+    it('loads the stored APS for the current month when no period is stored', () => {
+      const estado = estadoParametros();
+      estado.useValue.getAps = vi.fn(() => 5 as unknown as null);
+      const { service } = crear(estado);
+
+      expect(service.infoemprdivi).toHaveBeenCalledWith(5, 2026, 1);
+      expect(service.infoapsemprdivi).toHaveBeenCalledWith(5, 2026, 1);
+      expect(service.infoapsrelleno).toHaveBeenCalledWith(5, 2026, 1);
+    });
   });
 
   // Verificacion.vue:526-529 redondeo(valor, 4) (null/0 -> 0) on every numeric column except INED_QRSJ.
-  it.skip('PARITY-FINDING: numeric cells are not rounded to 4 decimals; legacy Verificacion.vue:526-529 showed redondeo(valor, 4)', () => {
+  it('rounds numeric cells to 4 decimals (null -> 0) except QRSJ', () => {
     const { fixture, component } = crear();
     consultar(component);
     fixture.detectChanges();
@@ -103,10 +127,12 @@ describe('VerificacionApsComponent (307) - legacy Verificacion.vue', () => {
     const texto = fixture.nativeElement.textContent as string;
     expect(texto).toContain('1.2346');
     expect(texto).not.toContain('1.234567');
+    expect(component.filasEmpresa()[0]['INED_LBLJ']).toBe(0);
+    expect(component.filasEmpresa()[0]['INED_QRSJ']).toBe(2);
   });
 
   // Verificacion.vue template (lines 1-458) only renders the three summaries; there is no KPI block.
-  it.skip('PARITY-FINDING: a "Promedios Mensuales" block shows random placeholder values (generarKpisMock); legacy Verificacion.vue had no such block', () => {
+  it('shows no "Promedios Mensuales" placeholder block', () => {
     const { fixture, component } = crear();
     consultar(component);
     fixture.detectChanges();

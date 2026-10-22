@@ -100,7 +100,7 @@ public sealed class LegacyT1TafnaContractTests
     }
 
     // Legacy tafna/controller.js:8 selects the raw `valor` column (no rounding).
-    [Fact(Skip = "PARITY-FINDING: TAFNA valor is rounded to 6 decimals (TafnaRepository.cs: ROUND(VALOR, 6)); legacy tafna/controller.js:8 returned the raw valor.")]
+    [Fact]
     public async Task TafnaReturnsTheRawValorLikeLegacy()
     {
         var connection = new RecordingDbConnection(Db.Rows(("Aps", 7m), ("Empresa", 11m), ("Anno", 2025m), ("Mes", 2m), ("Valor", 0.25m)));
@@ -365,7 +365,7 @@ public sealed class LegacyT1GeneralContractTests
     // Legacy general/routes.js:11-14 (GET /paraindices, consumed by front-tarificador/src/service/GeneralService.js:9
     // from views/suministros/Cra.vue:305) and general/controller.js:15: para_para, para_nombre, para_descri FROM auge_parametros
     // WHERE clas_clas = 20011 and para_estado = 'A'.
-    [Fact(Skip = "PARITY-FINDING: GET /api/v1/general/paraindices is not migrated (404; GeneralController.cs comment redirects to /api/v1/indices/catalogo, which drops PARA_DESCRI); legacy general/routes.js:11 returned para_para, para_nombre, para_descri.")]
+    [Fact]
     public async Task ParaIndicesReturnsTheIndicesCatalogLikeLegacy()
     {
         var connection = new RecordingDbConnection(Db.Rows(("PARA_PARA", 1m), ("PARA_NOMBRE", "IPC"), ("PARA_DESCRI", "Indice de precios")));
@@ -378,7 +378,11 @@ public sealed class LegacyT1GeneralContractTests
         var body = await Db.Json(response);
         var command = Assert.Single(connection.Commands);
         Assert.Contains("PARA_PARA,PARA_NOMBRE,PARA_DESCRIFROMAUGE_PARAMETROSWHERECLAS_CLAS=20011ANDPARA_ESTADO='A'", Db.Squash(command.CommandText));
+        Assert.Empty(command.Parameters);
         var row = Assert.Single(body.EnumerateArray());
+        Assert.Equal(3, row.EnumerateObject().Count());
+        Assert.Equal(1m, row.GetProperty("PARA_PARA").GetDecimal());
+        Assert.Equal("IPC", row.GetProperty("PARA_NOMBRE").GetString());
         Assert.Equal("Indice de precios", row.GetProperty("PARA_DESCRI").GetString());
     }
 }
@@ -458,7 +462,7 @@ public sealed class LegacyT1InformesContractTests
 
     // Legacy informes/controller.js:10 passes JSON_DOCUMENT through untouched (JSON.parse), and the legacy table
     // component reads `nombre || grup` as the table legend (front-tarificador components/GenericTable.vue:86).
-    [Fact(Skip = "PARITY-FINDING: informes deserializes JSON_DOCUMENT into InformeDatasetItem(Nombre, Columns, Data), dropping any other key such as `grup` (legacy GenericTable.vue:86 legend `nombre || grup`); legacy informes/controller.js:10 returned the document untouched.")]
+    [Fact]
     public async Task DocumentKeysArePassedThroughUntouchedLikeLegacy()
     {
         var connection = new RecordingDbConnection(Db.Rows(
@@ -469,8 +473,12 @@ public sealed class LegacyT1InformesContractTests
         var response = await client.GetAsync($"/api/v1/informes/clus?aps={Db.Aps}&anno={Db.Anno}&mes={Db.Mes}");
         var body = await Db.Json(response);
 
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("S1", body.GetProperty("data").GetProperty("semestre").GetString());
         var table = Assert.Single(body.GetProperty("data").GetProperty("dataset").EnumerateArray());
         Assert.Equal("CLUS", table.GetProperty("grup").GetString());
+        Assert.False(table.TryGetProperty("nombre", out _));
+        Assert.Equal("1", table.GetProperty("data")[0][0].GetString());
     }
 }
 
@@ -491,6 +499,7 @@ public sealed class LegacyT1DapperTokenTests
     [InlineData("POST", "/api/v1/usuarios/usuadeta")]
     [InlineData("GET", "/api/v1/general/consultauso")]
     [InlineData("GET", "/api/v1/general/paracostos")]
+    [InlineData("GET", "/api/v1/general/paraindices")]
     [InlineData("GET", "/api/v1/informes/costos?aps=7&anno=2025&mes=3")]
     [InlineData("GET", "/api/v1/informes/clus?aps=7&anno=2025&mes=3")]
     public async Task WithoutTokenTheLegacy403IsReturnedAndNoSqlRuns(string method, string url)

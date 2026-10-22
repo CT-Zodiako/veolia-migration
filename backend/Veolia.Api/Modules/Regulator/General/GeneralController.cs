@@ -9,12 +9,9 @@ namespace Veolia.Api.Modules.Regulator.General;
 ///
 /// - consultauso  -> migrado aquí (sin overlap real: Proyecciones expone un
 ///   subconjunto de columnas con propósito propio, este necesita SELECT * real).
-/// - paraindices  -> NO migrado como endpoint nuevo. Es un duplicado exacto de
-///   GET /api/v1/indices/catalogo (IndicesRepository.GetCatalogoAsync, misma
-///   tabla AUGE_PARAMETROS CLAS_CLAS = 20011, mismas columnas PARA_PARA/PARA_NOMBRE),
-///   verificado 1:1 contra Oracle real. Duplicar el mismo SQL en dos controladores
-///   solo agregaría superficie de mantenimiento sin beneficio; los consumidores de
-///   "paraindices" deben apuntar a /api/v1/indices/catalogo.
+/// - paraindices  -> migrado aquí (general/controller.js:15): PARA_PARA, PARA_NOMBRE,
+///   PARA_DESCRI de AUGE_PARAMETROS CLAS_CLAS = 20011. /api/v1/indices/catalogo no
+///   devuelve PARA_DESCRI, por eso se conserva la ruta legacy.
 /// - paracostos   -> migrado aquí (sin overlap: CLAS_CLAS = 20010 no tiene otra
 ///   fuente en el nuevo stack).
 /// - GET /:id     -> placeholder legacy sin lógica real ("mostrar un registro
@@ -50,6 +47,23 @@ public sealed class GeneralController(IGeneralRepository repository) : Controlle
         try
         {
             var rows = await repository.ConsultarCostosAsync(cancellationToken);
+            return Ok(rows);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
+        }
+    }
+
+    [HttpGet("paraindices")]
+    public async Task<IActionResult> ParaIndices(CancellationToken cancellationToken)
+    {
+        if (!TryReadTokenContext(out _))
+            return Unauthorized(new { message = "No Autorizado!" });
+
+        try
+        {
+            var rows = await repository.ConsultarIndicesAsync(cancellationToken);
             return Ok(rows);
         }
         catch (Exception ex)

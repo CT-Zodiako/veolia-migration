@@ -85,12 +85,13 @@ describe('DescuentoCostosComponent (605) - legacy Descuentos.vue', () => {
 
     component.dialogSeleccion.set(21);
     component.dialogValor.set(12.5);
+    const consultasPrevias = service.getApsDesCost.mock.calls.length;
     component.guardar();
 
     expect(service.setApsDesCost).toHaveBeenCalledWith(5, 2024, 12, 21, 12.5);
     expect(service.uptApsDesCost).not.toHaveBeenCalled();
     expect(component.dialogVisible()).toBe(false);
-    expect(service.getApsDesCost).toHaveBeenCalledTimes(2);
+    expect(service.getApsDesCost).toHaveBeenCalledTimes(consultasPrevias + 1);
   });
 
   // Edit: openBasic(false, DESC_ID) -> getapsDesCostUnico(DESC_ID, aps, month-1, false) and preselects the row's own
@@ -114,7 +115,7 @@ describe('DescuentoCostosComponent (605) - legacy Descuentos.vue', () => {
   });
 
   // Descuentos.vue:18 header="COSTO", :29 header="DESCUENTO".
-  it.skip('PARITY-FINDING: grid headers are "Costo"/"Descuento"; legacy Descuentos.vue:18,29 showed "COSTO"/"DESCUENTO"', () => {
+  it('shows the legacy grid headers COSTO and DESCUENTO', () => {
     const { fixture, component } = crear();
     seleccionarPeriodo(component);
     fixture.detectChanges();
@@ -126,16 +127,19 @@ describe('DescuentoCostosComponent (605) - legacy Descuentos.vue', () => {
 
   // Descuentos.vue:253-258: without a selected cost legacy showed "debe seleccionar un descuento!!", then reloaded and
   // closed the dialog.
-  it.skip('PARITY-FINDING: saving without a cost warns "Debe seleccionar un descuento." and keeps the dialog open; legacy Descuentos.vue:254 said "debe seleccionar un descuento!!" and closed it', () => {
+  it('saving without a cost warns "debe seleccionar un descuento!!", reloads and closes the dialog', () => {
     const { component, service, messages } = crear();
     seleccionarPeriodo(component);
     component.abrirNuevo();
+    const consultasPrevias = service.getApsDesCost.mock.calls.length;
 
     component.guardar();
 
     expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'debe seleccionar un descuento!!' }));
     expect(component.dialogVisible()).toBe(false);
     expect(service.setApsDesCost).not.toHaveBeenCalled();
+    expect(service.uptApsDesCost).not.toHaveBeenCalled();
+    expect(service.getApsDesCost).toHaveBeenCalledTimes(consultasPrevias + 1);
   });
 
   // Legacy Selector.vue:153-158 defaults the period to today and Descuentos.vue:158-160 loads on mount with the stored
@@ -144,7 +148,7 @@ describe('DescuentoCostosComponent (605) - legacy Descuentos.vue', () => {
     beforeEach(congelarHoy);
     afterEach(() => vi.useRealTimers());
 
-    it.skip('PARITY-FINDING: with a stored APS and no stored period nothing loads; legacy Descuentos.vue:158-160 + Selector.vue:153-158 loaded today - 1 month', () => {
+    it('with a stored APS and no stored period loads today - 1 month', () => {
       const { service } = crear({ aps: 5 });
 
       expect(service.getApsDesCost).toHaveBeenCalledWith(5, 2025, 12);

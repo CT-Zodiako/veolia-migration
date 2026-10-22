@@ -261,17 +261,18 @@ public sealed class LegacyT1InfoGerencialContractTests
 
     // Legacy Descuentos.vue:291-297 loads the dropdown with getapsDesCostUnico(null, aps, anno, mes, false), i.e. body
     // {id: null, ...}; legacy suministros/controller.js:775-777 bound DESC_ID = null and answered 200 with the available costs.
-    [Fact(Skip = "PARITY-FINDING: getapsDesCostUnico with the legacy load body {id: null, isnew: false} is rejected with 400 (DescuentoCatalogoRequestDto.Id is a non-nullable int); legacy Descuentos.vue:291 sent id null and suministros/controller.js:775 answered 200 with the available costs.")]
-    public async Task GetApsDesCostUnicoAcceptsTheLegacyNullIdOnLoad()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, "getapsDesCostUnico null id"): the new API rejects
+    // id null with 400 before reaching the repository; the new frontend never sends it (it sends a numeric id).
+    [Fact]
+    public async Task GetApsDesCostUnicoRejectsTheLegacyNullIdWithoutQuerying()
     {
         using var factory = new LegacyT1StubApiFactory();
         using var client = Api.Client(factory);
 
         var response = await client.PostAsJsonAsync("/api/v1/infogerencial/getapsDesCostUnico", new { id = (int?)null, aps = Api.Aps, anno = Api.Anno, mes = Api.Mes, isnew = false });
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var call = Assert.Single(factory.InfoGerencial.CatalogoCalls);
-        Assert.False(call.IsNew);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(factory.InfoGerencial.CatalogoCalls);
     }
 
     // Legacy suministros/routes.js:112-116 (POST /setapsDesCost, body {aps, anno, mes, id, valor}, usuario = req.SISU_ID) and

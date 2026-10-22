@@ -13,4 +13,10 @@ public interface IGeneralRepository
     /// Legacy: GET /api/v1/general/paracostos.
     /// </summary>
     Task<IReadOnlyList<object>> ConsultarCostosAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Catálogo de índices (AUGE_PARAMETROS, CLAS_CLAS = 20011) con PARA_DESCRI.
+    /// Legacy: GET /api/v1/general/paraindices (general/controller.js:15).
+    /// </summary>
+    Task<IReadOnlyList<object>> ConsultarIndicesAsync(CancellationToken cancellationToken);
 }

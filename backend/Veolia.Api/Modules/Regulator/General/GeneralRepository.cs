@@ -29,6 +29,19 @@ ORDER BY PARA_NOMBRE";
         return rows.Select(ToDictionaryObject).ToList();
     }
 
+    public async Task<IReadOnlyList<object>> ConsultarIndicesAsync(CancellationToken cancellationToken)
+    {
+        const string sql = @"
+SELECT PARA_PARA, PARA_NOMBRE, PARA_DESCRI
+FROM AUGE_PARAMETROS
+WHERE CLAS_CLAS = 20011
+  AND PARA_ESTADO = 'A'";
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        var rows = await connection.QueryAsync(new CommandDefinition(sql, cancellationToken: cancellationToken));
+        return rows.Select(ToDictionaryObject).ToList();
+    }
+
     private async Task<System.Data.IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)
     {
         var connection = connectionFactory.CreateConnection();

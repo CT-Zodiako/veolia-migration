@@ -77,10 +77,14 @@ describe('DashboardComponent (100 Inicio)', () => {
   });
 
   // Legacy views/Home.vue:1-12 renders an empty card (no shortcuts, no help block).
-  it.skip('PARITY-FINDING: Inicio shows shortcut cards, a help block and "Personalizar"; legacy Home.vue:1-12 was an empty card (likely an intended improvement, not recorded in parity-review-all.md)', () => {
+  // Accepted deviation: legacy-characterization-tests S8/S9 (group D, "the new Inicio dashboard"): Inicio shows the
+  // permitted shortcut cards, the help block and "Personalizar".
+  it('shows the new Inicio: shortcut cards, the help block and "Personalizar"', () => {
     const { fixture } = crear();
 
-    expect(fixture.nativeElement.querySelectorAll('a.card').length).toBe(0);
-    expect(fixture.nativeElement.textContent).not.toContain('Personalizar');
+    expect(fixture.nativeElement.querySelectorAll('a.card').length).toBe(1);
+    const texto = fixture.nativeElement.textContent as string;
+    expect(texto).toContain('Personalizar');
+    expect(texto).toContain('¿Necesitas ayuda con algo más?');
   });
 });

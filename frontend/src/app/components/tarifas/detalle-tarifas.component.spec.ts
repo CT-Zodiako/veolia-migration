@@ -94,7 +94,7 @@ describe('DetalleTarifasComponent (501) - legacy Detalletarifas.vue', () => {
     beforeEach(congelarHoy);
     afterEach(() => vi.useRealTimers());
 
-    it.skip('PARITY-FINDING: with a stored APS and no stored period nothing loads; legacy Detalletarifas.vue:329-344 + Selector.vue:153-158 loaded today - 1 month', () => {
+    it('with a stored APS and no stored period loads today - 1 month', () => {
       const { getTarxCos } = crear({ aps: 5 });
 
       expect(getTarxCos).toHaveBeenCalledWith(5, 2025, 12);
