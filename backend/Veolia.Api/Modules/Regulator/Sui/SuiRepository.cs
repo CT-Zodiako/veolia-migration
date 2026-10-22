@@ -78,11 +78,31 @@ public sealed class SuiRepository(IOracleConnectionFactory connectionFactory, IL
         return rows.Select(ToDictionaryObject).ToList();
     }
 
-    public async Task<SuiProcesarResponse> ProcesarAsync(SuiProcesarRequest request, CancellationToken cancellationToken)
-    {
-        const string ejecutarSql = "BEGIN :res := PK_SUI.fsui_fejecutasui(:1,:2,:3,:4); END;";
-        const string estadoSql = "BEGIN :res := PK_SUI.fsui_estado(:1,:2,:3); END;";
+    /// <summary>
+    /// Legacy sui/controller.js:137-150 binds <c>1: aps, 2: anno, 3: mes, 4: usuario</c> and reads the OUT as STRING.
+    /// </summary>
+    public const string ProcesarSql = "BEGIN :res := PK_SUI.fsui_fejecutasui(:1, :2, :3, :4); END;";
 
+    /// <summary>Post-process status of one APS from the 2-arg table function the dashboard also uses.</summary>
+    public const string EstadoApsSql = @"SELECT F19, F23, F24, F35, F36
+FROM TABLE(PK_SUI.fsui_estado(:anno, :mes))
+WHERE APSID = :aps";
+
+    private static readonly string[] FormatosEstado = ["F19", "F23", "F24", "F35", "F36"];
+
+    public static DynamicParameters BuildProcesarParameters(int aps, int anno, int mes, long usuario)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("res", dbType: DbType.String, direction: ParameterDirection.Output, size: 4000);
+        parameters.Add("1", aps);
+        parameters.Add("2", anno);
+        parameters.Add("3", mes);
+        parameters.Add("4", usuario);
+        return parameters;
+    }
+
+    public async Task<SuiProcesarResponse> ProcesarAsync(SuiProcesarRequest request, long usuario, CancellationToken cancellationToken)
+    {
         using var connection = await OpenConnectionAsync(cancellationToken);
         using var transaction = connection.BeginTransaction();
         try
@@ -90,35 +110,23 @@ public sealed class SuiRepository(IOracleConnectionFactory connectionFactory, IL
             var precheck = await GetCanCertificateInternalAsync(connection, transaction, request.Aps, request.Mes, request.Anno, cancellationToken);
             if (!precheck.PuedeProcesar)
             {
-                await RegistrarAuditoriaAsync(connection, transaction, request.Usuario, request.Aps, request.Mes, request.Anno, "PRECHECK_FAIL", cancellationToken);
+                await RegistrarAuditoriaAsync(connection, transaction, usuario, request.Aps, request.Mes, request.Anno, "PRECHECK_FAIL", cancellationToken);
                 transaction.Rollback();
                 throw new PreconditionFailedException($"No es posible procesar SUI: {string.Join(" | ", precheck.Mensajes)}");
             }
 
-            var ejecutarParams = new DynamicParameters();
-            ejecutarParams.Add("res", dbType: DbType.Int32, direction: ParameterDirection.Output);
-            ejecutarParams.Add("1", request.Aps);
-            ejecutarParams.Add("2", request.Mes);
-            ejecutarParams.Add("3", request.Anno);
-            ejecutarParams.Add("4", request.Usuario);
+            var ejecutarParams = BuildProcesarParameters(request.Aps, request.Anno, request.Mes, usuario);
+            await connection.ExecuteAsync(new CommandDefinition(ProcesarSql, ejecutarParams, transaction: transaction, cancellationToken: cancellationToken));
+            // Legacy answered 200 with the raw string whenever the block did not throw; an Oracle error propagates.
+            var resultado = ejecutarParams.Get<string?>("res");
 
-            await connection.ExecuteAsync(new CommandDefinition(ejecutarSql, ejecutarParams, transaction: transaction, cancellationToken: cancellationToken));
-            var returnCode = ejecutarParams.Get<int?>("res") ?? 1;
-
-            var estadoParams = new DynamicParameters();
-            estadoParams.Add("res", dbType: DbType.String, direction: ParameterDirection.Output, size: 200);
-            estadoParams.Add("1", request.Aps);
-            estadoParams.Add("2", request.Mes);
-            estadoParams.Add("3", request.Anno);
-            await connection.ExecuteAsync(new CommandDefinition(estadoSql, estadoParams, transaction: transaction, cancellationToken: cancellationToken));
-            var estado = estadoParams.Get<string>("res") ?? "DESCONOCIDO";
-
+            var estado = await ConsultarEstadoApsAsync(connection, transaction, request.Aps, request.Anno, request.Mes, cancellationToken);
             var formatosProcesados = await InferirFormatosProcesadosAsync(connection, transaction, request.Aps, request.Mes, request.Anno, cancellationToken);
 
-            await RegistrarAuditoriaAsync(connection, transaction, request.Usuario, request.Aps, request.Mes, request.Anno, returnCode == 0 ? "OK" : $"ERROR_{returnCode}", cancellationToken);
+            await RegistrarAuditoriaAsync(connection, transaction, usuario, request.Aps, request.Mes, request.Anno, "OK", cancellationToken);
 
             transaction.Commit();
-            return new SuiProcesarResponse(returnCode == 0, formatosProcesados, estado);
+            return new SuiProcesarResponse(true, formatosProcesados, estado, resultado);
         }
         catch
         {
@@ -131,7 +139,19 @@ public sealed class SuiRepository(IOracleConnectionFactory connectionFactory, IL
         }
     }
 
-    public async Task<SuiComplementoResponse> GuardarComplementoAsync(SuiComplementoRequest request, CancellationToken cancellationToken)
+    private static async Task<string> ConsultarEstadoApsAsync(IDbConnection connection, IDbTransaction transaction, int aps, int anno, int mes, CancellationToken cancellationToken)
+    {
+        var rows = await connection.QueryAsync(new CommandDefinition(EstadoApsSql, new { anno, mes, aps }, transaction: transaction, cancellationToken: cancellationToken));
+        if (rows.FirstOrDefault() is not IDictionary<string, object> fila)
+        {
+            return "DESCONOCIDO";
+        }
+
+        var estados = new Dictionary<string, object?>(fila, StringComparer.OrdinalIgnoreCase);
+        return string.Join(" | ", FormatosEstado.Select(f => $"{f}: {(estados.TryGetValue(f, out var v) ? v : null) ?? "-"}"));
+    }
+
+    public async Task<SuiComplementoResponse> GuardarComplementoAsync(SuiComplementoRequest request, long usuario, CancellationToken cancellationToken)
     {
         const string deleteSql = "DELETE FROM SUI_COMPLEMENTO WHERE APSA_ID = :aps AND COM_ANNO = :anno AND COM_MES = :mes";
 
@@ -168,7 +188,7 @@ VALUES (:aps, :anno, :mes, :det, :f1et, :cpeet, :prtzet, :ceg, :camrers, :inccdf
                     iccrs = fila.Iccrs,
                     frein = fila.Frein,
                     capperdf = fila.Capperdf,
-                    usuario = request.Usuario,
+                    usuario,
                     qrsMes = fila.QrsMes,
                     dispalt9 = fila.Dispalt9,
                     vlMes = fila.VlMes
@@ -241,7 +261,7 @@ SELECT 'F36' AS FORMATO FROM SUI_F36 WHERE APSA_ID = :aps AND F36_MES = :mes AND
         return formatos.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
     }
 
-    private async Task RegistrarAuditoriaAsync(IDbConnection connection, IDbTransaction transaction, int usuario, int aps, int mes, int anno, string resultado, CancellationToken cancellationToken)
+    private async Task RegistrarAuditoriaAsync(IDbConnection connection, IDbTransaction transaction, long usuario, int aps, int mes, int anno, string resultado, CancellationToken cancellationToken)
     {
         const string sql = @"INSERT INTO SUI_AUDITORIA (USUARIO, FECHA, APS_ID, MES, ANNO, RESULTADO)
 VALUES (:usuario, SYSDATE, :aps, :mes, :anno, :resultado)";

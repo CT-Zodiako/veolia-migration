@@ -25,6 +25,8 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
         (parametrosIncompletos)="limpiar()"
       ></app-parametros-consulta>
 
+      <div *ngIf="error()" class="error-message">{{ error() }}</div>
+
       <div class="table-wrapper table-scroll">
       <p-tabs [value]="currentTab()" (valueChange)="onTabChange($event)">
         <p-tablist>
@@ -37,6 +39,7 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
         <p-tabpanels>
           <p-tabpanel value="facturacion">
             <app-tabla-avanzada
+              [rowsPerPageOptionsList]="paginadorLegacy"
               [columnas]="columnasFacturacion"
               [rows]="resultados().facturacion?.filas || []"
               [loading]="loadingTabs().has('facturacion')"
@@ -46,6 +49,7 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
           </p-tabpanel>
           <p-tabpanel value="facturacionelectronica">
             <app-tabla-avanzada
+              [rowsPerPageOptionsList]="paginadorLegacy"
               [columnas]="columnasFacturacionElectronica"
               [rows]="resultados().facturacionelectronica?.filas || []"
               [loading]="loadingTabs().has('facturacionelectronica')"
@@ -55,6 +59,7 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
           </p-tabpanel>
           <p-tabpanel value="detafacturacion">
             <app-tabla-avanzada
+              [rowsPerPageOptionsList]="paginadorLegacy"
               [columnas]="columnasDetaFacturacion"
               [rows]="resultados().detafacturacion?.filas || []"
               [loading]="loadingTabs().has('detafacturacion')"
@@ -64,6 +69,7 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
           </p-tabpanel>
           <p-tabpanel value="facturacionclus">
             <app-tabla-avanzada
+              [rowsPerPageOptionsList]="paginadorLegacy"
               [columnas]="columnasFacturacionClus"
               [rows]="resultados().facturacionclus?.filas || []"
               [loading]="loadingTabs().has('facturacionclus')"
@@ -73,6 +79,7 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
           </p-tabpanel>
           <p-tabpanel value="facturaciondinc">
             <app-tabla-avanzada
+              [rowsPerPageOptionsList]="paginadorLegacy"
               [columnas]="columnasFacturacionDinc"
               [rows]="resultados().facturaciondinc?.filas || []"
               [loading]="loadingTabs().has('facturaciondinc')"
@@ -84,9 +91,23 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
       </p-tabs>
       </div>
     </section>
-  `
+  `,
+  styles: [`
+    .error-message {
+      background: var(--color-bg-danger-soft);
+      border: 1px solid var(--color-border-danger-soft);
+      color: var(--color-brand-accent);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+  `]
 })
 export class FacturacionPageComponent {
+  /** Legacy Facturación grids offered 10/20/100/200 rows per page. */
+  readonly paginadorLegacy = [10, 20, 100, 200];
+
   aps: number | null = null;
   anno: number | null = null;
   mes: number | null = null;

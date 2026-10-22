@@ -1,33 +1,28 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TarifaRow, TarifasService } from '../../services/tarifas.service';
-import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
+import { periodoInicial } from '../infogerenciales/periodo-inicial.util';
 
 @Component({
   selector: 'app-detalle-tarifas-gen',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ApsSelectorComponent, AnnoSelectorComponent, MesSelectorComponent, TablaAvanzadaComponent],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, AnnoSelectorComponent, MesSelectorComponent, TablaAvanzadaComponent],
   templateUrl: './detalle-tarifas-gen.component.html',
   styleUrl: './detalle-tarifas-gen.component.css'
 })
-export class DetalleTarifasGenComponent {
-  readonly aps = signal<number | null>(null);
+export class DetalleTarifasGenComponent implements OnInit {
   readonly anno = signal<number | null>(null);
   readonly mes = signal<number | null>(null);
 
   readonly loading = signal(false);
   readonly rows = signal<TarifaRow[]>([]);
-  readonly filteredRows = computed(() => {
-    const apsSel = this.aps();
-    const rows = this.rows();
-    return apsSel === null ? rows : rows.filter((row) => Number(row['APSA_ID']) === apsSel);
-  });
 
   readonly columnasPlena: TablaColumn[] = [
     { field: 'APSA_NOMAPS', header: 'APS', filtrable: true },
@@ -63,7 +58,19 @@ export class DetalleTarifasGenComponent {
     { field: 'TARI_SUBCON', header: 'S/C', numero: true }
   ];
 
-  constructor(private readonly tarifasService: TarifasService) {}
+  constructor(
+    private readonly tarifasService: TarifasService,
+    private readonly parametrosState: ParametrosConsultaStateService
+  ) {}
+
+  // Informe gerencial: todas las APS (el legacy ocultaba el selector #ddAps) y carga al entrar
+  // con el período guardado o el mes actual, como el legacy created() con stDate ?? new Date().
+  ngOnInit(): void {
+    const periodo = periodoInicial(this.parametrosState);
+    this.anno.set(periodo.anno);
+    this.mes.set(periodo.mes);
+    this.consultarSiCompleto();
+  }
 
   onAnnoChange(value: number | null): void {
     this.anno.set(value);

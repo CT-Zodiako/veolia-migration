@@ -12,9 +12,15 @@
       [columnas]="columnas"
       [rows]="rows()"
       [cellClass]="cellClass"
+      [cellTemplate]="celda"
       [loading]="loading()"
       storageKey="costo-poda"
       nombreExportar="CostoPoda"
     ></app-tabla-avanzada>
   </div>
+
+  <ng-template #celda let-value let-col="col">
+    <ng-container *ngIf="col.field === 'CPTE_FECCREA'; else crudo">{{ formatearFecha(value) }}</ng-container>
+    <ng-template #crudo>{{ value }}</ng-template>
+  </ng-template>
 </section>

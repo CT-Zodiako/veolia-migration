@@ -1,10 +1,12 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { InfoGerencialService } from '../../services/infogerenciales.service';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
-import { ApsSelectorComponent } from '../shared/aps-selector.component';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
+import { periodoInicial } from './periodo-inicial.util';
+import { formatearFechaLegacy } from './fecha-legacy.util';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
@@ -12,22 +14,16 @@ import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.co
 @Component({
   selector: 'app-dashboard-gerencial',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ApsSelectorComponent, AnnoSelectorComponent, MesSelectorComponent, TablaAvanzadaComponent],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, AnnoSelectorComponent, MesSelectorComponent, TablaAvanzadaComponent],
   templateUrl: './dashboard-gerencial.component.html',
   styleUrl: './dashboard-gerencial.component.css'
 })
-export class DashboardGerencialComponent {
-  readonly aps = signal<number | null>(null);
+export class DashboardGerencialComponent implements OnInit {
   readonly anno = signal<number | null>(null);
   readonly mes = signal<number | null>(null);
 
   readonly loading = signal(false);
   readonly rows = signal<Record<string, unknown>[]>([]);
-  readonly filteredRows = computed(() => {
-    const apsSel = this.aps();
-    const rows = this.rows();
-    return apsSel === null ? rows : rows.filter((row) => Number(row['APSA_ID']) === apsSel);
-  });
 
   readonly columnas: TablaColumn[] = [
     { field: 'APSA_ID', header: 'Id' },
@@ -36,10 +32,25 @@ export class DashboardGerencialComponent {
     { field: 'SISU_CORREO', header: 'Usuario' }
   ];
 
-  readonly cellClass = (row: Record<string, unknown>, col: TablaColumn): string =>
-    col.field === 'TARI_FECHACREACION' ? (row['TARI_FECHACREACION'] === 'N/A' ? 'color-red' : 'color-green') : '';
+  readonly formatearFecha = formatearFechaLegacy;
 
-  constructor(private readonly service: InfoGerencialService) {}
+  // Legacy DashBoard.vue:23: green-cell when there is a calculation date, red-cell otherwise.
+  readonly cellClass = (row: Record<string, unknown>, col: TablaColumn): string =>
+    col.field === 'TARI_FECHACREACION' ? (row['TARI_FECHACREACION'] ? 'color-green' : 'color-red') : '';
+
+  constructor(
+    private readonly service: InfoGerencialService,
+    private readonly parametrosState: ParametrosConsultaStateService
+  ) {}
+
+  // Informe gerencial: todas las APS (el legacy ocultaba el selector #ddAps) y carga al entrar
+  // con el período guardado o el mes actual, como el legacy created() con stDate ?? new Date().
+  ngOnInit(): void {
+    const periodo = periodoInicial(this.parametrosState);
+    this.anno.set(periodo.anno);
+    this.mes.set(periodo.mes);
+    this.consultarSiCompleto();
+  }
 
   onAnnoChange(value: number | null): void {
     this.anno.set(value);
@@ -63,11 +74,7 @@ export class DashboardGerencialComponent {
     const periodo = periodoAnterior(anno, mes);
     this.service.getDashBoardGerencial(periodo.anno, periodo.mes).subscribe({
       next: (r) => {
-        const filas = (r.data || []).map((fila: Record<string, unknown>) => ({
-          ...fila,
-          TARI_FECHACREACION: this.formatearFecha(fila['TARI_FECHACREACION'])
-        }));
-        this.rows.set(filas);
+        this.rows.set(r.data || []);
         this.loading.set(false);
       },
       error: () => {
@@ -75,12 +82,5 @@ export class DashboardGerencialComponent {
         this.loading.set(false);
       }
     });
-  }
-
-  private formatearFecha(valor: unknown): string {
-    if (!valor || typeof valor !== 'string') return 'N/A';
-    const partes = valor.split('T')[0]?.split('-');
-    if (partes?.length !== 3) return 'N/A';
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 }

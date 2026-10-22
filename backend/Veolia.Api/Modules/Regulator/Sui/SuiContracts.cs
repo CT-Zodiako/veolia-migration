@@ -39,9 +39,6 @@ public sealed class SuiProcesarRequest
 
     [Range(1, 12, ErrorMessage = "El mes debe estar entre 1 y 12.")]
     public int Mes { get; init; }
-
-    [Range(1, int.MaxValue, ErrorMessage = "El usuario es obligatorio.")]
-    public int Usuario { get; init; }
 }
 
 public sealed class SuiComplementoRequest : IValidatableObject
@@ -54,9 +51,6 @@ public sealed class SuiComplementoRequest : IValidatableObject
 
     [Range(1, 12, ErrorMessage = "El mes debe estar entre 1 y 12.")]
     public int Mes { get; init; }
-
-    [Range(1, int.MaxValue, ErrorMessage = "El usuario es obligatorio.")]
-    public int Usuario { get; init; }
 
     [Required(ErrorMessage = "Filas es obligatorio.")]
     [MinLength(1, ErrorMessage = "Filas debe tener al menos un registro.")]
@@ -82,44 +76,20 @@ public sealed class SuiComplementoFilaRequest
     public decimal? Prtzet { get; init; }
     public decimal? Ceg { get; init; }
 
-    [Required(ErrorMessage = "Camrers es obligatorio.")]
-    public decimal Camrers { get; init; }
-
-    [Required(ErrorMessage = "Inccdfalt9 es obligatorio.")]
-    public decimal Inccdfalt9 { get; init; }
-
-    [Required(ErrorMessage = "Prctcrrcp es obligatorio.")]
-    public decimal Prctcrrcp { get; init; }
-
-    [Required(ErrorMessage = "V0 es obligatorio.")]
-    public decimal V0 { get; init; }
-
-    [Required(ErrorMessage = "Vm es obligatorio.")]
-    public decimal Vm { get; init; }
-
-    [Required(ErrorMessage = "Mcrs es obligatorio.")]
-    public decimal Mcrs { get; init; }
-
-    [Required(ErrorMessage = "Icrsm es obligatorio.")]
-    public decimal Icrsm { get; init; }
-
-    [Required(ErrorMessage = "Iccrs es obligatorio.")]
-    public decimal Iccrs { get; init; }
-
-    [Required(ErrorMessage = "Frein es obligatorio.")]
-    public decimal Frein { get; init; }
-
-    [Required(ErrorMessage = "Capperdf es obligatorio.")]
-    public decimal Capperdf { get; init; }
-
-    [Required(ErrorMessage = "QrsMes es obligatorio.")]
-    public decimal QrsMes { get; init; }
-
-    [Required(ErrorMessage = "Dispalt9 es obligatorio.")]
-    public decimal Dispalt9 { get; init; }
-
-    [Required(ErrorMessage = "VlMes es obligatorio.")]
-    public decimal VlMes { get; init; }
+    // F35/F36 apply only to APS with their own relleno; legacy bound them with TO_NUMBER(null).
+    public decimal? Camrers { get; init; }
+    public decimal? Inccdfalt9 { get; init; }
+    public decimal? Prctcrrcp { get; init; }
+    public decimal? V0 { get; init; }
+    public decimal? Vm { get; init; }
+    public decimal? Mcrs { get; init; }
+    public decimal? Icrsm { get; init; }
+    public decimal? Iccrs { get; init; }
+    public decimal? Frein { get; init; }
+    public decimal? Capperdf { get; init; }
+    public decimal? QrsMes { get; init; }
+    public decimal? Dispalt9 { get; init; }
+    public decimal? VlMes { get; init; }
 }
 
 public sealed record SuiDashboardResponse(IReadOnlyList<object> Filas);
@@ -128,7 +98,11 @@ public sealed record SuiFormatoResponse(string Formato, IReadOnlyList<IDictionar
 
 public sealed record SuiResumenFormatosResponse(string Formato, IReadOnlyList<object> Filas);
 
-public sealed record SuiProcesarResponse(bool Exitoso, IReadOnlyList<string> FormatosProcesados, string Estado);
+/// <summary>
+/// Result of SUI Procesar. <c>Resultado</c> is the raw OUT string of <c>PK_SUI.fsui_fejecutasui</c>
+/// (legacy read it as STRING and answered 200 whenever the block did not throw).
+/// </summary>
+public sealed record SuiProcesarResponse(bool Exitoso, IReadOnlyList<string> FormatosProcesados, string Estado, string? Resultado);
 
 public sealed record SuiComplementoResponse(bool Guardado, int FilasAfectadas);
 

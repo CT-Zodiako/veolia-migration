@@ -70,20 +70,21 @@ public sealed class SuiController(ISuiRepository repository, ILogger<SuiControll
             async () => await repository.GetCanCertificateAsync(request.Aps, request.Mes, request.Anno, cancellationToken),
             "Prevalidación SUI ejecutada correctamente.");
 
+    // Legacy sui/routes.js passes req.SISU_ID (the token user), never a body field.
     [HttpPost("Procesar")]
     public async Task<IActionResult> Procesar([FromBody] SuiProcesarRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () =>
+            async usuario =>
             {
-                logger.LogInformation("Intento de proceso SUI. usuario={Usuario} aps={Aps} mes={Mes} anno={Anno} traceId={TraceId}", request.Usuario, request.Aps, request.Mes, request.Anno, HttpContext.TraceIdentifier);
-                return await repository.ProcesarAsync(request, cancellationToken);
+                logger.LogInformation("Intento de proceso SUI. usuario={Usuario} aps={Aps} mes={Mes} anno={Anno} traceId={TraceId}", usuario, request.Aps, request.Mes, request.Anno, HttpContext.TraceIdentifier);
+                return await repository.ProcesarAsync(request, usuario, cancellationToken);
             },
             "Proceso SUI ejecutado correctamente.");
 
     [HttpPost("setCargueInfComplemento")]
     public async Task<IActionResult> SetCargueInfComplemento([FromBody] SuiComplementoRequest request, CancellationToken cancellationToken)
         => await ExecuteAsync(
-            async () => await repository.GuardarComplementoAsync(request, cancellationToken),
+            async usuario => await repository.GuardarComplementoAsync(request, usuario, cancellationToken),
             "Complemento SUI guardado correctamente.");
 
     [HttpPost("existenArchivosGenerados")]
@@ -127,9 +128,13 @@ public sealed class SuiController(ISuiRepository repository, ILogger<SuiControll
         return AuthTokenContextAccessor.TryRead(token, out tokenContext);
     }
 
-    private async Task<IActionResult> ExecuteAsync<T>(Func<Task<T>> action, string successMessage)
+    private Task<IActionResult> ExecuteAsync<T>(Func<Task<T>> action, string successMessage)
+        => ExecuteAsync(_ => action(), successMessage);
+
+    /// <summary>Runs <paramref name="action"/> with the token user (SISU_ID) after validating the token.</summary>
+    private async Task<IActionResult> ExecuteAsync<T>(Func<long, Task<T>> action, string successMessage)
     {
-        if (!TryReadTokenContext(out _))
+        if (!TryReadTokenContext(out var tokenContext))
         {
             var unauthorized = new ApiEnvelopeResponse<object>("error", new { }, "No autorizado.", HttpContext.TraceIdentifier, null);
             return Unauthorized(unauthorized);
@@ -137,7 +142,7 @@ public sealed class SuiController(ISuiRepository repository, ILogger<SuiControll
 
         try
         {
-            var data = await action();
+            var data = await action(tokenContext.SisuId);
             return Ok(new ApiEnvelopeResponse<T>("success", data, successMessage, HttpContext.TraceIdentifier, null));
         }
         catch (ValidationException ex)

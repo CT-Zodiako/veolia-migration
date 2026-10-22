@@ -43,7 +43,9 @@ export class TarifasService {
   }
 
   getTarxCosGeneral(anno: number, mes: number): Observable<TarifaRow[]> {
-    return this.http.post<TarifaRow[]>(`${this.baseUrl}/tarxcomgeneral`, { anno, mes }, { headers: this.getHeaders() });
+    return this.http
+      .post<TarifaRow[]>(`${this.baseUrl}/tarxcomgeneral`, { anno, mes }, { headers: this.getHeaders() })
+      .pipe(map(rows => rows.map(row => this.roundNumericFields(row))));
   }
 
   getResumen(aps: number, anno: number, mes: number): Observable<TarifaRow[]> {
@@ -52,11 +54,12 @@ export class TarifasService {
       .pipe(map(rows => rows.map(row => this.roundNumericFields(row))));
   }
 
+  /** Legacy TarifasService.js getTarxCos/getTarxCosGeneral: parseFloat(valor.toFixed(6)), numbers stay numbers. */
   private roundNumericFields(row: TarifaRow): TarifaRow {
     const output: TarifaRow = {};
 
     for (const [key, value] of Object.entries(row)) {
-      output[key] = typeof value === 'number' && Number.isFinite(value) ? value.toFixed(6) : value;
+      output[key] = typeof value === 'number' && Number.isFinite(value) ? parseFloat(value.toFixed(6)) : value;
     }
 
     return output;
