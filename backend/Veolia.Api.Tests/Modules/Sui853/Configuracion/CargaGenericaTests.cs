@@ -55,6 +55,28 @@ public sealed class CargaGenericaTests
     }
 
     [Fact]
+    public void DateColumnsAcceptSheetsSerialNumbersAndDayMonthYearText()
+    {
+        // ReadTabAsync uses UNFORMATTED_VALUE, so date cells arrive as Sheets serial numbers (days since 1899-12-30).
+        Assert.Equal(new DateTime(2025, 1, 1), CargaGenericaValidation.Value(45658L, "DATE"));
+        Assert.Equal(new DateTime(2025, 1, 1, 12, 0, 0), CargaGenericaValidation.Value(45658.5d, "DATE"));
+        Assert.Equal(new DateTime(2024, 3, 15), CargaGenericaValidation.Value(45366m, "TIMESTAMP(6)"));
+        Assert.Equal(new DateTime(2024, 3, 15), CargaGenericaValidation.Value("15/03/2024", "DATE"));
+        Assert.Equal(new DateTime(2024, 3, 15), CargaGenericaValidation.Value("15-03-2024", "DATE"));
+        Assert.Throws<ArgumentException>(() => CargaGenericaValidation.Value(-1e9d, "DATE"));
+        Assert.Equal(45658m, CargaGenericaValidation.Value(45658L, "NUMBER"));
+    }
+
+    [Fact]
+    public async Task LoadConvertsSerialDateCellsBeforeInsert()
+    {
+        var repo = new Repository { Columns = [new("FECHA", "DATE", 1)] };
+        var sheets = new Sheets { Header = "FECHA", Value = 45366d };
+        Assert.IsType<OkObjectResult>(await Controller(repo, sheets).Load(Request() with { PreviewOnly = false }, default));
+        Assert.Equal(new DateTime(2024, 3, 15), repo.Rows![0][0]);
+    }
+
+    [Fact]
     public async Task PreviewReadsHeadersOnlyAndNeverMutates()
     {
         var repo = new Repository(); var sheets = new Sheets();
@@ -116,7 +138,8 @@ public sealed class CargaGenericaTests
     public async Task RealPipelineRejectsMissingAndForgedTokensBeforeDataAccess(string route)
     {
         var repository = new Repository();
-        using var host = await new HostBuilder().ConfigureWebHost(web => web.UseTestServer().ConfigureServices(services =>
+        using var host = await new HostBuilder().ConfigureWebHost(web => web.UseTestServer()
+            .UseSetting("Auth:JwtSecret", TestJwt.Secret).ConfigureServices(services =>
         {
             services.AddRouting();
             services.AddControllers().AddApplicationPart(typeof(CargaGenericaController).Assembly);
@@ -204,8 +227,9 @@ public sealed class CargaGenericaTests
     {
         public bool Called, Inserted, Truncated;
         public IReadOnlyList<object?[]>? Rows;
+        public CargaColumn[] Columns = Metadata;
         public Task<IReadOnlyList<string>> TablesAsync(CancellationToken ct) { Called = true; return Task.FromResult<IReadOnlyList<string>>(["TABLE1"]); }
-        public Task<IReadOnlyList<CargaColumn>> ColumnsAsync(string table, CancellationToken ct) { Called = true; return Task.FromResult<IReadOnlyList<CargaColumn>>(Metadata); }
+        public Task<IReadOnlyList<CargaColumn>> ColumnsAsync(string table, CancellationToken ct) { Called = true; return Task.FromResult<IReadOnlyList<CargaColumn>>(Columns); }
         public Task<int> InsertAsync(string table, IReadOnlyList<CargaColumn> columns, IReadOnlyList<object?[]> rows, CancellationToken ct)
         { Inserted = true; Rows = rows; return Task.FromResult(rows.Count); }
         public Task TruncateAsync(string table, CancellationToken ct) { Truncated = true; return Task.CompletedTask; }
@@ -215,16 +239,17 @@ public sealed class CargaGenericaTests
     {
         public bool RowsRead, ChangedHeaders;
         public object Value = "12,5";
+        public string Header = " id ";
         public Task<IReadOnlyList<string>> ListTabTitlesAsync(string id, CancellationToken ct) => Task.FromResult<IReadOnlyList<string>>(["Tab"]);
         public Task<IReadOnlyList<GoogleSheetMetadata>> ListMetadataAsync(string id, CancellationToken ct)
             => Task.FromResult<IReadOnlyList<GoogleSheetMetadata>>([new(1, "Tab", 0, 2, 1)]);
         public Task<IReadOnlyList<string>> ReadHeadersAsync(string id, string title, CancellationToken ct)
-            => Task.FromResult<IReadOnlyList<string>>([" id "]);
+            => Task.FromResult<IReadOnlyList<string>>([Header]);
         public Task<GoogleSheetTabData> ReadTabAsync(string id, string title, CancellationToken ct)
         {
             RowsRead = true;
-            return Task.FromResult(new GoogleSheetTabData { SheetTitle = title, Columns = [ChangedHeaders ? "OTHER" : " id "],
-                Rows = [new() { [" id "] = Value }] });
+            return Task.FromResult(new GoogleSheetTabData { SheetTitle = title, Columns = [ChangedHeaders ? "OTHER" : Header],
+                Rows = [new() { [Header] = Value }] });
         }
     }
 }

@@ -81,6 +81,7 @@ export const routes: Routes = [
       { path: 'apsEmpresa', component: ApsEmpresaComponent },
       { path: 'apsDocumentos', component: ApsDocumentosComponent },
       { path: 'residuosGenerados', component: ResiduosGeneradosComponent },
+      { path: 'cargueResiduos', loadComponent: () => import('./components/sui853-configuracion/cargue-residuos.component').then(m => m.CargueResiduosComponent) },
       { path: 'informesGenerados', component: InformesGeneradosComponent },
       { path: 'informesGeneradosMes', component: InformesGeneradosMesComponent },
       {

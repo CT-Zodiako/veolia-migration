@@ -1,0 +1,61 @@
+<section class="card-section" [attr.aria-busy]="loading">
+  <p>Lee de Google Drive los archivos de la APS y el año seleccionados (pestaña «Hoja SUI Recolección») y los carga en SUI.TGEN_RESGENERADOS. Los meses encontrados se reemplazan completos; si algo falla, no se guarda nada.</p>
+  <div class="fields">
+    <div class="field">
+      <label for="drive-load-aps">Nombre</label>
+      <p-select inputId="drive-load-aps" [options]="apsOptions" [(ngModel)]="selectedApsId" optionLabel="label" optionValue="value"
+        placeholder="Selecciona un nombre" [filter]="true" [disabled]="loading || loadingAps" [style]="{ width: '100%' }"></p-select>
+    </div>
+    <div class="field">
+      <label for="drive-load-year">Año</label>
+      <p-select inputId="drive-load-year" [options]="years" [(ngModel)]="selectedYear" optionLabel="label" optionValue="value"
+        placeholder="Selecciona un año" [filter]="true" [disabled]="loading" [style]="{ width: '100%' }"></p-select>
+    </div>
+    <div class="field action">
+      <p-button label="Cargar datos" icon="pi pi-cloud-download" [disabled]="!canLoad" [loading]="loading" (onClick)="load()"></p-button>
+    </div>
+  </div>
+  <p *ngIf="loading" role="status">Cargando información del Drive…</p>
+  <p *ngIf="error" class="error-message" role="alert">{{ error }}</p>
+</section>
+
+<section *ngIf="result as data" class="card-section">
+  <p class="success-message" role="status">{{ data.message }}</p>
+  <ul class="summary">
+    <li>Archivos procesados: {{ data.count }}</li>
+    <li>Registros cargados: {{ data.inserted }}</li>
+    <li>Registros reemplazados: {{ data.deleted }}</li>
+  </ul>
+  <ul class="files">
+    <li *ngFor="let file of data.files">
+      <strong>{{ file.fileName }}</strong><span *ngIf="file.monthFolder"> · {{ file.monthFolder }}</span> · {{ file.rows }} filas
+      <span *ngIf="file.warning" class="warning">· {{ file.warning }}</span>
+    </li>
+  </ul>
+</section>
+
+<p-dialog header="Error al guardar residuos" [(visible)]="showErrorDialog" [modal]="true" [style]="{ width: '60vw', maxWidth: '900px' }">
+  <div *ngIf="errorDetail as detail" class="error-detail">
+    <p class="error-main">{{ detail.message || 'Error al guardar los datos.' }}</p>
+    <p *ngIf="detail.type"><strong>Tipo:</strong> {{ detail.type }}</p>
+    <p *ngIf="detail.fileName || detail.sheetTitle">
+      <strong>Ubicación:</strong> {{ detail.fileName || 'Archivo desconocido' }}<span *ngIf="detail.sheetTitle"> / {{ detail.sheetTitle }}</span><span *ngIf="detail.rowNumber"> / fila {{ detail.rowNumber }}</span>
+    </p>
+    <div *ngIf="detail.validation">
+      <h4>Detalle de validación</h4>
+      <p><strong>Campo:</strong> {{ detail.validation.campo }} ({{ detail.validation.columna }})</p>
+      <p><strong>Valor:</strong> {{ detail.validation.valor }}</p>
+    </div>
+    <div *ngIf="detail.oracle">
+      <h4>Detalle Oracle</h4>
+      <p><strong>Mensaje:</strong> {{ detail.oracle.message }}</p>
+    </div>
+    <div *ngIf="rowJson">
+      <h4>Fila con error</h4>
+      <pre>{{ rowJson }}</pre>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cerrar" icon="pi pi-times" [text]="true" (onClick)="showErrorDialog = false"></p-button>
+  </ng-template>
+</p-dialog>

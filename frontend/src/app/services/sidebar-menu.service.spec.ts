@@ -10,7 +10,7 @@ const MIGRATED_LEGACY_MENU_IDS = [
   1001, 2001, 2002, 2003, 3001, 3002, 3003, 3004,
   5001, 5002, 5003, 5004, 6001, 6002,
   7001, 7002, 7003, 7004, 7005, 7006, 7010, 7011, 8001, 8002, 8008, 8009, 8010, 9001,
-  10001, 20001, 30001, 30002, 30003, 30005, 30006, 30007, 40001
+  10001, 20001, 30001, 30002, 30003, 30004, 30005, 30006, 30007, 40001
 ];
 
 function collectRoutePaths(routeList: Route[], prefix = ''): Set<string> {
@@ -80,5 +80,18 @@ describe('SidebarMenuService', () => {
     const items = service.getFlatPermittedItems(tree, new Set([7011, 7009]));
 
     expect(items.map((item) => item.path)).toEqual(['/cft']);
+  });
+
+  it('labels the SUI853 Drive loads as load screens like legacy (Cargue ...)', () => {
+    const items = service.getFlatPermittedItems(
+      [{ id: 30004, label: 'a' }, { id: 30005, label: 'b' }, { id: 30007, label: 'c' }],
+      new Set([30004, 30005, 30007])
+    );
+
+    expect(items.map((item) => [item.label, item.path])).toEqual([
+      ['Cargue Residuos', '/cargueResiduos'],
+      ['Cargue Facturación', '/informesGenerados'],
+      ['Cargue Facturación Mes', '/informesGeneradosMes']
+    ]);
   });
 });
