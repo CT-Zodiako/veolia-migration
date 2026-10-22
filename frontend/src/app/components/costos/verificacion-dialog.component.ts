@@ -43,7 +43,7 @@ interface EmpresaTab {
                   <td>{{ row.empresaNombre }}</td>
                   <td>{{ row.grupo }}</td>
                   <td>{{ row.variable }}</td>
-                  <td class="text-right">{{ row.valor | number:'1.6-6' }}</td>
+                  <td class="text-right">{{ redondeo(row.valor) }}</td>
                 </tr>
               </ng-template>
               <ng-template pTemplate="emptymessage">
@@ -89,6 +89,11 @@ export class VerificacionDialogComponent {
     // Legacy (verificacion.vue): sort `${EMPR_PROPIA}|${EMPR_NOMBRE}` descending,
     // so the empresa propia (flag 1) comes first.
     return Array.from(byKey.values()).sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0));
+  }
+
+  // Legacy verificacion.vue:23,50-52: redondeo(VALI_VALOR, 6) = parseFloat(valor.toFixed(6)).
+  redondeo(valor: number | null): string {
+    return valor === null || valor === undefined ? '' : String(parseFloat(Number(valor).toFixed(6)));
   }
 
   onVisibleChange(visible: boolean): void {

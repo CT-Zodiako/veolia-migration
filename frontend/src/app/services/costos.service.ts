@@ -9,6 +9,9 @@ import {
   ComportaClusItem,
   CostoClusItem,
   CostoItem,
+  LblItem,
+  QaItem,
+  QrtItem,
   RunPrechecksResponse,
   ValidapreactualizaResponse
 } from '../models/costos.models';
@@ -19,6 +22,7 @@ type CostosPeriodoRequest = { aps: number; mes: number; anno: number };
 @Injectable({ providedIn: 'root' })
 export class CostosService {
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/costos`;
+  private readonly apiUrl = `${environment.apiBaseUrl}/api/v1`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -123,6 +127,25 @@ export class CostosService {
       this.http.post<ApiResponseEnvelope<ComportaClusItem[]>>(`${this.baseUrl}/comportaclus`, payload, {
         headers: this.getHeaders()
       })
+    );
+  }
+
+  // Legacy CostoService.getQrt/getQa (toneladas/qrt, toneladas/qa) and KilometrosService.getConsultalbl (kilometros/lbl).
+  consultarQrt(aps: number, anno: number, mes: number): Observable<QrtItem[]> {
+    return this.unwrap<QrtItem[]>('consultar QRT')(
+      this.http.post<ApiResponseEnvelope<QrtItem[]>>(`${this.apiUrl}/toneladas/qrt`, { aps, anno, mes }, { headers: this.getHeaders() })
+    );
+  }
+
+  consultarQa(aps: number, anno: number, mes: number): Observable<QaItem[]> {
+    return this.unwrap<QaItem[]>('consultar Qa')(
+      this.http.post<ApiResponseEnvelope<QaItem[]>>(`${this.apiUrl}/toneladas/qa`, { aps, anno, mes }, { headers: this.getHeaders() })
+    );
+  }
+
+  consultarLbl(aps: number, anno: number, mes: number): Observable<LblItem[]> {
+    return this.unwrap<LblItem[]>('consultar LBL')(
+      this.http.post<ApiResponseEnvelope<LblItem[]>>(`${this.apiUrl}/kilometros/lbl`, { aps, anno, mes }, { headers: this.getHeaders() })
     );
   }
 }

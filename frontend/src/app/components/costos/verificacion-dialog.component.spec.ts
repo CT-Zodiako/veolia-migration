@@ -56,7 +56,7 @@ describe('VerificacionDialogComponent — legacy components/costos/verificacion.
   });
 
   // Legacy verificacion.vue:23 + :50-52: redondeo(VALI_VALOR, 6) = parseFloat(toFixed(6)) -> 1234.5 (no padding, no separators).
-  it.skip('PARITY-FINDING: VALOR is shown as 1,234.500000 instead of legacy parseFloat(toFixed(6)) 1234.5', () => {
+  it('shows VALOR as legacy parseFloat(toFixed(6)) 1234.5', () => {
     const { el } = setup();
 
     const celdas = Array.from(el.querySelectorAll('.p-dialog tbody td')).map((td) => td.textContent?.trim());

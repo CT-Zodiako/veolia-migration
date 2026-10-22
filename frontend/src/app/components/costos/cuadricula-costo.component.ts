@@ -36,8 +36,9 @@ export const CARD_COSTO_COLORS = [
         (click)="onCardClick(item)"
       >
         <span class="tarjeta-titulo">{{ item.nomCosto }}</span>
-        <h3 class="tarjeta-valor">{{ (item.valor ?? 0) | number:'1.0-2' }}</h3>
-        <small class="tarjeta-variacion">% {{ ((item.variacion ?? 0) * 100) | number:'1.0-2' }}</small>
+        <!-- Legacy CuadriculaCosto.vue:10,13: parseFloat(VALOR.toFixed(2)) and parseFloat((VARIACION * 100).toFixed(2)). -->
+        <h3 class="tarjeta-valor">{{ redondeo(item.valor ?? 0) }}</h3>
+        <small class="tarjeta-variacion">% {{ redondeo((item.variacion ?? 0) * 100) }}</small>
       </div>
     </div>
   `,
@@ -86,6 +87,10 @@ export class CuadriculaCostoComponent {
   @Input() costos: CostoItem[] = [];
 
   constructor(private readonly router: Router) {}
+
+  redondeo(valor: number): number {
+    return parseFloat(valor.toFixed(2));
+  }
 
   cardColor(index: number): string {
     return CARD_COSTO_COLORS[index % CARD_COSTO_COLORS.length];

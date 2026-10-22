@@ -190,7 +190,8 @@ const COMPORTA_SERIES: ReadonlyArray<{ name: string; field: keyof ComportaClusIt
                         <td>{{ row.paraNombre }}</td>
                         <td class="text-right">
                           <div class="valor-cell">
-                            <span>$ {{ row.costValor | number:'1.2-2' }}</span>
+                            <!-- Legacy Costos.vue:27: "$" + parseFloat(COST_VALOR.toFixed(6)). -->
+                            <span>\${{ redondeo(row.costValor) }}</span>
                             <div class="barra-wrap">
                               <p-progressBar [value]="porcentaje(row.costValor)" [showValue]="false"></p-progressBar>
                               <span class="barra-porcentaje">{{ porcentaje(row.costValor) | number:'1.0-2' }}%</span>
@@ -202,7 +203,8 @@ const COMPORTA_SERIES: ReadonlyArray<{ name: string; field: keyof ComportaClusIt
                     <ng-template pTemplate="footer">
                       <tr>
                         <td colspan="2" class="text-right">
-                          <strong>TOTAL CLUS: $ {{ totalClus() | number:'1.2-2' }}</strong>
+                          <!-- Legacy Costos.vue:33: "TOTAL CLUS: \${{ totalClus }}." -->
+                          <strong>TOTAL CLUS: \${{ totalClus() }}.</strong>
                         </td>
                       </tr>
                     </ng-template>
@@ -384,6 +386,10 @@ export class CostoClusComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.paramsSub?.unsubscribe();
+  }
+
+  redondeo(valor: number | null): string {
+    return valor === null || valor === undefined ? '' : String(parseFloat(Number(valor).toFixed(6)));
   }
 
   porcentaje(valor: number): number {

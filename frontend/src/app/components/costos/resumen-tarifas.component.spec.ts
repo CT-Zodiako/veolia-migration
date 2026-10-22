@@ -26,7 +26,7 @@ describe('ResumenTarifasComponent — legacy views/procesos/Calculo.vue DataTabl
   });
 
   // Legacy Calculo.vue:84-86: every value goes through redondeo(valor, 6).
-  it.skip('PARITY-FINDING: values are not rounded to 6 decimals like legacy redondeo(valor, 6)', () => {
+  it('rounds values to 6 decimals like legacy redondeo(valor, 6)', () => {
     const el = render([FILA]);
 
     expect(el.querySelector('tbody td')?.textContent?.trim()).toBe('1.123457');

@@ -109,15 +109,7 @@ WHERE APSA_ID = :aps AND TACE_ANNO = :anno AND TACE_MES = :mes", new { aps, anno
                 throw new ConflictException("El período ya se encuentra certificado.");
             }
 
-            var existeCalculo = await connection.ExecuteScalarAsync<int>(new CommandDefinition(@"SELECT COUNT(1)
-FROM VAUCO_COSTOS
-WHERE APSCOSTO = :aps AND ANNOCOSTO = :anno AND MESCOSTO = :mes", new { aps, anno, mes }, transaction: transaction, cancellationToken: cancellationToken));
-
-            if (existeCalculo <= 0)
-            {
-                throw new InvalidOperationException("No existe cálculo previo para certificar el período seleccionado.");
-            }
-
+            // Legacy costos/controller.js:7-17 inserts the certification without checking VAUCO_COSTOS first.
             const string insertSql = @"INSERT INTO AUCO_TARICERTIFICADA (APSA_ID, TACE_ANNO, TACE_MES, TACE_FECCREA, USUA_USUARIO)
 VALUES (:aps, :anno, :mes, SYSDATE, :usuario)";
 

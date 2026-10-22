@@ -99,16 +99,18 @@ public sealed class LegacyT2ProcesosContractTests
     }
 
     // Legacy ActAprovechamiento.vue:75 / SuministrosService.js:46-51 send `activar` as 1 or 0 (numbers).
-    [Fact(Skip = "PARITY-FINDING: aprovechamiento/actualizar binds `activar` as a JSON boolean; the legacy numeric activar = 1/0 is rejected with 400.")]
-    public async Task AprovechamientoActualizarAcceptsTheLegacyNumericActivar()
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, request field shape consumed consistently by the new
+    // frontend): `activar` is a JSON boolean, so the legacy numeric 1/0 is rejected with 400 and nothing is updated.
+    [Fact]
+    public async Task AprovechamientoActualizarRejectsTheLegacyNumericActivar()
     {
         using var factory = new ProcesosApiFactory();
         using var client = factory.CreateAuthorizedClient(TokenUser);
 
         var response = await client.PostAsJsonAsync("/api/v1/aprovechamiento/actualizar", new { aps = 5, anno = 2026, mes = 2, activar = 1 });
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(new[] { (5, 2026, 2, true, TokenUser) }, factory.Aprovechamiento.Updates);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(factory.Aprovechamiento.Updates);
     }
 
     // ---------- 303 Ajuste Productividad (legacy suministros/getProductividad + setProductividad) ----------
@@ -178,7 +180,7 @@ public sealed class LegacyT2ProcesosContractTests
     }
 
     // Legacy suministros/routes.js:69-73 answers 200 with the driver result even when no row matched.
-    [Fact(Skip = "PARITY-FINDING: productividad/editar answers 404 \"No se encontró un registro de productividad para ese período.\" when nothing is updated; legacy PUT setProductividad answered 200.")]
+    [Fact]
     public async Task ProductividadEditarWithoutRowAnswersOkLikeLegacy()
     {
         using var factory = new ProcesosApiFactory();
@@ -194,7 +196,7 @@ public sealed class LegacyT2ProcesosContractTests
 
     // Legacy subcont/controller.js:26-33: SELECT * FROM auco_apssubscont WHERE apsa_id = :1 AND suco_anno = :2 AND suco_mes = :3
     // (no SUCO_ESTADO filter); controller.js:44-52 updates by (aps, anno, mes, CLAS_CLASE) without SUCO_ESTADO either.
-    [Fact(Skip = "PARITY-FINDING: subcon consulta and editar add SUCO_ESTADO = 1; legacy (subcont/controller.js:26-33, :44-52) had no estado filter, so rows with another SUCO_ESTADO disappear from the screen and are not updated.")]
+    [Fact]
     public async Task SubContConsultaAndEditarDoNotFilterByEstado()
     {
         var connection = new RecordingDbConnection(_ => new DataTable());
@@ -204,6 +206,18 @@ public sealed class LegacyT2ProcesosContractTests
         await repository.EditarAsync(5, 2026, 2, [new SubContValorItem(1, 10m)], CancellationToken.None);
 
         Assert.All(connection.Commands, c => Assert.DoesNotContain("SUCO_ESTADO", c.CommandText));
+    }
+
+    // Legacy subcont/controller.js:26-33 returns SELECT * rows; SubCon.vue:17-25 reads CLAS_CLASE and SUCO_VALOR.
+    [Fact]
+    public async Task SubContConsultaMapsTheSelectStarColumns()
+    {
+        var connection = new RecordingDbConnection(_ => Table(("SUCO_ID", 10L), ("APSA_ID", 5), ("CLAS_CLASE", 7), ("SUCO_ANNO", 2026), ("SUCO_MES", 2), ("SUCO_VALOR", -50.5m), ("SUCO_ESTADO", 0)));
+        var repository = new SubContRepository(new RecordingConnectionFactory(connection));
+
+        var row = Assert.Single(await repository.ConsultarAsync(5, 2026, 2, CancellationToken.None));
+
+        Assert.Equal((10L, 5, 7, 2026, 2, (decimal?)-50.5m, 0), (row.SucoId, row.ApsaId, row.ClasClase, row.SucoAnno, row.SucoMes, row.SucoValor, row.SucoEstado));
     }
 
     // Legacy subcont/controller.js:26-33 binds (aps, anno, mes).
@@ -250,7 +264,7 @@ public sealed class LegacyT2ProcesosContractTests
 
     // Legacy SubCon.vue:291-302 sends the nine clases (est1..est6, com, indu, ofi) with val = null for blank inputs and
     // subcont/controller.js:13-20 inserts them (SUCO_VALOR null).
-    [Fact(Skip = "PARITY-FINDING: subcon/crear rejects valores with val = null (400); legacy SubCon.vue sent all nine clases with blank values as null and inserted them.")]
+    [Fact]
     public async Task SubContCrearAcceptsBlankValoresLikeLegacy()
     {
         using var factory = new ProcesosApiFactory();
@@ -394,7 +408,7 @@ public sealed class LegacyT2ProcesosContractTests
 
     // Legacy validaciones/controller.js:187-190 returns resPl.res unchanged, so callers tell "0" from "1"
     // (Calculo.vue:384-389 enables CERTIFICAR only when existarifacert === 0).
-    [Fact(Skip = "PARITY-FINDING: validaciones collapses the raw results \"0\" and \"1\" into the same { ok: true, message: null }; legacy returned the raw value and Calculo.vue enabled CERTIFICAR only for 0.")]
+    [Fact]
     public async Task ValidacionLetsCallersDistinguishZeroFromOne()
     {
         using var factory = new ProcesosApiFactory();
@@ -406,6 +420,25 @@ public sealed class LegacyT2ProcesosContractTests
         var uno = await (await client.PostAsJsonAsync("/api/v1/validaciones/certificarfauco_existarifacert", new { aps = 1, anno = 2025, mes = 11 })).Content.ReadAsStringAsync();
 
         Assert.NotEqual(cero, uno);
+    }
+
+    // Legacy Suisui.vue:187-201 lets Procesar run only when certificarfauco_existarifa (fauco_generasui) answers 1, and
+    // Calculo.vue:304,506-515 accepts only 0 from the other validations.
+    [Theory]
+    [InlineData("certificarfauco_existarifa", "1", true)]
+    [InlineData("certificarfauco_existarifa", "0", false)]
+    [InlineData("certificarfauco_existarifacert", "0", true)]
+    [InlineData("certificarfauco_existarifacert", "1", false)]
+    public async Task ValidacionOkFollowsTheValueEachLegacyCallerAccepted(string route, string raw, bool ok)
+    {
+        using var factory = new ProcesosApiFactory();
+        factory.Validaciones.Result = raw;
+        using var client = factory.CreateAuthorizedClient(TokenUser);
+
+        var body = await (await client.PostAsJsonAsync($"/api/v1/validaciones/{route}", new { aps = 1, anno = 2025, mes = 11 })).Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(ok, body.GetProperty("ok").GetBoolean());
+        Assert.Equal(ok ? null : raw, body.GetProperty("message").GetString());
     }
 
     // ---------- 401 Cálculo de tarifas: costos queries ----------
@@ -521,7 +554,7 @@ public sealed class LegacyT2ProcesosContractTests
     }
 
     // Legacy costos/controller.js:7-17 inserts the certification without checking VAUCO_COSTOS first.
-    [Fact(Skip = "PARITY-FINDING: certificarTarifas rejects the period (\"No existe cálculo previo para certificar el período seleccionado.\") when VAUCO_COSTOS has no rows; legacy inserted AUCO_TARICERTIFICADA unconditionally.")]
+    [Fact]
     public async Task CertificarTarifasInsertsEvenWithoutAPreviousCalculation()
     {
         var connection = new RecordingDbConnection(command => command.CommandText.Contains("COUNT") ? Table(("C", 0)) : 1);
@@ -552,17 +585,20 @@ public sealed class LegacyT2ProcesosContractTests
     }
 
     // Legacy costos/routes.js:27-31 (getclusjson -> PK_JSON.fjson_clus) and :41-45 (actualizar -> pk_costos.fauco_actualizacostos).
-    [Theory(Skip = "PARITY-FINDING: legacy /api/v1/costos/getclusjson and /api/v1/costos/actualizar answer 404 in the new API (CLUS JSON moved to /informes; actualizar dropped).")]
+    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, renamed/removed legacy routes): the CLUS JSON moved to
+    // /informes and actualizar was dropped, so both legacy routes answer 404 and reach no repository.
+    [Theory]
     [InlineData("getclusjson")]
     [InlineData("actualizar")]
-    public async Task LegacyCostosRoutesStillExist(string route)
+    public async Task LegacyCostosRoutesWereMovedOrDropped(string route)
     {
         using var factory = new ProcesosApiFactory();
         using var client = factory.CreateAuthorizedClient(TokenUser);
 
         var response = await client.PostAsJsonAsync($"/api/v1/costos/{route}", new { aps = 5, anno = 2026, mes = 2 });
 
-        Assert.NotEqual(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Empty(factory.Costos.Queries);
     }
 
     // ---------- 305 Índices CRA (legacy indicesCRA/routes.js) ----------
@@ -616,20 +652,24 @@ public sealed class LegacyT2ProcesosContractTests
     }
 
     // Legacy indicesCRA/controller.js:5-23 has no duplicate check: a second crear for the same period inserts again.
-    [Fact(Skip = "PARITY-FINDING: indices/crear answers 409 \"Ya existen índices activos para ese período.\" when the period already has active rows; legacy inserted them again.")]
-    public async Task IndicesCrearForAnExistingPeriodInsertsLikeLegacy()
+    // Accepted deviation: parity-review-all.md T15 "301 duplicate guard + transaction" (group E, already approved;
+    // legacy-characterization-tests S9): an active period is refused (controller answers 409) and nothing is inserted.
+    [Fact]
+    public async Task IndicesCrearRefusesAPeriodThatAlreadyHasActiveRows()
     {
         var connection = new RecordingDbConnection(command => command.CommandText.Contains("COUNT(1)") ? Table(("C", 4)) : command.CommandText.Contains("MIN(") ? Table(("C", 1L)) : 1);
         var repository = new IndicesRepository(new RecordingConnectionFactory(connection));
 
-        await repository.CrearAsync(new IndicesCrearRequestDto { Anno = 2026, Mes = 2, Valores = [new IndiceValorDto { Id = 1, Val = 5m }] }, TokenUser);
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.CrearAsync(new IndicesCrearRequestDto { Anno = 2026, Mes = 2, Valores = [new IndiceValorDto { Id = 1, Val = 5m }] }, TokenUser));
 
-        Assert.Single(connection.Commands, c => c.CommandText.Contains("INSERT INTO AUCO_INDICESCRA"));
+        Assert.Equal("DUPLICATE_PERIOD", error.Message);
+        Assert.DoesNotContain(connection.Commands, c => c.CommandText.Contains("INSERT INTO AUCO_INDICESCRA"));
+        Assert.False(connection.Committed);
     }
 
     // Legacy indicesCRA/controller.js:42-52: UPDATE auco_indicescra SET INDI_VALOR = :1, INDI_MITADVALOR = :2/2
     // WHERE para_indice20011 = :3 AND indi_anno = :4 AND indi_mes = :5 (no indi_estado filter).
-    [Fact(Skip = "PARITY-FINDING: indices/editar adds INDI_ESTADO = 1 to the UPDATE; legacy (indicesCRA/controller.js:47) updated the period's rows regardless of estado.")]
+    [Fact]
     public async Task IndicesEditarDoesNotFilterByEstado()
     {
         var connection = new RecordingDbConnection(_ => 1);

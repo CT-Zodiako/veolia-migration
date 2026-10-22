@@ -1,7 +1,8 @@
 import { Component, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
+import { NgApexchartsModule } from 'ng-apexcharts';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { DividerModule } from 'primeng/divider';
 import { MessageModule } from 'primeng/message';
@@ -19,12 +20,29 @@ import { ValidacionesService } from '../../services/validaciones.service';
 import { SuministrosService } from '../../services/suministros.service';
 import { NotificationService } from '../../services/notification.service';
 import { TarifaRow, TarifasService } from '../../services/tarifas.service';
+import { TafnaService } from '../../services/tafna.service';
+import { TrnaService } from '../../services/trna.service';
+import { UsuariosGraficoService } from '../../services/usuarios-grafico.service';
+import {
+  GraficaCalculo,
+  graficaLbl,
+  graficaQa,
+  graficaQrt,
+  graficaTafna,
+  graficaTarifas,
+  graficaTrna,
+  graficaUsuarios
+} from './calculo-graficas.util';
+
+type GraficaClave = 'qrt' | 'qa' | 'tafna' | 'lbl' | 'trna' | 'usuarios' | 'tarifas';
 
 @Component({
   selector: 'app-costos-calculo-page',
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
+    NgApexchartsModule,
     ...CommonPrimeNgModules,
     DividerModule,
     MessageModule,
@@ -90,6 +108,49 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
           />
         </div>
 
+        <!-- Legacy Calculo.vue:37-104: charts shown when the period has no semester document. -->
+        <div class="col-12 graficas" *ngIf="!semestreTitulo() && aps()">
+          <div class="grid">
+            <div class="col-12 md:col-9 panel-grafica">
+              Toneladas
+              <div class="grid">
+                <fieldset class="col-12 md:col-4"><legend>QRT</legend><ng-container *ngTemplateOutlet="graficaTpl; context: { $implicit: graficas().qrt }" /></fieldset>
+                <fieldset class="col-12 md:col-4"><legend>Qa</legend><ng-container *ngTemplateOutlet="graficaTpl; context: { $implicit: graficas().qa }" /></fieldset>
+                <fieldset class="col-12 md:col-4"><legend>TAFNA</legend><ng-container *ngTemplateOutlet="graficaTpl; context: { $implicit: graficas().tafna }" /></fieldset>
+              </div>
+            </div>
+            <div class="col-12 md:col-3 panel-grafica">
+              Kilómetros
+              <fieldset><legend>LBL</legend><ng-container *ngTemplateOutlet="graficaTpl; context: { $implicit: graficas().lbl }" /></fieldset>
+            </div>
+            <div class="col-12 md:col-4 panel-grafica">
+              TRNA
+              <fieldset><ng-container *ngTemplateOutlet="graficaTpl; context: { $implicit: graficas().trna }" /></fieldset>
+            </div>
+            <div class="col-12 md:col-4 panel-grafica">
+              Usuarios Promedio
+              <fieldset><ng-container *ngTemplateOutlet="graficaTpl; context: { $implicit: graficas().usuarios }" /></fieldset>
+            </div>
+            <div class="col-12 md:col-4 panel-grafica">
+              <a routerLink="/tarifas"><strong><u><i>Tarifas</i></u></strong></a>
+              <fieldset><ng-container *ngTemplateOutlet="graficaTpl; context: { $implicit: graficas().tarifas }" /></fieldset>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #graficaTpl let-g>
+          <apx-chart
+            *ngIf="g"
+            [series]="g.series"
+            [chart]="g.chart"
+            [labels]="g.labels"
+            [xaxis]="g.xaxis"
+            [plotOptions]="g.plotOptions"
+            [legend]="g.legend"
+            [colors]="g.colors"
+          ></apx-chart>
+        </ng-template>
+
         <div class="col-12" *ngIf="!semestreTitulo() && resumen().length">
           <p-divider />
           <app-resumen-tarifas [resumen]="resumen()" />
@@ -113,6 +174,16 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       margin-bottom: 20px;
     }
+    .panel-grafica { font-weight: 600; }
+    .graficas fieldset {
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      font-weight: normal;
+      min-width: 0;
+    }
+    .graficas legend { font-weight: 700; padding: 0 0.4rem; }
   `]
 })
 export class CostosCalculoPageComponent {
@@ -135,6 +206,7 @@ export class CostosCalculoPageComponent {
   readonly costos = signal<CostoItem[]>([]);
   readonly resumen = signal<TarifaRow[]>([]);
   readonly semestreTitulo = signal('');
+  readonly graficas = signal<Partial<Record<GraficaClave, GraficaCalculo | null>>>({});
 
   readonly loadingVerificar = signal(false);
   readonly applyingVerificacion = signal(false);
@@ -151,7 +223,10 @@ export class CostosCalculoPageComponent {
     private readonly validacionesService: ValidacionesService,
     private readonly suministrosService: SuministrosService,
     private readonly tarifasService: TarifasService,
-    private readonly notification: NotificationService
+    private readonly notification: NotificationService,
+    private readonly tafnaService: TafnaService,
+    private readonly trnaService: TrnaService,
+    private readonly usuariosGraficoService: UsuariosGraficoService
   ) {
     this.restoreState();
 
@@ -178,9 +253,11 @@ export class CostosCalculoPageComponent {
       if (!aps || !periodo) {
         this.costos.set([]);
         this.resumen.set([]);
+        this.graficas.set({});
         this.certificarDisabled.set(true);
         return;
       }
+      this.cargarGraficas(aps, periodo.anno, periodo.mes);
       this.costosService.consultarCostos(aps, periodo.mes, periodo.anno).subscribe({
         next: (data) => this.costos.set(data || []),
         error: () => this.costos.set([])
@@ -307,6 +384,21 @@ export class CostosCalculoPageComponent {
         this.notification.error(err.message);
       }
     });
+  }
+
+  // Legacy Calculo.vue:523-536 (actualizaInfoGeneral): getQrt, getQa, getTafna, getKilometros, getTrna, getUsuarios and
+  // getTarifas for the selected month - 1; a failed query leaves its chart empty.
+  private cargarGraficas(aps: number, anno: number, mes: number): void {
+    this.graficas.set({});
+    const poner = (clave: GraficaClave, valor: GraficaCalculo | null) => this.graficas.update((g) => ({ ...g, [clave]: valor }));
+    const vacio = (clave: GraficaClave) => () => poner(clave, null);
+    this.costosService.consultarQrt(aps, anno, mes).subscribe({ next: (d) => poner('qrt', graficaQrt(d ?? [])), error: vacio('qrt') });
+    this.costosService.consultarQa(aps, anno, mes).subscribe({ next: (d) => poner('qa', graficaQa(d ?? [])), error: vacio('qa') });
+    this.tafnaService.getTafna(aps, anno, mes).subscribe({ next: (d) => poner('tafna', graficaTafna(d ?? [])), error: vacio('tafna') });
+    this.costosService.consultarLbl(aps, anno, mes).subscribe({ next: (d) => poner('lbl', graficaLbl(d ?? [])), error: vacio('lbl') });
+    this.trnaService.getTrna(aps, anno, mes).subscribe({ next: (d) => poner('trna', graficaTrna(d ?? [])), error: vacio('trna') });
+    this.usuariosGraficoService.getUsuagraf(aps, anno, mes).subscribe({ next: (d) => poner('usuarios', graficaUsuarios(d ?? [])), error: vacio('usuarios') });
+    this.tarifasService.getTarifa(aps, anno, mes).subscribe({ next: (d) => poner('tarifas', graficaTarifas(d ?? [])), error: vacio('tarifas') });
   }
 
   private refreshCertificarEnabled(): void {

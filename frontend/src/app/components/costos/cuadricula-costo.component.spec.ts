@@ -40,7 +40,7 @@ describe('CuadriculaCostoComponent — legacy components/CuadriculaCosto.vue', (
   });
 
   // Legacy CuadriculaCosto.vue:10: parseFloat(VALOR.toFixed(2)) -> 1234567.89 (no thousands separators).
-  it.skip('PARITY-FINDING: VALOR is shown with thousands separators (1,234,567.89) instead of legacy 1234567.89', () => {
+  it('shows VALOR without thousands separators like legacy 1234567.89', () => {
     const { tarjetas } = setup([item('CBL', 1234567.891, 0)]);
 
     expect(tarjetas[0].querySelector('.tarjeta-valor')?.textContent?.trim()).toBe('1234567.89');

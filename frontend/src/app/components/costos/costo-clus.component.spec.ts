@@ -80,7 +80,7 @@ describe('CostoClusComponent — legacy views/procesos/Costos.vue', () => {
   });
 
   // Legacy Costos.vue:27 shows `$${valor}` (valor = parseFloat(COST_VALOR.toFixed(6))) and :33 "TOTAL CLUS: $2000.".
-  it.skip('PARITY-FINDING: Valor and total are formatted "$ 1,234.57" / "TOTAL CLUS: $ 2,000.00" instead of legacy "$1234.5678" / "TOTAL CLUS: $2000."', () => {
+  it('formats Valor and total like legacy "$1234.5678" / "TOTAL CLUS: $2000."', () => {
     const { el } = setup();
 
     const texto = el.textContent ?? '';

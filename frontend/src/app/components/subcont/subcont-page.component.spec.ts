@@ -59,7 +59,8 @@ describe('SubContPageComponent (302) — legacy views/suministros/SubCon.vue', (
     expect(component.clases()[0]).toMatchObject({ clase: 1, nombre: 'ESTRATO 1', valor: -50, existe: true });
   });
 
-  // Legacy SubCon.vue (makeOperation): edit an existing period with subcon/editar for the previous month and { id, val } values.
+  // Legacy SubCon.vue (makeOperation, :280-288): edit an existing period with subcon/editar for the previous month, sending the
+  // nine clases as { id, val } (blank = null). Updated from the earlier one-class expectation to the legacy nine-class request.
   it('updates an existing value with editar for the previous month', () => {
     const { component, service } = setup();
     const item = component.clases()[0];
@@ -68,12 +69,17 @@ describe('SubContPageComponent (302) — legacy views/suministros/SubCon.vue', (
     component.onEditingValorChange(-40);
     component.confirmarGuardar(item);
 
-    expect(service.editar).toHaveBeenCalledWith({ aps: 5, anno: 2025, mes: 12, valores: [{ id: 1, val: -40 }] });
+    expect(service.editar).toHaveBeenCalledWith({
+      aps: 5,
+      anno: 2025,
+      mes: 12,
+      valores: [{ id: 1, val: -40 }, ...[2, 3, 4, 5, 6, 7, 8, 9].map((id) => ({ id, val: null }))]
+    });
     expect(service.crear).not.toHaveBeenCalled();
   });
 
   // Legacy SubCon.vue:15-28: only the stored rows are listed, header "Valor", value "%{SUCO_VALOR.toFixed(4)}".
-  it.skip('PARITY-FINDING: the grid lists every class with "Valor (%)" and "-50%" instead of only stored rows with "Valor" and "%-50.0000"', () => {
+  it('lists only the stored rows with header "Valor" and value "%-50.0000"', () => {
     const { el } = setup();
 
     expect(Array.from(el.querySelectorAll('thead th')).slice(0, 2).map((th) => th.textContent?.trim())).toEqual(['Clase de Uso', 'Valor']);
@@ -81,7 +87,7 @@ describe('SubContPageComponent (302) — legacy views/suministros/SubCon.vue', (
   });
 
   // Legacy SubCon.vue:291-302 (makeOperation): Agregar/Editar send the nine clases (est1..est6, com, indu, ofi) in one request.
-  it.skip('PARITY-FINDING: values are saved one class at a time instead of the nine clases in one request', () => {
+  it('saves the nine clases in one request', () => {
     const { component, service } = setup([]);
     const item = component.clases()[0];
 
@@ -93,7 +99,7 @@ describe('SubContPageComponent (302) — legacy views/suministros/SubCon.vue', (
   });
 
   // Legacy SubConService.js:64 and :104 toast "Modificado Correctamente" / "Creada Correctamente".
-  it.skip('PARITY-FINDING: the success toast is not the legacy "Modificado Correctamente"', () => {
+  it('toasts the legacy "Modificado Correctamente" after editing', () => {
     const { component, add } = setup();
     const item = component.clases()[0];
 

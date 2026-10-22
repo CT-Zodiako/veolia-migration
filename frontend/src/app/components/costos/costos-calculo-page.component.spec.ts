@@ -12,6 +12,9 @@ import { ValidacionesService } from '../../services/validaciones.service';
 import { SuministrosService } from '../../services/suministros.service';
 import { NotificationService } from '../../services/notification.service';
 import { TarifasService } from '../../services/tarifas.service';
+import { TafnaService } from '../../services/tafna.service';
+import { TrnaService } from '../../services/trna.service';
+import { UsuariosGraficoService } from '../../services/usuarios-grafico.service';
 
 interface Opciones {
   existarifa?: string;
@@ -25,11 +28,17 @@ function setup(opciones: Opciones = {}) {
     validapreactualiza: vi.fn(() => of({ puedeCalcular: true, detalle: [{ empresaNombre: 'VEOLIA', grupo: 'CLUS', variable: 'LBL', valor: 1, empresaPropia: 1 }] })),
     runPrechecks: vi.fn(() => of(opciones.prechecks ?? { puedeCalcular: true, prechecks: [] })),
     calculartarifas: vi.fn(() => of({ exitoso: opciones.exitoso ?? true })),
-    certificarTarifas: vi.fn(() => of({ certificado: true }))
+    certificarTarifas: vi.fn(() => of({ certificado: true })),
+    consultarQrt: vi.fn(() => of([{ aps: 5, empresa: 1, tipo: 'QRT', valor: 10 }])),
+    consultarQa: vi.fn(() => of([{ aps: 5, empresa: 1, anno: 2025, mes: 12, valor: 2 }])),
+    consultarLbl: vi.fn(() => of([{ aps: 5, empresa: 1, mpio: 1, anno: 2025, mes: 12, valor: 43000, estado: 1 }]))
   };
+  const tafna = { getTafna: vi.fn(() => of([{ aps: 5, empresa: 1, anno: 2025, mes: 12, valor: 3 }])) };
+  const trna = { getTrna: vi.fn(() => of([])) };
+  const usuarios = { getUsuagraf: vi.fn(() => of([])) };
   const validaciones = { faucoExistarifacert: vi.fn(() => of({ ok: true, message: null })) };
   const suministros = { cenrtificarEditar: vi.fn(() => of({ data: opciones.existarifa ?? '0' })) };
-  const tarifas = { getResumen: vi.fn(() => of([])) };
+  const tarifas = { getResumen: vi.fn(() => of([])), getTarifa: vi.fn(() => of([{ APS: 5, ANNO: 2025, MES: 12, TFT: 1.5 }])) };
   const notification = { success: vi.fn(), warn: vi.fn(), error: vi.fn() };
   TestBed.configureTestingModule({
     imports: [CostosCalculoPageComponent],
@@ -39,7 +48,10 @@ function setup(opciones: Opciones = {}) {
       { provide: ValidacionesService, useValue: validaciones },
       { provide: SuministrosService, useValue: suministros },
       { provide: TarifasService, useValue: tarifas },
-      { provide: NotificationService, useValue: notification }
+      { provide: NotificationService, useValue: notification },
+      { provide: TafnaService, useValue: tafna },
+      { provide: TrnaService, useValue: trna },
+      { provide: UsuariosGraficoService, useValue: usuarios }
     ]
   });
   // Selectors, the cost grid and the summary children are covered by their own specs.
@@ -53,7 +65,7 @@ function setup(opciones: Opciones = {}) {
   component.anno.set(2026);
   component.mes.set(1);
   fixture.detectChanges();
-  return { fixture, component, costos, validaciones, suministros, tarifas, notification };
+  return { fixture, component, costos, validaciones, suministros, tarifas, notification, tafna, trna, usuarios };
 }
 
 describe('CostosCalculoPageComponent (401) — legacy views/procesos/Calculo.vue', () => {
@@ -137,12 +149,28 @@ describe('CostosCalculoPageComponent (401) — legacy views/procesos/Calculo.vue
   });
 
   // Legacy Calculo.vue:22-80 renders the charts QRT, Qa, TAFNA, LBL (Kilómetros), TRNA, Usuarios Promedio and Tarifas.
-  it.skip('PARITY-FINDING: the calculation page does not render the legacy charts (QRT, Qa, TAFNA, LBL, TRNA, Usuarios Promedio, Tarifas)', () => {
+  it('renders the legacy charts (QRT, Qa, TAFNA, LBL, TRNA, Usuarios Promedio, Tarifas)', () => {
     const { fixture } = setup();
 
     const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
     for (const titulo of ['Toneladas', 'QRT', 'Qa', 'TAFNA', 'Kilómetros', 'LBL', 'TRNA', 'Usuarios Promedio', 'Tarifas']) {
       expect(texto).toContain(titulo);
     }
+  });
+
+  // Legacy Calculo.vue:523-536 + chart services: toneladas/qrt, toneladas/qa, tafna, kilometros/lbl, trna, usuarios and tarifas
+  // for the selected month - 1; QRT labels = TIPO, Qa/TAFNA/LBL labels = month names, Tarifas = first row without 3 columns.
+  it('loads the chart data for the previous month with the legacy mapping', () => {
+    const { component, costos, tafna, trna, usuarios, tarifas } = setup();
+
+    for (const llamada of [costos.consultarQrt, costos.consultarQa, costos.consultarLbl, tafna.getTafna, trna.getTrna, usuarios.getUsuagraf, tarifas.getTarifa]) {
+      expect(llamada).toHaveBeenLastCalledWith(5, 2025, 12);
+    }
+    const graficas = component.graficas();
+    expect(graficas.qrt).toMatchObject({ labels: ['QRT'], series: [10] });
+    expect(graficas.qa?.xaxis.categories).toEqual(['Dic']);
+    expect(graficas.lbl).toMatchObject({ xaxis: { categories: ['Dic'], min: 42570, max: 43430 }, plotOptions: { bar: { horizontal: true } } });
+    expect(graficas.tarifas).toMatchObject({ labels: ['TFT'], series: [1.5] });
+    expect(graficas.usuarios).toBeNull();
   });
 });

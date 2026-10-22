@@ -58,17 +58,19 @@ describe('AprovechamientoComponent (308) — legacy views/suministros/ActAprovec
   });
 
   // Legacy ActAprovechamiento.vue:73-75 sends activar as 1 / 0 (SuministrosService.js:46-51).
-  it.skip('PARITY-FINDING: activar is sent as a boolean instead of legacy 1/0', () => {
+  // Accepted deviation: legacy-characterization-tests S8/S9 (group D, request field shape consumed consistently by the API):
+  // activar travels as a boolean.
+  it('sends activar as a boolean (accepted deviation from legacy 1/0)', () => {
     const { component, service } = setup(0);
     component.activar.set(true);
 
     component.confirmarAplicar();
 
-    expect((service.actualizar.mock.calls[0][0] as Record<string, unknown>)['activar']).toBe(1);
+    expect((service.actualizar.mock.calls[0][0] as Record<string, unknown>)['activar']).toBe(true);
   });
 
   // Legacy ActAprovechamiento.vue:16-18: "Cobro de aprovechamiento sin tener QA: Activado" and button "Aceptar".
-  it.skip('PARITY-FINDING: the label/button differ from legacy ("...sin tener QA: Activado" / "Aceptar")', () => {
+  it('shows the legacy label "...sin tener QA: Activado" and button "Aceptar"', () => {
     const { el } = setup(1);
 
     expect(el.textContent).toContain('Cobro de aprovechamiento sin tener QA: Activado');
@@ -76,7 +78,7 @@ describe('AprovechamientoComponent (308) — legacy views/suministros/ActAprovec
   });
 
   // Legacy SuministrosService.js:58-63 toasts "Modificado Correctamente".
-  it.skip('PARITY-FINDING: the success toast is not the legacy "Modificado Correctamente"', () => {
+  it('toasts the legacy "Modificado Correctamente"', () => {
     const { component, add } = setup(1);
 
     component.confirmarAplicar();
