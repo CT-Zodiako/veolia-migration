@@ -59,6 +59,7 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "runner": "vitest",
+            "runnerConfig": "vitest.config.ts",
             "buildTarget": "veolia-frontend:build:development"
           }
         }
