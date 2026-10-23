@@ -43,6 +43,8 @@ jobs:
           mkdir -p package/frontend package/deploy
           cp -a frontend/dist/veolia-frontend/browser/. package/frontend/
           cp deploy/deploy.ps1 package/deploy/deploy.ps1
+          cp deploy/check-node-version.ps1 package/deploy/check-node-version.ps1
+          cp .nvmrc package/node-version.txt
           printf '%s\n' "$COMMIT_SHA" > package/commit-sha.txt
       - name: Upload versioned package
         uses: actions/upload-artifact@v4
@@ -78,3 +80,11 @@ jobs:
           if ($actual -ne $env:EXPECTED_SHA) { throw 'Artifact commit does not match this workflow run.' }
           & (Join-Path $env:PACKAGE_PATH 'deploy/deploy.ps1') -ArtifactPath $env:PACKAGE_PATH
           if (-not $?) { throw 'Deployment failed.' }
+      - name: Check server Node.js version
+        # Warning only: the server does not run Node for this app, so an outdated version never blocks a deploy.
+        continue-on-error: true
+        shell: powershell
+        env:
+          PACKAGE_PATH: ${{ runner.temp }}/veolia-iis-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          & (Join-Path $env:PACKAGE_PATH 'deploy/check-node-version.ps1') -ExpectedVersionFile (Join-Path $env:PACKAGE_PATH 'node-version.txt')
