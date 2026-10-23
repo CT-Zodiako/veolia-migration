@@ -115,8 +115,14 @@ Antes de desplegar, seguir la lista de `docs/deployment-iis.md` (secreto JWT, re
 | Suite | Comando | Resultado al cierre |
 |---|---|---|
 | Backend (contratos + pruebas derivadas del legacy) | `dotnet test backend/Veolia.Api.Tests` | 922 pasan, 0 fallan, 4 omitidas (Oracle real) |
-| Backend contra Oracle | `VEOLIA_ORACLE_TESTS=1 dotnet test backend/Veolia.Api.Tests` | no ejecutado (sin Oracle) |
+| Backend contra Oracle real | `VEOLIA_ORACLE_TESTS=1 dotnet test backend/Veolia.Api.Tests` | 177 pasan contra PDBTARIF720 (172 endpoints de lectura + 4 pruebas que escriben y restauran) |
 | Frontend | `cd frontend && npm test` | 599 pasan en 109 archivos, ninguna omitida |
 | Build | `cd frontend && npx ng build` | OK |
 
 Todas las pantallas y grupos de endpoints migrados tienen pruebas cuyo valor esperado sale del legacy. Todas las diferencias detectadas por esas pruebas se corrigieron o quedaron como mejora aceptada (`odd/tasks/legacy-characterization-tests.md`, S8-S10). `updateFormulario` (30003) quedó como el legacy por decisión del usuario: cualquier usuario autenticado puede leer y actualizar formularios.
+
+## Validación contra Oracle real (PDBTARIF720)
+
+Detalle en `odd/tasks/oracle-real-validation.md`. Se compilaron contra la base real las 252 sentencias SQL del backend, se verificaron firmas, orden de parámetros y tipos de retorno de todos los paquetes PL/SQL que se usan, y se llamaron los 172 endpoints de lectura de punta a punta. Los tres problemas que solo aparecían con datos reales quedaron corregidos (pre-validación de certificar, resumen de comparar tarifas y la tabla de auditoría SUI inexistente). La mayoría de los puntos "Pendiente Oracle" de este tablero quedan confirmados.
+
+Para producción: la app no debería conectar como `TARIFICADOR_ADMIN` (tiene privilegios de DBA), sino con una cuenta de mínimos privilegios.
