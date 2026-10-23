@@ -51,3 +51,20 @@ describe('CargueMensualComponent certificar (701)', () => {
     expect(service.certificarMensual).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('CargueMensualComponent tariffs check (701)', () => {
+  // Legacy suministros/controller.js:550-555 answers [{ CANTIDAD }] and CargueService.js:382 returns
+  // response.data[0].CANTIDAD > 0: a count of 0 means no tariffs yet, so CERTIFICAR stays enabled.
+  it.each([
+    [0, false],
+    [3, true]
+  ])('reads CANTIDAD %i as tariffs existing = %s', (cantidad, existing) => {
+    const { component, service } = setup(1);
+    service.getcanCertificate.mockReturnValue(of({ data: [{ CANTIDAD: cantidad }] }) as never);
+
+    component.onGuardadoHijo();
+
+    expect(service.getcanCertificate).toHaveBeenCalledWith({ aps: 5, anno: 2025, mes: 12 });
+    expect(component.tarifasExistentes()).toBe(existing);
+  });
+});

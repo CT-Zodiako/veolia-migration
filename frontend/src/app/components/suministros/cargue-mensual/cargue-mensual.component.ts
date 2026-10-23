@@ -74,7 +74,8 @@ export class CargueMensualComponent {
     const periodo = periodoAnterior(this.anno()!, this.mes()!);
     this.service.getcanCertificate({ aps: this.aps()!, anno: periodo.anno, mes: periodo.mes }).subscribe({
       next: (res) => {
-        this.tarifasExistentes.set((res.data?.length ?? 0) > 0);
+        // Legacy CargueService.js:382: response.data[0].CANTIDAD > 0.
+        this.tarifasExistentes.set(Number(res.data?.[0]?.CANTIDAD ?? 0) > 0);
         this.verificando.set(false);
       },
       error: () => {

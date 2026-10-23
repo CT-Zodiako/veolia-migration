@@ -404,22 +404,22 @@ public sealed class LegacyT2SuministrosContractTests
         Assert.Equal(new object?[] { 5, 2026, mesCierre }, new[] { "aps", "anno", "mesCierre" }.Select(command.Value));
     }
 
-    // Legacy controller.js:545-550 (getcanCertificate) runs
-    // "select count(1) AS CANTIDAD from auco_tarifas where apsa_id = :1 and tari_anno = :2 and tari_mes = :3" and answers [{ CANTIDAD }].
-    // Accepted deviation: legacy-characterization-tests S8/S9 (group D, getcanCertificate shape): the new API returns the
-    // tariff rows and the frontend checks whether the list is empty.
+    // Legacy controller.js:550-555 (getcanCertificate) runs
+    // "select count(1) AS CANTIDAD from auco_tarifas where apsa_id = :1 and tari_anno = :2 and tari_mes = :3" and answers
+    // [{ CANTIDAD }]; the screen enables CERTIFICAR from data[0].CANTIDAD (CargueService.js:382). Restored after the real-Oracle
+    // run (oracle-real-validation T5): SELECT * overflowed System.Decimal on AUCO_TARIFAS' 39-40 digit columns.
     [Fact]
-    public async Task GetCanCertificateReturnsTheTariffRowsOfThePeriod()
+    public async Task GetCanCertificateCountsTheTariffsOfThePeriodLikeLegacy()
     {
-        var connection = new RecordingDbConnection(_ => Table(("TARI_ANNO", 2026)));
+        var connection = new RecordingDbConnection(_ => Table(("CANTIDAD", 3)));
         var repository = new SuministrosRepository(new RecordingConnectionFactory(connection));
 
         var rows = await repository.GetCanCertificateAsync(new PrevalidarRequest(5, 2026, 2), CancellationToken.None);
 
         var command = Assert.Single(connection.Commands);
-        Assert.Equal("SELECT * FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mes", command.CommandText);
+        Assert.Equal("SELECT COUNT(1) AS CANTIDAD FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mes", command.CommandText);
         Assert.Equal(new object?[] { 5, 2026, 2 }, new[] { "aps", "anno", "mes" }.Select(command.Value));
-        Assert.Equal(2026, (int)Assert.Single(rows).TARI_ANNO);
+        Assert.Equal(3, (int)Assert.Single(rows).CANTIDAD);
     }
 
     // Legacy controller.js:570-604 (Certificarsemestral): pk_certificacion.fauco_certificarsem(:1 aps, :2 semestre, :3 anno, :4 usuario) + COMMIT.

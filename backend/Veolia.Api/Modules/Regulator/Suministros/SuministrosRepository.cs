@@ -501,7 +501,9 @@ VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
 
     public async Task<IReadOnlyList<dynamic>> GetCanCertificateAsync(PrevalidarRequest request, CancellationToken cancellationToken)
     {
-        const string sql = @"SELECT * FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mes";
+        // Legacy suministros/controller.js:550-555: a count, not the tariff rows (SELECT * overflowed System.Decimal
+        // on AUCO_TARIFAS' unconstrained NUMBER/FLOAT columns with real data).
+        const string sql = @"SELECT COUNT(1) AS CANTIDAD FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mes";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync(sql, request);

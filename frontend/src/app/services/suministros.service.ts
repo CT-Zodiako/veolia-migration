@@ -171,8 +171,8 @@ export class SuministrosService {
     return this.http.post<DataEnvelope<number>>(`${this.baseUrl}/setTerceros`, payload, { headers: this.getHeaders() });
   }
 
-  getcanCertificate(payload: PrevalidarRequest): Observable<DataEnvelope<unknown[]>> {
-    return this.http.post<DataEnvelope<unknown[]>>(`${this.baseUrl}/getcanCertificate`, payload, { headers: this.getHeaders() });
+  getcanCertificate(payload: PrevalidarRequest): Observable<DataEnvelope<{ CANTIDAD: number }[]>> {
+    return this.http.post<DataEnvelope<{ CANTIDAD: number }[]>>(`${this.baseUrl}/getcanCertificate`, payload, { headers: this.getHeaders() });
   }
 
   certificar(payload: CertificarRequest): Observable<DataEnvelope<number | null>> {
