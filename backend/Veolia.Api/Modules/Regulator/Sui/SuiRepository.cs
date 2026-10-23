@@ -110,7 +110,6 @@ WHERE APSID = :aps";
             var precheck = await GetCanCertificateInternalAsync(connection, transaction, request.Aps, request.Mes, request.Anno, cancellationToken);
             if (!precheck.PuedeProcesar)
             {
-                await RegistrarAuditoriaAsync(connection, transaction, usuario, request.Aps, request.Mes, request.Anno, "PRECHECK_FAIL", cancellationToken);
                 transaction.Rollback();
                 throw new PreconditionFailedException($"No es posible procesar SUI: {string.Join(" | ", precheck.Mensajes)}");
             }
@@ -122,8 +121,6 @@ WHERE APSID = :aps";
 
             var estado = await ConsultarEstadoApsAsync(connection, transaction, request.Aps, request.Anno, request.Mes, cancellationToken);
             var formatosProcesados = await InferirFormatosProcesadosAsync(connection, transaction, request.Aps, request.Mes, request.Anno, cancellationToken);
-
-            await RegistrarAuditoriaAsync(connection, transaction, usuario, request.Aps, request.Mes, request.Anno, "OK", cancellationToken);
 
             transaction.Commit();
             return new SuiProcesarResponse(true, formatosProcesados, estado, resultado);
@@ -259,23 +256,6 @@ SELECT 'F36' AS FORMATO FROM SUI_F36 WHERE APSA_ID = :aps AND F36_MES = :mes AND
 
         var formatos = await connection.QueryAsync<string>(new CommandDefinition(sql, new { aps, mes, anno }, transaction: transaction, cancellationToken: cancellationToken));
         return formatos.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    private async Task RegistrarAuditoriaAsync(IDbConnection connection, IDbTransaction transaction, long usuario, int aps, int mes, int anno, string resultado, CancellationToken cancellationToken)
-    {
-        const string sql = @"INSERT INTO SUI_AUDITORIA (USUARIO, FECHA, APS_ID, MES, ANNO, RESULTADO)
-VALUES (:usuario, SYSDATE, :aps, :mes, :anno, :resultado)";
-
-        try
-        {
-            await connection.ExecuteAsync(new CommandDefinition(sql, new { usuario, aps, mes, anno, resultado }, transaction: transaction, cancellationToken: cancellationToken));
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "No fue posible persistir auditoría SUI. usuario={Usuario} aps={Aps} mes={Mes} anno={Anno} resultado={Resultado}", usuario, aps, mes, anno, resultado);
-        }
-
-        logger.LogInformation("SUI ejecución auditada. usuario={Usuario} fecha={Fecha} aps={Aps} mes={Mes} anno={Anno} resultado={Resultado}", usuario, DateTime.UtcNow, aps, mes, anno, resultado);
     }
 
     private static object ToDictionaryObject(dynamic row)

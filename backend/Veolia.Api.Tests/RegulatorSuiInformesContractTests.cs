@@ -60,9 +60,9 @@ public sealed class RegulatorSuiInformesContractTests
 
         Assert.True(response.Exitoso);
         Assert.Equal(resultado, response.Resultado);
-        var auditoria = Assert.Single(connection.Commands, c => c.CommandText.Contains("SUI_AUDITORIA"));
-        Assert.Equal("OK", auditoria.Value("resultado"));
-        Assert.Equal(101L, auditoria.Value("usuario"));
+        // SUI_AUDITORIA exists in no schema of the real database (oracle-real-validation L5) and legacy
+        // sui/controller.js never audited Procesar, so nothing is written there.
+        Assert.DoesNotContain(connection.Commands, c => c.CommandText.Contains("SUI_AUDITORIA"));
     }
 
     [Fact]
