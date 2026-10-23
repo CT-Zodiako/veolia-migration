@@ -11,7 +11,7 @@ Only a **push to `main`** can enter the protected `production` environment and e
 ## One-time server prerequisites
 
 1. Use a dedicated Windows x64 IIS server. Install IIS, its management scripting tools (including the `WebAdministration` Windows PowerShell module), Static Content, and the IIS URL Rewrite module if used by the SPA configuration.
-2. Install the **.NET 10 ASP.NET Core Hosting Bundle** after IIS; repair it if IIS was installed later. Restart IIS as directed by the installer. Node and the .NET SDK are not needed on this server.
+2. Install the **.NET 10 ASP.NET Core Hosting Bundle** after IIS; repair it if IIS was installed later. Restart IIS as directed by the installer. Node and the .NET SDK are not needed on this server: the frontend is built on the GitHub-hosted runner with the Node version pinned in `.nvmrc` (24.22.1). If Node is installed on the server for other reasons, keep it on a patched LTS; the deployment does not use it.
 3. Create these sites and pools (the script does not provision IIS):
 
    | Site physical path | App Pool | Local binding |

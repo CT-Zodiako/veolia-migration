@@ -61,6 +61,8 @@ La API queda en `http://localhost:5000`.
 
 ## 4) Correr frontend (Angular)
 
+Requiere Node **24.22.1** (fijado en `.nvmrc`; el CI usa la misma versión). Con nvm: `nvm install && nvm use` desde la raíz del repo.
+
 Desde `frontend/`:
 
 ```bash
