@@ -1,21 +1,22 @@
 <div *ngIf="loading" class="text-center py-4">
   <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-  <p>Cargando...</p>
+  <p>Cargando información…</p>
 </div>
 
-<div *ngIf="!loading && (!data || data.data.length === 0)" class="text-center py-4 text-secondary">
+<div *ngIf="!loading && filas.length === 0" class="text-center py-4 text-secondary">
   <i class="pi pi-inbox" style="font-size: 2rem"></i>
   <p>Sin datos</p>
 </div>
 
-<div *ngIf="!loading && data && data.data.length > 0" class="table-scroll">
-  <h4 class="formato2-titulo" *ngIf="data.title">{{ data.title }}</h4>
+<div *ngIf="!loading && filas.length > 0" class="table-scroll">
+  <h4 class="formato2-titulo" *ngIf="titulo">{{ titulo }}</h4>
   <app-tabla-avanzada
     [columnas]="columnas"
-    [rows]="data.data"
+    [rows]="filas"
     [columnasFijadasPorDefecto]="columnasFijadasPorDefecto"
     [storageKey]="storageKey"
     [nombreExportar]="nombreExportarEfectivo"
+    [rowsPerPageOptionsList]="paginadorOpciones"
     [cellTemplate]="celdaTpl"
     [cellClass]="cellClassFn"
     [accionesTemplate]="accionesTpl"
@@ -45,7 +46,7 @@
       <h3><span class="modal-header-icon"><i class="pi pi-eye"></i></span> Detalle</h3>
       <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="cerrarDetalle()"></p-button>
     </div>
-    <p class="formato2-titulo modal-titulo" *ngIf="data?.title">{{ data?.title }}</p>
+    <p class="formato2-titulo modal-titulo" *ngIf="titulo">{{ titulo }}</p>
     <p class="modal-hint">Hacé clic en cualquier valor para copiarlo.</p>
 
     <div class="detail-grid">

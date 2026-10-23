@@ -114,36 +114,34 @@ export class InfCompetidorComponent implements OnChanges {
     });
   }
 
+  // Legacy InfCompetidorMensual.vue:296-340: only the first row is checked, APS -> empresa -> AÑO y MES (selected month),
+  // and the preview keeps the file values (:342-360).
   private procesarCsv(data: FilaCsv[]): void {
-    const errores: string[] = [];
     const empresa = this.empresaSeleccionada();
+    const primera = data[0];
+    let error = '';
+    if (!primera) {
+      error = 'El archivo no contiene filas.';
+    } else if (aNumero(primera.CODAPS) !== this.aps) {
+      error = 'El APS Seleccionado no concuerda con el APS del archivo!';
+    } else if (aNumero(primera.CODEMPRESA) !== empresa) {
+      error = 'La Empresa Seleccionada no concuerda con la Empresa del archivo!';
+    } else if (aNumero(primera.ANNO) !== this.anno || aNumero(primera.MES) !== this.mes) {
+      error = 'El AÑO y MES Seleccionado no concuerda con los del archivo!';
+    }
 
-    data.forEach((fila, index) => {
-      const numeroFila = index + 1;
-      if (aNumero(fila.CODAPS) !== this.aps) {
-        errores.push(`Fila ${numeroFila}: el APS del archivo no coincide con el APS seleccionado.`);
-      }
-      if (aNumero(fila.CODEMPRESA) !== empresa) {
-        errores.push(`Fila ${numeroFila}: la empresa del archivo no coincide con la empresa seleccionada.`);
-      }
-      if (aNumero(fila.ANNO) !== this.anno || aNumero(fila.MES) !== this.mes) {
-        errores.push(`Fila ${numeroFila}: el año/mes del archivo no coincide con el período seleccionado.`);
-      }
-    });
-
-    this.errores.set(errores);
-
-    if (errores.length > 0) {
+    if (error) {
+      this.errores.set([error]);
       this.filas.set([]);
       return;
     }
 
-    const periodo = periodoAnterior(this.anno, this.mes);
+    this.errores.set([]);
     this.filas.set(data.map((fila) => ({
-      aps: this.aps,
-      empr: empresa!,
-      anno: periodo.anno,
-      mes: periodo.mes,
+      aps: aNumero(fila.CODAPS) ?? this.aps,
+      empr: aNumero(fila.CODEMPRESA) ?? empresa!,
+      anno: aNumero(fila.ANNO) ?? this.anno,
+      mes: aNumero(fila.MES) ?? this.mes,
       cp: aNumero(fila.CP) ?? 0,
       mt3agua: aNumero(fila.MT3AGUA) ?? 0,
       m2cc: aNumero(fila.M2CC) ?? 0,
@@ -180,16 +178,20 @@ export class InfCompetidorComponent implements OnChanges {
     const empresa = this.empresas().find((e) => e.EMPR_EMPR === this.empresaSeleccionada());
     if (!empresa) return;
 
+    // Legacy InfCompetidorMensual.vue:232-250 + CargueService.js:304-334: anno/mes = selected month - 1 and every row
+    // shifted back one month.
+    const periodo = periodoAnterior(this.anno, this.mes);
     this.guardando.set(true);
     this.service.setCargueInfCompetidor({
       aps: this.aps,
       empr: { emprempr: empresa.EMPR_EMPR, emprnombre: empresa.EMPR_NOMBRE },
-      anno: this.anno,
-      mes: this.mes,
-      resumemes: this.filas()
+      anno: periodo.anno,
+      mes: periodo.mes,
+      resumemes: this.filas().map((fila) => ({ ...fila, ...periodoAnterior(fila.anno, fila.mes) }))
     }).subscribe({
       next: () => {
-        this.estado.set('Información de competidor guardada correctamente.');
+        // Legacy CargueService.js:351-354.
+        this.estado.set('Guardado Correctamente');
         this.guardando.set(false);
         this.limpiarCargue();
         this.guardado.emit();

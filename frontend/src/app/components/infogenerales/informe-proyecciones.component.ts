@@ -17,94 +17,67 @@ const MESES = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
+// Legacy components/infogenerales/{Energia,Acueducto,Costos,Tarifas}.vue: headers and order as legacy, "contains"
+// filters on the text/period columns and redondearDosDecimales (Math.round(n * 100) / 100) on every numeric column.
+function numericas(columnas: [string, string][]): TablaColumn[] {
+  return columnas.map(([field, header]) => ({ field, header, numero: true, decimales: 2 }));
+}
+
+// Energia.vue:30-265
 const COLUMNAS_ENERGIA: TablaColumn[] = [
-  { field: 'CLAS_NOMBRE', header: 'Clase', filtrable: true },
-  { field: 'FACTOR_PROD', header: 'Factor Prod' },
-  { field: 'TIPOTAR', header: 'Tipo Tar' },
-  { field: 'FAEN_ANNO', header: 'Año' },
-  { field: 'FAEN_MES', header: 'Mes' },
-  { field: 'FAEN_SUBCON', header: 'Subcon', numero: true },
-  { field: 'FAEN_USUARIOS', header: 'Usuarios', numero: true },
-  { field: 'FAEN_TCPROP', header: 'TC Prop', numero: true },
-  { field: 'FAEN_TCTERC', header: 'TC Terc', numero: true },
-  { field: 'FAEN_TCAPRO', header: 'TC Apro', numero: true },
-  { field: 'FAEN_TBL', header: 'TBL', numero: true },
-  { field: 'FAEN_TLU', header: 'TLU', numero: true },
-  { field: 'FAEN_TRT', header: 'TRT', numero: true },
-  { field: 'FAEN_TDF', header: 'TDF', numero: true },
-  { field: 'FAEN_TINC', header: 'TInc', numero: true },
-  { field: 'FAEN_TIAT', header: 'TIAT', numero: true },
-  { field: 'FAEN_TTL', header: 'TTL', numero: true },
-  { field: 'FAEN_TA', header: 'TA', numero: true },
-  { field: 'FAEN_TOTAL', header: 'Total', numero: true },
-  { field: 'FAEN_TOTSC', header: 'Tot SC', numero: true },
-  { field: 'FAEN_TOTPROPLENO', header: 'Tot Prop Leno', numero: true },
-  { field: 'FAEN_TOTPROSUBCON', header: 'Tot Prop Subcon', numero: true }
+  { field: 'FAEN_ANNO', header: 'Año', filtrable: true },
+  { field: 'FAEN_MES', header: 'Mes', filtrable: true },
+  { field: 'CLAS_NOMBRE', header: 'Clase uso', filtrable: true },
+  { field: 'TIPOTAR', header: 'Tipo tarifa', filtrable: true },
+  { field: 'FACTOR_PROD', header: 'Factor prod', filtrable: true },
+  ...numericas([
+    ['FAEN_SUBCON', 'SUB/CON'], ['FAEN_USUARIOS', 'Cant usuarios'], ['FAEN_TCPROP', 'TC'],
+    ['FAEN_TCTERC', 'Tc Aprov Terc'], ['FAEN_TCAPRO', 'TC Aprov Pro'], ['FAEN_TBL', 'TBL'], ['FAEN_TLU', 'TLU'],
+    ['FAEN_TRT', 'TRT'], ['FAEN_TDF', 'TDF'], ['FAEN_TINC', 'Tinc'], ['FAEN_TIAT', 'Tiat'], ['FAEN_TTL', 'TTL'],
+    ['FAEN_TA', 'TA'], ['FAEN_TOTAL', 'Total'], ['FAEN_TOTSC', 'Total S/C'],
+    ['FAEN_TOTPROPLENO', 'TOT PROP PLENO'], ['FAEN_TOTPROSUBCON', 'TOT PROP S/C']
+  ])
 ];
 
+// Acueducto.vue:30-266
 const COLUMNAS_ACUEDUCTO: TablaColumn[] = [
-  { field: 'CLAS_NOMBRE', header: 'Clase', filtrable: true },
-  { field: 'FACTOR_PROD', header: 'Factor Prod' },
-  { field: 'TIPOTAR', header: 'Tipo Tar' },
-  { field: 'FACU_ANNO', header: 'Año' },
-  { field: 'FACU_MES', header: 'Mes' },
-  { field: 'FACU_SUBCON', header: 'Subcon', numero: true },
-  { field: 'FACU_USUARIOS', header: 'Usuarios', numero: true },
-  { field: 'FACU_TCPROP', header: 'TC Prop', numero: true },
-  { field: 'FACU_TCTERC', header: 'TC Terc', numero: true },
-  { field: 'FACU_TCAPRO', header: 'TC Apro', numero: true },
-  { field: 'FACU_TBL', header: 'TBL', numero: true },
-  { field: 'FACU_TLU', header: 'TLU', numero: true },
-  { field: 'FACU_TRT', header: 'TRT', numero: true },
-  { field: 'FACU_TDF', header: 'TDF', numero: true },
-  { field: 'FACU_TINC', header: 'TInc', numero: true },
-  { field: 'FACU_TIAT', header: 'TIAT', numero: true },
-  { field: 'FACU_TTL', header: 'TTL', numero: true },
-  { field: 'FACU_TA', header: 'TA', numero: true },
-  { field: 'FACU_TOTAL', header: 'Total', numero: true },
-  { field: 'FACU_TOTSC', header: 'Tot SC', numero: true },
-  { field: 'FACU_TOTPROPLENO', header: 'Tot Prop Leno', numero: true },
-  { field: 'FACU_TOTPROSUBCON', header: 'Tot Prop Subcon', numero: true }
+  { field: 'FACU_ANNO', header: 'Año', filtrable: true },
+  { field: 'FACU_MES', header: 'Mes', filtrable: true },
+  { field: 'CLAS_NOMBRE', header: 'Clase uso', filtrable: true },
+  { field: 'TIPOTAR', header: 'Tipo tarifa', filtrable: true },
+  { field: 'FACTOR_PROD', header: 'Factor prod', filtrable: true },
+  ...numericas([
+    ['FACU_SUBCON', 'SUB/CON'], ['FACU_USUARIOS', 'Cant usuarios'], ['FACU_TCPROP', 'TC'],
+    ['FACU_TCTERC', 'Tc Aprov Terc'], ['FACU_TCAPRO', 'TC Aprov Pro'], ['FACU_TBL', 'TBL'], ['FACU_TLU', 'TLU'],
+    ['FACU_TRT', 'TRT'], ['FACU_TDF', 'TDF'], ['FACU_TINC', 'Tinc'], ['FACU_TIAT', 'Tiat'], ['FACU_TTL', 'TTL'],
+    ['FACU_TA', 'TA'], ['FACU_TOTAL', 'Total'], ['FACU_TOTSC', 'Total S/C'],
+    ['FACU_TOTPROPLENO', 'TOT PROP PLENO'], ['FACU_TOTPROSUBCON', 'TOT PROP S/C']
+  ])
 ];
 
+// Costos.vue:29-152
 const COLUMNAS_COSTOS: TablaColumn[] = [
-  { field: 'TIPO_FACT', header: 'Tipo Fact', filtrable: true },
-  { field: 'COST_ANNO', header: 'Año' },
-  { field: 'COST_MES', header: 'Mes' },
-  { field: 'COST_CCS', header: 'CCS', numero: true },
-  { field: 'COST_CCSAPRO', header: 'CCS Apro', numero: true },
-  { field: 'COST_CBL', header: 'CBL', numero: true },
-  { field: 'COST_CLUS', header: 'CLUS', numero: true },
-  { field: 'COST_CRT', header: 'CRT', numero: true },
-  { field: 'COST_CDF', header: 'CDF', numero: true },
-  { field: 'COST_INC', header: 'Inc', numero: true },
-  { field: 'COST_IAT', header: 'IAT', numero: true },
-  { field: 'COST_CTL', header: 'CTL', numero: true },
-  { field: 'COST_VBA', header: 'VBA', numero: true }
+  { field: 'COST_ANNO', header: 'Año', filtrable: true },
+  { field: 'COST_MES', header: 'Mes', filtrable: true },
+  { field: 'TIPO_FACT', header: 'Tipo factura', filtrable: true },
+  ...numericas([
+    ['COST_CCS', 'CCS'], ['COST_CCSAPRO', 'CCSaprov'], ['COST_CBL', 'CBL'], ['COST_CLUS', 'CLUS'], ['COST_CRT', 'CRT'],
+    ['COST_CDF', 'CDF'], ['COST_INC', 'INC'], ['COST_IAT', 'IAT'], ['COST_CTL', 'CTL'], ['COST_VBA', 'VBA']
+  ])
 ];
 
+// Tarifas.vue:29-218 (no PROY_ID, APSA_ID nor TARI_TCTERC column)
 const COLUMNAS_TARIFAS: TablaColumn[] = [
-  { field: 'PROY_ID', header: 'Proy ID' },
-  { field: 'APSA_ID', header: 'APS ID' },
-  { field: 'CLAS_NOMBRE', header: 'Clase', filtrable: true },
-  { field: 'TIPO_TAR', header: 'Tipo Tar' },
-  { field: 'TIPO_FACT', header: 'Tipo Fact' },
-  { field: 'TARI_ANNO', header: 'Año' },
-  { field: 'TARI_MES', header: 'Mes' },
-  { field: 'TARI_SUBCON', header: 'Subcon', numero: true },
-  { field: 'TARI_TCPROP', header: 'TC Prop', numero: true },
-  { field: 'TARI_TCTERC', header: 'TC Terc', numero: true },
-  { field: 'TARI_TCAPRO', header: 'TC Apro', numero: true },
-  { field: 'TARI_TBL', header: 'TBL', numero: true },
-  { field: 'TARI_TLU', header: 'TLU', numero: true },
-  { field: 'TARI_TRT', header: 'TRT', numero: true },
-  { field: 'TARI_TDF', header: 'TDF', numero: true },
-  { field: 'TARI_INC', header: 'Inc', numero: true },
-  { field: 'TARI_TIAT', header: 'TIAT', numero: true },
-  { field: 'TARI_TTL', header: 'TTL', numero: true },
-  { field: 'TARI_TA', header: 'TA', numero: true },
-  { field: 'TARI_TOTAL', header: 'Total', numero: true },
-  { field: 'TARI_TOTSC', header: 'Tot SC', numero: true }
+  { field: 'TARI_ANNO', header: 'Año', filtrable: true },
+  { field: 'TARI_MES', header: 'Mes', filtrable: true },
+  { field: 'CLAS_NOMBRE', header: 'Clase uso', filtrable: true },
+  { field: 'TIPO_TAR', header: 'Tipo tarifa', filtrable: true },
+  { field: 'TIPO_FACT', header: 'Tipo factura', filtrable: true },
+  ...numericas([
+    ['TARI_SUBCON', 'SUB/CON'], ['TARI_TCPROP', 'TC'], ['TARI_TCAPRO', 'TCaprov'], ['TARI_TBL', 'TBL'], ['TARI_TLU', 'TLU'],
+    ['TARI_TRT', 'TRT'], ['TARI_TDF', 'TDF'], ['TARI_INC', 'Tinc'], ['TARI_TIAT', 'Tiat'], ['TARI_TTL', 'TTL'],
+    ['TARI_TA', 'TA'], ['TARI_TOTAL', 'TARIFA PLENA'], ['TARI_TOTSC', 'TARIDA S/C']
+  ])
 ];
 
 @Component({
@@ -129,14 +102,17 @@ export class InformeProyeccionesComponent {
   proyeccionSeleccionada = signal<Proyeccion | null>(null);
   activeTab = signal(0);
 
+  // seleccionarProyeccion.vue:29-36 Calendar view="month" dateFormat="MM/yy" (Spanish month names).
   horizonteDesde = computed(() => {
     const p = this.proyeccionSeleccionada();
-    return p ? `${MESES[p.proyMesDes - 1] ?? p.proyMesDes} ${p.proyAnnoDes}` : '';
+    return p ? `${MESES[p.proyMesDes - 1] ?? p.proyMesDes}/${p.proyAnnoDes}` : '';
   });
 
+  // Shows the end month itself; legacy seleccionarProyeccion.vue:137 showed the following month (legacy bug not
+  // replicated, accepted in legacy-characterization-tests S9).
   horizonteHasta = computed(() => {
     const p = this.proyeccionSeleccionada();
-    return p ? `${MESES[p.proyMesHas - 1] ?? p.proyMesHas} ${p.proyAnnoHas}` : '';
+    return p ? `${MESES[p.proyMesHas - 1] ?? p.proyMesHas}/${p.proyAnnoHas}` : '';
   });
 
   // Estados por pestaña

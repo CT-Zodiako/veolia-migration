@@ -9,14 +9,20 @@ import {
   ComportaClusItem,
   CostoClusItem,
   CostoItem,
-  CostosRequest,
+  LblItem,
+  QaItem,
+  QrtItem,
   RunPrechecksResponse,
   ValidapreactualizaResponse
 } from '../models/costos.models';
 
+// Legacy costos routes take the user from the token (req.SISU_ID); the body never carries it.
+type CostosPeriodoRequest = { aps: number; mes: number; anno: number };
+
 @Injectable({ providedIn: 'root' })
 export class CostosService {
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/costos`;
+  private readonly apiUrl = `${environment.apiBaseUrl}/api/v1`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -61,8 +67,8 @@ export class CostosService {
     };
   }
 
-  validapreactualiza(aps: number, mes: number, anno: number, usuario: number): Observable<ValidapreactualizaResponse> {
-    const payload: CostosRequest = { aps, mes, anno, usuario };
+  validapreactualiza(aps: number, mes: number, anno: number): Observable<ValidapreactualizaResponse> {
+    const payload: CostosPeriodoRequest = { aps, mes, anno };
     return this.unwrap<ValidapreactualizaResponse>('validar preactualización')(
       this.http.post<ApiResponseEnvelope<ValidapreactualizaResponse>>(`${this.baseUrl}/validapreactualiza`, payload, {
         headers: this.getHeaders()
@@ -70,8 +76,8 @@ export class CostosService {
     );
   }
 
-  calculartarifas(aps: number, mes: number, anno: number, usuario: number): Observable<CalculartarifasResponse> {
-    const payload: CostosRequest = { aps, mes, anno, usuario };
+  calculartarifas(aps: number, mes: number, anno: number): Observable<CalculartarifasResponse> {
+    const payload: CostosPeriodoRequest = { aps, mes, anno };
     return this.unwrap<CalculartarifasResponse>('calcular tarifas')(
       this.http.post<ApiResponseEnvelope<CalculartarifasResponse>>(`${this.baseUrl}/calculartarifas`, payload, {
         headers: this.getHeaders()
@@ -79,8 +85,8 @@ export class CostosService {
     );
   }
 
-  runPrechecks(aps: number, mes: number, anno: number, usuario: number): Observable<RunPrechecksResponse> {
-    const payload: CostosRequest = { aps, mes, anno, usuario };
+  runPrechecks(aps: number, mes: number, anno: number): Observable<RunPrechecksResponse> {
+    const payload: CostosPeriodoRequest = { aps, mes, anno };
     return this.unwrap<RunPrechecksResponse>('ejecutar prechecks')(
       this.http.post<ApiResponseEnvelope<RunPrechecksResponse>>(`${this.baseUrl}/prechecks`, payload, {
         headers: this.getHeaders()
@@ -88,8 +94,8 @@ export class CostosService {
     );
   }
 
-  certificarTarifas(aps: number, mes: number, anno: number, usuario: number): Observable<CertificarTarifasResponse> {
-    const payload: CostosRequest = { aps, mes, anno, usuario };
+  certificarTarifas(aps: number, mes: number, anno: number): Observable<CertificarTarifasResponse> {
+    const payload: CostosPeriodoRequest = { aps, mes, anno };
     return this.unwrap<CertificarTarifasResponse>('certificar tarifas')(
       this.http.post<ApiResponseEnvelope<CertificarTarifasResponse>>(`${this.baseUrl}/certificarTarifas`, payload, {
         headers: this.getHeaders()
@@ -121,6 +127,25 @@ export class CostosService {
       this.http.post<ApiResponseEnvelope<ComportaClusItem[]>>(`${this.baseUrl}/comportaclus`, payload, {
         headers: this.getHeaders()
       })
+    );
+  }
+
+  // Legacy CostoService.getQrt/getQa (toneladas/qrt, toneladas/qa) and KilometrosService.getConsultalbl (kilometros/lbl).
+  consultarQrt(aps: number, anno: number, mes: number): Observable<QrtItem[]> {
+    return this.unwrap<QrtItem[]>('consultar QRT')(
+      this.http.post<ApiResponseEnvelope<QrtItem[]>>(`${this.apiUrl}/toneladas/qrt`, { aps, anno, mes }, { headers: this.getHeaders() })
+    );
+  }
+
+  consultarQa(aps: number, anno: number, mes: number): Observable<QaItem[]> {
+    return this.unwrap<QaItem[]>('consultar Qa')(
+      this.http.post<ApiResponseEnvelope<QaItem[]>>(`${this.apiUrl}/toneladas/qa`, { aps, anno, mes }, { headers: this.getHeaders() })
+    );
+  }
+
+  consultarLbl(aps: number, anno: number, mes: number): Observable<LblItem[]> {
+    return this.unwrap<LblItem[]>('consultar LBL')(
+      this.http.post<ApiResponseEnvelope<LblItem[]>>(`${this.apiUrl}/kilometros/lbl`, { aps, anno, mes }, { headers: this.getHeaders() })
     );
   }
 }

@@ -19,19 +19,34 @@ const MESES = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
-// Mismas columnas que Líneas de Tiempo (Año/Mes de solo lectura, deltas alineados
-// a la derecha) -- acá la tabla es de solo consulta, previa a ejecutar.
+// Legacy ConsultarLineasdeTiempo.vue:15-79,117-119: AÑO..IND IPCC (sin IPC TCL), valores
+// redondeados a 5 decimales (Math.round). Solo consulta, previa a ejecutar.
 const COLUMNAS_LINEA_TIEMPO: TablaColumn[] = [
-  { field: 'anno', header: 'Año' },
-  { field: 'mes', header: 'Mes' },
-  { field: 'deltipc', header: 'IPC', numero: true },
-  { field: 'deltipcc', header: 'IPCC', numero: true },
-  { field: 'deltsmlv', header: 'SMLV', numero: true },
-  { field: 'deltioexp', header: 'IOEXP', numero: true },
-  { field: 'deltfacproduc', header: 'Fact Prod', numero: true },
-  { field: 'deltindipcc', header: 'Ind IPCC', numero: true },
-  { field: 'deltipccs', header: 'IPC TCL', numero: true }
+  { field: 'anno', header: 'AÑO' },
+  { field: 'mes', header: 'MES' },
+  { field: 'deltipc', header: 'IPC', numero: true, decimales: 5 },
+  { field: 'deltipcc', header: 'IPCC', numero: true, decimales: 5 },
+  { field: 'deltsmlv', header: 'SMLV', numero: true, decimales: 5 },
+  { field: 'deltioexp', header: 'IOEXP', numero: true, decimales: 5 },
+  { field: 'deltfacproduc', header: 'FACT PROD', numero: true, decimales: 5 },
+  { field: 'deltindipcc', header: 'IND IPCC', numero: true, decimales: 5 }
 ];
+
+// Legacy components/proyecciones/CrecimientoUsuarios.vue:6-63 (MES muestra SEMESTRE).
+const COLUMNAS_USUARIOS: TablaColumn[] = [
+  { field: 'codAps', header: 'APS' },
+  { field: 'anno', header: 'AÑO' },
+  { field: 'semestre', header: 'MES' },
+  { field: 'coduso', header: 'COD_USO' },
+  { field: 'nomclaseuso', header: 'CLASE_USO' },
+  { field: 'codfactor', header: 'COD_FACTOR' },
+  { field: 'valorfactor', header: 'VLR_FACTOR' },
+  { field: 'codtipopred', header: 'COD_TIPRED' },
+  { field: 'nomtipopred', header: 'TIPO_PRED' },
+  { field: 'cantidad', header: 'CANTIDAD', numero: true },
+  { field: 'toneladas', header: 'TONELADAS', numero: true }
+];
+const CAMPOS_4_DECIMALES = new Set(['cantidad', 'toneladas']);
 
 @Component({
   selector: 'app-ejecutar-page',
@@ -64,7 +79,7 @@ export class EjecutarPageComponent {
   terceros = signal<FilaDinamica[]>([]);
   descuentos = signal<FilaDinamica[]>([]);
 
-  columnasUsuarios = computed(() => columnasDesdeFilas(this.usuarios()));
+  columnasUsuarios = computed(() => COLUMNAS_USUARIOS);
   columnasPropia = computed(() => columnasDesdeFilas(this.propia()));
   columnasTerceros = computed(() => columnasDesdeFilas(this.terceros()));
   columnasDescuentos = computed(() => columnasDesdeFilas(this.descuentos()));
@@ -115,7 +130,10 @@ export class EjecutarPageComponent {
         const exito = !!r.data?.success;
         this.resultadoExito.set(exito);
         this.resultado.set(r.message || (exito ? 'Proceso ejecutado correctamente.' : 'Ejecución finalizada con observaciones.'));
-        this.messages.add({ severity: exito ? 'success' : 'warn', summary: 'Proyectar', detail: this.resultado() || '' });
+        // Legacy ProyService.js:547-558: éxito solo con res === 1; si no, "<res> Error al ejecutar la proyeccion ".
+        this.messages.add(exito
+          ? { severity: 'success', summary: 'Proceso ejecutado correctamente' }
+          : { severity: 'error', summary: `${r.data?.resultado} Error al ejecutar la proyeccion ` });
       },
       error: (err) => {
         this.ejecutando.set(false);
@@ -123,6 +141,13 @@ export class EjecutarPageComponent {
         this.resultado.set(err?.error?.message || 'Error al ejecutar la proyección');
       }
     });
+  }
+
+  // Legacy CrecimientoUsuarios.vue:89-96 (roundToDecimals): 0/null se muestra 0, el resto con toFixed(4).
+  valorUsuario(value: unknown, field: string): unknown {
+    if (!CAMPOS_4_DECIMALES.has(field)) return value;
+    const numero = Number(value || 0);
+    return numero === 0 ? 0 : numero.toFixed(4);
   }
 
   private cargarDatos(proyId: number): void {

@@ -79,3 +79,29 @@ export interface ComportaClusItem {
   inedKlpj: number;
   inedTmj: number;
 }
+
+// Legacy toneladas/qrt, toneladas/qa and kilometros/lbl rows behind the Cálculo Tarifas charts (Calculo.vue:40-68).
+export interface QrtItem {
+  aps: number;
+  empresa: number;
+  tipo: string;
+  valor: number;
+}
+
+export interface QaItem {
+  aps: number;
+  empresa: number;
+  anno: number;
+  mes: number;
+  valor: number;
+}
+
+export interface LblItem {
+  aps: number;
+  empresa: number;
+  mpio: number;
+  anno: number;
+  mes: number;
+  valor: number;
+  estado: number;
+}

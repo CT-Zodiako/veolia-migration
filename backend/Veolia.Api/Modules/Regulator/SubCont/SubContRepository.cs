@@ -9,27 +9,41 @@
     {
         public async Task<List<SubContItemResponse>> ConsultarAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
         {
+            // Legacy subcont/controller.js:26-33: SELECT * without an estado filter.
             const string sql = @"
-                SELECT SUCO_ID AS SucoId,
-                       APSA_ID AS ApsaId,
-                       EMPR_EMPR AS EmprEmpr,
-                       DIVI_DIVI AS DiviDivi,
-                       CLAS_CLASE AS ClasClase,
-                       SUCO_ANNO AS SucoAnno,
-                       SUCO_MES AS SucoMes,
-                       PARA_TIPPRED20016 AS ParaTippred20016,
-                       SUCO_VALOR AS SucoValor,
-                       SUCO_ESTADO AS SucoEstado,
-                       SUCO_FECHACREACION AS SucoFechacreacion,
-                       USUA_USUA AS UsuaUsua
+                SELECT *
                 FROM AUCO_APSSUBSCONT
-                WHERE APSA_ID = :aps AND SUCO_ANNO = :anno AND SUCO_MES = :mes AND SUCO_ESTADO = 1";
+                WHERE APSA_ID = :aps AND SUCO_ANNO = :anno AND SUCO_MES = :mes";
 
             using var connection = connectionFactory.CreateConnection();
             await ((System.Data.Common.DbConnection)connection).OpenAsync(cancellationToken);
-            var result = await connection.QueryAsync<SubContItemResponse>(
+            var rows = await connection.QueryAsync(
                 new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken));
-            return result.ToList();
+            return rows.Cast<IDictionary<string, object?>>().Select(MapItem).ToList();
+        }
+
+        private static SubContItemResponse MapItem(IDictionary<string, object?> row)
+        {
+            var columns = new Dictionary<string, object?>(row, StringComparer.OrdinalIgnoreCase);
+            object? Read(string column) => columns.TryGetValue(column, out var value) && value is not DBNull ? value : null;
+            long ReadLong(string column) => Read(column) is { } value ? Convert.ToInt64(value) : 0;
+            int ReadInt(string column) => Read(column) is { } value ? Convert.ToInt32(value) : 0;
+
+            return new SubContItemResponse
+            {
+                SucoId = ReadLong("SUCO_ID"),
+                ApsaId = ReadInt("APSA_ID"),
+                EmprEmpr = ReadInt("EMPR_EMPR"),
+                DiviDivi = ReadInt("DIVI_DIVI"),
+                ClasClase = ReadInt("CLAS_CLASE"),
+                SucoAnno = ReadInt("SUCO_ANNO"),
+                SucoMes = ReadInt("SUCO_MES"),
+                ParaTippred20016 = ReadInt("PARA_TIPPRED20016"),
+                SucoValor = Read("SUCO_VALOR") is { } valor ? Convert.ToDecimal(valor) : null,
+                SucoEstado = ReadInt("SUCO_ESTADO"),
+                SucoFechacreacion = Read("SUCO_FECHACREACION") is { } fecha ? Convert.ToDateTime(fecha) : default,
+                UsuaUsua = ReadInt("USUA_USUA")
+            };
         }
 
         public async Task<SubContResponse> CrearAsync(int aps, int anno, int mes, List<SubContValorItem> valores, long usuarioId, CancellationToken cancellationToken)
@@ -104,8 +118,7 @@
                     WHERE APSA_ID = :aps
                       AND SUCO_ANNO = :anno
                       AND SUCO_MES = :mes
-                      AND CLAS_CLASE = :clasClase
-                      AND SUCO_ESTADO = 1";
+                      AND CLAS_CLASE = :clasClase";
 
                 foreach (var valor in valores)
                 {

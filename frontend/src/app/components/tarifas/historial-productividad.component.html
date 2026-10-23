@@ -9,13 +9,21 @@
     (parametrosIncompletos)="limpiar()"
   ></app-parametros-consulta>
 
+  <p *ngIf="error()" class="error">{{ error() }}</p>
+
   <div class="table-wrapper table-scroll">
     <app-tabla-avanzada
       [columnas]="columnas"
       [rows]="rows()"
       [loading]="loading()"
+      [cellTemplate]="celda"
       storageKey="historial-productividad"
       nombreExportar="HistorialProductividad"
     ></app-tabla-avanzada>
   </div>
+
+  <ng-template #celda let-value let-col="col">
+    <ng-container *ngIf="col.field === 'PR22_VALOR'; else crudo">{{ formatearNumero(value) }}</ng-container>
+    <ng-template #crudo>{{ value }}</ng-template>
+  </ng-template>
 </section>

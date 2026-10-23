@@ -151,8 +151,7 @@ SET INDI_VALOR = :valor,
     INDI_MITADVALOR = :mitadValor
 WHERE PARA_INDICE20011 = :paraId
   AND INDI_ANNO = :anno
-  AND INDI_MES = :mes
-  AND INDI_ESTADO = 1";
+  AND INDI_MES = :mes";
 
         using var connection = connectionFactory.CreateConnection();
         using var transaction = connection.BeginTransaction();

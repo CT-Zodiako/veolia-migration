@@ -23,7 +23,7 @@ public sealed class IndicesEditarRequestDto
 public sealed class IndiceValorDto
 {
     public long Id { get; set; }
-    public decimal Val { get; set; }
+    public decimal? Val { get; set; }
 }
 
 public sealed class IndicesEliminarRequestDto

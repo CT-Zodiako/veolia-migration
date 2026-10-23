@@ -11,7 +11,7 @@ export interface SubContConsultaRequest {
 
 export interface SubContValorItem {
   id: number;
-  val: number;
+  val: number | null;
 }
 
 export interface SubContCrearRequest {
@@ -37,7 +37,7 @@ export interface SubContItem {
   sucoAnno: number;
   sucoMes: number;
   paraTippred20016: number;
-  sucoValor: number;
+  sucoValor: number | null;
   sucoEstado: number;
   sucoFechacreacion: string;
   usuaUsua: number;

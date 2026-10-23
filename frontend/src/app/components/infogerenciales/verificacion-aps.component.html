@@ -4,54 +4,11 @@
   <div class="parametros-row">
     <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
     <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
-    <div class="form-group semestre-group">
-      <label>Semestre</label>
-      <p-select
-        [options]="semestres"
-        [ngModel]="semestre()"
-        (ngModelChange)="onSemestreChange($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Seleccione semestre"
-        [showClear]="true"
-        styleClass="w-full">
-      </p-select>
-    </div>
-    <div class="form-group empresa-group">
-      <label>Empresa</label>
-      <p-select
-        [options]="empresaOptions()"
-        [ngModel]="empresaSeleccionada()"
-        (ngModelChange)="onEmpresaChange($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Todas las empresas"
-        styleClass="w-full">
-      </p-select>
-    </div>
+    <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
   </div>
 </div>
 
 <div class="card-section">
-  <h3 class="table-title">Promedios Mensuales</h3>
-  <!-- Placeholder visual: valores mock, falta definir qué KPIs reales van acá. -->
-  <div class="kpi-grid">
-    <div class="kpi-card" *ngFor="let kpi of kpis()">
-      <span class="kpi-label">{{ kpi.label }}</span>
-      <span class="kpi-valor">{{ kpi.valor }}</span>
-    </div>
-  </div>
-</div>
-
-<div class="card-section" *ngIf="loading()">
-  <p class="loading-text">Consultando semestre...</p>
-</div>
-
-<div class="card-section">
-  <div class="toggle-totales">
-    <p-checkbox [ngModel]="mostrarTotales()" (ngModelChange)="mostrarTotales.set($event)" [binary]="true" inputId="toggle-totales"></p-checkbox>
-    <label for="toggle-totales">Mostrar fila de Total y Promedio</label>
-  </div>
   <p-tabs [value]="currentTab()" (valueChange)="onTabChange($event)">
     <p-tablist>
       <p-tab value="EMPRESA">Resumen Empresa</p-tab>
@@ -60,59 +17,38 @@
     </p-tablist>
     <p-tabpanels>
       <p-tabpanel value="EMPRESA">
-        <div *ngIf="gruposEmpresa().length === 0" class="sin-datos">Sin datos para el período seleccionado.</div>
-        <div class="card-section tabla-empresa" *ngFor="let grupo of gruposEmpresa()">
-          <h3 class="table-title">{{ grupo.nombre }}</h3>
-          <div class="table-wrapper table-scroll">
-            <app-tabla-avanzada
-              [columnas]="columnasTablaEmpresa"
-              [rows]="grupo.filas"
-              [scrollHeight]="alturaScroll()"
-              [cellClass]="cellClassFilaEspecial"
-              [loading]="loading()"
-              [filaExportable]="filaEsExportable"
-              storageKey="verificacion-empresa"
-              nombreExportar="ResumenEmpresa"
-            ></app-tabla-avanzada>
-          </div>
+        <div class="table-wrapper table-scroll">
+          <app-tabla-avanzada
+            [columnas]="columnasEmpresa"
+            [rows]="filasEmpresa()"
+            [loading]="loading()"
+            storageKey="verificacion-empresa"
+            nombreExportar="ResumenEmpresa"
+          ></app-tabla-avanzada>
         </div>
       </p-tabpanel>
 
       <p-tabpanel value="APS">
-        <div *ngIf="gruposAps().length === 0" class="sin-datos">Sin datos para el período seleccionado.</div>
-        <div class="card-section tabla-empresa" *ngFor="let grupo of gruposAps()">
-          <h3 class="table-title">{{ grupo.nombre }}</h3>
-          <div class="table-wrapper table-scroll">
-            <app-tabla-avanzada
-              [columnas]="columnasTablaAps"
-              [rows]="grupo.filas"
-              [scrollHeight]="alturaScroll()"
-              [cellClass]="cellClassFilaEspecial"
-              [loading]="loading()"
-              [filaExportable]="filaEsExportable"
-              storageKey="verificacion-aps"
-              nombreExportar="ResumenAPS"
-            ></app-tabla-avanzada>
-          </div>
+        <div class="table-wrapper table-scroll">
+          <app-tabla-avanzada
+            [columnas]="columnasAps"
+            [rows]="filasAps()"
+            [loading]="loading()"
+            storageKey="verificacion-aps"
+            nombreExportar="ResumenAPS"
+          ></app-tabla-avanzada>
         </div>
       </p-tabpanel>
 
       <p-tabpanel value="RELLENO">
-        <div *ngIf="gruposRelleno().length === 0" class="sin-datos">Sin datos para el período seleccionado.</div>
-        <div class="card-section tabla-empresa" *ngFor="let grupo of gruposRelleno()">
-          <h3 class="table-title">{{ grupo.nombre }}</h3>
-          <div class="table-wrapper table-scroll">
-            <app-tabla-avanzada
-              [columnas]="columnasTablaRelleno"
-              [rows]="grupo.filas"
-              [scrollHeight]="alturaScroll()"
-              [cellClass]="cellClassFilaEspecial"
-              [loading]="loading()"
-              [filaExportable]="filaEsExportable"
-              storageKey="verificacion-relleno"
-              nombreExportar="ResumenRelleno"
-            ></app-tabla-avanzada>
-          </div>
+        <div class="table-wrapper table-scroll">
+          <app-tabla-avanzada
+            [columnas]="columnasRelleno"
+            [rows]="filasRelleno()"
+            [loading]="loading()"
+            storageKey="verificacion-relleno"
+            nombreExportar="ResumenRelleno"
+          ></app-tabla-avanzada>
         </div>
       </p-tabpanel>
     </p-tabpanels>

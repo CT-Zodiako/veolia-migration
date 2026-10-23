@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -6,6 +6,7 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 
 @Component({
   selector: 'app-detalle-tarifas',
@@ -15,9 +16,14 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
   styleUrl: './detalle-tarifas.component.css'
 })
 export class DetalleTarifasComponent {
+  private readonly parametros = inject(ParametrosConsultaStateService);
+  private readonly hoy = new Date();
+
   aps: number | null = null;
-  anno: number | null = null;
-  mes: number | null = null;
+  // Legacy Selector.vue:153-158: without a stored period the selector starts on today (queried as today - 1 month,
+  // Detalletarifas.vue:338-346).
+  anno: number | null = this.parametros.getAnno() === null ? this.hoy.getFullYear() : null;
+  mes: number | null = this.parametros.getMes() === null ? this.hoy.getMonth() + 1 : null;
 
   activeTab = 0;
   rows: TarifaRow[] = [];

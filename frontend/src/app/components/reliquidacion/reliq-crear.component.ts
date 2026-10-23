@@ -241,8 +241,9 @@ export class ReliqCrearComponent {
     this.reliqService.eliminarReliquidacion(row.relqId).subscribe({ next: () => this.loadReliquidaciones() });
   }
 
+  // Legacy GET /aps: only the active APS assigned to the logged-in user.
   private loadAps(): void {
-    this.apsService.consultaGeneral().pipe(
+    this.apsService.selectorPorUsuario().pipe(
       map((rows) => rows.map((item) => ({ apsaId: item.APSA_ID, apsaNombre: item.APSA_NOMAPS || `${item.APSA_ID}` }))),
       catchError(() => of([]))
     ).subscribe((rows) => this.apsOptions.set(rows));

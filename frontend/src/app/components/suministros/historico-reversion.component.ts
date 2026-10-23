@@ -12,6 +12,16 @@ import { ReversionHistoryItem, SuministrosService } from '../../services/suminis
   styleUrl: './historico-reversion.component.css'
 })
 export class HistoricoReversionComponent implements OnInit {
+  // Legacy DetaReversion.vue:31-135 columns, also used by Exportar.
+  readonly columnasExportar = [
+    { field: 'nombreAps', header: 'APS' },
+    { field: 'anno', header: 'AÑO' },
+    { field: 'mes', header: 'MES' },
+    { field: 'fecha', header: 'FECHA' },
+    { field: 'motivo', header: 'MOTIVO' },
+    { field: 'usuario', header: 'USUARIO' }
+  ];
+
   rows: ReversionHistoryItem[] = [];
   loading = false;
   error = '';

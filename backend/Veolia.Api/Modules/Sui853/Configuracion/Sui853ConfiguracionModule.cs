@@ -13,6 +13,9 @@ public static class Sui853ConfiguracionModule
         services.AddScoped<Sui853ContractMapper>();
         services.AddScoped<IFormulariosRepository, FormulariosRepository>();
         services.AddScoped<ICargaGenericaRepository, CargaGenericaRepository>();
+        services.AddScoped<ISui853DriveLoadsRepository, Sui853DriveLoadsRepository>();
+        services.AddSingleton<Veolia.Api.Infrastructure.GoogleDrive.IGoogleDriveClient, Veolia.Api.Infrastructure.GoogleDrive.GoogleDriveClient>();
+        services.AddSingleton<Veolia.Api.Infrastructure.GoogleDrive.IGoogleDriveHarvestService, Veolia.Api.Infrastructure.GoogleDrive.GoogleDriveHarvestService>();
         services.AddScoped<Veolia.Api.Modules.Sui853.Operaciones.IResiduosGeneradosRepository,
             Veolia.Api.Modules.Sui853.Operaciones.ResiduosGeneradosRepository>();
         return services;

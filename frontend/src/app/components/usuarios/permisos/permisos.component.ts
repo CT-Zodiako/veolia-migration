@@ -163,17 +163,13 @@ export class PermisosComponent {
     this.error = '';
     this.success = '';
 
-    const llamadas = this.sistemasPermisos.map(sistema => {
-      const idsDelSistema = this.catalog
-        .filter(item => item.sistemaId === sistema.sistemaId && this.selectedIds.has(item.id))
-        .map(item => item.id);
-
-      return this.authService.uptUserMenu(this.selectedUsuarioId!, idsDelSistema, sistema.sistemaId);
-    });
+    const llamadas = this.sistemasPermisos.map(sistema =>
+      this.authService.uptUserMenu(this.selectedUsuarioId!, this.collectIdsParaGuardar(sistema.items), sistema.sistemaId));
 
     forkJoin(llamadas).subscribe({
       next: () => {
-        this.success = 'Permisos actualizados correctamente';
+        // Legacy AuthService.js:306.
+        this.success = 'Opciones Asignadas Correctamente';
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -202,6 +198,25 @@ export class PermisosComponent {
         this.collectIds(item.children, ids);
       }
     }
+  }
+
+  // Legacy MenuxUsuario.vue:52 (treeselect ALL_WITH_INDETERMINATE): checked leaves plus every checked or
+  // partially checked parent; MenuService.js:663 needs the parent MENU_ID to show the group.
+  private collectIdsParaGuardar(items: PermisoMenuNode[]): number[] {
+    const ids: number[] = [];
+    const walk = (nodos: PermisoMenuNode[]): void => {
+      for (const nodo of nodos) {
+        if (nodo.children.length === 0) {
+          if (this.selectedIds.has(nodo.id)) ids.push(nodo.id);
+          continue;
+        }
+        const antes = ids.length;
+        walk(nodo.children);
+        if (ids.length > antes) ids.push(nodo.id);
+      }
+    };
+    walk(items);
+    return ids;
   }
 
   private collectAllLeafIds(items: PermisoMenuNode[]): number[] {

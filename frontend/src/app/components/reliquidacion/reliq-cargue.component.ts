@@ -5,7 +5,7 @@ import { forkJoin } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
-import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { TablaAvanzadaComponent, TablaColumn, valorMostrado } from '../shared/tabla-avanzada.component';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { ReliqCargueService } from '../../services/reliquidacion/reliq-cargue.service';
 import { ReliquidacionService } from '../../services/reliquidacion/reliquidacion.service';
@@ -13,6 +13,33 @@ import { ParametrosConsultaStateService } from '../../services/parametros-consul
 import { ReliInfoAdicional, ReliInfoAps, ReliInfoEmpresa, ReliInfoRelleno, ReliInfoUsuarios, Reliquidacion } from '../../models/reliquidacion.model';
 
 type CargueTab = 'usuarios' | 'empresa' | 'aps' | 'relleno' | 'adicional';
+
+interface PlResult {
+  isError: boolean;
+  code: string | null;
+  message: string;
+}
+
+// Legacy Cargue.vue parsePlResult: freli_reliquidar devuelve "TAG|code|mensaje";
+// cualquier TAG que empiece con ERR es error.
+export function parsePlResult(raw: unknown): PlResult {
+  const txt = String(raw ?? '').trim();
+  if (!txt) return { isError: false, code: null, message: '' };
+  const parts = txt.split('|');
+  const tag = (parts[0] || '').toUpperCase();
+  if (tag.startsWith('ERR')) {
+    return {
+      isError: true,
+      code: parts[1] || null,
+      message: parts.slice(2).join('|') || 'Error en la ejecución.'
+    };
+  }
+  return {
+    isError: false,
+    code: parts[1] || null,
+    message: parts.slice(2).join('|') || txt
+  };
+}
 
 @Component({
   selector: 'app-reliq-cargue',
@@ -55,74 +82,76 @@ export class ReliqCargueComponent {
   readonly rellenoRows = computed(() => this.relleno() as unknown as Record<string, unknown>[]);
   readonly adicionalRows = computed(() => this.adicional() as unknown as Record<string, unknown>[]);
 
+  // Filtros "Contiene" y redondeo a 2 decimales replicados de los Resum*.vue del
+  // legacy (reliq/components/cargue/): cada tab filtra solo las columnas que filtraba allá.
   readonly columnasUsuarios: TablaColumn[] = [
-    { field: 'anno', header: 'Año' },
-    { field: 'mes', header: 'Mes' },
-    { field: 'clasNombre', header: 'Clase Uso' },
-    { field: 'tipoTarifaNombre', header: 'Tipo Tarifa' },
-    { field: 'factorProduccionNombre', header: 'Factor Prod' },
-    { field: 'cantidad', header: 'Cantidad', numero: true },
-    { field: 'toneladas', header: 'Toneladas', numero: true }
+    { field: 'anno', header: 'Año', filtrable: true },
+    { field: 'mes', header: 'Mes', filtrable: true },
+    { field: 'clasNombre', header: 'Clase Uso', filtrable: true },
+    { field: 'tipoTarifaNombre', header: 'Tipo Tarifa', filtrable: true },
+    { field: 'factorProduccionNombre', header: 'Factor Prod', filtrable: true },
+    { field: 'cantidad', header: 'Cantidad', numero: true, decimales: 2 },
+    { field: 'toneladas', header: 'Toneladas', numero: true, decimales: 2 }
   ];
 
   readonly columnasEmpresa: TablaColumn[] = [
-    { field: 'anno', header: 'Año' },
-    { field: 'mes', header: 'Mes' },
-    { field: 'empresaNombre', header: 'Empresa' },
-    { field: 'cblj', header: 'CBLJ', numero: true },
-    { field: 'lblj', header: 'LBLJ', numero: true },
-    { field: 'n', header: 'N', numero: true },
-    { field: 'm3agua', header: 'M3AGUA', numero: true },
-    { field: 'cp', header: 'CP', numero: true },
-    { field: 'm2ccj', header: 'M2CCJ', numero: true },
-    { field: 'm2lavj', header: 'M2LAVJ', numero: true },
-    { field: 'tij', header: 'TIJ', numero: true },
-    { field: 'klpj', header: 'KLPJ', numero: true },
-    { field: 'tmj', header: 'TMJ', numero: true },
-    { field: 'clavj', header: 'CLAVJ', numero: true },
-    { field: 'qrtj', header: 'QRTJ', numero: true }
+    { field: 'anno', header: 'Año', filtrable: true },
+    { field: 'mes', header: 'Mes', filtrable: true },
+    { field: 'empresaNombre', header: 'Empresa', filtrable: true },
+    { field: 'cblj', header: 'CBLJ', numero: true, decimales: 2 },
+    { field: 'lblj', header: 'LBLJ', numero: true, decimales: 2 },
+    { field: 'n', header: 'N', numero: true, decimales: 2 },
+    { field: 'm3agua', header: 'M3AGUA', numero: true, decimales: 2 },
+    { field: 'cp', header: 'CP', numero: true, decimales: 2 },
+    { field: 'm2ccj', header: 'M2CCJ', numero: true, decimales: 2 },
+    { field: 'm2lavj', header: 'M2LAVJ', numero: true, decimales: 2 },
+    { field: 'tij', header: 'TIJ', numero: true, decimales: 2 },
+    { field: 'klpj', header: 'KLPJ', numero: true, decimales: 2 },
+    { field: 'tmj', header: 'TMJ', numero: true, decimales: 2 },
+    { field: 'clavj', header: 'CLAVJ', numero: true, decimales: 2 },
+    { field: 'qrtj', header: 'QRTJ', numero: true, decimales: 2 }
   ];
 
   readonly columnasAps: TablaColumn[] = [
-    { field: 'anno', header: 'Año' },
-    { field: 'mes', header: 'Mes' },
-    { field: 'empresaNombre', header: 'Empresa' },
-    { field: 'qrtz', header: 'QRTZ', numero: true },
-    { field: 'cpe', header: 'CPE', numero: true },
-    { field: 't', header: 'T', numero: true },
-    { field: 'qbl', header: 'QBL', numero: true },
-    { field: 'qlu', header: 'QLU', numero: true },
-    { field: 'qr', header: 'QR', numero: true },
-    { field: 'tafa', header: 'TAFA', numero: true },
-    { field: 'nd', header: 'ND', numero: true },
-    { field: 'na', header: 'NA', numero: true },
-    { field: 'qna', header: 'QNA', numero: true },
-    { field: 'tafna', header: 'TAFNA', numero: true },
-    { field: 'qa', header: 'QA', numero: true },
-    { field: 'aprovecha', header: 'APROVECHA', numero: true },
-    { field: 'crtcomp', header: 'CRTCOMP', numero: true },
-    { field: 'cdfcomp', header: 'CDFCOMP', numero: true },
-    { field: 'qrscomp', header: 'QRSCOMP', numero: true },
-    { field: 'naa', header: 'NAA', numero: true },
-    { field: 'nda', header: 'NDA', numero: true }
+    { field: 'anno', header: 'Año', filtrable: true },
+    { field: 'mes', header: 'Mes', filtrable: true },
+    { field: 'empresaNombre', header: 'Empresa', filtrable: true },
+    { field: 'qrtz', header: 'QRTZ', numero: true, decimales: 2 },
+    { field: 'cpe', header: 'CPE', numero: true, decimales: 2 },
+    { field: 't', header: 'T', numero: true, decimales: 2 },
+    { field: 'qbl', header: 'QBL', numero: true, decimales: 2 },
+    { field: 'qlu', header: 'QLU', numero: true, decimales: 2 },
+    { field: 'qr', header: 'QR', numero: true, decimales: 2 },
+    { field: 'tafa', header: 'TAFA', numero: true, decimales: 2 },
+    { field: 'nd', header: 'ND', numero: true, decimales: 2 },
+    { field: 'na', header: 'NA', numero: true, decimales: 2 },
+    { field: 'qna', header: 'QNA', numero: true, decimales: 2 },
+    { field: 'tafna', header: 'TAFNA', numero: true, decimales: 2 },
+    { field: 'qa', header: 'QA', numero: true, decimales: 2 },
+    { field: 'aprovecha', header: 'APROVECHA', numero: true, decimales: 2 },
+    { field: 'crtcomp', header: 'CRTCOMP', numero: true, decimales: 2 },
+    { field: 'cdfcomp', header: 'CDFCOMP', numero: true, decimales: 2 },
+    { field: 'qrscomp', header: 'QRSCOMP', numero: true, decimales: 2 },
+    { field: 'naa', header: 'NAA', numero: true, decimales: 2 },
+    { field: 'nda', header: 'NDA', numero: true, decimales: 2 }
   ];
 
   readonly columnasRelleno: TablaColumn[] = [
-    { field: 'anno', header: 'Año' },
-    { field: 'mes', header: 'Mes' },
-    { field: 'qrs', header: 'QRS', numero: true },
-    { field: 'c', header: 'QRSmunrecep', numero: true },
-    { field: 'vl', header: 'VL', numero: true },
-    { field: 'ctmlx', header: 'CTMLX', numero: true },
-    { field: 'ctlk', header: 'CTLK', numero: true },
-    { field: 'escenario', header: 'ESCENARIO', numero: true }
+    { field: 'anno', header: 'Año', filtrable: true },
+    { field: 'mes', header: 'Mes', filtrable: true },
+    { field: 'qrs', header: 'QRS', numero: true, decimales: 2 },
+    { field: 'c', header: 'QRSmunrecep', numero: true, decimales: 2 },
+    { field: 'vl', header: 'VL', numero: true, decimales: 2 },
+    { field: 'ctmlx', header: 'CTMLX', numero: true, decimales: 2 },
+    { field: 'ctlk', header: 'CTLK', numero: true, decimales: 2 },
+    { field: 'escenario', header: 'ESCENARIO', numero: true, decimales: 2 }
   ];
 
   readonly columnasAdicional: TablaColumn[] = [
     { field: 'anno', header: 'Año' },
     { field: 'mes', header: 'Mes' },
-    { field: 'cdf', header: 'CDF', numero: true },
-    { field: 'ctl', header: 'CTL', numero: true }
+    { field: 'cdf', header: 'CDF', numero: true, decimales: 2 },
+    { field: 'ctl', header: 'CTL', numero: true, decimales: 2 }
   ];
 
   // Campos editables de las 5 tabs. Los sets son disjuntos entre tabs y ninguno
@@ -171,8 +200,9 @@ export class ReliqCargueComponent {
     }, 250);
   }
 
-  valorCeldaTexto(row: Record<string, unknown>, field: string, value: unknown): unknown {
-    const fallback = this.fallbackTexto[field];
+  valorCeldaTexto(row: Record<string, unknown>, col: TablaColumn, value: unknown): unknown {
+    if (col.decimales !== undefined) return valorMostrado(value, col);
+    const fallback = this.fallbackTexto[col.field];
     const resuelto = value ?? (fallback ? row[fallback] : null);
     return resuelto ?? '';
   }
@@ -292,8 +322,20 @@ export class ReliqCargueComponent {
     this.cargueService.compararCostosCargue(reliqId, apsaId).subscribe({
       next: (res) => {
         this.reliquidando.set(false);
-        const detalle = res.data?.resultado || res.message || 'Proceso finalizado.';
-        this.messages.add({ severity: res.status ? 'success' : 'error', summary: 'Reliquidar Tarifa', detail: detalle });
+        // Legacy Cargue.vue compararCostosCargue: el sobre puede ser "ok" y el
+        // paquete igual informar ERR|code|msg en su resultado.
+        const ok = res.status === 'ok' || res.status === true;
+        const parsed = parsePlResult(res.data?.resultado);
+        if (!ok || parsed.isError) {
+          const codeTxt = parsed.code ? ` (${parsed.code})` : '';
+          const msg = parsed.message || 'No se ejecutó.';
+          this.messages.add({ severity: 'error', summary: 'Reliquidar Tarifa', detail: `${msg}${codeTxt}. No se ejecutó.`, life: 6000 });
+          return;
+        }
+
+        this.messages.add({ severity: 'success', summary: 'Reliquidar Tarifa', detail: parsed.message || 'Proceso ejecutado correctamente.', life: 4000 });
+        // Legacy refrescaba las 5 tabs después de reliquidar.
+        this.consultar();
       },
       error: (err) => {
         this.reliquidando.set(false);

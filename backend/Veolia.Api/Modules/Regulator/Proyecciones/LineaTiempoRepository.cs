@@ -40,6 +40,7 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
     {
         using var connection = await OpenConnectionAsync(cancellationToken);
         using var transaction = connection.BeginTransaction();
+        var filasBloqueadas = 0;
 
         try
         {
@@ -75,10 +76,11 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
             else
             {
                 // Guard de servidor equivalente al bloqueo de UI (filaBloqueada() en
-                // linea-tiempo-page.component.ts): DELTESTADO=1 significa que la proyección
-                // ya fue ejecutada y, por comentario real de columna en Oracle, "no permite
-                // ser modificado". Se valida el estado vigente antes de actualizar para que
-                // un cliente que llame directo al endpoint no pueda saltarse el bloqueo de UI.
+                // linea-tiempo-page.component.ts): DELTESTADO=1 significa que la fila ya fue usada
+                // en una proyección ejecutada y, por comentario real de columna en Oracle, "no permite
+                // ser modificado". Como en el legacy (editarLineadeTiempo.vue:106, solo se bloqueaban
+                // las celdas bloqueadas) se guardan las filas editables y las bloqueadas se omiten
+                // sin tocarlas, aunque el cliente las envíe.
                 const string currentStatusSql = @"
                     SELECT PROYANNO AS Anno,
                            PROYMES AS Mes,
@@ -95,11 +97,10 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
                         new CommandDefinition(currentStatusSql, statusParameters, transaction: transaction, cancellationToken: cancellationToken)))
                     .ToDictionary(r => (r.Anno, r.Mes), r => r.Deltestado);
 
-                if (request.Rows.Any(row =>
-                        estadoActualPorPeriodo.TryGetValue((row.Anno, row.Mes), out var estadoActual) && estadoActual == 1))
-                {
-                    throw new InvalidOperationException("PROYECCION_BLOQUEADA");
-                }
+                bool Bloqueada(LineaTiempoRow row)
+                    => estadoActualPorPeriodo.TryGetValue((row.Anno, row.Mes), out var estadoActual) && estadoActual == 1;
+
+                filasBloqueadas = request.Rows.Count(Bloqueada);
 
                 const string updateSql = @"
                     UPDATE PROY_DETLINEATIEMPO
@@ -117,7 +118,7 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
                        AND PROYANNO = :11
                        AND PROYMES = :12";
 
-                foreach (var row in request.Rows)
+                foreach (var row in request.Rows.Where(row => !Bloqueada(row)))
                 {
                     var parameters = new DynamicParameters();
                     parameters.Add("1", row.Deltipc);
@@ -138,12 +139,10 @@ public sealed class LineaTiempoRepository(IOracleConnectionFactory connectionFac
             }
 
             transaction.Commit();
-            return new MutationResponse { Success = true, Message = "Línea de tiempo guardada correctamente.", Id = request.ProyId };
-        }
-        catch (InvalidOperationException)
-        {
-            transaction.Rollback();
-            throw;
+            var message = filasBloqueadas == 0
+                ? "Línea de tiempo guardada correctamente."
+                : $"Línea de tiempo guardada correctamente. {filasBloqueadas} fila(s) bloqueada(s) no se modificaron.";
+            return new MutationResponse { Success = true, Message = message, Id = request.ProyId };
         }
         catch (Exception ex)
         {

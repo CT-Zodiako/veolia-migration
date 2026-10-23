@@ -7,7 +7,7 @@ import { Formato2Response } from '../../models/sui853-cft.model';
 
 // cbicsmaxmin.vue (legacy) — F853S208, sin tabs, sin selector de parámetros.
 // El tab SEG2 del legacy está comentado/inactivo (mismo código F853S208), no
-// se migra un endpoint separado. Se envuelve en p-tabs de un solo tab (SEG1),
+// se migra un endpoint separado. Se envuelve en p-tabs de un solo tab ("SEG 3", rótulo del legacy),
 // misma estructura que las otras 7 pantallas de CFT, lista para sumar SEG2
 // (u otros segmentos) el día que se migre.
 @Component({

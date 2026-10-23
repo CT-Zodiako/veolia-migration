@@ -17,14 +17,21 @@
         <div *ngIf="success && !showForm" class="success-message">{{ success }}</div>
 
         <div class="table-container">
-          <p-table [value]="filteredUsuarios" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
+          <p-table
+            [value]="filteredUsuarios"
+            [tableStyle]="{ 'min-width': '50rem' }"
+            [paginator]="true"
+            [rows]="pageSize"
+            [rowsPerPageOptions]="rowsPerPageOptions"
+            sortField="SISU_APELLIDO"
+            [sortOrder]="1">
             <ng-template pTemplate="header">
               <tr>
                 <th>ID</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Correo</th>
-                <th>Estado</th>
+                <th pSortableColumn="SISU_APELLIDO">Apellido <p-sortIcon field="SISU_APELLIDO"></p-sortIcon></th>
+                <th pSortableColumn="SISU_NOMBRE">Nombre <p-sortIcon field="SISU_NOMBRE"></p-sortIcon></th>
+                <th pSortableColumn="SISU_CORREO">Correo <p-sortIcon field="SISU_CORREO"></p-sortIcon></th>
+                <th pSortableColumn="SISU_ESTADO">Estado <p-sortIcon field="SISU_ESTADO"></p-sortIcon></th>
                 <th>Acciones</th>
               </tr>
               <tr class="filter-row">
@@ -35,10 +42,24 @@
                     type="text"
                     class="column-filter-input"
                     placeholder="Buscar"
+                    (input)="apellidoFilter = $any($event.target).value" />
+                </th>
+                <th>
+                  <input
+                    pInputText
+                    type="text"
+                    class="column-filter-input"
+                    placeholder="Buscar"
                     (input)="nombreFilter = $any($event.target).value" />
                 </th>
-                <th></th>
-                <th></th>
+                <th>
+                  <input
+                    pInputText
+                    type="text"
+                    class="column-filter-input"
+                    placeholder="Buscar"
+                    (input)="correoFilter = $any($event.target).value" />
+                </th>
                 <th></th>
                 <th></th>
               </tr>
@@ -46,8 +67,8 @@
             <ng-template pTemplate="body" let-usuario>
               <tr>
                 <td>{{ usuario.SISU_ID }}</td>
-                <td>{{ usuario.SISU_NOMBRE }}</td>
                 <td>{{ usuario.SISU_APELLIDO }}</td>
+                <td>{{ usuario.SISU_NOMBRE }}</td>
                 <td>{{ usuario.SISU_CORREO }}</td>
                 <td>
                   <p-button
@@ -65,6 +86,19 @@
             </ng-template>
           </p-table>
         </div>
+
+        <p-dialog
+          header="Reinicio de clave"
+          [(visible)]="showResetDialog"
+          [modal]="true"
+          [style]="{ width: '30rem' }"
+          (onHide)="closeResetDialog()">
+          <p>Nueva contraseña:</p>
+          <p class="nueva-clave">{{ nuevaClave }}</p>
+          <ng-template pTemplate="footer">
+            <p-button label="Cerrar" icon="pi pi-times" severity="secondary" (click)="closeResetDialog()"></p-button>
+          </ng-template>
+        </p-dialog>
 
         <!-- Modal Form -->
         <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">

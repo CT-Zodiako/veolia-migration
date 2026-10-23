@@ -6,7 +6,7 @@ import { Sui853CftService } from '../../services/sui853-cft.service';
 import { Formato2Response } from '../../models/sui853-cft.model';
 
 // cblusMinimo.vue (legacy) — F853S202, sin tabs, sin selector de parámetros.
-// Se envuelve en p-tabs de un solo tab (SEG1), misma estructura que las
+// Se envuelve en p-tabs de un solo tab ("SEG 2", rótulo del legacy), misma estructura que las
 // otras 7 pantallas de CFT, lista para sumar más segmentos.
 @Component({
   selector: 'app-cblus-minimo-page',

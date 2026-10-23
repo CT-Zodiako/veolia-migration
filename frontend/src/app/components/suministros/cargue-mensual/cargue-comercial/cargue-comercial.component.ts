@@ -25,19 +25,20 @@ interface FilaCsv {
   TONELADAS?: string;
 }
 
+// Legacy CargueComercial.vue:120-179.
 const columnasPreview: TablaColumn[] = [
-  { field: 'codaps', header: 'COD APS' },
+  { field: 'codaps', header: 'Cod. Aps' },
   { field: 'aps', header: 'APS' },
-  { field: 'anno', header: 'AÑO' },
-  { field: 'mes', header: 'MES' },
-  { field: 'coduso', header: 'COD USO' },
-  { field: 'nomuso', header: 'NOM USO' },
-  { field: 'codfactor', header: 'COD FACTOR' },
-  { field: 'codtipo', header: 'COD TIPO' },
-  { field: 'tipo', header: 'TIPO' },
-  { field: 'tiponom', header: 'TIPO NOM' },
-  { field: 'cantidad', header: 'CANTIDAD' },
-  { field: 'toneladas', header: 'TONELADAS' }
+  { field: 'anno', header: 'Año' },
+  { field: 'mes', header: 'Mes' },
+  { field: 'coduso', header: 'Cod. CU' },
+  { field: 'nomuso', header: 'Nombre CU' },
+  { field: 'codfactor', header: 'Cod. Factor' },
+  { field: 'codtipo', header: 'Cod. Tipo' },
+  { field: 'tipo', header: 'Tipo' },
+  { field: 'tiponom', header: 'Nom. Tipo' },
+  { field: 'cantidad', header: 'Cantidad' },
+  { field: 'toneladas', header: 'Toneladas' }
 ];
 
 function aNumero(valor: string | undefined): number | null {
@@ -74,16 +75,10 @@ export class CargueComercialComponent {
     return { n, na, nd, tafna };
   });
 
-  readonly resumenEstratos = computed(() => {
-    const porEstrato = new Map<number, { nomuso: string; cantidad: number; toneladas: number }>();
-    this.filas().filter((f) => f.tipo === 1).forEach((f) => {
-      const actual = porEstrato.get(f.coduso) ?? { nomuso: f.nomuso, cantidad: 0, toneladas: 0 };
-      actual.cantidad += f.cantidad;
-      actual.toneladas += f.toneladas;
-      porEstrato.set(f.coduso, actual);
-    });
-    return Array.from(porEstrato.entries()).map(([coduso, valores]) => ({ coduso, ...valores }));
-  });
+  // Legacy CargueComercial.vue:330-342 (calcularResumenxestrato): one entry per TIPO 1 row, no aggregation.
+  readonly resumenEstratos = computed(() =>
+    this.filas().filter((f) => f.tipo === 1).map((f) => ({ coduso: f.coduso, nomuso: f.nomuso, cantidad: f.cantidad, toneladas: f.toneladas }))
+  );
 
   constructor(
     private readonly service: SuministrosService,
@@ -109,32 +104,31 @@ export class CargueComercialComponent {
     });
   }
 
+  // Legacy CargueComercial.vue:280-306: only the first row is checked, APS -> AÑO y MES (selected month), and the
+  // preview keeps the file values (:308-329).
   private procesarCsv(data: FilaCsv[]): void {
-    const errores: string[] = [];
+    const primera = data[0];
+    let error = '';
+    if (!primera) {
+      error = 'El archivo no contiene filas.';
+    } else if (aNumero(primera.CODAPS) !== this.aps) {
+      error = 'El APS Seleccionado no concuerda con el APS del archivo!';
+    } else if (aNumero(primera.ANNO) !== this.anno || aNumero(primera.MES) !== this.mes) {
+      error = 'El AÑO y MES Seleccionado no concuerda con los del archivo!';
+    }
 
-    data.forEach((fila, index) => {
-      const numeroFila = index + 1;
-      if (aNumero(fila.CODAPS) !== this.aps) {
-        errores.push(`Fila ${numeroFila}: el APS del archivo no coincide con el APS seleccionado.`);
-      }
-      if (aNumero(fila.ANNO) !== this.anno || aNumero(fila.MES) !== this.mes) {
-        errores.push(`Fila ${numeroFila}: el año/mes del archivo no coincide con el período seleccionado.`);
-      }
-    });
-
-    this.errores.set(errores);
-
-    if (errores.length > 0) {
+    if (error) {
+      this.errores.set([error]);
       this.filas.set([]);
       return;
     }
 
-    const periodo = periodoAnterior(this.anno, this.mes);
+    this.errores.set([]);
     this.filas.set(data.map((fila) => ({
       codaps: aNumero(fila.CODAPS) ?? this.aps,
       aps: fila.APS ?? '',
-      anno: periodo.anno,
-      mes: periodo.mes,
+      anno: aNumero(fila.ANNO) ?? this.anno,
+      mes: aNumero(fila.MES) ?? this.mes,
       coduso: aNumero(fila.CODUSO) ?? 0,
       nomuso: fila.NOMUSO ?? '',
       codfactor: aNumero(fila.CODFACTOR) ?? 0,
@@ -175,10 +169,12 @@ export class CargueComercialComponent {
       anno: periodo.anno,
       mes: periodo.mes,
       resume: this.resumenVariables(),
-      filecontent: this.filas()
+      // Legacy CargueService.js:58-79: every row shifted back one month.
+      filecontent: this.filas().map((fila) => ({ ...fila, ...periodoAnterior(fila.anno, fila.mes) }))
     }).subscribe({
       next: () => {
-        this.estado.set('Información de usuarios guardada correctamente.');
+        // Legacy CargueComercial.vue:410.
+        this.estado.set('GUARDADO EXITOSAMENTE');
         this.guardando.set(false);
         this.limpiarCargue();
         this.guardado.emit();

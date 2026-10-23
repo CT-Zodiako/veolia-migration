@@ -40,6 +40,9 @@
           storageKey="pgirs-informe-variables-clus"
           nombreExportar="InformeVariablesPGIRS-Clus"
           [cellClass]="cellClassMedido"
+          [cellTemplate]="celdaMedida"
+          [filasPorPagina]="15"
+          [rowsPerPageOptionsList]="[15, 30, 50, 100]"
           [loading]="loading()"
         ></app-tabla-avanzada>
       </p-tabpanel>
@@ -64,9 +67,14 @@
           storageKey="pgirs-informe-variables-barrido"
           nombreExportar="InformeVariablesPGIRS-Barrido"
           [cellClass]="cellClassMedido"
+          [cellTemplate]="celdaMedida"
+          [filasPorPagina]="15"
+          [rowsPerPageOptionsList]="[15, 30, 50, 100]"
           [loading]="loadingBarrido()"
         ></app-tabla-avanzada>
       </p-tabpanel>
     </p-tabpanels>
   </p-tabs>
 </div>
+
+<ng-template #celdaMedida let-value let-col="col">{{ valorMedido(value, col.field) }}</ng-template>

@@ -8,6 +8,15 @@ namespace Veolia.Api.Modules.Reliquidaciones.Tarificador;
 
 public sealed class ReliqTarificadorRepository(IOracleConnectionFactory connectionFactory) : IReliqTarificadorRepository
 {
+    // Legacy (tarificador/controller.js:185-205): schema-qualified package and an output
+    // bind with maxSize 32767 (the VARCHAR2 PL/SQL limit).
+    public const string AprobarTodoSql = @"
+            BEGIN
+                :1 := reliq.pkrei_aplicarreliquida.fnrei_aplicartodo(:2, :3);
+            END;";
+
+    public const int AprobarResultadoMaxSize = 32767;
+
     public Task<ResumenResponseDto?> ResumenUsuariosAsync(long reliqId, CancellationToken cancellationToken)
         => ExecuteResumenAsync("SELECT reliq.pkrei_updtarifador.fnrei_previsualizar_iuae(:1) AS resumen FROM dual", reliqId, cancellationToken);
 
@@ -25,18 +34,13 @@ public sealed class ReliqTarificadorRepository(IOracleConnectionFactory connecti
 
     public async Task<AprobarReliquidacionResultadoDto> AprobarReliquidacionAsync(long reliqId, long usuarioId, CancellationToken cancellationToken)
     {
-        const string sql = @"
-            BEGIN
-                :1 := PKREI_APLICARRELIQUIDA.fnrei_aplicartodo(:2, :3);
-            END;";
-
         var parameters = new DynamicParameters();
-        parameters.Add("1", dbType: System.Data.DbType.String, size: 4000, direction: System.Data.ParameterDirection.Output);
+        parameters.Add("1", dbType: System.Data.DbType.String, size: AprobarResultadoMaxSize, direction: System.Data.ParameterDirection.Output);
         parameters.Add("2", reliqId);
         parameters.Add("3", usuarioId);
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+        await connection.ExecuteAsync(new CommandDefinition(AprobarTodoSql, parameters, cancellationToken: cancellationToken));
         var raw = parameters.Get<string>("1");
         return ParseAprobarResultado(raw);
     }

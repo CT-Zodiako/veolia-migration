@@ -5,6 +5,7 @@ import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { InfoGerencialService } from '../../services/infogerenciales.service';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { formatearFechaLegacy } from './fecha-legacy.util';
 
 @Component({
   selector: 'app-costo-poda',
@@ -29,6 +30,8 @@ export class CostoPodaComponent {
     { field: 'SISU_CORREO', header: 'Usuario' }
   ];
 
+  readonly formatearFecha = formatearFechaLegacy;
+
   readonly cellClass = (row: Record<string, unknown>, col: TablaColumn): string =>
     col.field === 'TIPOINGRESO' && row['TIPOINGRESO'] === 'MANUAL' ? 'color-orange' : '';
 
@@ -49,11 +52,7 @@ export class CostoPodaComponent {
     this.loading.set(true);
     this.service.costoPoda(apsId).subscribe({
       next: (r) => {
-        const filas = (r.data || []).map((fila: Record<string, unknown>) => ({
-          ...fila,
-          CPTE_FECCREA: this.formatearFecha(fila['CPTE_FECCREA'])
-        }));
-        this.rows.set(filas);
+        this.rows.set(r.data || []);
         this.loading.set(false);
       },
       error: () => {
@@ -61,12 +60,5 @@ export class CostoPodaComponent {
         this.loading.set(false);
       }
     });
-  }
-
-  private formatearFecha(valor: unknown): string {
-    if (!valor || typeof valor !== 'string') return 'N/A';
-    const partes = valor.split('T')[0]?.split('-');
-    if (partes?.length !== 3) return 'N/A';
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 }

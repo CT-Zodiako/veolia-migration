@@ -5,7 +5,7 @@ namespace Veolia.Api.Modules.Regulator.Rellenos;
 
 [ApiController]
 [Route("api/v1/rellenos")]
-public sealed class RellenosController(IRellenosRepository rellenosRepository) : ControllerBase
+public sealed class RellenosController(IRellenosRepository rellenosRepository, ILogger<RellenosController> logger) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Listar(CancellationToken cancellationToken)
@@ -22,7 +22,8 @@ public sealed class RellenosController(IRellenosRepository rellenosRepository) :
         }
         catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = $"Error: {ex.Message} | {ex.StackTrace}" });
+            logger.LogError(ex, "Error listing rellenos");
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
         }
     }
 

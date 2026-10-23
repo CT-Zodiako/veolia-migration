@@ -2,7 +2,9 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { TablaAvanzadaComponent, TablaColumn } from './tabla-avanzada.component';
-import { Formato2Response, TablaColumnaMeta } from '../../models/sui853-cft.model';
+import { Formato2Response, TablaColumnaMeta, TablaSeccion } from '../../models/sui853-cft.model';
+
+const SIN_FILAS: Record<string, unknown>[] = [];
 
 interface DetalleEntry {
   label: string;
@@ -46,8 +48,28 @@ export class Sui853Formato2TablaComponent implements OnChanges {
     }
   }
 
+  // Legacy TablaScrollHorizontal.vue hasData: Array.isArray(config.data) --
+  // f_render_formato2 puede devolver "data": null.
+  get filas(): Record<string, unknown>[] {
+    const filas = this.data?.data;
+    return Array.isArray(filas) ? filas : SIN_FILAS;
+  }
+
+  // Legacy dialogHeaderValue: meta.dialogHeader ("{CODIGO} | {NOMBRE} |
+  // {DESCRIPCION}" de sui.TCAT_DOCUMENTO) y, si no viene, el title de la función.
+  get titulo(): string | null {
+    const dialogHeader = this.data?.meta?.['dialogHeader'];
+    if (typeof dialogHeader === 'string' && dialogHeader.trim()) {
+      return dialogHeader;
+    }
+    return this.data?.title || null;
+  }
+
+  /** Legacy TablaScrollHorizontal.vue:156 paginator options (rows default 10). */
+  readonly paginadorOpciones = [10, 24, 50];
+
   get nombreExportarEfectivo(): string {
-    return this.nombreExportar || this.data?.title || this.storageKey || 'formato2';
+    return this.nombreExportar || this.titulo || this.storageKey || 'formato2';
   }
 
   get detalleEntries(): DetalleEntry[] {
@@ -142,9 +164,14 @@ export class Sui853Formato2TablaComponent implements OnChanges {
   }
 
   private rebuildColumnas(): void {
-    const sinHeaders = this.data?.SIN_MOVIMIENTO?.headers ?? [];
-    const conHeaders = this.data?.CON_MOVIMIENTO?.headers ?? [];
-    const todas = [...sinHeaders, ...conHeaders].filter((h): h is TablaColumnaMeta => !!h?.field);
+    const sinHeaders = this.headersDeSeccion(this.data?.SIN_MOVIMIENTO);
+    const conHeaders = this.headersDeSeccion(this.data?.CON_MOVIMIENTO);
+    const vistos = new Set<string>();
+    const todas = [...sinHeaders, ...conHeaders].filter((h): h is TablaColumnaMeta => {
+      if (!h?.field || vistos.has(h.field)) return false;
+      vistos.add(h.field);
+      return true;
+    });
 
     this.fieldMeta = new Map(todas.map((h) => [h.field, h]));
     this.headerMap = new Map(todas.map((h) => [h.field, h.header || h.field]));
@@ -157,6 +184,17 @@ export class Sui853Formato2TablaComponent implements OnChanges {
     }));
 
     this.columnasFijadasPorDefecto = sinHeaders.filter((h): h is TablaColumnaMeta => !!h?.field).map((h) => h.field);
+  }
+
+  // Todas las columnas de la sección (F3: con y sin filtro). Si la función no
+  // manda `headers`, se usan headersConFiltro + headersSinFiltro como el
+  // legacy (leftHeaders/rightHeaders en TablaScrollHorizontal.vue).
+  private headersDeSeccion(seccion: TablaSeccion | null | undefined): TablaColumnaMeta[] {
+    if (!seccion) return [];
+    if (Array.isArray(seccion.headers) && seccion.headers.length > 0) return seccion.headers;
+    const conFiltro = Array.isArray(seccion.headersConFiltro) ? seccion.headersConFiltro : [];
+    const sinFiltro = Array.isArray(seccion.headersSinFiltro) ? seccion.headersSinFiltro : [];
+    return [...conFiltro, ...sinFiltro];
   }
 
   private esColumnaDeValor(formato: string | null | undefined): boolean {

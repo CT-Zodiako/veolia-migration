@@ -73,7 +73,8 @@ VALUES (:aps, :empr, :anno, :mes, :cp, :mt3agua, :m2cc, :m2lav, :ti, :tm, :klp, 
         try
         {
             var inserted = 0;
-            foreach (var fila in request.resumemes)
+            // Legacy suministros/controller.js:369-374 / :476-477 persisted only resumemes[0]; extra CSV rows are ignored.
+            var fila = request.resumemes[0];
             {
                 await connection.ExecuteAsync(new CommandDefinition(deleteSql, new { aps = fila.aps, anno = fila.anno, mes = fila.mes }, transaction: transaction, cancellationToken: cancellationToken));
                 inserted += await connection.ExecuteAsync(new CommandDefinition(insertSql, new
@@ -173,7 +174,8 @@ VALUES (:aps, :empr, :anno, :mes, :cp, :mt3agua, :m2cc, :m2lav, :ti, :tm, :klp, 
         try
         {
             var inserted = 0;
-            foreach (var fila in request.resumemes)
+            // Legacy suministros/controller.js:369-374 / :476-477 persisted only resumemes[0]; extra CSV rows are ignored.
+            var fila = request.resumemes[0];
             {
                 await connection.ExecuteAsync(new CommandDefinition(deleteSql, new { aps = fila.aps, empr = fila.empr, anno = fila.anno, mes = fila.mes }, transaction: transaction, cancellationToken: cancellationToken));
                 inserted += await connection.ExecuteAsync(new CommandDefinition(insertSql, new
@@ -499,7 +501,9 @@ VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
 
     public async Task<IReadOnlyList<dynamic>> GetCanCertificateAsync(PrevalidarRequest request, CancellationToken cancellationToken)
     {
-        const string sql = @"SELECT * FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mes";
+        // Legacy suministros/controller.js:550-555: a count, not the tariff rows (SELECT * overflowed System.Decimal
+        // on AUCO_TARIFAS' unconstrained NUMBER/FLOAT columns with real data).
+        const string sql = @"SELECT COUNT(1) AS CANTIDAD FROM AUCO_TARIFAS WHERE APSA_ID = :aps AND TARI_ANNO = :anno AND TARI_MES = :mes";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync(sql, request);
@@ -515,8 +519,28 @@ VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
         return await connection.ExecuteScalarAsync<int>(new CommandDefinition(sql, new { request.aps, request.anno, mesCierre }, cancellationToken: cancellationToken));
     }
 
-    public async Task<string?> CertificarAsync(CertificarRequest request, CancellationToken cancellationToken) =>
-        await ExecutePackageStringAsync("PK_CERTIFICACION.fauco_certificar", request.aps, request.anno, request.mes, cancellationToken);
+    // Legacy suministros/controller.js:623-640: fauco_certificar(aps, mes, anno, usuario) RETURN integer, then COMMIT.
+    public const string CertificarSql = "BEGIN :res := PK_CERTIFICACION.fauco_certificar(:1, :2, :3, :4); COMMIT; END;";
+
+    public static DynamicParameters BuildCertificarParameters(CertificarRequest request, long usuarioId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("res", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parameters.Add("1", request.aps);
+        parameters.Add("2", request.mes);
+        parameters.Add("3", request.anno);
+        parameters.Add("4", usuarioId);
+        return parameters;
+    }
+
+    public async Task<int?> CertificarAsync(CertificarRequest request, long usuarioId, CancellationToken cancellationToken)
+    {
+        var parameters = BuildCertificarParameters(request, usuarioId);
+
+        using var connection = await OpenConnectionAsync(cancellationToken);
+        await connection.ExecuteAsync(new CommandDefinition(CertificarSql, parameters, cancellationToken: cancellationToken));
+        return parameters.Get<int?>("res");
+    }
 
     public async Task<int?> CertificarSemestralAsync(CertificarSemestralRequest request, long usuarioId, CancellationToken cancellationToken)
     {
@@ -596,7 +620,7 @@ VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
     public async Task<IReadOnlyList<dynamic>> ConsultaCostoPodaAsync(PodaCatalogoRequest request, CancellationToken cancellationToken)
     {
         const string sql = @"
-            SELECT E.*
+            SELECT *
               FROM AUGE_EMPRESAS E
               JOIN AUCO_APSEMPRDIVI AE ON E.EMPR_EMPR = AE.EMPR_EMPR
              WHERE AE.APSA_ID = :aps
@@ -607,19 +631,29 @@ VALUES (:aps, :anno, :semestre, :qrtRural, SYSDATE, :usuario)";
         return rows.ToList();
     }
 
+    // Legacy suministros/controller.js:1084: positional VALUES without a column list.
+    public const string NewCostoPodaSql = "INSERT INTO AUCO_PODATECHO VALUES (:1, :2, :3, :4, :5, 0, 0, 1, SYSDATE, :6)";
+
+    public static DynamicParameters BuildNewCostoPodaParameters(PodaNuevoRequest request, PodaNuevoItem item, long usuarioId)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("1", request.aps);
+        parameters.Add("2", item.EMPR_EMPR);
+        parameters.Add("3", request.anno);
+        parameters.Add("4", request.mes);
+        parameters.Add("5", item.valor);
+        parameters.Add("6", usuarioId);
+        return parameters;
+    }
+
     public async Task NewCostoPodaAsync(PodaNuevoRequest request, long usuarioId, CancellationToken cancellationToken)
     {
-        const string sql = @"
-            INSERT INTO AUCO_PODATECHO
-            (APSA_ID, EMPR_EMPR, CPTE_ANNO, CPTE_MES, CPTE_VALORSUI, CPTE_VALORFACT, CPTE_VARIACION, CPTE_TIPINGRESO, CPTE_FECCREA, USUA_USUA)
-            VALUES (:aps, :emprEmpr, :anno, :mes, :valor, 0, 0, 1, SYSDATE, :usuario)";
-
         using var connection = await OpenConnectionAsync(cancellationToken);
         foreach (var item in request.datos)
         {
             await connection.ExecuteAsync(new CommandDefinition(
-                sql,
-                new { aps = request.aps, emprEmpr = item.EMPR_EMPR, anno = request.anno, mes = request.mes, valor = item.valor, usuario = usuarioId },
+                NewCostoPodaSql,
+                BuildNewCostoPodaParameters(request, item, usuarioId),
                 cancellationToken: cancellationToken));
         }
     }

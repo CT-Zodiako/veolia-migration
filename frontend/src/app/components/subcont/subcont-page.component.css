@@ -21,14 +21,27 @@
   text-align: right;
 }
 
+.subcon-layout {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.actions {
+  flex-direction: column;
+}
+
 .valor-editor {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
+  display: flex;
+  flex-direction: column;
   gap: 0.35rem;
+  margin-bottom: 0.8rem;
+}
+
+.valor-editor label {
+  font-weight: bold;
 }
 
 .valor-editor input {
-  width: 10rem;
-  text-align: right;
+  width: 100%;
 }

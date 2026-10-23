@@ -4,6 +4,7 @@ import { Observable, catchError, map, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   ApiResponseEnvelope,
+  SuiComplementoFilaRequest,
   SuiComplementoRequest,
   SuiComplementoResponse,
   SuiConsultaRequest,
@@ -13,6 +14,16 @@ import {
   SuiProcesarRequest,
   SuiProcesarResponse
 } from '../models/sui-integracion.models';
+
+/** Procesar body: the backend takes the user from the token (legacy req.SISU_ID), never from the body. */
+export type SuiProcesarPayload = Omit<SuiProcesarRequest, 'usuario'>;
+
+/** Complemento row: every value but the APS may be blank (legacy TO_NUMBER(null)). */
+export type SuiComplementoFilaPayload = { aps: number } & {
+  [K in Exclude<keyof SuiComplementoFilaRequest, 'aps'>]: number | null;
+};
+
+export type SuiComplementoPayload = Omit<SuiComplementoRequest, 'usuario' | 'filas'> & { filas: SuiComplementoFilaPayload[] };
 
 @Injectable({ providedIn: 'root' })
 export class SuiIntegracionService {
@@ -69,12 +80,12 @@ export class SuiIntegracionService {
       this.http.post<ApiResponseEnvelope<SuiPrecheckResponse>>(`${this.baseUrl}/getcanCertificate`, payload, { headers: this.getHeaders() })
     );
   }
-  procesar(payload: SuiProcesarRequest): Observable<SuiProcesarResponse> {
+  procesar(payload: SuiProcesarPayload): Observable<SuiProcesarResponse> {
     return this.unwrap<SuiProcesarResponse>('procesar SUI')(
       this.http.post<ApiResponseEnvelope<SuiProcesarResponse>>(`${this.baseUrl}/Procesar`, payload, { headers: this.getHeaders() })
     );
   }
-  setCargueInfComplemento(payload: SuiComplementoRequest): Observable<SuiComplementoResponse> {
+  setCargueInfComplemento(payload: SuiComplementoPayload): Observable<SuiComplementoResponse> {
     return this.unwrap<SuiComplementoResponse>('guardar complemento')(
       this.http.post<ApiResponseEnvelope<SuiComplementoResponse>>(`${this.baseUrl}/setCargueInfComplemento`, payload, { headers: this.getHeaders() })
     );

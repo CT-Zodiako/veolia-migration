@@ -3,7 +3,9 @@
   <p-button *ngIf="filasPivotadas()" label="Restaurar" icon="pi pi-undo" severity="secondary" (onClick)="restaurar()"></p-button>
 </div>
 
-<app-pivot-nivel [filas]="filasMostradas" [columnas]="columnas" [agrupaciones]="agrupacionesActivas" [nivel]="0"></app-pivot-nivel>
+<!-- Legacy TablaPivot.vue:20-21,160,276: 10 rows per page, 5 when pivoted. -->
+<app-pivot-nivel [filas]="filasMostradas" [columnas]="columnas" [agrupaciones]="agrupacionesActivas" [nivel]="0"
+  [raiz]="true" [filasPorPagina]="filasPivotadas() ? 5 : 10"></app-pivot-nivel>
 
 <p-dialog header="Configuración de Pivoteo" [(visible)]="dialogVisible" [modal]="true" [style]="{ width: '40rem' }">
   <div class="pivot-config-section">

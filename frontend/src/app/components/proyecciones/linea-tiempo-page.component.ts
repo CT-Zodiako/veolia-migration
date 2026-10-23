@@ -19,17 +19,22 @@ const MESES = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
+// Legacy editarLineadeTiempo.vue:23-145: headers AÑO..IND IPCC; IPC TCL (DELTIPCCS) solo para el APS 1034.
 const COLUMNAS_LINEA_TIEMPO: TablaColumn[] = [
-  { field: 'anno', header: 'Año' },
-  { field: 'mes', header: 'Mes' },
+  { field: 'anno', header: 'AÑO' },
+  { field: 'mes', header: 'MES' },
   { field: 'deltipc', header: 'IPC', numero: true },
   { field: 'deltipcc', header: 'IPCC', numero: true },
   { field: 'deltsmlv', header: 'SMLV', numero: true },
   { field: 'deltioexp', header: 'IOEXP', numero: true },
-  { field: 'deltfacproduc', header: 'Fact Prod', numero: true },
-  { field: 'deltindipcc', header: 'Ind IPCC', numero: true },
+  { field: 'deltfacproduc', header: 'FACT PROD', numero: true },
+  { field: 'deltindipcc', header: 'IND IPCC', numero: true }
+];
+const COLUMNAS_LINEA_TIEMPO_1034: TablaColumn[] = [
+  ...COLUMNAS_LINEA_TIEMPO,
   { field: 'deltipccs', header: 'IPC TCL', numero: true }
 ];
+const APS_IPC_TCL = 1034;
 
 @Component({
   selector: 'app-linea-tiempo-page',
@@ -43,7 +48,9 @@ const COLUMNAS_LINEA_TIEMPO: TablaColumn[] = [
   styleUrls: ['./linea-tiempo-page.component.css']
 })
 export class LineaTiempoPageComponent {
-  readonly columnas = COLUMNAS_LINEA_TIEMPO;
+  get columnas(): TablaColumn[] {
+    return this.aps() === APS_IPC_TCL ? COLUMNAS_LINEA_TIEMPO_1034 : COLUMNAS_LINEA_TIEMPO;
+  }
 
   aps = signal<number | null>(null);
   proyId = signal<number | null>(null);
@@ -121,6 +128,12 @@ export class LineaTiempoPageComponent {
     this.editDraft.set(null);
   }
 
+  // Legacy editarLineadeTiempo.vue:237-243 (roundToDecimals): 0/null se muestra 0, el resto con toFixed(5).
+  redondear(value: unknown): string | number {
+    const numero = Number(value || 0);
+    return numero === 0 ? 0 : numero.toFixed(5);
+  }
+
   valorEditado(col: TablaColumn): number | null {
     const draft = this.editDraft();
     if (!draft) return null;
@@ -143,15 +156,15 @@ export class LineaTiempoPageComponent {
     this.service.registrarLineaTiempo(payload).subscribe({
       next: (r) => {
         this.saving.set(false);
-        this.messages.add({ severity: r.status ? 'success' : 'error', summary: 'Línea de tiempo', detail: r.message });
+        // Legacy ProyService.js:158-168 (newLineasdeTiempo): toasts sin detalle.
+        this.messages.add(r.status ? { severity: 'success', summary: 'Guardado Correctamente' } : { severity: 'error', summary: 'Error al Guardar' });
         if (r.status) {
           this.consultar(proyId);
         }
       },
-      error: (err) => {
+      error: () => {
         this.saving.set(false);
-        const detail = err?.error?.message || 'No se pudo guardar la línea de tiempo.';
-        this.messages.add({ severity: 'error', summary: 'Línea de tiempo', detail });
+        this.messages.add({ severity: 'error', summary: 'Error al Guardar' });
       }
     });
   }
@@ -178,7 +191,11 @@ export class LineaTiempoPageComponent {
     let mes = p.proyMesDes;
 
     while (anno < p.proyAnnoHas || (anno === p.proyAnnoHas && mes <= p.proyMesHas)) {
-      filas.push({ proyId: this.proyId() || 0, apsaId: this.aps() || 0, anno, mes, deltestado: 0 });
+      // Legacy seleccionarProyeccion.vue:64-79 (dataRow): todos los DELT* arrancan en 0.
+      filas.push({
+        proyId: this.proyId() || 0, apsaId: this.aps() || 0, anno, mes,
+        deltipc: 0, deltipcc: 0, deltsmlv: 0, deltioexp: 0, deltfacproduc: 0, deltindipcc: 0, deltipccs: 0, deltestado: 0
+      });
       mes++;
       if (mes > 12) {
         mes = 1;

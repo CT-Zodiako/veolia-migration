@@ -41,8 +41,16 @@ export class EjecutarReversionComponent {
   }
 
   ejecutar(): void {
-    if (this.aps === null || this.anno === null || this.mes === null || !this.motivo.trim()) {
-      this.error = 'Debe seleccionar APS, año, mes y motivo';
+    // Legacy Reversiones.vue:80-92: APS first, then the motivo.
+    const faltante = this.aps === null
+      ? 'Debe Seleccionar una APS'
+      : !this.motivo.trim()
+        ? 'El valor es obligatorio'
+        : this.anno === null || this.mes === null
+          ? 'Debe seleccionar año y mes'
+          : '';
+    if (faltante) {
+      this.error = faltante;
       this.success = '';
       this.cdr.detectChanges();
       return;
@@ -57,8 +65,8 @@ export class EjecutarReversionComponent {
     // fauco_integracion devuelva OK; si no, bloquea la reversión. El mes que
     // se selecciona en pantalla es el "mes actual" -- la reversión real
     // siempre opera sobre el mes YA CERRADO (mes anterior).
-    this.periodoReversion = periodoAnterior(this.anno, this.mes);
-    this.validacionesService.faucoIntegracion({ aps: this.aps, anno: this.periodoReversion.anno, mes: this.periodoReversion.mes }).subscribe({
+    this.periodoReversion = periodoAnterior(this.anno!, this.mes!);
+    this.validacionesService.faucoIntegracion({ aps: this.aps!, anno: this.periodoReversion.anno, mes: this.periodoReversion.mes }).subscribe({
       next: (validacion) => {
         if (!validacion.ok) {
           this.loading = false;
@@ -106,7 +114,8 @@ export class EjecutarReversionComponent {
       next: (data) => {
         this.loading = false;
         if (data?.ok) {
-          this.success = `Reversión ejecutada correctamente (ID: ${data.reversionId ?? 'N/A'})`;
+          // Legacy CargueService.js:518-523.
+          this.success = 'Periodo Reversado Correctamente';
           this.motivo = '';
         } else {
           this.error = data?.message || 'No fue posible ejecutar la reversión';

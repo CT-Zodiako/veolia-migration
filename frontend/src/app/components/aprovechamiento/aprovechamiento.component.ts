@@ -101,7 +101,7 @@ export class AprovechamientoComponent {
         ? '¿Confirmás ACTIVAR el cobro de aprovechamiento sin tener QA para este período?'
         : '¿Confirmás DESACTIVAR el cobro de aprovechamiento sin tener QA para este período?',
       icon: 'pi pi-question-circle',
-      acceptLabel: 'Aplicar',
+      acceptLabel: 'Aceptar',
       rejectLabel: 'Cancelar',
       accept: () => this.aplicar(nuevoValor)
     });
@@ -118,12 +118,13 @@ export class AprovechamientoComponent {
     this.service.actualizar({ aps, anno: periodo.anno, mes: periodo.mes, activar }).subscribe({
       next: () => {
         this.loading.set(false);
-        this.messages.add({ severity: 'success', summary: 'Activar Aprovechamiento', detail: 'Estado actualizado correctamente.' });
+        // Legacy SuministrosService.js:58-70: "Modificado Correctamente" / "Error al modificar".
+        this.messages.add({ severity: 'success', summary: 'Modificado Correctamente' });
         this.consultar();
       },
       error: (err) => {
         this.loading.set(false);
-        this.messages.add({ severity: 'error', summary: 'Activar Aprovechamiento', detail: err?.error?.message || 'No se pudo actualizar.' });
+        this.messages.add({ severity: 'error', summary: 'Error al modificar', detail: err?.error?.message });
       }
     });
   }

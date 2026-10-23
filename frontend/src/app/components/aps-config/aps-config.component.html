@@ -30,17 +30,20 @@
       [value]="filteredApsItems"
       [tableStyle]="{ 'min-width': '50rem' }"
       [paginator]="true"
-      [rows]="10">
+      [rows]="pageSize"
+      [rowsPerPageOptions]="rowsPerPageOptions"
+      sortField="APSA_NOMAPS"
+      [sortOrder]="1">
       <ng-template pTemplate="header">
         <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Resolución</th>
-          <th>Propio</th>
-          <th>Solo relleno</th>
-          <th>Estado</th>
-          <th>IAT</th>
-          <th>ID SUI</th>
+          <th pSortableColumn="APSA_ID">ID <p-sortIcon field="APSA_ID"></p-sortIcon></th>
+          <th pSortableColumn="APSA_NOMAPS">Nombre <p-sortIcon field="APSA_NOMAPS"></p-sortIcon></th>
+          <th pSortableColumn="APSA_RESOLUCION">Resolución <p-sortIcon field="APSA_RESOLUCION"></p-sortIcon></th>
+          <th pSortableColumn="APSA_PROPIO">Propio <p-sortIcon field="APSA_PROPIO"></p-sortIcon></th>
+          <th pSortableColumn="APSA_SOLORELL">Solo relleno <p-sortIcon field="APSA_SOLORELL"></p-sortIcon></th>
+          <th pSortableColumn="APSA_ESTADO">Estado <p-sortIcon field="APSA_ESTADO"></p-sortIcon></th>
+          <th pSortableColumn="APSA_VIAT">IAT <p-sortIcon field="APSA_VIAT"></p-sortIcon></th>
+          <th pSortableColumn="APSA_IDSUI">ID SUI <p-sortIcon field="APSA_IDSUI"></p-sortIcon></th>
           <th>Acciones</th>
         </tr>
         <tr class="filter-row">

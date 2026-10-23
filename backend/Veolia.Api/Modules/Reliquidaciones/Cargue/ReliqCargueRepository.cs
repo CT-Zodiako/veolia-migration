@@ -153,7 +153,7 @@ public sealed class ReliqCargueRepository(IOracleConnectionFactory connectionFac
     public async Task<ResumenCompararTarifasResponseDto?> ResumenCompararTarifasAsync(long reliq, long apsaId, int anno, int mes, CancellationToken cancellationToken)
     {
         const string sql = @"
-            SELECT reliq.PK_JSONRESUMEN.freli_jsongral(:1,:2,:3,:4) AS json_trna
+            SELECT reliq.PK_JSONRESUMEN.freli_jsongral(:1,:2,:3,:4) AS JsonTrna
               FROM dual";
 
         var parameters = new DynamicParameters();

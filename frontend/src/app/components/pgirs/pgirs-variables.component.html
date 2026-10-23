@@ -18,9 +18,12 @@
 
   <div class="card-section">
     <div class="mb-3 flex justify-content-end">
+      <!-- Legacy tableVariablesPGRIS.vue:17-18,261-265: deshabilitado si el período ya tiene variables. -->
       <p-button
-        label="Nueva Variable"
-        icon="pi pi-plus"
+        label="Nuevo"
+        icon="pi pi-plus-circle"
+        severity="success"
+        [disabled]="consultaData().length > 0"
         (onClick)="abrirNuevaVariable()"
       ></p-button>
     </div>
@@ -54,12 +57,17 @@
       nombreExportar="VariablesPGIRS"
       [cellTemplate]="celda"
       [accionesTemplate]="acciones"
+      [cellClass]="cellClassVariables"
       [loading]="consultaLoading()"
+      [filasPorPagina]="15"
+      [rowsPerPageOptionsList]="[15, 30, 50, 100]"
     ></app-tabla-avanzada>
 
     <ng-template #celda let-value let-row="row" let-col="col">
       <ng-container [ngSwitch]="col.field">
         <span *ngSwitchCase="'PGRIVARIABLE'">{{ traducirVariable(value) }}</span>
+        <span *ngSwitchCase="'MESREAL'">{{ nombreMes(value) }}</span>
+        <span *ngSwitchCase="'PGRIFECHA'">{{ fechaIngreso(value) }}</span>
 
         <ng-container *ngSwitchCase="'PGRIVALOR'">
           <input
@@ -102,86 +110,46 @@
       </div>
     </ng-template>
 
+    <!-- Legacy tableVariablesPGRIS.vue:83-196: las siete variables (Barridos / CLUS) con su frecuencia. -->
     <p-dialog
-      header="Nueva variable"
+      header="Nuevo variablesPGRIS"
       [modal]="true"
-      [closable]="true"
+      [closable]="false"
       [style]="{ width: '36rem' }"
       [visible]="newDialogVisible()"
       (visibleChange)="newDialogVisible.set($event)"
     >
-      <div class="grid">
-        <div class="col-12 md:col-4">
-          <label class="block mb-1">APS ID</label>
-          <input
-            pInputText
-            class="w-full"
-            [ngModel]="newForm().apsId"
-            (ngModelChange)="newForm.set({ ...newForm(), apsId: $event })"
-          />
+      <ng-container *ngFor="let seccion of seccionesNuevo">
+        <h4>{{ seccion.titulo }}</h4>
+        <div class="grid" *ngFor="let v of seccion.variables">
+          <div class="col-12"><label class="block mb-1" [attr.for]="v.valorKey">{{ v.etiqueta }}</label></div>
+          <div class="col-12 md:col-6">
+            <input
+              pInputText
+              type="number"
+              class="w-full"
+              [id]="v.valorKey"
+              [ngModel]="newForm()[v.valorKey]"
+              (ngModelChange)="actualizarNuevo(v.valorKey, $event)"
+            />
+          </div>
+          <div class="col-12 md:col-6">
+            <p-select
+              [options]="frecuenciaOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Frecuencia"
+              [ngModel]="newForm()[v.frecuenciaKey]"
+              (ngModelChange)="actualizarNuevo(v.frecuenciaKey, $event)"
+              styleClass="w-full"
+            ></p-select>
+          </div>
+          <div class="col-12 p-error" *ngIf="newFormError()">{{ newFormError() }}</div>
         </div>
-        <div class="col-12 md:col-4">
-          <label class="block mb-1">Año</label>
-          <input
-            pInputText
-            class="w-full"
-            [ngModel]="newForm().anno"
-            (ngModelChange)="newForm.set({ ...newForm(), anno: $event })"
-          />
-        </div>
-        <div class="col-12 md:col-4">
-          <label class="block mb-1">Mes</label>
-          <input
-            pInputText
-            class="w-full"
-            [ngModel]="newForm().mes"
-            (ngModelChange)="newForm.set({ ...newForm(), mes: $event })"
-          />
-        </div>
-        <div class="col-12">
-          <label class="block mb-1">Variable</label>
-          <p-select
-            [options]="variableOptions"
-            optionLabel="label"
-            optionValue="label"
-            placeholder="Seleccione variable"
-            [ngModel]="newForm().variable"
-            (ngModelChange)="newForm.set({ ...newForm(), variable: $event })"
-            styleClass="w-full"
-          ></p-select>
-        </div>
-        <div class="col-12 md:col-6">
-          <label class="block mb-1">Valor</label>
-          <input
-            pInputText
-            class="w-full"
-            [ngModel]="newForm().valor"
-            (ngModelChange)="newForm.set({ ...newForm(), valor: $event })"
-          />
-        </div>
-        <div class="col-12 md:col-6">
-          <label class="block mb-1">Frecuencia</label>
-          <p-select
-            [options]="frecuenciaOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Seleccione frecuencia"
-            [ngModel]="newForm().frecuencia"
-            (ngModelChange)="newForm.set({ ...newForm(), frecuencia: $event })"
-            styleClass="w-full"
-          ></p-select>
-        </div>
-        <div class="col-12 flex justify-content-end gap-2 mt-2">
-          <p-button
-            label="Cancelar"
-            severity="secondary"
-            (onClick)="newDialogVisible.set(false)"
-          ></p-button>
-          <p-button
-            label="Guardar"
-            (onClick)="guardarNuevaVariable()"
-          ></p-button>
-        </div>
+      </ng-container>
+      <div class="flex justify-content-end gap-2 mt-2">
+        <p-button label="Cerrar" severity="secondary" (onClick)="newDialogVisible.set(false)"></p-button>
+        <p-button label="Guardar" (onClick)="guardarNuevaVariable()"></p-button>
       </div>
     </p-dialog>
   </div>

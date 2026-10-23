@@ -18,7 +18,7 @@ export interface CarguePropiaFila {
   klp: number;
   t: number;
   qa: number;
-  escenario: number;
+  escenario?: number;
 }
 
 export interface CarguePropiaRequest {

@@ -24,7 +24,8 @@
     <p>Sin datos. Seleccioná APS, proyección, año y mes, y consultá.</p>
   </div>
 
-  <p-table *ngIf="items().length > 0" [value]="itemsConNombre()" styleClass="p-datatable-sm">
+  <p-table *ngIf="items().length > 0" [value]="itemsConNombre()" styleClass="p-datatable-sm"
+    [paginator]="true" [rows]="pageSize" [rowsPerPageOptions]="rowsPerPageOptions">
     <ng-template pTemplate="header">
       <tr>
         <th>Clase</th>

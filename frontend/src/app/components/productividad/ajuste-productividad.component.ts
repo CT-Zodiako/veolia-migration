@@ -130,7 +130,9 @@ export class AjusteProductividadComponent {
     const valor = this.editingValor();
     if (!aps || anno === null || mes === null || valor === null) return;
 
-    const periodo = periodoAnterior(anno, mes);
+    // Legacy Productividad.vue makeOperation inserts into the selected month, while
+    // uptProductividad (suministros/controller.js:536) updates the previous month it reads.
+    const periodo = existe ? periodoAnterior(anno, mes) : { anno, mes };
     const payload = { aps, anno: periodo.anno, mes: periodo.mes, valor };
 
     this.loading.set(true);

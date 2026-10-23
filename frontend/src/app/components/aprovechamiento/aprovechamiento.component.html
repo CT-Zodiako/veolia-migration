@@ -10,11 +10,9 @@
 
 <div class="card-section" *ngIf="consultado()">
   <div class="switch-row">
-    <div class="switch-label">
-      <span class="switch-title">Cobro de aprovechamiento sin tener QA</span>
-      <span class="switch-estado">{{ activar() ? 'Activado' : 'Desactivado' }}</span>
-    </div>
+    <!-- Legacy ActAprovechamiento.vue:17-21: "Cobro de aprovechamiento sin tener QA: {{ textoEstado }}" and button "Aceptar". -->
     <p-toggleswitch [(ngModel)]="activar" [disabled]="loading()"></p-toggleswitch>
+    <span class="switch-title">Cobro de aprovechamiento sin tener QA: {{ activar() ? 'Activado' : 'Desactivado' }}</span>
   </div>
-  <p-button label="Aplicar" icon="pi pi-check" [loading]="loading()" (onClick)="confirmarAplicar()"></p-button>
+  <p-button label="Aceptar" icon="pi pi-check" [loading]="loading()" (onClick)="confirmarAplicar()"></p-button>
 </div>

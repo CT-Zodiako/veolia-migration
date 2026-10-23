@@ -1,57 +1,62 @@
 <p-card>
+  <!-- Legacy DetaReversion.vue:8-30: Exportar (CSV ';', DetalleReversiones), 10 rows, options 10/20/50. -->
   <p-table
+    #dt
     [value]="filteredRows"
+    [columns]="columnasExportar"
     [loading]="loading"
     [paginator]="true"
     [rows]="10"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    csvSeparator=";"
+    exportFilename="DetalleReversiones"
     [tableStyle]="{ 'min-width': '100%' }"
   >
+    <ng-template pTemplate="caption">
+      <div style="text-align: left">
+        <p-button icon="pi pi-external-link" label="Exportar" (onClick)="dt.exportCSV()"></p-button>
+      </div>
+    </ng-template>
     <ng-template pTemplate="header">
       <tr>
-        <th>ID</th>
-        <th>APS ID</th>
-        <th>APS Nombre</th>
-        <th>Año</th>
-        <th>Mes</th>
-        <th>Motivo</th>
-        <th>Fecha</th>
-        <th>Usuario</th>
+        <th>APS</th>
+        <th>AÑO</th>
+        <th>MES</th>
+        <th>FECHA</th>
+        <th>MOTIVO</th>
+        <th>USUARIO</th>
       </tr>
       <tr class="filter-row">
-        <th></th>
-        <th></th>
         <th>
-          <input pInputText type="text" class="column-filter-input" placeholder="Buscar"
+          <input pInputText type="text" class="column-filter-input" placeholder="Contiene"
             (input)="apsFilter = $any($event.target).value" />
         </th>
         <th>
-          <input pInputText type="text" class="column-filter-input" placeholder="Buscar"
+          <input pInputText type="text" class="column-filter-input" placeholder="Es"
             (input)="annoFilter = $any($event.target).value" />
         </th>
         <th>
-          <input pInputText type="text" class="column-filter-input" placeholder="Buscar"
+          <input pInputText type="text" class="column-filter-input"
             (input)="mesFilter = $any($event.target).value" />
+        </th>
+        <th>
+          <input pInputText type="text" class="column-filter-input"
+            (input)="fechaFilter = $any($event.target).value" />
         </th>
         <th></th>
         <th>
-          <input pInputText type="text" class="column-filter-input" placeholder="Buscar"
-            (input)="fechaFilter = $any($event.target).value" />
-        </th>
-        <th>
-          <input pInputText type="text" class="column-filter-input" placeholder="Buscar"
+          <input pInputText type="text" class="column-filter-input"
             (input)="usuarioFilter = $any($event.target).value" />
         </th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-row>
       <tr>
-        <td>{{ row.id }}</td>
-        <td>{{ row.aps }}</td>
         <td>{{ row.nombreAps }}</td>
         <td>{{ row.anno }}</td>
         <td>{{ row.mes }}</td>
-        <td>{{ row.motivo }}</td>
         <td>{{ row.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ row.motivo }}</td>
         <td>{{ row.usuario }}</td>
       </tr>
     </ng-template>

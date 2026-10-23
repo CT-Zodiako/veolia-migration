@@ -6,7 +6,8 @@ import { environment } from '../../environments/environment';
 export interface EmpresaItem {
   EMPR_EMPR: number;
   EMPR_NOMBRE: string;
-  EMPR_ESTADO: number;
+  // VARCHAR2 in AUGE_EMPRESAS: Oracle returns "1"/"0".
+  EMPR_ESTADO: string | number;
   EMPR_PROPIA: number;
   EMPR_NUAP?: string | null;
 }
@@ -15,7 +16,7 @@ export interface EmpresaMutationPayload {
   nombre: string;
   estado: number;
   propia: number;
-  nuap: string | null;
+  nuap: string;
 }
 
 @Injectable({ providedIn: 'root' })

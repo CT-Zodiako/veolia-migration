@@ -6,10 +6,19 @@ namespace Veolia.Api.Tests;
 
 public sealed class Sui853ReadmodelsContractTests(AuthApiSmokeFactory factory) : IClassFixture<AuthApiSmokeFactory>
 {
-    private readonly HttpClient client = factory.CreateClient();
+    // SUI853 routes were anonymous in the legacy backend; they now require a verified token
+    // (see ApiRouteProtectionContractTests for the 403/401 contract).
+    private readonly HttpClient client = CreateAuthenticatedClient(factory);
+
+    private static HttpClient CreateAuthenticatedClient(AuthApiSmokeFactory factory)
+    {
+        var authenticatedClient = factory.CreateClient();
+        authenticatedClient.DefaultRequestHeaders.Add("x-access-token", TestJwt.Build());
+        return authenticatedClient;
+    }
 
     [Fact]
-    public async Task RQ_APS_SUI_01_VcfgApsEmpresa_Returns200EnvelopeWithoutToken()
+    public async Task RQ_APS_SUI_01_VcfgApsEmpresa_WithToken_Returns200Envelope()
     {
         var response = await client.PostAsJsonAsync("/api/v1/sui853Configuracion/vcfgapsempresa", new { });
         var payload = await ReadJsonAsync(response);

@@ -39,7 +39,10 @@ public static class CargaGenericaValidation
     public static string[] Headers(IReadOnlyList<string> headers)
     {
         if (headers.Count == 0) throw new ArgumentException("La hoja no tiene encabezados.");
-        var names = headers.Select(Identifier).ToArray();
+        // Legacy controller.js:1167 only trims and upper-cases; headers that are not Oracle identifiers simply never
+        // match a table column. Only metadata column names reach the SQL text.
+        var names = headers.Select(h => h?.Trim().ToUpperInvariant() ?? "").ToArray();
+        if (names.Any(string.IsNullOrEmpty)) throw new ArgumentException("La hoja contiene encabezados vacíos.");
         if (names.Distinct(StringComparer.Ordinal).Count() != names.Length)
             throw new ArgumentException("La hoja contiene encabezados duplicados.");
         return names;
@@ -56,6 +59,14 @@ public static class CargaGenericaValidation
 
     public static object? Value(object? value, string type)
     {
+        var isDate = type == "DATE" || type.StartsWith("TIMESTAMP", StringComparison.Ordinal);
+        // Sheets is read with UNFORMATTED_VALUE: date cells arrive as serial numbers (days since 1899-12-30).
+        if (isDate && value is long or int or double or decimal)
+        {
+            var serial = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+            if (serial is <= -657435d or >= 2958466d) throw new ArgumentException("Fecha inválida.");
+            return DateTime.FromOADate(serial);
+        }
         var text = Convert.ToString(value, CultureInfo.InvariantCulture)?.Trim();
         if (string.IsNullOrEmpty(text)) return null;
         if (type == "NUMBER")
@@ -64,11 +75,11 @@ public static class CargaGenericaValidation
                     CultureInfo.InvariantCulture, out var number)) throw new ArgumentException("Valor numérico inválido.");
             return number;
         }
-        if (type == "DATE" || type.StartsWith("TIMESTAMP", StringComparison.Ordinal))
+        if (isDate)
         {
-            if (!DateTime.TryParseExact(text, ["yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss"],
+            if (!DateTime.TryParseExact(text, ["yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss", "dd/MM/yyyy", "dd-MM-yyyy"],
                     CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
-                throw new ArgumentException("Fecha inválida; use yyyy-MM-dd o yyyy-MM-dd HH:mm:ss.");
+                throw new ArgumentException("Fecha inválida; use yyyy-MM-dd, yyyy-MM-dd HH:mm:ss o dd/MM/yyyy.");
             return date;
         }
         if (type is not ("VARCHAR2" or "NVARCHAR2" or "CHAR" or "NCHAR" or "CLOB" or "NCLOB"))

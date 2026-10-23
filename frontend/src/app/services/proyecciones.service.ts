@@ -13,11 +13,19 @@ import {
   MutationResponse,
   Proyeccion,
   ProyeccionCreate,
-  ProyeccionUpdate,
   SubcontConsulta,
   SubcontItem,
   SubcontUpsert
 } from '../models/proyecciones.models';
+
+// Legacy formCrear.vue:47,184: la descripción es obligatoria al crear y al actualizar.
+export type ProyeccionGuardar = ProyeccionCreate & { proyDescripcion: string };
+
+// Legacy getLastTarifas (proyecciones/controller.js:186-207): período de VPRO_LASTARIFA.
+export interface UltimaTarifa {
+  anno: number;
+  mes: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ProyeccionesService {
@@ -49,11 +57,11 @@ export class ProyeccionesService {
     return this.envelope(this.http.post<ApiEnvelope<Proyeccion>>(`${this.baseUrl}/consultaproy`, { id }, { headers: this.getHeaders() }));
   }
 
-  crear(data: ProyeccionCreate): Observable<ApiEnvelope<MutationResponse>> {
+  crear(data: ProyeccionGuardar): Observable<ApiEnvelope<MutationResponse>> {
     return this.envelope(this.http.post<ApiEnvelope<MutationResponse>>(`${this.baseUrl}/crear`, data, { headers: this.getHeaders() }));
   }
 
-  editar(id: number, data: ProyeccionUpdate): Observable<ApiEnvelope<MutationResponse>> {
+  editar(id: number, data: ProyeccionGuardar): Observable<ApiEnvelope<MutationResponse>> {
     return this.envelope(this.http.put<ApiEnvelope<MutationResponse>>(`${this.baseUrl}/editar/${id}`, data, { headers: this.getHeaders() }));
   }
 
@@ -61,8 +69,8 @@ export class ProyeccionesService {
     return this.envelope(this.http.delete<ApiEnvelope<MutationResponse>>(`${this.baseUrl}/eliminar/${id}`, { headers: this.getHeaders() }));
   }
 
-  ultimasTarifas(apsaId: number): Observable<ApiEnvelope<any[]>> {
-    return this.envelope(this.http.post<ApiEnvelope<any[]>>(`${this.baseUrl}/ultimastarifas`, { apsaId }, { headers: this.getHeaders() }));
+  ultimasTarifas(apsaId: number): Observable<ApiEnvelope<UltimaTarifa[]>> {
+    return this.envelope(this.http.post<ApiEnvelope<UltimaTarifa[]>>(`${this.baseUrl}/ultimastarifas`, { apsaId }, { headers: this.getHeaders() }));
   }
 
   registrarLineaTiempo(data: LineaTiempoUpsert): Observable<ApiEnvelope<MutationResponse>> {

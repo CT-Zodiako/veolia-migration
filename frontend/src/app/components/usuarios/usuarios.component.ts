@@ -1,6 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ConfirmationService } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AuthService, Usuario } from '../../services/auth.service';
 import { PermisosComponent } from './permisos/permisos.component';
@@ -10,7 +12,7 @@ import { ApsxUsuarioComponent } from './apsx-usuario/apsx-usuario.component';
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, PermisosComponent, AsignacionSistemaComponent, ApsxUsuarioComponent],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, DialogModule, PermisosComponent, AsignacionSistemaComponent, ApsxUsuarioComponent],
   templateUrl: './usuarios.component.html',
   styleUrls: ['./usuarios.component.css']
 })
@@ -35,15 +37,32 @@ export class UsuariosComponent implements OnInit {
   confirmPassword = '';
   estado = 1;
   nombreFilter = '';
+  apellidoFilter = '';
+  correoFilter = '';
+  readonly pageSize = 15;
+  readonly rowsPerPageOptions = [15, 30, 50, 100];
+  showResetDialog = false;
+  nuevaClave = '';
 
+  // Legacy GestionUsuarios.vue: "Contiene" filters on apellidos, nombres and correo.
   get filteredUsuarios(): Usuario[] {
-    const term = this.nombreFilter.trim().toLowerCase();
-    if (!term) return this.usuarios;
-    return this.usuarios.filter(u => (u.SISU_NOMBRE ?? '').toLowerCase().includes(term));
+    const filtros: Array<[keyof Usuario, string]> = [
+      ['SISU_APELLIDO', this.apellidoFilter],
+      ['SISU_NOMBRE', this.nombreFilter],
+      ['SISU_CORREO', this.correoFilter]
+    ];
+    const activos = filtros
+      .map(([campo, valor]) => [campo, valor.trim().toLowerCase()] as const)
+      .filter(([, term]) => term);
+    if (!activos.length) return this.usuarios;
+    return this.usuarios.filter(u =>
+      activos.every(([campo, term]) => String(u[campo] ?? '').toLowerCase().includes(term))
+    );
   }
 
   constructor(
     private authService: AuthService,
+    private confirmationService: ConfirmationService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -184,19 +203,40 @@ export class UsuariosComponent implements OnInit {
   resetPassword(usuario: Usuario): void {
     if (!usuario.SISU_ID) return;
     
-    if (confirm(`¿Resetear contraseña de ${usuario.SISU_NOMBRE} ${usuario.SISU_APELLIDO}?`)) {
-      this.loading = true;
-      this.authService.resetPass(usuario.SISU_ID).subscribe({
-        next: (newPass: any) => {
-          alert(`Nueva contraseña: ${newPass}`);
-          this.loading = false;
-        },
-        error: (err: any) => {
-          this.error = err.error?.message || 'Error al resetear contraseña';
-          this.loading = false;
-        }
-      });
-    }
+    const sisuId = usuario.SISU_ID;
+
+    this.confirmationService.confirm({
+      header: 'Reiniciar contraseña',
+      message: `¿Seguro que querés reiniciar la contraseña de ${usuario.SISU_NOMBRE} ${usuario.SISU_APELLIDO}?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Reiniciar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-warn',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => this.confirmarResetPassword(sisuId)
+    });
+  }
+
+  private confirmarResetPassword(sisuId: number): void {
+    this.loading = true;
+    this.authService.resetPass(sisuId).subscribe({
+      next: (newPass: string) => {
+        this.nuevaClave = newPass;
+        this.showResetDialog = true;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.error = err.error?.message || 'Error al resetear contraseña';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeResetDialog(): void {
+    this.showResetDialog = false;
+    this.nuevaClave = '';
   }
 
   toggleEstado(usuario: Usuario): void {

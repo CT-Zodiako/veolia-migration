@@ -59,7 +59,15 @@ export class LoginComponent {
       return;
     }
     this.onCredentialsChange();
-    if (!this.isValidEmail(this.email) || !this.password) return;
+    // Legacy Login.vue:114-120 lists the missing fields; Login.vue:111-112 rejects an invalid email.
+    const errores: string[] = [];
+    if (!this.email) errores.push('El email es obligatorio');
+    if (!this.password) errores.push('El pass es obligatorio');
+    if (!errores.length && !this.isValidEmail(this.email)) errores.push('El email no es valido');
+    if (errores.length) {
+      this.error = errores.join('\n');
+      return;
+    }
 
     const version = this.validationVersion;
     this.validating = true;

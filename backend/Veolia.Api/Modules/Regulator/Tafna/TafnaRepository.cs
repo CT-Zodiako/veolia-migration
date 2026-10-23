@@ -13,7 +13,7 @@ public sealed class TafnaRepository(IOracleConnectionFactory connectionFactory) 
        EMPRESA AS Empresa,
        ANNO AS Anno,
        MES AS Mes,
-       ROUND(VALOR, 6) AS Valor
+       VALOR AS Valor
 FROM VAUCO_TONELADAS
 WHERE APS = :1
   AND TIPO IN ('TAFNA')

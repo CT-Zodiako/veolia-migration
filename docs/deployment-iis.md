@@ -11,7 +11,7 @@ Only a **push to `main`** can enter the protected `production` environment and e
 ## One-time server prerequisites
 
 1. Use a dedicated Windows x64 IIS server. Install IIS, its management scripting tools (including the `WebAdministration` Windows PowerShell module), Static Content, and the IIS URL Rewrite module if used by the SPA configuration.
-2. Install the **.NET 10 ASP.NET Core Hosting Bundle** after IIS; repair it if IIS was installed later. Restart IIS as directed by the installer. Node and the .NET SDK are not needed on this server.
+2. Install the **.NET 10 ASP.NET Core Hosting Bundle** after IIS; repair it if IIS was installed later. Restart IIS as directed by the installer. Node and the .NET SDK are not needed on this server: the frontend is built on the GitHub-hosted runner with the Node version pinned in `.nvmrc` (24.22.1). If Node is installed on the server for other reasons, keep it on a patched LTS; the deployment does not use it.
 3. Create these sites and pools (the script does not provision IIS):
 
    | Site physical path | App Pool | Local binding |
@@ -23,7 +23,12 @@ Only a **push to `main`** can enter the protected `production` environment and e
 4. Provision the frontend `web.config` on the server **before deployment**: configure SPA fallback to `index.html` for non-file/non-directory routes. Configure an `/api` reverse proxy before that fallback if the frontend uses a same-origin API. IIS ARR and proxy enablement are required for that option. Alternatively configure the production frontend API URL and backend CORS before building. Validate the browser-facing URL: browser `localhost` refers to the user's machine, not the IIS server.
 5. Provision any required backend `appsettings*.json` on the server. Published copies are deliberately excluded, including on the first deployment. The API `web.config` comes from `dotnet publish` and is replaced on deployment; do not store server-only settings there.
 6. Configure `ConnectionStrings__Oracle` securely **on the server**, outside deployed files (for example in the machine environment). Restart the relevant services/workers after changing environment variables. Provision Oracle wallet/client prerequisites if applicable, and grant the API identity access to them. Never put Oracle credentials or wallets in repository artifacts, workflow YAML, runner labels, or script arguments.
-7. Allow outbound HTTPS from the runner to the GitHub Actions service and artifact storage endpoints, according to GitHub's current runner networking requirements. No inbound GitHub connection to IIS is needed. Allow the API server to reach the Oracle listener and any other required application services. Configure client-facing DNS, TLS certificates, firewall rules and IIS bindings independently.
+7. Configure `Auth__JwtSecret` **on the server** the same way as the connection string (machine environment variable visible to the `veolia-api` pool, or `Auth:JwtSecret` in the server-only `appsettings.Production.json`). It is the HMAC key that signs and verifies session tokens. Requirements:
+   - At least **32 characters**; use a cryptographically random value (for example, in Windows PowerShell: `$b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)`, or a password-manager generator). Never reuse a value from the repository, documentation or chat, and never commit it.
+   - There is no fallback in code. If the setting is missing or shorter than 32 characters, the API **refuses to start** with `Auth:JwtSecret is not configured or is shorter than 32 characters...` and the deployment smoke check on `/api/health` fails.
+   - Set it **before deploying** the version that introduced this rule (S10 auth hardening), then recycle the `veolia-api` pool. Earlier versions signed tokens with a built-in default when the setting was absent, so after this deployment **every existing session is invalid and all users must log in again**. Changing the secret later has the same effect.
+   - Session tokens expire 12 hours after login; expired tokens are rejected with 401 and the user must log in again.
+8. Allow outbound HTTPS from the runner to the GitHub Actions service and artifact storage endpoints, according to GitHub's current runner networking requirements. No inbound GitHub connection to IIS is needed. Allow the API server to reach the Oracle listener and any other required application services. Configure client-facing DNS, TLS certificates, firewall rules and IIS bindings independently.
 
 Smoke tests use local HTTP, not the public load balancer or Oracle database. Production TLS, authentication, proxy behavior and database connectivity require separate acceptance checks. The default API check is `/api/health`, not `/api/health/db`.
 
@@ -37,7 +42,7 @@ Smoke tests use local HTTP, not the public load balancer or Oracle database. Pro
 
 ## First deployment
 
-1. Complete the prerequisites, create both site directories, and provision the frontend `web.config` and required server configuration. Verify the runner can control the pools and that its PowerShell execution policy permits the reviewed deployment script.
+1. Complete the prerequisites, create both site directories, and provision the frontend `web.config` and required server configuration (including `ConnectionStrings__Oracle` and `Auth__JwtSecret`). Verify the runner can control the pools and that its PowerShell execution policy permits the reviewed deployment script.
 2. Merge the reviewed workflow/script changes into protected `main`. Inspect the Ubuntu build and the artifact SHA, then approve the production environment job.
 3. The script validates the package and directory separation, obtains a server-wide deployment lock, stops both pools with bounded retries, and snapshots both sites under `C:\inetpub\veolia-backups\<UTC timestamp>`. A `complete.json` marker is written only after both backups succeed.
 4. Robocopy mirrors application files, removing stale application files. Backend `appsettings*.json` and frontend `web.config`/`web.config.bak` are neither overwritten nor deleted. It then starts the pools with bounded retries and checks the frontend root and API `/api/health`, retrying while workers warm up.

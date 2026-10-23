@@ -1,53 +1,73 @@
 <section class="card-section" [attr.aria-busy]="busy">
-  <p>Importe datos de Google Sheets a una tabla del esquema SUI. La carga agrega registros; no reemplaza los existentes.</p>
-  <p *ngIf="busy" role="status">Procesando solicitud…</p>
+  <p>Ingresa los datos del Google Sheet, selecciona la tabla y columnas destino y ejecuta la carga.</p>
+  <p *ngIf="busy" role="status">Procesando, por favor espera...</p>
   <p *ngIf="error" class="error-message" role="alert">{{ error }}</p>
   <p *ngIf="success" class="success-message" role="status">{{ success }}</p>
   <div class="fields">
     <div class="field">
-      <label for="spreadsheet-id">ID del documento de Google Sheets</label>
-      <input id="spreadsheet-id" pInputText [(ngModel)]="sheetId" (ngModelChange)="sourceChanged()" [disabled]="locked" autocomplete="off" />
-      <p-button label="Buscar pestañas" [disabled]="locked || !sheetId.trim()" (onClick)="listSheets()" />
+      <label for="spreadsheet-id">Sheet ID (Google Drive)</label>
+      <input id="spreadsheet-id" pInputText [(ngModel)]="sheetId" (ngModelChange)="sourceChanged()" [disabled]="locked" autocomplete="off"
+        placeholder="Ingresa el sheetId del archivo" />
+      <small>Tip: pega solo el ID (no la URL completa).</small>
     </div>
     <div class="field">
-      <label for="sheet-title">Pestaña de origen</label>
+      <label for="sheet-title">Nombre de la hoja (sheetTitle)</label>
       <select id="sheet-title" [(ngModel)]="sheetTitle" (ngModelChange)="invalidatePreview()" [disabled]="locked || !sheets.length">
-        <option value="">Seleccione una pestaña</option>
+        <option value="">Selecciona una hoja</option>
         <option *ngFor="let sheet of sheets" [value]="sheet.title">{{ sheet.title }}</option>
       </select>
+      <p-button label="Buscar" icon="pi pi-search" [disabled]="locked || !sheetId.trim()" (onClick)="listSheets()" />
     </div>
     <div class="field">
-      <label for="sui-table">Tabla de destino (SUI)</label>
+      <label for="sui-table">Tabla destino (OWNER.TABLA)</label>
       <select id="sui-table" [(ngModel)]="tableName" (ngModelChange)="invalidatePreview()" [disabled]="locked || !tables.length">
-        <option value="">Seleccione una tabla</option>
-        <option *ngFor="let table of tables" [value]="table">{{ table }}</option>
+        <option value="">Selecciona una tabla</option>
+        <option *ngFor="let table of tables" [value]="table">SUI.{{ table }}</option>
       </select>
       <p-button label="Actualizar tablas" severity="secondary" [disabled]="locked" (onClick)="loadTables()" />
       <span *ngIf="!busy && !tables.length">No hay tablas disponibles. Puede volver a consultar.</span>
+      <div class="truncate-card" [class.active]="truncateBeforeInsert">
+        <div>
+          <div class="truncate-title">Truncar tabla antes de cargar</div>
+          <small>Elimina TODOS los datos de <strong>{{ validTable ? 'SUI.' + tableName : 'la tabla' }}</strong>.</small>
+        </div>
+        <p-toggleswitch [(ngModel)]="truncateBeforeInsert" [disabled]="!validTable || locked" ariaLabel="Truncar tabla antes de cargar" />
+      </div>
     </div>
   </div>
-  <p-button label="Previsualizar columnas" icon="pi pi-search" [disabled]="locked || !validSource || !validTable" (onClick)="showPreview()" />
 </section>
 
-<section *ngIf="preview as result" class="card-section">
-  <div class="fields">
-    <div><h2>Encabezados de Google</h2><ul><li *ngFor="let header of result.driveHeaders">{{ header }}</li></ul></div>
-    <div><h2>Columnas de Oracle</h2><ul><li *ngFor="let column of result.tableColumns">{{ column.COLUMN_NAME }} · {{ column.DATA_TYPE }}</li></ul></div>
-    <fieldset [disabled]="locked">
-      <legend>Columnas comunes a cargar</legend>
-      <label *ngFor="let column of result.commonColumns" class="check">
-        <input type="checkbox" [checked]="selectedColumns.includes(column)" (change)="toggleColumn(column, $any($event.target).checked)" />
-        {{ column }}
-      </label>
-      <p *ngIf="!result.commonColumns.length">No hay columnas comunes. Revise los encabezados y la tabla seleccionada.</p>
-    </fieldset>
+<section class="card-section">
+  <h2>Selecciona columnas</h2>
+  <p>Marca las columnas que se insertarán.</p>
+  <p-button label="Consultar columnas" icon="pi pi-search" [disabled]="locked || !validSource || !validTable" (onClick)="showPreview()" />
+  <div *ngIf="!preview" class="empty-state">
+    <strong>Aún no has consultado columnas</strong>
+    <p>Haz clic en “Consultar columnas” para ver el mapeo con la tabla destino.</p>
   </div>
-  <p>Destino: SUI.{{ tableName }} · {{ selectedColumns.length }} columnas seleccionadas. Se agregarán todas las filas de la pestaña.</p>
-  <p-button label="Cargar datos" icon="pi pi-upload" [disabled]="!canLoad" [loading]="busy" (onClick)="load()" />
-</section>
-
-<section class="card-section danger-zone">
-  <h2>Vaciar tabla de destino</h2>
-  <p>Elimina todos los registros de la tabla seleccionada, sin posibilidad de deshacer. No es necesario para cargar datos.</p>
-  <p-button [label]="validTable ? 'Vaciar SUI.' + tableName : 'Vaciar tabla'" severity="danger" icon="pi pi-trash" [disabled]="locked || !validTable" (onClick)="confirmTruncate()" />
+  <ng-container *ngIf="preview as result">
+    <div class="table-scroll">
+      <table class="columns-table">
+        <thead><tr><th>Usar</th><th>Columna</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let column of result.driveHeaders">
+            <td><input type="checkbox" [attr.aria-label]="column" [disabled]="locked" [checked]="selectedColumns.includes(column)"
+              (change)="toggleColumn(column, $any($event.target).checked)" /></td>
+            <td class="col-name">{{ column }}</td>
+            <td>
+              <span *ngIf="result.commonColumns.includes(column); else missing" class="badge ok">Coincide ✔</span>
+              <ng-template #missing><span class="badge warn">No existe ⚠</span></ng-template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">
+      <span>Seleccionadas: <strong>{{ selectedColumns.length }}</strong></span>
+      <span *ngIf="truncateBeforeInsert" class="danger">Se hará TRUNCATE: <strong>SUI.{{ tableName }}</strong></span>
+    </div>
+  </ng-container>
+  <div class="actions">
+    <p-button label="Cargar datos e insertar" icon="pi pi-cloud-upload" [disabled]="!canLoad" [loading]="busy" (onClick)="load()" />
+  </div>
 </section>

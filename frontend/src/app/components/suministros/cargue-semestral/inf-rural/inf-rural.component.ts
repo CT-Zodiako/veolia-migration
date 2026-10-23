@@ -40,15 +40,20 @@ export class InfRuralComponent {
   }
 
   private confirmarGuardado(): void {
+    // Legacy CargueSemestralRural.vue:48-58: anno = year of (today - 1 month), not the semester selector year, and the
+    // raw input (null when blank) is sent.
+    const fecha = new Date();
+    fecha.setMonth(fecha.getMonth() - 1);
     this.guardando.set(true);
     this.service.guardarQRTRural({
       aps: this.aps,
-      anno: this.anno,
+      anno: fecha.getFullYear(),
       semestre: this.semestre,
-      qrtRural: this.qrtRural() ?? 0
+      qrtRural: this.qrtRural()
     }).subscribe({
       next: () => {
-        this.estado.set('QRT Rural guardado correctamente.');
+        // Legacy CargueSemestralRural.vue:67-69.
+        this.estado.set('QRT Rural Guardado');
         this.guardando.set(false);
         this.qrtRural.set(null);
         this.guardado.emit();

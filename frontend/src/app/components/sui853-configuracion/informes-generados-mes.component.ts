@@ -1,75 +1,23 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CommonPrimeNgModules } from '../../shared/primeng-imports';
-import { Sui853ConfiguracionService, TcfgApsItem } from '../../services/sui853-configuracion.service';
+import { PrimeTemplate } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { SelectModule } from 'primeng/select';
+import { InformesGeneradosComponent } from './informes-generados.component';
 
-type SelectorOption = { label: string; value: number };
-
+/**
+ * 30007 Cargue Facturación Mes (legacy sui853/views/configuracion/informesGeneradosMes.vue). Same flow as 30005 plus
+ * the month, which is now forwarded to the Drive filter (legacy collected it but the harvest ignored it).
+ */
 @Component({
   selector: 'app-sui853-informes-generados-mes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules],
-  template: `
-    <section>
-      <h2>Informes Generados Mes</h2>
-      <p *ngIf="loading">Cargando catálogo APS...</p>
-      <p *ngIf="error" class="error">{{ error }}</p>
-
-      <div class="form-group">
-        <label>APS</label>
-        <p-select
-          [options]="options"
-          [(ngModel)]="selectedApsId"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Seleccione"
-          [showClear]="true"
-          [style]="{width: '100%'}"
-          [disabled]="loading || options.length === 0"
-        ></p-select>
-      </div>
-    </section>
-  `,
-  styles: ['.error { color: #b00020; } .form-group { margin-bottom: 12px; }']
+  imports: [CommonModule, FormsModule, SelectModule, ButtonModule, DialogModule, PrimeTemplate],
+  templateUrl: './informes-generados.component.html',
+  styleUrl: './informes-generados.component.css'
 })
-export class InformesGeneradosMesComponent implements OnInit {
-  options: SelectorOption[] = [];
-  selectedApsId: number | null = null;
-  loading = false;
-  error = '';
-
-  constructor(
-    private readonly service: Sui853ConfiguracionService,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
-
-  ngOnInit(): void {
-    this.loadSelector();
-  }
-
-  private loadSelector(): void {
-    this.loading = true;
-    this.error = '';
-
-    this.service.tcfgAps().subscribe({
-      next: response => {
-        this.options = this.mapOptions(response.data ?? []);
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: err => {
-        this.error = err?.error?.data || 'Error al cargar catálogo APS';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  private mapOptions(rows: TcfgApsItem[]): SelectorOption[] {
-    return rows.map(item => ({
-      label: item.NOMBRE_APS,
-      value: item.TCFG_APS_ID
-    }));
-  }
+export class InformesGeneradosMesComponent extends InformesGeneradosComponent {
+  override readonly withMonth: boolean = true;
 }

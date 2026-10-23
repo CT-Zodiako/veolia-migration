@@ -59,10 +59,8 @@ public sealed class ProductividadController(IProductividadRepository repository)
 
         try
         {
-            var updated = await repository.EditarAsync(request.Aps, request.Anno, request.Mes, request.Valor, cancellationToken);
-            if (!updated)
-                return NotFound(Envelope("error", (object?)null, "No se encontró un registro de productividad para ese período."));
-
+            // Legacy suministros/routes.js:69-73 answers 200 even when no row matched.
+            await repository.EditarAsync(request.Aps, request.Anno, request.Mes, request.Valor, cancellationToken);
             return Ok(Envelope("success", (object?)null, "Productividad actualizada."));
         }
         catch (Exception ex)

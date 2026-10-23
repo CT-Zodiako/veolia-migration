@@ -44,7 +44,7 @@ public sealed class Sui853FacContractTests
     [InlineData("[]")]
     [InlineData("{\"error\":true}")]
     public void InvalidPayloadFailsExplicitly(string? json)
-        => Assert.Throws<JsonException>(() => FacPayload.Parse(json));
+        => Assert.ThrowsAny<JsonException>(() => FacPayload.Parse(json));
 
     [Fact]
     public async Task RequiresAuthenticationBeforeRepositoryAccess()

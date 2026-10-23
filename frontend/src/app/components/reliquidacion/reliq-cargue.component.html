@@ -68,7 +68,7 @@
       [ngModel]="row[col.field]"
       (ngModelChange)="row[col.field] = $event ?? 0"
     />
-    <ng-template #celdaTexto>{{ valorCeldaTexto(row, col.field, value) }}</ng-template>
+    <ng-template #celdaTexto>{{ valorCeldaTexto(row, col, value) }}</ng-template>
   </ng-template>
 
   <div class="botones-row">

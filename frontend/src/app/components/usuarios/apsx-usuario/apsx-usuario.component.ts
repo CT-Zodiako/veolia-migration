@@ -88,9 +88,11 @@ export class ApsxUsuarioComponent implements OnInit {
 
     this.authService.setApsxUsuario(this.selectedUsuarioId, outAps, inAps).subscribe({
       next: () => {
-        this.success = 'Asignaciones guardadas correctamente';
         this.loading = false;
         this.onUsuarioChange();
+        // Legacy AuthService.js:251; set after the reload, which clears the messages.
+        this.success = 'APS Asignadas Correctamente';
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.error = err.error?.message || 'Error al guardar asignaciones';

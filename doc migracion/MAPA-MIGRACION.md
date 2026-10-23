@@ -102,8 +102,8 @@ veolia-migration/
 - Middleware JWT: ✅ corregido para verificar firma y validar dead tokens.
 
 ### Correcciones aplicadas
-1. **Verificación de firma JWT en `AuthJwtParityMiddleware.cs`**: se agregó validación HMAC-SHA256 usando el secreto `Auth:JwtSecret` (fallback `"veolia-auth-core-parity-secret"`). Ahora rechaza tokens bien formados pero con firma inválida.
-2. **Rutas anónimas en `Program.cs`**: se agregó `/api/v1/auth/registro` al listado `authAnonymousRoutes`, ya que en el viejo no requiere token.
+1. **Verificación de firma JWT en `AuthJwtParityMiddleware.cs`**: se agregó validación HMAC-SHA256 usando el secreto `Auth:JwtSecret`. Ahora rechaza tokens bien formados pero con firma inválida. **Actualización 2026-10:** el secreto por defecto fue eliminado; `Auth:JwtSecret` es obligatorio (mínimo 32 caracteres) y la API no arranca sin él (ver `docs/deployment-iis.md`).
+2. **Rutas anónimas en `Program.cs`**: se agregó `/api/v1/auth/registro` al listado `authAnonymousRoutes`, ya que en el viejo no requiere token. **Actualización 2026-10:** hoy solo `login` y `validate-credentials` son anónimas; la gestión de usuarios exige permiso al menú 204.
 3. **Body del logout en `auth.service.ts`**: se cambió de `{ token }` a `{}` para no enviar datos duplicados innecesarios (el token ya va en el header `x-access-token`).
 
 ### Archivos modificados

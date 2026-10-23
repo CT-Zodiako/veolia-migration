@@ -5,11 +5,19 @@ namespace Veolia.Api.Modules.Auth.Usuarios;
 
 [ApiController]
 [Route("api/v1/auth")]
-public class UsuariosController(IUsuariosRepository usuariosRepository, AuthContractMapper contractMapper) : ControllerBase
+public class UsuariosController(
+    IUsuariosRepository usuariosRepository,
+    AuthContractMapper contractMapper,
+    IUserAdminAuthorization userAdminAuthorization) : ControllerBase
 {
     [HttpPost("registro")]
     public async Task<IActionResult> Registro([FromBody] RegistroRequest request, CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireAdminAsync(Request, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         var result = await usuariosRepository.RegistroAsync(
             request.nombre,
             request.apellido,
@@ -29,6 +37,11 @@ public class UsuariosController(IUsuariosRepository usuariosRepository, AuthCont
     [HttpPost("updateUsuario")]
     public async Task<IActionResult> UpdateUsuario([FromBody] UpdateUsuarioRequest request, CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireAdminAsync(Request, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         var result = await usuariosRepository.UpdateUsuarioAsync(
             request.id,
             request.nombre,
@@ -66,6 +79,11 @@ public class UsuariosController(IUsuariosRepository usuariosRepository, AuthCont
     [HttpGet("getAllUsers")]
     public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireAdminAsync(Request, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         var users = await usuariosRepository.GetAllUsersAsync(cancellationToken);
         return Ok(users);
     }
@@ -73,6 +91,11 @@ public class UsuariosController(IUsuariosRepository usuariosRepository, AuthCont
     [HttpPost("getUserbyId")]
     public async Task<IActionResult> GetUserById([FromBody] IdRequest request, CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireSelfOrAdminAsync(Request, request.id, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         var users = await usuariosRepository.GetUserByIdAsync(request.id, cancellationToken);
         return Ok(users);
     }
@@ -80,6 +103,11 @@ public class UsuariosController(IUsuariosRepository usuariosRepository, AuthCont
     [HttpPost("resetPass")]
     public async Task<IActionResult> ResetPass([FromBody] IdRequest request, CancellationToken cancellationToken)
     {
+        if (await userAdminAuthorization.RequireSelfOrAdminAsync(Request, request.id, cancellationToken) is { } denied)
+        {
+            return denied;
+        }
+
         var newPass = await usuariosRepository.ResetPassAsync(request.id, cancellationToken);
         return Content(contractMapper.MapResetPassPlainText(newPass), "text/plain");
     }

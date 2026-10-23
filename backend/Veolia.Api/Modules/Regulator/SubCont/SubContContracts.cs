@@ -10,7 +10,7 @@
     
     public sealed record SubContValorItem(
         int Id,
-        decimal Val
+        decimal? Val
     );
     
     public sealed record SubContCrearRequest(
@@ -37,7 +37,7 @@
         public int SucoAnno { get; set; }
         public int SucoMes { get; set; }
         public int ParaTippred20016 { get; set; }
-        public decimal SucoValor { get; set; }
+        public decimal? SucoValor { get; set; }
         public int SucoEstado { get; set; }
         public DateTime SucoFechacreacion { get; set; }
         public int UsuaUsua { get; set; }

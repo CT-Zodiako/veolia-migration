@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { InfoGerencialService } from '../../services/infogerenciales.service';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
 import { redondearFilas } from '../../shared/redondeo.util';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
@@ -28,16 +29,20 @@ interface CatalogoDescuento {
   styleUrl: './descuento-costos.component.css'
 })
 export class DescuentoCostosComponent {
+  private readonly parametros = inject(ParametrosConsultaStateService);
+  private readonly hoy = new Date();
+
   readonly aps = signal<number | null>(null);
-  readonly anno = signal<number | null>(null);
-  readonly mes = signal<number | null>(null);
+  // Legacy Selector.vue:153-158: without a stored period the selector starts on today (queried as today - 1 month).
+  readonly anno = signal<number | null>(this.parametros.getAnno() === null ? this.hoy.getFullYear() : null);
+  readonly mes = signal<number | null>(this.parametros.getMes() === null ? this.hoy.getMonth() + 1 : null);
 
   readonly loading = signal(false);
   readonly rows = signal<Record<string, unknown>[]>([]);
 
   readonly columnas: TablaColumn[] = [
-    { field: 'PARA_NOMBRE', header: 'Costo', filtrable: true },
-    { field: 'DESC_VALOR', header: 'Descuento', numero: true }
+    { field: 'PARA_NOMBRE', header: 'COSTO', filtrable: true },
+    { field: 'DESC_VALOR', header: 'DESCUENTO', numero: true }
   ];
 
   readonly dialogVisible = signal(false);
@@ -162,7 +167,10 @@ export class DescuentoCostosComponent {
     if (aps === null || anno === null || mes === null) return;
 
     if (seleccion === null) {
-      this.messages.add({ severity: 'warn', summary: 'Descuento', detail: 'Debe seleccionar un descuento.' });
+      // Descuentos.vue:252-258: alert, then reload and close the dialog.
+      this.messages.add({ severity: 'warn', summary: 'Descuento', detail: 'debe seleccionar un descuento!!' });
+      this.dialogVisible.set(false);
+      this.consultarSiCompleto();
       return;
     }
 

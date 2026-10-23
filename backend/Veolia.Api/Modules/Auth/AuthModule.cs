@@ -1,3 +1,4 @@
+using Veolia.Api.Infrastructure.Auth;
 using Veolia.Api.Modules.Auth.Asignaciones;
 using Veolia.Api.Modules.Auth.Login;
 using Veolia.Api.Modules.Auth.Menu;
@@ -19,6 +20,7 @@ public static class AuthModule
         services.AddScoped<IUsuariosRepository, UsuariosRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IAsignacionesRepository, AsignacionesRepository>();
+        services.AddScoped<IUserAdminAuthorization, UserAdminAuthorization>();
         services.AddScoped<AuthContractMapper>();
         return services;
     }

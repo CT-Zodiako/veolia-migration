@@ -4,16 +4,17 @@
     [loading]="loading"
     [paginator]="true"
     [rows]="10"
+    [rowsPerPageOptions]="[10, 20, 50]"
     [tableStyle]="{ 'min-width': '100%' }"
   >
     <ng-template pTemplate="header">
       <tr>
-        <th>APS</th>
-        <th>Año</th>
-        <th>Mes</th>
-        <th>Descripción</th>
-        <th>Fecha creación</th>
-        <th>Usuario</th>
+        <th pSortableColumn="APSA_NOMAPS">APS <p-sortIcon field="APSA_NOMAPS"></p-sortIcon></th>
+        <th pSortableColumn="AUTO_ANNO">Año <p-sortIcon field="AUTO_ANNO"></p-sortIcon></th>
+        <th pSortableColumn="AUTO_MES">Mes <p-sortIcon field="AUTO_MES"></p-sortIcon></th>
+        <th pSortableColumn="AUTO_DESCRIPCION">Descripción <p-sortIcon field="AUTO_DESCRIPCION"></p-sortIcon></th>
+        <th pSortableColumn="AUTO_FECCREA">Fecha creación <p-sortIcon field="AUTO_FECCREA"></p-sortIcon></th>
+        <th pSortableColumn="SISU_CORREO">Usuario <p-sortIcon field="SISU_CORREO"></p-sortIcon></th>
       </tr>
       <tr class="filter-row">
         <th>

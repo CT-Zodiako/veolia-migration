@@ -6,8 +6,7 @@ import * as Papa from 'papaparse';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
-import { SuiComplementoFilaRequest } from '../../models/sui-integracion.models';
-import { SuiIntegracionService } from '../../services/sui-integracion.service';
+import { SuiComplementoFilaPayload, SuiIntegracionService } from '../../services/sui-integracion.service';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 interface FilaCsv {
@@ -59,7 +58,13 @@ const columnasPreview: TablaColumn[] = [
   { field: 'F36_VL_MES', header: 'VL_MES' }
 ];
 
-const CAMPOS_OBLIGATORIOS: Array<{ campo: keyof FilaCsv; etiqueta: string }> = [
+/** Numeric columns of the plano. All optional: F35/F36 apply only to APS with own relleno (legacy TO_NUMBER(null)). */
+const CAMPOS_NUMERICOS: Array<{ campo: keyof FilaCsv; etiqueta: string }> = [
+  { campo: 'F24_DET', etiqueta: 'DET' },
+  { campo: 'F24_F1ET', etiqueta: 'F1ET' },
+  { campo: 'F24_CPEET', etiqueta: 'CPEET' },
+  { campo: 'F24_PRTZET', etiqueta: 'PRTZET' },
+  { campo: 'F24_CEG', etiqueta: 'CEG' },
   { campo: 'F35_CAMRERS', etiqueta: 'CAMRERS' },
   { campo: 'F35_QRS_MES', etiqueta: 'QRS_MES' },
   { campo: 'F35_DISPALT9', etiqueta: 'DISPALT9' },
@@ -74,6 +79,10 @@ const CAMPOS_OBLIGATORIOS: Array<{ campo: keyof FilaCsv; etiqueta: string }> = [
   { campo: 'F35_CAPPERDF', etiqueta: 'CAPPERDF' },
   { campo: 'F36_VL_MES', etiqueta: 'VL_MES' }
 ];
+
+function estaVacio(valor: string | undefined): boolean {
+  return valor === undefined || valor === null || valor.trim() === '';
+}
 
 function aNumero(valor: string | undefined): number | null {
   if (valor === undefined || valor === null || valor.trim() === '') return null;
@@ -161,9 +170,12 @@ export class SuiCargueComplementarioComponent {
     });
   }
 
+  // Legacy CargueComplemento.vue:142-167 compares the file's COM_ANNO/COM_MES with the SELECTED month
+  // (stDate), while the data is saved under month - 1 (:68-72).
   private procesarCsv(data: FilaCsv[]): void {
     const aps = this.aps();
-    const periodo = periodoAnterior(this.anno()!, this.mes()!);
+    const anno = this.anno();
+    const mes = this.mes();
     const errores: string[] = [];
 
     data.forEach((fila, index) => {
@@ -175,13 +187,13 @@ export class SuiCargueComplementarioComponent {
       if (filaApsId !== aps) {
         errores.push(`Fila ${numeroFila}: el APS del archivo (${fila.APSA_ID}) no coincide con el APS seleccionado.`);
       }
-      if (filaAnno !== periodo.anno || filaMes !== periodo.mes) {
+      if (filaAnno !== anno || filaMes !== mes) {
         errores.push(`Fila ${numeroFila}: el año/mes del archivo (${fila.COM_ANNO}/${fila.COM_MES}) no coincide con el período seleccionado.`);
       }
 
-      CAMPOS_OBLIGATORIOS.forEach(({ campo, etiqueta }) => {
-        if (aNumero(fila[campo]) === null) {
-          errores.push(`Fila ${numeroFila}: falta el valor obligatorio ${etiqueta}.`);
+      CAMPOS_NUMERICOS.forEach(({ campo, etiqueta }) => {
+        if (!estaVacio(fila[campo]) && aNumero(fila[campo]) === null) {
+          errores.push(`Fila ${numeroFila}: el valor de ${etiqueta} (${fila[campo]}) no es numérico.`);
         }
       });
     });
@@ -207,30 +219,30 @@ export class SuiCargueComplementarioComponent {
     });
   }
 
+  // El usuario lo toma el backend del token (legacy req.SISU_ID); los vacíos viajan como null.
   private confirmarGuardado(): void {
     const periodo = periodoAnterior(this.anno()!, this.mes()!);
-    const usuario = Number(JSON.parse(localStorage.getItem('usuario') || '{}')?.SISU_ID || 0);
 
-    const filasRequest: SuiComplementoFilaRequest[] = this.filas().map((fila) => ({
+    const filasRequest: SuiComplementoFilaPayload[] = this.filas().map((fila) => ({
       aps: aNumero(fila.APSA_ID) ?? this.aps()!,
       det: aNumero(fila.F24_DET),
       f1et: aNumero(fila.F24_F1ET),
       cpeet: aNumero(fila.F24_CPEET),
       prtzet: aNumero(fila.F24_PRTZET),
       ceg: aNumero(fila.F24_CEG),
-      camrers: aNumero(fila.F35_CAMRERS) ?? 0,
-      inccdfalt9: aNumero(fila.F35_INCCDFALT9) ?? 0,
-      prctcrrcp: aNumero(fila.F35_PRCTCRRCP) ?? 0,
-      v0: aNumero(fila.F35_V0) ?? 0,
-      vm: aNumero(fila.F35_VM) ?? 0,
-      mcrs: aNumero(fila.F35_MCRS) ?? 0,
-      icrsm: aNumero(fila.F35_ICRSM) ?? 0,
-      iccrs: aNumero(fila.F35_ICCRS) ?? 0,
-      frein: aNumero(fila.F35_FREIN) ?? 0,
-      capperdf: aNumero(fila.F35_CAPPERDF) ?? 0,
-      qrsMes: aNumero(fila.F35_QRS_MES) ?? 0,
-      dispalt9: aNumero(fila.F35_DISPALT9) ?? 0,
-      vlMes: aNumero(fila.F36_VL_MES) ?? 0
+      camrers: aNumero(fila.F35_CAMRERS),
+      inccdfalt9: aNumero(fila.F35_INCCDFALT9),
+      prctcrrcp: aNumero(fila.F35_PRCTCRRCP),
+      v0: aNumero(fila.F35_V0),
+      vm: aNumero(fila.F35_VM),
+      mcrs: aNumero(fila.F35_MCRS),
+      icrsm: aNumero(fila.F35_ICRSM),
+      iccrs: aNumero(fila.F35_ICCRS),
+      frein: aNumero(fila.F35_FREIN),
+      capperdf: aNumero(fila.F35_CAPPERDF),
+      qrsMes: aNumero(fila.F35_QRS_MES),
+      dispalt9: aNumero(fila.F35_DISPALT9),
+      vlMes: aNumero(fila.F36_VL_MES)
     }));
 
     this.guardando.set(true);
@@ -238,7 +250,6 @@ export class SuiCargueComplementarioComponent {
       aps: this.aps()!,
       anno: periodo.anno,
       mes: periodo.mes,
-      usuario,
       filas: filasRequest
     }).subscribe({
       next: (res) => {

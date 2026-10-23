@@ -5,21 +5,26 @@
   <p *ngIf="error" class="error">{{ error }}</p>
 
   <div class="table-wrapper" *ngIf="!loading && !error">
-    <p-table [value]="rows" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
-      <ng-template pTemplate="header">
+    <p-table #dt [value]="filteredRows" [columns]="columns" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true"
+      [rows]="24" [rowsPerPageOptions]="[10, 24, 50]" [showGridlines]="true" size="small" exportFilename="download">
+      <ng-template pTemplate="caption">
+        <p-button icon="pi pi-external-link" size="small" [disabled]="!filteredRows.length" title="Exportar CSV"
+          ariaLabel="Exportar CSV" (onClick)="dt.exportCSV()" />
+      </ng-template>
+      <ng-template pTemplate="header" let-columns>
         <tr>
-          <th>NOMAPS</th>
-          <th>SEGMENTO</th>
-          <th>CODFORMATO</th>
-          <th>NOMFORMATO</th>
+          <th *ngFor="let col of columns" [pSortableColumn]="col.field">{{ col.header }} <p-sortIcon [field]="col.field" /></th>
+        </tr>
+        <tr>
+          <th *ngFor="let col of columns">
+            <input *ngIf="filterFields.includes(col.field)" pInputText type="text" placeholder="Contiene"
+              [attr.aria-label]="'Filtrar ' + col.header" [(ngModel)]="filters[col.field]" (ngModelChange)="applyFilters()" />
+          </th>
         </tr>
       </ng-template>
-      <ng-template pTemplate="body" let-row>
+      <ng-template pTemplate="body" let-row let-columns="columns">
         <tr>
-          <td>{{ row.NOMAPS }}</td>
-          <td>{{ row.SEGMENTO }}</td>
-          <td>{{ row.CODFORMATO }}</td>
-          <td>{{ row.NOMFORMATO }}</td>
+          <td *ngFor="let col of columns">{{ row[col.field] }}</td>
         </tr>
       </ng-template>
     </p-table>

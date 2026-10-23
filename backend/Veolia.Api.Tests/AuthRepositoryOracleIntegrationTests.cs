@@ -25,10 +25,10 @@ public sealed class AuthRepositoryOracleIntegrationTests
         repository = new AsignacionesRepository(connectionFactory);
     }
 
-    [Fact]
+    [OracleFact]
     public async Task R_AUTH_06_Repository_GetApsAsignadas_UserWithoutAssignments_ReturnsAsignadasEmpty()
     {
-        if (!await IsOracleReadyAsync()) return;
+        await AssertOracleReadyAsync();
 
         const long syntheticUserId = 90909991;
         var (asignadas, sinAsignar) = await repository.GetApsAsignadasAsync(syntheticUserId, CancellationToken.None);
@@ -37,10 +37,10 @@ public sealed class AuthRepositoryOracleIntegrationTests
         Assert.True(sinAsignar.Count >= 1);
     }
 
-    [Fact]
+    [OracleFact]
     public async Task R_AUTH_06_Repository_SetApsxUsuario_EmptyLists_DoNotChangeRows()
     {
-        if (!await IsOracleReadyAsync()) return;
+        await AssertOracleReadyAsync();
 
         var userId = await GetAnyUserWithApsAsync();
         var before = await GetActiveAssignmentCountAsync(userId);
@@ -51,10 +51,10 @@ public sealed class AuthRepositoryOracleIntegrationTests
         Assert.Equal(before, after);
     }
 
-    [Fact]
+    [OracleFact]
     public async Task R_AUTH_06_Repository_SetApsxUsuario_ReactivatesWithoutDuplicates()
     {
-        if (!await IsOracleReadyAsync()) return;
+        await AssertOracleReadyAsync();
 
         var assignment = await GetAnyAssignmentAsync();
 
@@ -91,10 +91,10 @@ public sealed class AuthRepositoryOracleIntegrationTests
         }
     }
 
-    [Fact]
+    [OracleFact]
     public async Task R_AUTH_06_Repository_SetApsxUsuario_MixedOutAndIn_UpdatesFinalState()
     {
-        if (!await IsOracleReadyAsync()) return;
+        await AssertOracleReadyAsync();
 
         var assignment = await GetAnyAssignmentAsync();
         var outApsId = assignment.ApsaId;
@@ -134,6 +134,10 @@ public sealed class AuthRepositoryOracleIntegrationTests
             await RestoreAssignmentStateAsync(assignment.SisuId, inApsId, originalInState);
         }
     }
+
+    // Opted-in runs must fail loudly when Oracle is unreachable, never pass silently.
+    private async Task AssertOracleReadyAsync()
+        => Assert.True(await IsOracleReadyAsync(), "Oracle is not reachable with ConnectionStrings:Oracle.");
 
     private async Task<bool> IsOracleReadyAsync()
     {

@@ -4,6 +4,8 @@
   [expandedRowKeys]="expandedRowKeys"
   [tableStyle]="{ 'min-width': '40rem' }"
   [scrollable]="true"
+  [paginator]="raiz"
+  [rows]="filasPorPagina"
 >
   <ng-template pTemplate="header">
     <tr>
@@ -35,7 +37,7 @@
         <app-pivot-nivel
           *ngIf="row.children?.length"
           [filas]="row.children"
-          [columnas]="columnas"
+          [columnas]="raiz ? columnasVisibles : columnas"
           [agrupaciones]="agrupaciones"
           [nivel]="nivel + 1"
         ></app-pivot-nivel>

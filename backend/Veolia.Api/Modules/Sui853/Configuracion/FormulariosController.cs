@@ -21,13 +21,13 @@ public sealed class FormulariosController(IFormulariosRepository repository, ILo
                 : Ok(new { status = 200, data = saved });
         }, cancellationToken);
 
+    // Legacy routes.js:22-31 served getFormularios and updateFormulario to any system's token (user decision,
+    // legacy-characterization-tests S11); a valid token is still required.
     private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action, CancellationToken cancellationToken)
     {
         // Signature and expiry are checked by AuthJwtParityMiddleware before controller execution.
-        if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out var context))
+        if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out _))
             return Unauthorized(new { status = 401, message = "No autorizado." });
-        if (context.IdSistema != 3)
-            return StatusCode(403, new { status = 403, message = "Seleccione el sistema SUI 853." });
         try { return await action(); }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)

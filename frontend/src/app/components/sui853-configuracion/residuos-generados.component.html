@@ -20,19 +20,31 @@
   <p *ngIf="!queried">Seleccione APS, año y mes para consultar.</p>
 </section>
 
-<ng-template #cell let-value let-col="col">{{ formatCell(value, col.field) }}</ng-template>
+<ng-template #cell let-value>{{ formatCell(value) }}</ng-template>
 <section *ngIf="queried" class="card-section" aria-labelledby="detail-title" [attr.aria-busy]="detailLoading">
   <h2 id="detail-title">Detalle</h2>
   <p *ngIf="detailLoading" role="status">Cargando detalle...</p>
   <div *ngIf="detailError" class="error-message" role="alert">{{ detailError }} <p-button label="Reintentar consulta" (onClick)="consultar()" /></div>
   <p *ngIf="!detailLoading && !detailError && !rows.length" role="status">No hay registros para los parámetros seleccionados.</p>
-  <app-tabla-avanzada *ngIf="!detailLoading && !detailError && rows.length" [columnas]="detailColumns" [rows]="rows"
-    [cellTemplate]="cell" storageKey="operaciones-residuos-detalle" nombreExportar="Residuos-generados-detalle" />
+  <ng-container *ngIf="!detailLoading && !detailError && rows.length">
+    <div class="filters" role="group" aria-label="Filtros por columna">
+      <div *ngFor="let field of filterFields"><label [for]="'residuos-filter-' + field">{{ field }}</label>
+        <input pInputText type="text" [id]="'residuos-filter-' + field" placeholder="Contiene"
+          [(ngModel)]="filters[field]" (ngModelChange)="applyFilters()" />
+      </div>
+      <p-button icon="pi pi-sliders-h" label="Exportar (custom)" size="small" [disabled]="!displayRows.length"
+        ariaLabel="Exportar columnas seleccionadas" (onClick)="exportVisible = true" />
+    </div>
+    <p *ngIf="!displayRows.length" role="status">No hay registros que coincidan con los filtros.</p>
+    <app-tabla-avanzada *ngIf="displayRows.length" [columnas]="detailColumns" [rows]="displayRows" [autoWidth]="true"
+      storageKey="operaciones-residuos-detalle" [nombreExportar]="exportFileName" />
+    <app-sui853-export-csv-dialog [(visible)]="exportVisible" [columns]="exportColumns" [rows]="exportRows"
+      [defaultFilename]="exportFileName" [initiallyUnchecked]="exportUnchecked" />
+  </ng-container>
 </section>
 
 <section *ngIf="queried" class="card-section" aria-labelledby="summary-title" [attr.aria-busy]="summaryLoading">
   <h2 id="summary-title">Resumen</h2>
-  <p>Reporte global F853GR02: no se limita por APS, año ni mes.</p>
   <p *ngIf="summaryLoading" role="status">Cargando resumen...</p>
   <div *ngIf="summaryError" class="error-message" role="alert">{{ summaryError }} <p-button label="Reintentar consulta" (onClick)="consultar()" /></div>
   <p *ngIf="!summaryLoading && !summaryError && !summary" role="status">No hay resumen disponible.</p>

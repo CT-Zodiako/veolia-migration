@@ -119,10 +119,9 @@ public sealed class ReliqTarificadorController(IReliqTarificadorRepository repos
 
         try
         {
-            var data = await getResumen(request.ReliqId, cancellationToken);
-            if (data is null)
-                return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
-
+            // Legacy (tarificador/controller.js resumen*) answered 200 with resultado:null when
+            // the package returned no resumen; a 404 here broke the whole preview.
+            var data = await getResumen(request.ReliqId, cancellationToken) ?? new ResumenResponseDto();
             return Ok(Envelope("ok", data, "OK"));
         }
         catch (Exception ex)
@@ -140,7 +139,8 @@ public sealed class ReliqTarificadorController(IReliqTarificadorRepository repos
     private object Envelope(string status, object? data, string message)
         => new { status, data, message, traceId = HttpContext.TraceIdentifier };
 
+    // Legacy (tarificador/controller.js: `puedeAprobar: estado !== "2"`): any estado except
+    // 2 (Aplicada) can be approved.
     private static bool EsEstadoAprobable(string estado)
-        => string.Equals(estado, "1", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(estado, "CREADA", StringComparison.OrdinalIgnoreCase);
+        => !string.Equals(estado.Trim(), "2", StringComparison.Ordinal);
 }

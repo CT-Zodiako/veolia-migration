@@ -31,7 +31,7 @@ export class ChangePassComponent {
     this.confirmPass = this.confirmPass?.trim() ?? '';
 
     if (!this.oldPass || !this.newPass || !this.confirmPass) {
-      this.error = 'Complete todos los campos';
+      this.error = 'Todos los campos son obligatorios';
       return;
     }
 
@@ -49,7 +49,8 @@ export class ChangePassComponent {
         this.loading = false;
 
         if (response.status === 200) {
-          this.success = response.msg || 'Contraseña actualizada correctamente';
+          // Legacy AuthService.js:134.
+          this.success = 'Clave cambiada';
           // Paridad AS-IS: el viejo limpia localStorage tras cambio exitoso.
           setTimeout(() => {
             localStorage.removeItem('jwtOken');

@@ -7,6 +7,7 @@
   </div>
 
   <div class="card-section">
+    <a class="explicacion-formatos" [href]="explicacionHref">&#9889; Explicación formatos y formularios</a>
     <p *ngIf="loading" class="loading-text">Cargando...</p>
     <p *ngIf="error" class="error-message">{{ error }}</p>
 
@@ -22,7 +23,9 @@
             [rows]="data[f.key].rows"
             [loading]="loading"
             [storageKey]="data[f.key].storageKey"
-            [nombreExportar]="data[f.key].nombreExportar">
+            [nombreExportar]="data[f.key].nombreExportar"
+            [filasPorPagina]="10"
+            [rowsPerPageOptionsList]="data[f.key].opcionesPagina">
           </app-tabla-avanzada>
         </p-tabpanel>
       </p-tabpanels>

@@ -39,7 +39,7 @@
             try
             {
                 var raw = await validacionesRepository.ExecuteAsync(functionName, request.aps, request.anno, request.mes, cancellationToken);
-                var normalized = Normalize(raw);
+                var normalized = Normalize(raw, functionName);
                 return Ok(normalized);
             }
             catch (Exception ex)
@@ -48,10 +48,12 @@
             }
         }
 
-        private static ValidacionResponse Normalize(string? raw)
+        // Legacy validaciones/controller.js returns the raw result and each caller accepts one value: Calculo.vue:272-304,506-515
+        // only 0; Suisui.vue:187-201 only 1 for certificarfauco_existarifa (fauco_generasui). Any other value is a failure.
+        private static ValidacionResponse Normalize(string? raw, string functionName)
         {
-            if (string.Equals(raw, "0", StringComparison.Ordinal) ||
-                string.Equals(raw, "1", StringComparison.Ordinal))
+            var okValue = functionName == "fauco_generasui" ? "1" : "0";
+            if (string.Equals(raw, okValue, StringComparison.Ordinal))
             {
                 return new ValidacionResponse(true, null);
             }

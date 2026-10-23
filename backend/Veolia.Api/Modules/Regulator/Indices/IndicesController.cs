@@ -98,7 +98,7 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
 
-        if (!PayloadValido(request.Anno, request.Mes, request.Valores))
+        if (!PayloadValido(request.Anno, request.Mes, request.Valores) || request.Valores.Any(v => v.Val is null))
             return BadRequest(Envelope("error", Array.Empty<object>(), "Payload inválido para editar índices."));
 
         try

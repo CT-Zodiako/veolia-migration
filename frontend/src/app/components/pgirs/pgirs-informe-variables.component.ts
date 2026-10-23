@@ -6,13 +6,15 @@ import { MessageService } from 'primeng/api';
 import { PgirsService } from '../../services/pgirs.service';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { fechaIngresoLegacy } from './pgirs-formato';
 
+// Legacy ResumenPgirs.vue:25-54: headers and filters (APS, INGRESO, TIPO INGRESO).
 const COLUMNAS_RESUMEN: TablaColumn[] = [
   { field: 'APSA_NOMAPS', header: 'APS', filtrable: true },
-  { field: 'PERIODO', header: 'Ingreso', filtrable: true },
-  { field: 'PGRINGRESO', header: 'Tipo Ingreso', filtrable: true },
-  { field: 'PGRIFECHA', header: 'Fecha Ingreso' },
-  { field: 'SISU_CORREO', header: 'Usuario' }
+  { field: 'PERIODO', header: 'INGRESO', filtrable: true },
+  { field: 'PGRINGRESO', header: 'TIPO INGRESO', filtrable: true },
+  { field: 'PGRIFECHA', header: 'FECHA INGRESO' },
+  { field: 'SISU_CORREO', header: 'USUARIO' }
 ];
 
 @Component({
@@ -25,6 +27,7 @@ const COLUMNAS_RESUMEN: TablaColumn[] = [
 })
 export class PgirsInformeVariablesComponent {
   readonly columnasResumen = COLUMNAS_RESUMEN;
+  readonly fechaIngreso = fechaIngresoLegacy;
 
   aps = signal<number | null>(null);
   loading = signal(false);

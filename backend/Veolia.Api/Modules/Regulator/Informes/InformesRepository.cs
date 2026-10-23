@@ -1,20 +1,20 @@
 using Dapper;
 using System.Data;
 using System.Data.Common;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 using Veolia.Api.Infrastructure.Data;
 
 namespace Veolia.Api.Modules.Regulator.Informes;
 
 public sealed class InformesRepository(IOracleConnectionFactory connectionFactory) : IInformesRepository
 {
-    public Task<InformeCostosResponse?> GetResumenVariablesAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
+    public Task<JsonObject?> GetResumenVariablesAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
         => GetInformeJsonAsync(aps, anno, mes, tipo200: 1, cancellationToken);
 
-    public Task<InformeCostosResponse?> GetClusJsonAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
+    public Task<JsonObject?> GetClusJsonAsync(int aps, int anno, int mes, CancellationToken cancellationToken)
         => GetInformeJsonAsync(aps, anno, mes, tipo200: 2, cancellationToken);
 
-    private async Task<InformeCostosResponse?> GetInformeJsonAsync(int aps, int anno, int mes, int tipo200, CancellationToken cancellationToken)
+    private async Task<JsonObject?> GetInformeJsonAsync(int aps, int anno, int mes, int tipo200, CancellationToken cancellationToken)
     {
         const string sql = @"SELECT * FROM json_json
             WHERE apsa_id = :aps
@@ -38,14 +38,14 @@ public sealed class InformesRepository(IOracleConnectionFactory connectionFactor
         }
 
         var documentValue = first.JSON_DOCUMENT;
-        var jsonString = documentValue?.ToString();
+        string? jsonString = documentValue?.ToString();
         if (string.IsNullOrWhiteSpace(jsonString))
         {
             return null;
         }
 
-        var parsed = JsonSerializer.Deserialize<InformeCostosResponse>(jsonString, JsonOptions);
-        return parsed;
+        // Legacy informes/controller.js:10 only JSON.parse'd the document: keep every key untouched.
+        return JsonNode.Parse(jsonString) as JsonObject;
     }
 
     private async Task<IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)
@@ -62,9 +62,4 @@ public sealed class InformesRepository(IOracleConnectionFactory connectionFactor
 
         return connection;
     }
-
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        PropertyNameCaseInsensitive = true
-    };
 }

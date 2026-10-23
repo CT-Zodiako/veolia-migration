@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 
 export interface IndiceValorPayload {
   id: number;
-  val: number;
+  val: number | null;
 }
 
 export interface IndicesPayload {

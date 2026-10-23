@@ -74,6 +74,39 @@ export interface CargaDriveResult {
   insertResult: { inserted: number };
 }
 
+export interface DriveLoadFileSummary {
+  monthFolder: string | null;
+  fileName: string;
+  sheetTitle: string | null;
+  rows: number;
+  warning: string | null;
+}
+
+/** Result of a Drive load (30004/30005/30007): the harvested periods were replaced in one transaction. */
+export interface DriveLoadResult {
+  ok: true;
+  message: string;
+  count: number;
+  inserted: number;
+  deleted: number;
+  periods: { aps: number; anno: number; mes: number }[];
+  files: DriveLoadFileSummary[];
+}
+
+/** Error detail returned in `data` when a Drive load is rejected; nothing was written. */
+export interface DriveLoadError {
+  ok?: false;
+  type?: 'VALIDATION_ERROR' | 'DB_ERROR' | 'HARVEST_ERROR' | 'INVALID_PARAMS' | string;
+  code?: string;
+  message?: string;
+  fileName?: string | null;
+  sheetTitle?: string;
+  rowNumber?: number;
+  row?: Record<string, unknown>;
+  validation?: { campo: string; columna: string; valor: unknown };
+  oracle?: { message: string } | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class Sui853ConfiguracionService {
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/sui853Configuracion`;
@@ -120,6 +153,14 @@ export class Sui853ConfiguracionService {
 
   vcfgApsDocumento(): Observable<LegacyEnvelope<VcfgApsDocumentoItem[]>> {
     return this.http.post<LegacyEnvelope<VcfgApsDocumentoItem[]>>(`${this.baseUrl}/vcfgapsdocumento`, {}, { headers: this.getHeaders() });
+  }
+
+  cargueResiduos(apsId: number, anno: number): Observable<LegacyEnvelope<DriveLoadResult>> {
+    return this.http.post<LegacyEnvelope<DriveLoadResult>>(`${this.baseUrl}/cargueResiduos`, { apsId, anno }, { headers: this.getHeaders() });
+  }
+
+  cargueFacturacion(apsId: number, anno: number, mes: string | null): Observable<LegacyEnvelope<DriveLoadResult>> {
+    return this.http.post<LegacyEnvelope<DriveLoadResult>>(`${this.baseUrl}/cargueFacturacion`, { apsId, anno, mes }, { headers: this.getHeaders() });
   }
 
   tcfgAps(): Observable<LegacyEnvelope<TcfgApsItem[]>> {

@@ -3,10 +3,14 @@ using System.Text.Json.Nodes;
 
 namespace Veolia.Api.Modules.Sui853.Operaciones;
 
-public sealed record ResiduosGeneradosRequest(
-    [property: Required, RegularExpression(@"^[0-9]{1,38}$")] string ApsId,
-    [property: Range(1, 9999)] int Year,
-    [property: Range(1, 12)] int Month);
+// A class, not a positional record: MVC rejects records whose primary-constructor properties carry validation
+// attributes (InvalidOperationException → every request answered 500).
+public sealed class ResiduosGeneradosRequest(string apsId, int year, int month)
+{
+    [Required, RegularExpression(@"^[0-9]{1,38}$")] public string ApsId { get; } = apsId;
+    [Range(1, 9999)] public int Year { get; } = year;
+    [Range(1, 12)] public int Month { get; } = month;
+}
 
 public interface IResiduosGeneradosRepository
 {

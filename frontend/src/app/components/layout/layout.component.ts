@@ -147,7 +147,7 @@ export class LayoutComponent implements OnInit {
       case '/': return 'Dashboard';
       case '/usuarios': return 'Gestión de Usuarios';
       case '/formularios': return 'Formularios';
-      case '/cargaGenerica': return 'SUI 853 - Carga genérica';
+      case '/cargaGenerica': return 'SUI 853 - Carga genérica desde Google Drive';
       case '/aps': return 'Configuración APS';
       case '/empresas': return 'Configuración Empresas';
       case '/asignacion-sistema': return 'Asignación de Sistemas';
@@ -190,8 +190,8 @@ export class LayoutComponent implements OnInit {
       case '/gerencial/poda': return 'Costo de Poda';
       case '/gerencial/descuento-costos': return 'Act. Descuento Costos';
       case '/suministros/verificacion': return 'Verificación';
-      case '/pgirs/resumen': return 'PGIRS - Resumen';
-      case '/pgirs/informe-variables': return 'PGIRS - Informe Variables';
+      case '/pgirs/resumen': return 'Informe PGIRS';
+      case '/pgirs/informe-variables': return 'Resumen variables PGIRS';
       case '/pgirs/variables': return 'Variables PGIRS';
       case '/suministros/cargue-mensual': return 'Cargue Mensual';
       case '/suministros/cargue-semestral': return 'Cargue Semestral';
@@ -201,13 +201,13 @@ export class LayoutComponent implements OnInit {
       case '/tarifas': return 'Detallado Tarifas';
       case '/tarifas-general': return 'Detallado Tarifas';
       case '/cft': return 'SUI 853 - CFT';
-      case '/cssaprovechamiento': return 'SUI 853 - CSS Aprovechamiento';
+      case '/cssaprovechamiento': return 'SUI 853 - Estimación CSS';
       case '/crlus': return 'SUI 853 - CRLUS';
       case '/cbls': return 'SUI 853 - CBLS';
-      case '/cblusMinimo': return 'SUI 853 - CBLUS Mínimo';
-      case '/cblusMaximo': return 'SUI 853 - CBLUS Máximo';
+      case '/cblusMinimo': return 'SUI 853 - CBLUS MINIMO';
+      case '/cblusMaximo': return 'SUI 853 - CBLUS MAXIMO';
       case '/cblus': return 'SUI 853 - CBLUS';
-      case '/cbicsmaxmin': return 'SUI 853 - CBICS Mínimo y Máximo';
+      case '/cbicsmaxmin': return 'SUI 853 - CBICS MINIMO Y MAXIMO';
       case '/crtsMinimo': return 'SUI 853 - CRTs Mínimo';
       case '/crtsMaximo': return 'SUI 853 - CRTs Máximo';
       case '/crt': return 'SUI 853 - CRT';
@@ -216,6 +216,9 @@ export class LayoutComponent implements OnInit {
       case '/cdft': return 'SUI 853 - CDFT';
       case '/fac': return 'SUI 853 - FAC';
       case '/facturacionServicioAseo': return 'SUI 853 - Comercial';
+      case '/cargueResiduos': return 'SUI 853 - Cargue Residuos';
+      case '/informesGenerados': return 'SUI 853 - Cargue Facturación';
+      case '/informesGeneradosMes': return 'SUI 853 - Cargue Facturación Mes';
       default: return '';
     }
   }

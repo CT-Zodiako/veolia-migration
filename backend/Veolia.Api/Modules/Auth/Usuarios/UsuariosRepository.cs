@@ -7,6 +7,26 @@ namespace Veolia.Api.Modules.Auth.Usuarios;
 
 public class UsuariosRepository(IOracleConnectionFactory connectionFactory) : IUsuariosRepository
 {
+    // Same six columns as the legacy positional INSERT (auth/controller.js) and the only DDL
+    // (AUGE_SISUSUARIO.sql); the table has no creation-date column.
+    public const string RegistroInsertSql = @"
+INSERT INTO AUGE_SISUSUARIO (
+    SISU_ID,
+    SISU_NOMBRES,
+    SISU_APELLIDOS,
+    SISU_CORREO,
+    SISU_PASS,
+    SISU_ESTADO
+)
+VALUES (
+    SAUGE_SISUSUARIO.NEXTVAL,
+    :nombre,
+    :apellido,
+    :correo,
+    :password,
+    :estado
+)";
+
     public async Task<(int Status, string Response, string Msg)> SetChangePassAsync(long sisuId, string oldPass, string newPass, string confirmPass, CancellationToken cancellationToken)
     {
         if (!string.Equals(newPass, confirmPass, StringComparison.Ordinal))
@@ -83,30 +103,10 @@ ORDER BY SISU_APELLIDOS, SISU_NOMBRES, SISU_ID";
             return new UserMutationRepositoryResult(true, null, DuplicateEmailMessage);
         }
 
-        const string sql = @"
-INSERT INTO AUGE_SISUSUARIO (
-    SISU_ID,
-    SISU_NOMBRES,
-    SISU_APELLIDOS,
-    SISU_CORREO,
-    SISU_PASS,
-    SISU_ESTADO,
-    SISU_FECHA
-)
-VALUES (
-    SAUGE_SISUSUARIO.NEXTVAL,
-    :nombre,
-    :apellido,
-    :correo,
-    :password,
-    :estado,
-    SYSDATE
-)";
-
         using var connection = await OpenConnectionAsync(cancellationToken);
         var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, workFactor: 10);
         var rowsAffected = await connection.ExecuteAsync(
-            new CommandDefinition(sql, new { nombre, apellido, correo, password = hashedPassword, estado }, cancellationToken: cancellationToken));
+            new CommandDefinition(RegistroInsertSql, new { nombre, apellido, correo, password = hashedPassword, estado }, cancellationToken: cancellationToken));
 
         return new UserMutationRepositoryResult(false, new { rowsAffected });
     }

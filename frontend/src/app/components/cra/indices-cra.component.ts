@@ -156,10 +156,11 @@ export class IndicesCraComponent implements OnInit {
         anno: periodo.anno,
         mes: periodo.mes,
         valores: [
-          { id: 1, val: this.nuevoIpc() ?? 0 },
-          { id: 2, val: this.nuevoSmlv() ?? 0 },
-          { id: 3, val: this.nuevoIpcc() ?? 0 },
-          { id: 4, val: this.nuevoIoexp() ?? 0 }
+          // Legacy Cra.vue sends blank indices as null, not 0.
+          { id: 1, val: this.nuevoIpc() },
+          { id: 2, val: this.nuevoSmlv() },
+          { id: 3, val: this.nuevoIpcc() },
+          { id: 4, val: this.nuevoIoexp() }
         ]
       })
       .subscribe({

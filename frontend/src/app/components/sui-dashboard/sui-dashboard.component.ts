@@ -23,15 +23,16 @@ export class SuiDashboardComponent implements OnInit {
   readonly error = signal('');
   readonly rows = signal<SuiDashboardRow[]>([]);
 
+  // Legacy DashBoard.vue:14-108: sin filtros por columna.
   readonly columnas: TablaColumn[] = [
-    { field: 'APSID', header: 'Id', filtrable: true },
-    { field: 'APSNOM', header: 'APS', filtrable: true },
-    { field: 'F19', header: 'F19', filtrable: true },
-    { field: 'F23', header: 'F23', filtrable: true },
-    { field: 'F24', header: 'F24', filtrable: true },
-    { field: 'F35', header: 'F35', filtrable: true },
-    { field: 'F36', header: 'F36', filtrable: true },
-    { field: 'USUARIO', header: 'Usuario', filtrable: true },
+    { field: 'APSID', header: 'Id' },
+    { field: 'APSNOM', header: 'APS' },
+    { field: 'F19', header: 'F19' },
+    { field: 'F23', header: 'F23' },
+    { field: 'F24', header: 'F24' },
+    { field: 'F35', header: 'F35' },
+    { field: 'F36', header: 'F36' },
+    { field: 'USUARIO', header: 'Usuario' },
   ];
 
   constructor(
