@@ -16,18 +16,15 @@ export const COLUMNAS_RESUMEN = {
   tarifaSyC: 'TARIFASYC'
 } as const;
 
-/**
- * Components of the tarifa plena (TARIFAPLENA = sum of the plena columns) and of the tarifa con subsidio y
- * contribución (TARIFASYC = sum of the SC columns), in the order of the Facturación table.
- */
-export const COMPONENTES_TARIFA: ReadonlyArray<readonly [string, string, string]> = [
-  ['TC', 'TARI_TC', 'TARI_TCSC'],
-  ['TBL', 'TARI_TBL', 'TARI_TBLSC'],
-  ['TLU', 'TARI_TLU', 'TARI_TLUSC'],
-  ['TRT', 'TARI_TRT', 'TARI_TRTSC'],
-  ['TDF', 'TARI_TDF', 'TARI_TDFSC'],
-  ['TTL', 'TARI_TTL', 'TARI_TTLSC'],
-  ['TA', 'TARI_TA', 'TARI_TASC']
+/** Components of the tarifa plena, in the design order. */
+export const COMPONENTES_TARIFA: ReadonlyArray<readonly [string, string]> = [
+  ['TRT', 'TARI_TRT'],
+  ['TDF', 'TARI_TDF'],
+  ['TBL', 'TARI_TBL'],
+  ['TLU', 'TARI_TLU'],
+  ['TTL', 'TARI_TTL'],
+  ['TC', 'TARI_TC'],
+  ['TA', 'TARI_TA']
 ];
 
 const ORDEN_CLASES = [
@@ -58,19 +55,9 @@ export interface ClasePagoResumen {
 
 export interface ComponenteResumen {
   componente: string;
-  plena: number | null;
-  syc: number | null;
-  textoPlena: string;
-  textoSyC: string;
-  tono: TonoResumen;
-}
-
-/** Sums of the present components; null (and "—") when every component is missing. */
-export interface TotalesComponentes {
-  plena: number | null;
-  syc: number | null;
-  textoPlena: string;
-  textoSyC: string;
+  valor: number | null;
+  porcentaje: number | null;
+  texto: string;
 }
 
 export interface TarifaEstratosResumen {
@@ -98,7 +85,6 @@ export const TONELADAS_SUSCRIPTOR: ReadonlyArray<readonly [string, string, strin
 export interface FiltroResumen {
   tipoFactura?: string | null;
   tipoTarifa?: string | null;
-  claseComponentes?: string | null;
 }
 
 export interface ResumenFacturacion {
@@ -111,13 +97,8 @@ export interface ResumenFacturacion {
   tarjetas: TarjetaResumen[];
   subtituloClases: string;
   clases: ClasePagoResumen[];
-  opcionesClaseComponentes: string[];
-  /** Effective clase of the component comparison: the requested one when available, else estrato 1, else the first. */
-  claseComponentes: string | null;
-  subtituloComponentes: string;
   componentes: ComponenteResumen[];
   toneladas: ToneladaResumen[];
-  totalesComponentes: TotalesComponentes;
   subtituloTarifas: string;
   porTipoTarifa: TarifaEstratosResumen[];
 }
@@ -198,18 +179,6 @@ function tono(plena: number | null, paga: number | null): TonoResumen {
   return puntos < 0 ? 'subsidio' : 'contribucion';
 }
 
-/** Compared at the 2 decimals the table shows, so float noise is not read as subsidio/contribución. */
-function tonoComponente(plena: number | null, syc: number | null): TonoResumen {
-  if (plena === null || syc === null) return 'neutro';
-  const diferencia = Math.round(syc * 100) - Math.round(plena * 100);
-  return diferencia < 0 ? 'subsidio' : diferencia > 0 ? 'contribucion' : 'neutro';
-}
-
-function sumar(valores: (number | null)[]): number | null {
-  const presentes = valores.filter((v): v is number => v !== null);
-  return presentes.length ? presentes.reduce((suma, v) => suma + v, 0) : null;
-}
-
 function variacion(plena: number | null, paga: number | null): number | null {
   if (plena === null || paga === null || plena === 0) return null;
   return paga / plena - 1;
@@ -272,32 +241,19 @@ export function resumirFacturacion(filas: readonly FilaFacturacion[], filtro: Fi
     }
   ];
 
-  const opcionesClaseComponentes = ordenar(distintos(seleccion, COLUMNAS_RESUMEN.claseUso), ORDEN_CLASES);
-  const clases = opcionesClaseComponentes.map((clase) => {
+  const clases = ordenar(distintos(seleccion, COLUMNAS_RESUMEN.claseUso), ORDEN_CLASES).map((clase) => {
     const f = buscar(seleccion, clave(clase));
     const plena = numero(f?.[COLUMNAS_RESUMEN.tarifaPlena]);
     const paga = numero(f?.[COLUMNAS_RESUMEN.tarifaSyC]);
     return { clase, plena, paga, tono: tono(plena, paga) };
   });
 
-  const claseComponentes = filtro.claseComponentes && opcionesClaseComponentes.includes(filtro.claseComponentes)
-    ? filtro.claseComponentes
-    : opcionesClaseComponentes.find((c) => clave(c) === 'ESTRATO 1') ?? opcionesClaseComponentes[0] ?? null;
-  const filaClase = claseComponentes === null ? undefined : buscar(seleccion, clave(claseComponentes));
-  const componentes: ComponenteResumen[] = COMPONENTES_TARIFA.map(([componente, columnaPlena, columnaSyC]) => {
-    const plena = numero(filaClase?.[columnaPlena]);
-    const syc = numero(filaClase?.[columnaSyC]);
-    return {
-      componente,
-      plena,
-      syc,
-      textoPlena: formatoNumero(plena, 2),
-      textoSyC: formatoNumero(syc, 2),
-      tono: tonoComponente(plena, syc)
-    };
+  const valores = COMPONENTES_TARIFA.map(([componente, columna]) => ({ componente, valor: numero(e4?.[columna]) }));
+  const total = valores.reduce((suma, c) => suma + (c.valor ?? 0), 0);
+  const componentes: ComponenteResumen[] = valores.map(({ componente, valor }) => {
+    const porcentaje = valor !== null && total > 0 ? (valor / total) * 100 : null;
+    return { componente, valor, porcentaje, texto: porcentaje === null ? SIN_DATO : `${formatoNumero(porcentaje, 1)} %` };
   });
-  const totalPlena = sumar(componentes.map((c) => c.plena));
-  const totalSyC = sumar(componentes.map((c) => c.syc));
 
   const porTipoTarifa = ordenar(distintos(deFactura, COLUMNAS_RESUMEN.tipoTarifa), ORDEN_TARIFAS).map((tipo) => {
     const filasTipo = deFactura.filter((f) => texto(f[COLUMNAS_RESUMEN.tipoTarifa]) === tipo);
@@ -321,17 +277,8 @@ export function resumirFacturacion(filas: readonly FilaFacturacion[], filtro: Fi
     tarjetas,
     subtituloClases: tipoTarifa && tipoFactura ? `${tipoTarifa} · ${tipoFactura}` : '',
     clases,
-    opcionesClaseComponentes,
-    claseComponentes,
-    subtituloComponentes: claseComponentes ? `${claseComponentes} · por componente` : '',
     componentes,
     toneladas,
-    totalesComponentes: {
-      plena: totalPlena,
-      syc: totalSyC,
-      textoPlena: formatoNumero(totalPlena, 2),
-      textoSyC: formatoNumero(totalSyC, 2)
-    },
     subtituloTarifas: tipoFactura ? `Estratos 1, 4 y 6 · ${tipoFactura}` : '',
     porTipoTarifa
   };
