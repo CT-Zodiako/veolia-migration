@@ -1,0 +1,175 @@
+<div
+  class="cargue-pasos"
+  (dragenter)="onDragEnter($event)"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave()"
+  (drop)="onDrop($event)">
+  <div class="up-head" *ngIf="titulo || subtitulo">
+    <h3 *ngIf="titulo">{{ titulo }}</h3>
+    <p class="sub" *ngIf="subtitulo">{{ subtitulo }}</p>
+  </div>
+
+  <div class="msg msg-success top-msg" *ngIf="estadoEfectivo() === 'guardado'">
+    <i class="pi pi-check-circle" aria-hidden="true"></i>
+    <div class="msg-body"><p class="msg-title">{{ mensajeGuardado }}</p></div>
+  </div>
+
+  <input
+    #fileInput
+    type="file"
+    class="sr-only"
+    tabindex="-1"
+    aria-hidden="true"
+    [accept]="accept"
+    [disabled]="bloqueado()"
+    (change)="onInputChange($event)" />
+
+  <ol class="steps" aria-label="Pasos del cargue">
+    <!-- Paso 1 -->
+    <li class="step is-optional">
+      <div class="step-head">
+        <span class="step-num" aria-hidden="true">1</span>
+        <div>
+          <p class="step-title"><span class="sr-only">Paso 1: </span>Descargar plano guía<span class="sr-only"> ({{ srPaso('optional') }})</span></p>
+          <p class="step-desc">{{ planoGuiaDescripcion }}</p>
+        </div>
+      </div>
+      <div class="step-body">
+        <a
+          pButton
+          class="plano-guia"
+          [href]="planoGuiaUrl"
+          target="_blank"
+          rel="noopener"
+          icon="pi pi-download"
+          label="Descargar Plano Guía"
+          severity="secondary"
+          [outlined]="true"
+          size="small"></a>
+        <p class="step-note">Si ya usás el formato, pasá al paso 2.</p>
+      </div>
+    </li>
+
+    <!-- Paso 2 -->
+    <li class="step" [ngClass]="'is-' + estadoPaso2()" [attr.aria-current]="estadoPaso2() === 'current' || estadoPaso2() === 'error' ? 'step' : null">
+      <div class="step-head">
+        <span class="step-num" aria-hidden="true">
+          <i *ngIf="estadoPaso2() === 'done'; else num2" class="pi pi-check"></i>
+          <ng-template #num2>2</ng-template>
+        </span>
+        <div>
+          <p class="step-title"><span class="sr-only">Paso 2: </span>Seleccionar archivo<span class="sr-only"> ({{ srPaso(estadoPaso2()) }})</span></p>
+          <p class="step-desc">Se valida la estructura al instante.</p>
+        </div>
+      </div>
+      <div class="step-body">
+        <ng-container *ngIf="archivo() as file; else zonaVacia">
+          <div class="file-tile" [class.is-error]="estadoEfectivo() === 'error'">
+            <span class="file-icon" aria-hidden="true"><i class="pi pi-file"></i></span>
+            <div class="file-main">
+              <p class="file-name">{{ file.name }}</p>
+              <ng-container [ngSwitch]="estadoEfectivo()">
+                <ng-container *ngSwitchCase="'validando'">
+                  <p class="file-meta">{{ tamano(file) }} · Validando…</p>
+                  <div class="progress" aria-hidden="true"><span></span></div>
+                </ng-container>
+                <p class="file-meta" *ngSwitchCase="'error'">{{ tamano(file) }} · no se puede cargar</p>
+                <p class="file-meta" *ngSwitchDefault>
+                  {{ tamano(file) }}<ng-container *ngIf="resumen?.filas != null"> · {{ resumen!.filas }} {{ resumen!.filas === 1 ? 'fila' : 'filas' }}</ng-container><ng-container *ngIf="resumen?.columnas != null"> · {{ resumen!.columnas }} columnas</ng-container>
+                </p>
+              </ng-container>
+            </div>
+            <div class="file-actions" *ngIf="estadoEfectivo() !== 'validando' && estadoEfectivo() !== 'guardando'">
+              <button pButton type="button" icon="pi pi-refresh" [text]="true" severity="secondary" [disabled]="disabled" aria-label="Cambiar archivo" (click)="abrirSelector()"></button>
+              <button pButton type="button" icon="pi pi-times" [text]="true" severity="secondary" [attr.aria-label]="'Quitar ' + file.name" (click)="quitar()"></button>
+            </div>
+          </div>
+          <button
+            *ngIf="estadoEfectivo() === 'validando'"
+            pButton
+            type="button"
+            class="btn-inline"
+            label="Cancelar"
+            [text]="true"
+            severity="secondary"
+            size="small"
+            (click)="onCancelar()"></button>
+        </ng-container>
+
+        <ng-template #zonaVacia>
+          <button
+            type="button"
+            class="drop-zone"
+            [class.is-over]="arrastrando()"
+            [disabled]="disabled"
+            [attr.aria-describedby]="idBase + '-nota'"
+            (click)="abrirSelector()">
+            <i class="pi pi-upload" aria-hidden="true"></i>
+            <span *ngIf="!arrastrando(); else soltar"><strong>Seleccioná el archivo</strong> o arrastralo aquí</span>
+            <ng-template #soltar><span><strong>Soltá el archivo para validarlo</strong></span></ng-template>
+          </button>
+          <p class="step-note" [class.is-disabled]="disabled" [id]="idBase + '-nota'">
+            <ng-container *ngIf="disabled; else notaFormato"><i class="pi pi-lock" aria-hidden="true"></i> {{ disabledMessage }}</ng-container>
+            <ng-template #notaFormato>Solo {{ accept }} · un archivo por cargue</ng-template>
+          </p>
+        </ng-template>
+
+        <div class="msg msg-error" role="alert" *ngIf="estadoEfectivo() === 'error'">
+          <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+          <div class="msg-body">
+            <ng-container *ngIf="errorLocal() as err; else erroresPantalla">
+              <p class="msg-title">{{ err.titulo }}</p>
+              <p>{{ err.detalle }}</p>
+            </ng-container>
+            <ng-template #erroresPantalla>
+              <p class="msg-title">No se puede cargar el archivo</p>
+              <ul class="msg-list" *ngIf="errores.length">
+                <li *ngFor="let e of errores">{{ e }}</li>
+              </ul>
+            </ng-template>
+            <div class="msg-actions">
+              <a class="link plano-guia" [href]="planoGuiaUrl" target="_blank" rel="noopener">
+                <i class="pi pi-download" aria-hidden="true"></i>Descargar Plano Guía
+              </a>
+              <button pButton type="button" label="Elegir otro archivo" severity="secondary" [outlined]="true" size="small" [disabled]="disabled" (click)="abrirSelector()"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <!-- Paso 3 -->
+    <li class="step" [ngClass]="'is-' + estadoPaso3()" [attr.aria-current]="estadoPaso3() === 'current' ? 'step' : null">
+      <div class="step-head">
+        <span class="step-num" aria-hidden="true">3</span>
+        <div>
+          <p class="step-title"><span class="sr-only">Paso 3: </span>Revisar y cargar<span class="sr-only"> ({{ srPaso(estadoPaso3()) }})</span></p>
+          <p class="step-desc">Confirmá filas y período antes de guardar.</p>
+        </div>
+      </div>
+      <div class="step-body">
+        <ng-container *ngIf="estadoPaso3() === 'current'; else pendiente">
+          <dl class="summary" *ngIf="resumen?.filas != null || resumen?.columnas != null || periodoDestino">
+            <ng-container *ngIf="resumen?.filas != null"><dt>Filas</dt><dd>{{ resumen!.filas }}</dd></ng-container>
+            <ng-container *ngIf="resumen?.columnas != null">
+              <dt>Columnas</dt>
+              <dd>{{ resumen!.columnas }}<ng-container *ngIf="resumen?.columnasEsperadas != null"> de {{ resumen!.columnasEsperadas }}</ng-container></dd>
+            </ng-container>
+            <ng-container *ngIf="periodoDestino"><dt>Se guarda en</dt><dd>{{ periodoDestino }}</dd></ng-container>
+          </dl>
+          <div class="progress" *ngIf="estadoEfectivo() === 'guardando'" aria-hidden="true"><span></span></div>
+          <div class="step-actions">
+            <button pButton type="button" class="btn-cancelar" label="Cancelar" severity="secondary" [outlined]="true" [disabled]="estadoEfectivo() === 'guardando'" (click)="onCancelar()"></button>
+            <button pButton type="button" class="btn-guardar" [label]="estadoEfectivo() === 'guardando' ? 'Guardando…' : guardarLabel" icon="pi pi-save" [loading]="estadoEfectivo() === 'guardando'" [attr.aria-busy]="estadoEfectivo() === 'guardando'" (click)="onGuardar()"></button>
+          </div>
+        </ng-container>
+        <ng-template #pendiente>
+          <p class="step-note">Disponible cuando el archivo pase la validación.</p>
+        </ng-template>
+        <ng-content select="[paso3]"></ng-content>
+      </div>
+    </li>
+  </ol>
+
+  <p class="sr-only" role="status" aria-live="polite">{{ anuncio }}</p>
+</div>

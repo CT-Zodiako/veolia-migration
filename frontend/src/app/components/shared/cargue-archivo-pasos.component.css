@@ -1,0 +1,82 @@
+:host { display: block; container-type: inline-size; }
+
+p { margin: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.up-head { margin-bottom: 16px; }
+.up-head h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--color-text-primary); }
+.sub { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+.top-msg { margin-bottom: 12px; }
+
+/* Pasos */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@container (max-width: 720px) { .steps { grid-template-columns: 1fr; } }
+.step { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg-card); }
+.step.is-current { border-color: var(--color-text-secondary); box-shadow: inset 0 3px 0 #c40300; }
+.step.is-error { border-color: var(--color-brand-accent); box-shadow: inset 0 3px 0 var(--color-brand-accent); }
+.step.is-pending { background: var(--color-bg-soft); }
+.step-head { display: flex; gap: 10px; align-items: flex-start; }
+.step-num { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; border: 1px solid var(--color-text-secondary); color: var(--color-text-primary); background: var(--color-bg-card); }
+.is-current .step-num { background: #c40300; border-color: #c40300; color: #fff; }
+.is-done .step-num { background: var(--color-bg-success-soft); border-color: var(--color-text-success); color: var(--color-text-success); }
+.is-done .step-num .pi { font-size: 13px; font-weight: 700; }
+.is-error .step-num { background: var(--color-bg-danger-soft); border-color: var(--color-brand-accent); color: var(--color-brand-strong); }
+.step-title { font-weight: 600; color: var(--color-text-primary); }
+.step-desc { font-size: 13px; color: var(--color-text-secondary); }
+.step-body { display: grid; gap: 8px; align-content: start; }
+.step-body > a, .step-body > .btn-inline { justify-self: start; }
+.step-note { font-size: 13px; color: var(--color-text-secondary); }
+.step-note.is-disabled { color: var(--color-text-body); font-weight: 600; }
+
+/* Zona de selección / arrastre */
+.drop-zone { width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px; border: 2px dashed var(--color-text-secondary); border-radius: 8px; background: var(--color-bg-soft); font: inherit; color: var(--color-text-body); text-align: left; cursor: pointer; transition: background-color .15s, border-color .15s; }
+.drop-zone:hover:not(:disabled) { border-color: var(--color-text-primary); background: var(--color-bg-card); }
+.drop-zone .pi { color: var(--color-brand-medium); font-size: 20px; }
+.drop-zone strong { color: var(--color-text-primary); font-weight: 600; }
+.drop-zone.is-over { border-style: solid; border-color: var(--color-brand-strong); background: var(--color-bg-danger-soft); }
+.drop-zone:disabled { cursor: not-allowed; border-color: var(--color-border); background: var(--color-bg-soft); color: var(--color-text-secondary); }
+.drop-zone:disabled .pi, .drop-zone:disabled strong { color: var(--color-text-secondary); }
+
+/* Archivo elegido */
+.file-tile { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg-card); }
+.file-tile.is-error { border-color: var(--color-brand-accent); background: var(--color-bg-danger-soft); }
+.file-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--color-bg-soft); border: 1px solid var(--color-border); display: grid; place-items: center; color: var(--color-text-secondary); flex: none; }
+.file-tile.is-error .file-icon { color: var(--color-brand-accent); }
+.file-main { flex: 1 1 auto; min-width: 0; }
+.file-name { font-weight: 600; color: var(--color-text-primary); overflow-wrap: anywhere; }
+.file-meta { font-size: 13px; color: var(--color-text-secondary); }
+.file-actions { display: flex; gap: 2px; align-items: center; flex: none; }
+
+/* Progreso indeterminado */
+.progress { height: 6px; background: var(--color-border); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.progress > span { display: block; width: 35%; height: 100%; background: #c40300; border-radius: 4px; animation: cargue-slide 1.1s ease-in-out infinite; }
+@keyframes cargue-slide { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+
+/* Mensajes (receta §3 del skill; título de error en brand-strong para contraste AA sobre danger-soft) */
+.msg { display: flex; gap: 12px; padding: 12px; border-radius: 8px; border: 1px solid; font-size: 14px; color: var(--color-text-primary); }
+.msg > .pi { margin-top: 3px; }
+.msg-error { background: var(--color-bg-danger-soft); border-color: var(--color-border-danger-soft); }
+.msg-error > .pi { color: var(--color-brand-accent); }
+.msg-error .msg-title { color: var(--color-brand-strong); font-weight: 600; }
+.msg-success { background: var(--color-bg-success-soft); border-color: var(--color-border-success-soft); }
+.msg-success > .pi { color: var(--color-text-success); }
+.msg-success .msg-title { font-weight: 600; }
+.msg-body { display: grid; gap: 4px; min-width: 0; }
+.msg-list { margin: 0; padding-left: 18px; max-height: 180px; overflow-y: auto; font-size: 13px; }
+.msg-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 6px; }
+.link { display: inline-flex; align-items: center; gap: 6px; color: var(--color-brand-medium); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; border-radius: 4px; }
+.link:hover { color: var(--color-brand-strong); }
+
+/* Resumen y acciones del paso 3 */
+.summary { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+.summary dt { color: var(--color-text-secondary); }
+.summary dd { margin: 0; color: var(--color-text-primary); font-weight: 600; }
+.step-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.step-actions .btn-guardar { flex: 1 1 auto; }
+
+.drop-zone:focus-visible, .link:focus-visible { outline: 2px solid var(--color-brand-medium); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .drop-zone { transition: none; }
+  .progress > span { animation: none; width: 100%; opacity: .55; }
+}
