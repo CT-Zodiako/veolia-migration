@@ -19,7 +19,6 @@ import { ParametrosConsultaStateService } from '../../services/parametros-consul
         optionLabel="proyNombre"
         optionValue="proyId"
         [placeholder]="placeholder"
-        [showClear]="true"
         [disabled]="loading || proyecciones.length === 0"
         [style]="{width: '100%'}"
         (onChange)="onSelect($event.value)">
