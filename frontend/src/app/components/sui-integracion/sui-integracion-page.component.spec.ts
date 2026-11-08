@@ -95,6 +95,28 @@ describe('SuiIntegracionPageComponent (801)', () => {
     expect(fixture.nativeElement.textContent).toContain('Variable para el cálculo de la tarifa de aprovechamiento y toneladas conjuntas');
   }, RENDER_TIMEOUT_MS);
 
+  // Legacy Suisui.vue:59-74 + GenericTable.vue: semester legend wrapping a 3-per-row grid of plain tables,
+  // numbers grouped with es-MX and right aligned; no toolbar, filters or scroll.
+  it('renders Resumen Variables as the legacy grid of plain tables under the semester title', () => {
+    const { fixture, component } = crear();
+    component.semestreTitulo.set('Semestre 1 - 2026');
+    component.resumenTablas.set([
+      { nombre: 'CLUS', columnas: component.mapColumns({ nombre: 'CLUS', columns: ['EMPRESA', 'VALOR'], data: [] }), rows: [{ EMPRESA: 'VEOLIA', VALOR: 1234.5 }] },
+      { nombre: 'CBLS', columnas: component.mapColumns({ nombre: 'CBLS', columns: ['N'], data: [] }), rows: [{ N: 76035 }] }
+    ]);
+    component.currentTab.set('RESUMEN');
+    fixture.detectChanges();
+
+    const seccion = fixture.nativeElement.querySelector('.resumen-variables') as HTMLElement;
+    const items = Array.from(seccion.querySelectorAll('.resumen-variables-grid .resumen-variables-item')) as HTMLElement[];
+
+    expect(seccion.querySelector('.resumen-variables-titulo')?.textContent?.trim()).toBe('Semestre 1 - 2026');
+    expect(items.map((i) => i.querySelector('h5')?.textContent?.trim())).toEqual(['CLUS', 'CBLS']);
+    expect(items.every((i) => i.querySelector('app-tabla-generica'))).toBe(true);
+    expect(seccion.querySelector('app-tabla-avanzada')).toBeNull();
+    expect(Array.from(seccion.querySelectorAll('td.celda-numero')).map((td) => td.textContent?.trim())).toEqual(['1,234.5', '76,035']);
+  }, RENDER_TIMEOUT_MS);
+
   it('asks for confirmation before Procesar and does nothing until it is accepted', () => {
     const { component, service, confirm } = crear();
     component.aps.set(7);

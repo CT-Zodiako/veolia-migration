@@ -7,6 +7,7 @@ import { MessageModule } from 'primeng/message';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { TablaGenericaComponent } from '../shared/tabla-generica.component';
 import { SuiFormato, SuiTab, InformeDatasetItem } from '../../models/sui-integracion.models';
 import { SuiIntegracionService } from '../../services/sui-integracion.service';
 import { InformesService } from '../../services/informes.service';
@@ -79,7 +80,7 @@ interface ResumenTabla {
 @Component({
   selector: 'app-sui-integracion-page',
   standalone: true,
-  imports: [CommonModule, MessageModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent],
+  imports: [CommonModule, MessageModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent, TablaGenericaComponent],
   template: `
     <section>
       <div class="card-section">
@@ -124,18 +125,15 @@ interface ResumenTabla {
             </p-tabpanel>
             <p-tabpanel value="RESUMEN">
               <h3>{{ subtitulo('RESUMEN') }}</h3>
-              <div class="card-section" *ngIf="semestreTitulo()">
-                <h3>{{ semestreTitulo() }}</h3>
-              </div>
-              <div class="card-section" *ngFor="let tabla of resumenTablas(); let i = index">
-                <h4>{{ tabla.nombre }}</h4>
-                <app-tabla-avanzada
-                  [columnas]="tabla.columnas"
-                  [rows]="tabla.rows"
-                  [storageKey]="'sui-resumen-' + i"
-                  [nombreExportar]="tabla.nombre || 'resumen'"
-                  [scrollHeight]="'300px'"
-                ></app-tabla-avanzada>
+              <!-- Legacy Suisui.vue:59-74: semester legend over a 3-per-row grid of GenericTable.vue tables. -->
+              <div class="card-section resumen-variables" *ngIf="semestreTitulo()">
+                <h4 class="resumen-variables-titulo">{{ semestreTitulo() }}</h4>
+                <div class="resumen-variables-grid">
+                  <div class="resumen-variables-item" *ngFor="let tabla of resumenTablas()">
+                    <h5>{{ tabla.nombre }}</h5>
+                    <app-tabla-generica [columnas]="tabla.columnas" [rows]="tabla.rows"></app-tabla-generica>
+                  </div>
+                </div>
               </div>
               <div *ngIf="!resumenTablas().length && !loading()" class="empty-state">No hay datos de resumen variables para los parámetros seleccionados.</div>
             </p-tabpanel>
@@ -155,6 +153,25 @@ interface ResumenTabla {
     .card-section:last-child { margin-bottom: 0; }
     .empty-state { color: var(--color-text-muted); font-size: 14px; text-align: center; padding: 24px; }
     h3, h4 { color: var(--color-text-body); margin: 0 0 12px; }
+    .resumen-variables-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .resumen-variables-item {
+      overflow-x: auto;
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .resumen-variables-item h5 {
+      margin: 0 0 0.5rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--color-border-soft);
+      color: var(--color-brand-strong);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    @media (max-width: 1100px) { .resumen-variables-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 700px) { .resumen-variables-grid { grid-template-columns: 1fr; } }
     .explicacion-formatos { color: var(--color-brand-accent); font-size: 14px; text-decoration: none; }
     .explicacion-formatos:hover { color: var(--color-brand-medium); text-decoration: underline; }
   `]
