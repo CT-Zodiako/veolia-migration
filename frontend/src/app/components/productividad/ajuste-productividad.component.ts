@@ -67,6 +67,9 @@ export class AjusteProductividadComponent {
           const periodo = periodoAnterior(anno, mes);
           return this.service.consultar({ aps, anno: periodo.anno, mes: periodo.mes }).pipe(
             catchError((err) => {
+              // A failed consulta behaves as "no record" so Agregar stays reachable.
+              this.item.set(null);
+              this.consultado.set(true);
               this.loading.set(false);
               this.messages.add({ severity: 'error', summary: 'Ajuste Productividad', detail: err?.error?.message || 'Error al consultar.' });
               return EMPTY;
@@ -103,9 +106,17 @@ export class AjusteProductividadComponent {
     this.consultarTrigger$.next();
   }
 
+  // Legacy Productividad.vue openBasic: a new value starts at 0, an existing one is
+  // pre-filled rounded to 6 decimals.
   iniciarEdicion(): void {
+    const item = this.item();
     this.editando.set(true);
-    this.editingValor.set(this.item()?.prodValor ?? null);
+    this.editingValor.set(item ? redondeo(item.prodValor) : 0);
+  }
+
+  valorMostrado(): string {
+    const item = this.item();
+    return item ? String(redondeo(item.prodValor)) : '-';
   }
 
   cancelarEdicion(): void {
@@ -113,6 +124,7 @@ export class AjusteProductividadComponent {
   }
 
   confirmarGuardar(): void {
+    if (this.editingValor() === null) return;
     const existe = this.item() !== null;
     this.confirmation.confirm({
       header: existe ? 'Actualizar productividad' : 'Registrar productividad',
@@ -153,4 +165,8 @@ export class AjusteProductividadComponent {
       }
     });
   }
+}
+
+function redondeo(valor: number): number {
+  return parseFloat(Number(valor).toFixed(6));
 }

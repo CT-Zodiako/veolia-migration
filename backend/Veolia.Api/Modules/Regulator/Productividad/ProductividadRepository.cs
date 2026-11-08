@@ -5,22 +5,25 @@ namespace Veolia.Api.Modules.Regulator.Productividad;
 
 public sealed class ProductividadRepository(IOracleConnectionFactory connectionFactory) : IProductividadRepository
 {
-    public async Task<ProductividadResponseDto?> ConsultarAsync(int aps, int anno, int mes, CancellationToken cancellationToken = default)
-    {
-        const string sql = @"
+    // ROUND keeps PROD_VALOR inside decimal range: ODP.NET throws reading a NUMBER with more
+    // than 28 significant digits into decimal (same issue CdftRepository works around), and
+    // 6 decimals is the precision legacy Productividad.vue shows (redondeo(PROD_VALOR, 6)).
+    public const string ConsultarSql = @"
 SELECT
     APSA_ID AS ApsaId,
     PROD_ANNO AS ProdAnno,
     PROD_MES AS ProdMes,
-    PROD_VALOR AS ProdValor
+    ROUND(PROD_VALOR, 6) AS ProdValor
 FROM AUCO_PRODUCTIVIDAD
 WHERE APSA_ID = :aps
   AND PROD_ANNO = :anno
   AND PROD_MES = :mes";
 
+    public async Task<ProductividadResponseDto?> ConsultarAsync(int aps, int anno, int mes, CancellationToken cancellationToken = default)
+    {
         using var connection = connectionFactory.CreateConnection();
         return await connection.QueryFirstOrDefaultAsync<ProductividadResponseDto>(
-            new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken));
+            new CommandDefinition(ConsultarSql, new { aps, anno, mes }, cancellationToken: cancellationToken));
     }
 
     public async Task CrearAsync(int aps, int anno, int mes, decimal valor, long usuarioId, CancellationToken cancellationToken = default)

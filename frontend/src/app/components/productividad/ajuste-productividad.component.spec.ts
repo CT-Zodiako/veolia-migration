@@ -1,6 +1,11 @@
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
-import { ConfirmationService } from 'primeng/api';
+import { Observable, of, throwError } from 'rxjs';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AjusteProductividadComponent } from './ajuste-productividad.component';
 import { ProductividadService } from '../../services/productividad.service';
 
@@ -55,5 +60,99 @@ describe('AjusteProductividadComponent (303)', () => {
 
     expect(service.editar).toHaveBeenCalledWith({ aps: 5, anno: 2025, mes: 12, valor: 0.9 });
     expect(service.crear).not.toHaveBeenCalled();
+  });
+
+  // Legacy Productividad.vue:30-49: once APS/año/mes are set the screen always offers Agregar or Editar.
+  describe('entry actions (S3)', () => {
+    function render(consulta: Observable<unknown>) {
+      const service = {
+        consultar: vi.fn(() => consulta),
+        crear: vi.fn(() => of({ data: null })),
+        editar: vi.fn(() => of({ data: null }))
+      };
+      const confirm = vi.fn((opts: { accept: () => void }) => opts.accept());
+      TestBed.configureTestingModule({
+        imports: [AjusteProductividadComponent],
+        providers: [
+          { provide: ProductividadService, useValue: service },
+          { provide: ConfirmationService, useValue: { confirm } }
+        ]
+      });
+      // APS/año/mes selectors are out of scope: render them as plain elements.
+      TestBed.overrideComponent(AjusteProductividadComponent, {
+        set: { imports: [CommonModule, FormsModule, ToastModule, ...CommonPrimeNgModules], schemas: [CUSTOM_ELEMENTS_SCHEMA] }
+      });
+      const fixture = TestBed.createComponent(AjusteProductividadComponent);
+      const component = fixture.componentInstance;
+      const add = vi.spyOn(fixture.debugElement.injector.get(MessageService), 'add');
+      component.onAnnoChange(2026);
+      component.onMesChange(3);
+      component.onApsChange(5);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      const button = (label: string) => host.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
+      return { fixture, component, service, confirm, add, host, button };
+    }
+
+    it('still offers Agregar when the consulta fails, keeping the error toast', () => {
+      const { component, add, button } = render(throwError(() => ({ error: { message: 'Error al consultar productividad.' } })));
+
+      expect(add).toHaveBeenCalledWith({ severity: 'error', summary: 'Ajuste Productividad', detail: 'Error al consultar productividad.' });
+      expect(component.item()).toBeNull();
+      expect(component.loading()).toBe(false);
+      expect(button('Agregar')).not.toBeNull();
+      expect(button('Agregar')!.disabled).toBe(false);
+      expect(button('Editar')).toBeNull();
+    });
+
+    it('Agregar starts the new value at 0 and saves it into the selected month', () => {
+      const { fixture, component, service, button } = render(of({ data: null }));
+      expect(button('Editar')).toBeNull();
+
+      button('Agregar')!.click();
+      fixture.detectChanges();
+
+      expect(component.editando()).toBe(true);
+      expect(component.editingValor()).toBe(0);
+      expect(button('Guardar')!.disabled).toBe(false);
+
+      button('Guardar')!.click();
+
+      expect(service.crear).toHaveBeenCalledWith({ aps: 5, anno: 2026, mes: 3, valor: 0 });
+      expect(service.editar).not.toHaveBeenCalled();
+    });
+
+    it('Editar pre-fills the stored value rounded to 6 decimals', () => {
+      const { fixture, component, host, button } = render(
+        of({ data: { apsaId: 5, prodAnno: 2026, prodMes: 2, prodValor: 0.123456789 } })
+      );
+      expect(button('Agregar')).toBeNull();
+      expect(host.querySelector('td.text-right')!.textContent!.trim()).toBe('0.123457');
+
+      button('Editar')!.click();
+      fixture.detectChanges();
+
+      expect(component.editando()).toBe(true);
+      expect(component.editingValor()).toBe(0.123457);
+    });
+
+    it('disables the save button while the value is empty and does not save', () => {
+      const { fixture, component, service, confirm, button } = render(of({ data: null }));
+      button('Agregar')!.click();
+      fixture.detectChanges();
+
+      component.editingValor.set(null);
+      fixture.detectChanges();
+
+      expect(button('Guardar')!.disabled).toBe(true);
+      component.confirmarGuardar();
+      expect(confirm).not.toHaveBeenCalled();
+      expect(service.crear).not.toHaveBeenCalled();
+      expect(service.editar).not.toHaveBeenCalled();
+
+      component.editingValor.set(1.5);
+      fixture.detectChanges();
+      expect(button('Guardar')!.disabled).toBe(false);
+    });
   });
 });
