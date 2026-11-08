@@ -34,7 +34,7 @@
 </div>
 
 <!-- Legacy SubCon.vue:61-212: one dialog with the nine clases; Guardar saves all of them in one request. -->
-<p-dialog [header]="tituloDialogo()" [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)" [modal]="true" [style]="{ width: '20vw', minWidth: '18rem' }">
+<p-dialog [header]="tituloDialogo()" [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)" [modal]="true" [style]="{ width: '24rem' }">
   <div class="valor-editor" *ngFor="let c of clasesLegacy">
     <label [attr.for]="'subcon-' + c.clase">{{ c.nombre }}</label>
     <input
