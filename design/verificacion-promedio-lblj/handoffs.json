@@ -3,11 +3,13 @@
   "chosen": "05-grupos-en-tarjetas.html",
   "handoffs": {
     "05-grupos-en-tarjetas.html": {
-      "status": "in_progress",
+      "status": "implemented",
       "queued": false,
       "sentAt": "2026-11-08T19:22:18.584Z",
       "startedAt": "2026-11-08T19:22:35.021Z",
-      "implementedAt": null
+      "implementedAt": "2026-11-08T19:38:18.787Z",
+      "note": "Implemented in f549bf3 (backend getvariablesaps + Verificación section). Not visually checked in a browser.",
+      "previewUrl": "http://localhost:4200/suministros/verificacion"
     }
   }
 }
