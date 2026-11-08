@@ -16,15 +16,8 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(new { data = "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12." });
 
-            try
-            {
-                var data = await repository.ConsultarAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { data = $"Error: {ex.Message}" });
-            }
+            var data = await repository.ConsultarAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+            return Ok(data);
         }
 
         [HttpPost("crear")]
@@ -36,16 +29,9 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12 || request.Valores is not { Count: > 0 })
                 return BadRequest(new { data = "aps, anno, mes y valores son obligatorios. mes debe estar entre 1 y 12." });
 
-            try
-            {
-                var result = await repository.CrearAsync(
-                    request.Aps, request.Anno, request.Mes, request.Valores, tokenContext.SisuId, cancellationToken);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { data = $"Error: {ex.Message}" });
-            }
+            var result = await repository.CrearAsync(
+                request.Aps, request.Anno, request.Mes, request.Valores, tokenContext.SisuId, cancellationToken);
+            return Ok(result);
         }
 
         [HttpPut("editar")]
@@ -57,16 +43,9 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12 || request.Valores is not { Count: > 0 })
                 return BadRequest(new { data = "aps, anno, mes y valores son obligatorios. mes debe estar entre 1 y 12." });
 
-            try
-            {
-                var result = await repository.EditarAsync(
-                    request.Aps, request.Anno, request.Mes, request.Valores, cancellationToken);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { data = $"Error: {ex.Message}" });
-            }
+            var result = await repository.EditarAsync(
+                request.Aps, request.Anno, request.Mes, request.Valores, cancellationToken);
+            return Ok(result);
         }
 
         [HttpGet]
@@ -75,15 +54,8 @@
             if (!TryReadTokenContext(out _))
                 return Unauthorized(new { message = "No Autorizado!" });
 
-            try
-            {
-                var data = await repository.ListarApsAsync(cancellationToken);
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { data = $"Error: {ex.Message}" });
-            }
+            var data = await repository.ListarApsAsync(cancellationToken);
+            return Ok(data);
         }
 
         [HttpDelete("eliminar/{id:long}")]
@@ -95,15 +67,8 @@
             if (id <= 0)
                 return BadRequest(new { data = "id inválido." });
 
-            try
-            {
-                var result = await repository.EliminarAsync(id, cancellationToken);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { data = $"Error: {ex.Message}" });
-            }
+            var result = await repository.EliminarAsync(id, cancellationToken);
+            return Ok(result);
         }
 
         private bool TryReadTokenContext(out AuthTokenContext tokenContext)

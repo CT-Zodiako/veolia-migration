@@ -27,8 +27,9 @@ public sealed class RegulatorConfigContractTests
         var raw = await response.Content.ReadAsStringAsync();
         var body = JsonSerializer.Deserialize<JsonElement>(raw);
 
+        // odd/tasks/oracle-error-context.md S4/S6: the global handler answers the error envelope.
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("Error", body.GetProperty("data").GetString());
+        Assert.Equal("Ocurrió un error procesando la solicitud.", body.GetProperty("message").GetString());
         Assert.DoesNotContain("secret-table-name", raw);
         Assert.DoesNotContain(" at ", raw);
         Assert.DoesNotContain(nameof(StubRellenosRepository), raw);

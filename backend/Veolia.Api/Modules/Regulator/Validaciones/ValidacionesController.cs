@@ -36,16 +36,9 @@
 
         private async Task<IActionResult> ExecuteAsync(string functionName, ValidacionRequest request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var raw = await validacionesRepository.ExecuteAsync(functionName, request.aps, request.anno, request.mes, cancellationToken);
-                var normalized = Normalize(raw, functionName);
-                return Ok(normalized);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ValidacionResponse(false, $"Error técnico: {ex.Message}"));
-            }
+            var raw = await validacionesRepository.ExecuteAsync(functionName, request.aps, request.anno, request.mes, cancellationToken);
+            var normalized = Normalize(raw, functionName);
+            return Ok(normalized);
         }
 
         // Legacy validaciones/controller.js returns the raw result and each caller accepts one value: Calculo.vue:272-304,506-515

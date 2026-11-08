@@ -16,22 +16,15 @@ public sealed class ReversionesController(IReversionesRepository reversionesRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var resultado = await reversionesRepository.CrearAutorizacion(
-                request.aps,
-                request.anno,
-                request.mes,
-                request.descripcion,
-                (int)tokenContext.SisuId,
-                cancellationToken);
+        var resultado = await reversionesRepository.CrearAutorizacion(
+            request.aps,
+            request.anno,
+            request.mes,
+            request.descripcion,
+            (int)tokenContext.SisuId,
+            cancellationToken);
 
-            return Ok(resultado);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        return Ok(resultado);
     }
 
     [HttpGet("detalladoAutorizacion")]
@@ -42,15 +35,8 @@ public sealed class ReversionesController(IReversionesRepository reversionesRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var data = await reversionesRepository.DetalladoAutorizacion((int)tokenContext.SisuId, cancellationToken);
-            return Ok(data);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var data = await reversionesRepository.DetalladoAutorizacion((int)tokenContext.SisuId, cancellationToken);
+        return Ok(data);
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

@@ -8,7 +8,7 @@ namespace Veolia.Api.Modules.Regulator.Informes;
 
 [ApiController]
 [Route("api/v1/informes")]
-public sealed class InformesController(IInformesRepository repository, ILogger<InformesController> logger) : ControllerBase
+public sealed class InformesController(IInformesRepository repository) : ControllerBase
 {
     [HttpGet("costos")]
     public async Task<IActionResult> Costos([FromQuery] int aps, [FromQuery] int anno, [FromQuery] int mes, CancellationToken cancellationToken)
@@ -85,31 +85,5 @@ public sealed class InformesController(IInformesRepository repository, ILogger<I
         {
             return StatusCode(StatusCodes.Status412PreconditionFailed, new ApiEnvelopeResponse<object>("error", new { }, ex.Message, HttpContext.TraceIdentifier, null));
         }
-        catch (Oracle.ManagedDataAccess.Client.OracleException ex)
-        {
-            var friendly = ex.Number switch
-            {
-                1 => "Conflicto de datos en Oracle durante la consulta de informes.",
-                1400 => "Faltan datos obligatorios para completar la consulta de informes.",
-                2291 => "No existe información relacionada para la consulta solicitada.",
-                _ => "Oracle devolvió un error durante la consulta de informes."
-            };
-
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, friendly, HttpContext.TraceIdentifier, $"ORA-{Math.Abs(ex.Number):D5}"));
-        }
-        catch (Exception ex)
-        {
-            var oraCode = ex.Message.Contains("ORA-") ? ExtractOraCode(ex.Message) : "ORA-00000";
-            logger.LogError(ex, "Error consultando resumen de variables.");
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, "Ocurrió un error consultando el resumen de variables.", HttpContext.TraceIdentifier, oraCode));
-        }
-    }
-
-    private static string? ExtractOraCode(string message)
-    {
-        var match = System.Text.RegularExpressions.Regex.Match(message, @"ORA-\d+");
-        return match.Success ? match.Value : null;
     }
 }

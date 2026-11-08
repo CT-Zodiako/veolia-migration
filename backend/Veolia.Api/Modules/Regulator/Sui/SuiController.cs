@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Oracle.ManagedDataAccess.Client;
 using System.ComponentModel.DataAnnotations;
 using Veolia.Api.Contracts.Responses;
 using Veolia.Api.Exceptions;
@@ -165,36 +166,31 @@ public sealed class SuiController(ISuiRepository repository, ILogger<SuiControll
         {
             return StatusCode(StatusCodes.Status412PreconditionFailed, new ApiEnvelopeResponse<object>("error", new { }, ex.Message, HttpContext.TraceIdentifier, null));
         }
-        catch (OracleTimeoutException ex)
+        // PK_SUI raises ORA-20001/20002 for the apsa_solorell rules, but the package source in the repo
+        // (Database/Fase3IntegracionSui/PK_SUI.sql) carries no readable text for them, so these keep their messages.
+        catch (Exception ex) when (ReglaSui(ex) is { } regla)
         {
-            return StatusCode(StatusCodes.Status502BadGateway, new ApiEnvelopeResponse<object>("error", new { }, ex.Message, HttpContext.TraceIdentifier, "ORA-03135"));
-        }
-        catch (Oracle.ManagedDataAccess.Client.OracleException ex)
-        {
-            var friendly = ex.Number switch
-            {
-                1 => "Conflicto de datos en Oracle durante la operación SUI.",
-                1400 => "Faltan datos obligatorios para completar la operación SUI.",
-                2291 => "No existe información relacionada para la operación solicitada.",
-                20001 => "Formato no aplicable para esta APS según regla apsa_solorell.",
-                20002 => "La APS requiere información de relleno para F35/F36 y no está disponible.",
-                _ => "Oracle devolvió un error durante la operación SUI."
-            };
-
+            logger.LogError(ex, "Regla SUI rechazada {OraCode} usuario={Usuario} endpoint={Endpoint} traceId={TraceId}",
+                regla.OraCode, tokenContext.SisuId, $"{Request.Method} {Request.Path}", HttpContext.TraceIdentifier);
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, friendly, HttpContext.TraceIdentifier, $"ORA-{Math.Abs(ex.Number):D5}"));
-        }
-        catch (Exception ex)
-        {
-            var oraCode = ex.Message.Contains("ORA-") ? ExtractOraCode(ex.Message) : "ORA-00000";
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, "Ocurrió un error procesando la solicitud SUI.", HttpContext.TraceIdentifier, oraCode));
+                new ApiEnvelopeResponse<object>("error", new { }, regla.Mensaje, HttpContext.TraceIdentifier, regla.OraCode));
         }
     }
 
-    private static string? ExtractOraCode(string message)
+    private static (string OraCode, string Mensaje)? ReglaSui(Exception ex)
     {
-        var match = System.Text.RegularExpressions.Regex.Match(message, @"ORA-\d+");
-        return match.Success ? match.Value : null;
+        var number = ex switch
+        {
+            OracleException oracle => oracle.Number,
+            OracleOperationException wrapped => wrapped.OraNumber,
+            _ => 0
+        };
+
+        return Math.Abs(number) switch
+        {
+            20001 => ("ORA-20001", "Formato no aplicable para esta APS según regla apsa_solorell."),
+            20002 => ("ORA-20002", "La APS requiere información de relleno para F35/F36 y no está disponible."),
+            _ => null
+        };
     }
 }

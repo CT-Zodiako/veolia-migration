@@ -768,10 +768,10 @@ public sealed class LegacyT2SuministrosContractTests
         Assert.Equal(new object?[] { "T" }, terceros.Select(r => r["APS"]));
     }
 
-    // Legacy controller.js:135-143: when the spreadsheet read fails it answers HTTP 500
-    // { message: "Error al cargar la productividad", detail: error.message }.
+    // Legacy controller.js:135-143 answered HTTP 500 with the raw error.message; odd/tasks/oracle-error-context.md
+    // S4/S6 keep the 500 but the global handler answers the generic message and never echoes the failure text.
     [Fact]
-    public async Task CargueProductividadFailureAnswersTheLegacyErrorBody()
+    public async Task CargueProductividadFailureAnswersTheGlobalErrorEnvelope()
     {
         using var factory = new SuministrosApiFactory();
         factory.Productividad.ConsultarError = new FileNotFoundException("Credentials/gsec.json not found");
@@ -781,8 +781,10 @@ public sealed class LegacyT2SuministrosContractTests
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("Error al cargar la productividad", body.GetProperty("message").GetString());
-        Assert.Equal("Credentials/gsec.json not found", body.GetProperty("detail").GetString());
+        Assert.Equal("error", body.GetProperty("status").GetString());
+        Assert.Equal("Ocurrió un error procesando la solicitud.", body.GetProperty("message").GetString());
+        Assert.False(body.TryGetProperty("detail", out var detail) && detail.ValueKind != JsonValueKind.Null);
+        Assert.DoesNotContain("gsec.json", body.GetRawText());
     }
 
     private static DataTable Table(params (string Column, object Value)[] cells)

@@ -17,15 +17,8 @@ public sealed class ProductividadController(IProductividadRepository repository)
         if (!PeriodoValido(request.Aps, request.Anno, request.Mes))
             return BadRequest(Envelope("error", (object?)null, "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-        try
-        {
-            var row = await repository.ConsultarAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
-            return Ok(Envelope("success", row, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", (object?)null, $"Error: {ex.Message}"));
-        }
+        var row = await repository.ConsultarAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+        return Ok(Envelope("success", row, "OK"));
     }
 
     [HttpPost("crear")]
@@ -37,15 +30,8 @@ public sealed class ProductividadController(IProductividadRepository repository)
         if (!PeriodoValido(request.Aps, request.Anno, request.Mes))
             return BadRequest(Envelope("error", (object?)null, "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-        try
-        {
-            await repository.CrearAsync(request.Aps, request.Anno, request.Mes, request.Valor, tokenContext.SisuId, cancellationToken);
-            return StatusCode(StatusCodes.Status201Created, Envelope("success", (object?)null, "Productividad creada."));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", (object?)null, $"Error: {ex.Message}"));
-        }
+        await repository.CrearAsync(request.Aps, request.Anno, request.Mes, request.Valor, tokenContext.SisuId, cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, Envelope("success", (object?)null, "Productividad creada."));
     }
 
     [HttpPut("editar")]
@@ -57,16 +43,9 @@ public sealed class ProductividadController(IProductividadRepository repository)
         if (!PeriodoValido(request.Aps, request.Anno, request.Mes))
             return BadRequest(Envelope("error", (object?)null, "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-        try
-        {
-            // Legacy suministros/routes.js:69-73 answers 200 even when no row matched.
-            await repository.EditarAsync(request.Aps, request.Anno, request.Mes, request.Valor, cancellationToken);
-            return Ok(Envelope("success", (object?)null, "Productividad actualizada."));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", (object?)null, $"Error: {ex.Message}"));
-        }
+        // Legacy suministros/routes.js:69-73 answers 200 even when no row matched.
+        await repository.EditarAsync(request.Aps, request.Anno, request.Mes, request.Valor, cancellationToken);
+        return Ok(Envelope("success", (object?)null, "Productividad actualizada."));
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

@@ -42,15 +42,8 @@ public sealed class SuiReversionesController(ISuiReversionesRepository repositor
             return BadRequest(new { message = "El campo aps es requerido y debe ser mayor a cero" });
         }
 
-        try
-        {
-            var resultado = await action(request.aps, cancellationToken);
-            return Ok(resultado);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var resultado = await action(request.aps, cancellationToken);
+        return Ok(resultado);
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

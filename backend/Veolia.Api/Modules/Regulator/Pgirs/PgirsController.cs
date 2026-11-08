@@ -20,15 +20,8 @@
             if (request.ApsId <= 0)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps es obligatorio."));
 
-            try
-            {
-                var rows = await repository.GetResumenAsync(request.ApsId);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetResumenAsync(request.ApsId);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("informe-variables")]
@@ -40,15 +33,8 @@
             if (request.ApsId <= 0)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps es obligatorio."));
 
-            try
-            {
-                var rows = await repository.GetInformeVariablesAsync(request.ApsId);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetInformeVariablesAsync(request.ApsId);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("barrido")]
@@ -60,15 +46,8 @@
             if (request.ApsId <= 0)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps es obligatorio."));
 
-            try
-            {
-                var rows = await repository.GetBarridoAsync(request.ApsId);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetBarridoAsync(request.ApsId);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("variables")]
@@ -80,15 +59,8 @@
             if (request.ApsId <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetVariablesAsync(request.ApsId, request.Anno, request.Mes);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetVariablesAsync(request.ApsId, request.Anno, request.Mes);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("actualizar-variable")]
@@ -100,15 +72,8 @@
             if (request.Variables == null || request.Variables.Count == 0)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "datatable es obligatorio."));
 
-            try
-            {
-                var success = await repository.EditarVariablesAsync(request.Variables, tokenContext.SisuId);
-                return Ok(Envelope("success", success, success ? "Variables actualizadas" : "Error"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var success = await repository.EditarVariablesAsync(request.Variables, tokenContext.SisuId);
+            return Ok(Envelope("success", success, success ? "Variables actualizadas" : "Error"));
         }
 
         [HttpPost("guardar")]
@@ -120,15 +85,8 @@
             if (request.ApsId <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios."));
 
-            try
-            {
-                var success = await repository.NuevoVariablesAsync(request, tokenContext.SisuId);
-                return Ok(Envelope("success", success, success ? "Variables creadas" : "Error"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var success = await repository.NuevoVariablesAsync(request, tokenContext.SisuId);
+            return Ok(Envelope("success", success, success ? "Variables creadas" : "Error"));
         }
 
         // ========== LEGACY ALIASES (temporary backward compatibility) ==========

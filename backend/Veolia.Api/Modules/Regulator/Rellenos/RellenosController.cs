@@ -5,7 +5,7 @@ namespace Veolia.Api.Modules.Regulator.Rellenos;
 
 [ApiController]
 [Route("api/v1/rellenos")]
-public sealed class RellenosController(IRellenosRepository rellenosRepository, ILogger<RellenosController> logger) : ControllerBase
+public sealed class RellenosController(IRellenosRepository rellenosRepository) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Listar(CancellationToken cancellationToken)
@@ -15,16 +15,8 @@ public sealed class RellenosController(IRellenosRepository rellenosRepository, I
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var data = await rellenosRepository.ListarAsync(cancellationToken);
-            return Ok(data);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error listing rellenos");
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var data = await rellenosRepository.ListarAsync(cancellationToken);
+        return Ok(data);
     }
 
     [HttpPost("consultarrelleno")]
@@ -35,15 +27,8 @@ public sealed class RellenosController(IRellenosRepository rellenosRepository, I
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var data = await rellenosRepository.ConsultarAsync(request, cancellationToken);
-            return Ok(data);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var data = await rellenosRepository.ConsultarAsync(request, cancellationToken);
+        return Ok(data);
     }
 
     [HttpPost("crear")]
@@ -54,15 +39,8 @@ public sealed class RellenosController(IRellenosRepository rellenosRepository, I
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await rellenosRepository.CrearAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(result);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await rellenosRepository.CrearAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(result);
     }
 
     [HttpPut("editar/{id:long}")]
@@ -73,15 +51,8 @@ public sealed class RellenosController(IRellenosRepository rellenosRepository, I
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await rellenosRepository.EditarAsync(id, request, cancellationToken);
-            return Ok(result);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await rellenosRepository.EditarAsync(id, request, cancellationToken);
+        return Ok(result);
     }
 
     [HttpDelete("eliminar/{id:long}")]
@@ -92,15 +63,8 @@ public sealed class RellenosController(IRellenosRepository rellenosRepository, I
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await rellenosRepository.EliminarAsync(id, cancellationToken);
-            return Ok(result);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await rellenosRepository.EliminarAsync(id, cancellationToken);
+        return Ok(result);
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

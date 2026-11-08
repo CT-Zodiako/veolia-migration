@@ -22,15 +22,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var data = await repository.ConsultaAsync(request.ApsaId, cancellationToken);
-            return Ok(Envelope(true, data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.ConsultaAsync(request.ApsaId, cancellationToken);
+        return Ok(Envelope(true, data, "OK"));
     }
 
     [HttpPost("consultageneral")]
@@ -39,15 +32,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var data = await repository.ConsultaGeneralAsync(tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope(true, data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.ConsultaGeneralAsync(tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope(true, data, "OK"));
     }
 
     [HttpPost("consultaproy")]
@@ -56,18 +42,11 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var data = await repository.ConsultaProyAsync(payload.Id, cancellationToken);
-            if (data is null)
-                return NotFound(Envelope(false, null, "No se encontró la proyección."));
+        var data = await repository.ConsultaProyAsync(payload.Id, cancellationToken);
+        if (data is null)
+            return NotFound(Envelope(false, null, "No se encontró la proyección."));
 
-            return Ok(Envelope(true, data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope(true, data, "OK"));
     }
 
     [HttpPost("crear")]
@@ -85,15 +64,8 @@ public sealed class ProyeccionesController(
         if (request.ProyAnnoDes > request.ProyAnnoHas || (request.ProyAnnoDes == request.ProyAnnoHas && request.ProyMesDes > request.ProyMesHas))
             return BadRequest(Envelope(false, null, "El período inicial no puede ser posterior al período final."));
 
-        try
-        {
-            var result = await repository.CrearAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await repository.CrearAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpPut("editar/{id:long}")]
@@ -105,15 +77,8 @@ public sealed class ProyeccionesController(
         if (string.IsNullOrWhiteSpace(request.ProyDescripcion))
             return BadRequest(Envelope(false, null, DescripcionObligatoria));
 
-        try
-        {
-            var result = await repository.EditarAsync(id, request, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await repository.EditarAsync(id, request, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpDelete("eliminar/{id:long}")]
@@ -122,15 +87,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var result = await repository.EliminarAsync(id, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await repository.EliminarAsync(id, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpPost("ultimastarifas")]
@@ -139,15 +97,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var data = await repository.UltimasTarifasAsync(payload.ApsaId, cancellationToken);
-            return Ok(Envelope(true, data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.UltimasTarifasAsync(payload.ApsaId, cancellationToken);
+        return Ok(Envelope(true, data, "OK"));
     }
 
     [HttpPost("consultabyid")]
@@ -156,15 +107,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var data = await lineaTiempoRepository.GetByProyeccionAsync(payload.Id, cancellationToken);
-            return Ok(Envelope(true, data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var data = await lineaTiempoRepository.GetByProyeccionAsync(payload.Id, cancellationToken);
+        return Ok(Envelope(true, data, "OK"));
     }
 
     [HttpPost("registrarlineatiempo")]
@@ -179,15 +123,8 @@ public sealed class ProyeccionesController(
         if (request.Rows == null || request.Rows.Count == 0)
             return BadRequest(Envelope(false, null, "Debe proporcionar al menos una fila de línea de tiempo."));
 
-        try
-        {
-            var result = await lineaTiempoRepository.UpsertAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await lineaTiempoRepository.UpsertAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpPost("consultarcrecimiento")]
@@ -196,15 +133,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var data = await crecimientoRepository.ConsultarAsync(request.ProyId, cancellationToken);
-            return Ok(Envelope(true, data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var data = await crecimientoRepository.ConsultarAsync(request.ProyId, cancellationToken);
+        return Ok(Envelope(true, data, "OK"));
     }
 
     [HttpPost("cargardesdedrive")]
@@ -225,10 +155,6 @@ public sealed class ProyeccionesController(
         {
             return NotFound(Envelope(false, null, ex.Message));
         }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
     }
 
     [HttpPost("registrarcrecimientousuarios")]
@@ -237,15 +163,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var result = await crecimientoRepository.RegistrarUsuariosAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await crecimientoRepository.RegistrarUsuariosAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpPost("registrarcrecimientoinfpropia")]
@@ -254,15 +173,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var result = await crecimientoRepository.RegistrarPropiaAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await crecimientoRepository.RegistrarPropiaAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpPost("registrarcrecimientoinfterceros")]
@@ -271,15 +183,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var result = await crecimientoRepository.RegistrarTercerosAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await crecimientoRepository.RegistrarTercerosAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpPost("registrardescuento")]
@@ -288,15 +193,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out var tokenContext))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var result = await crecimientoRepository.RegistrarDescuentosAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await crecimientoRepository.RegistrarDescuentosAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpPost("consultasubcont")]
@@ -305,15 +203,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var data = await subcontProyRepository.GetSubcontAsync(request, cancellationToken);
-            return Ok(Envelope(true, data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var data = await subcontProyRepository.GetSubcontAsync(request, cancellationToken);
+        return Ok(Envelope(true, data, "OK"));
     }
 
     [HttpPost("consultarclasesuso")]
@@ -322,15 +213,8 @@ public sealed class ProyeccionesController(
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope(false, null, "No Autorizado!"));
 
-        try
-        {
-            var data = await subcontProyRepository.GetClasesUsoAsync(cancellationToken);
-            return Ok(Envelope(true, data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var data = await subcontProyRepository.GetClasesUsoAsync(cancellationToken);
+        return Ok(Envelope(true, data, "OK"));
     }
 
     [HttpPost("editarPorcSubCon")]
@@ -343,15 +227,8 @@ public sealed class ProyeccionesController(
         if (request.Items is null || request.Items.Count == 0)
             return BadRequest(Envelope(false, null, "El parámetro 'data' debe ser un array válido con al menos un elemento"));
 
-        try
-        {
-            var result = await subcontProyRepository.UpsertSubcontAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        var result = await subcontProyRepository.UpsertSubcontAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope(result.Success, result, result.Message ?? "OK"));
     }
 
     [HttpPost("ejecutarproyectar")]
@@ -366,21 +243,14 @@ public sealed class ProyeccionesController(
         if (request.ApsaId <= 0)
             return BadRequest(Envelope(false, null, "El ID de APS es obligatorio."));
 
-        try
+        var resultado = await ejecucionProyeccionRepository.EjecutarProyectarAsync(request.ProyId, request.ApsaId, tokenContext.SisuId, cancellationToken);
+        var response = new EjecutarProyeccionResponse
         {
-            var resultado = await ejecucionProyeccionRepository.EjecutarProyectarAsync(request.ProyId, request.ApsaId, tokenContext.SisuId, cancellationToken);
-            var response = new EjecutarProyeccionResponse
-            {
-                Success = resultado == 1,
-                Resultado = resultado
-            };
+            Success = resultado == 1,
+            Resultado = resultado
+        };
 
-            return Ok(Envelope(response.Success, response, response.Success ? "Proceso ejecutado correctamente." : "Ejecución finalizada con observaciones."));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope(false, null, $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope(response.Success, response, response.Success ? "Proceso ejecutado correctamente." : "Ejecución finalizada con observaciones."));
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

@@ -17,15 +17,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var inserted = await suministrosRepository.SetCargueComercialAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = inserted });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error", message = "No fue posible procesar el archivo comercial." });
-        }
+        var inserted = await suministrosRepository.SetCargueComercialAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = inserted });
     }
 
     [HttpPost("filecarguecomercialsemestral")]
@@ -36,15 +29,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var inserted = await suministrosRepository.SetCargueComercialSemAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = inserted });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error", message = "No fue posible procesar el archivo comercial semestral." });
-        }
+        var inserted = await suministrosRepository.SetCargueComercialSemAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = inserted });
     }
 
     [HttpPost("setCargueInfPropia")]
@@ -55,15 +41,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await suministrosRepository.SetCargueInfPropiaAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await suministrosRepository.SetCargueInfPropiaAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = result });
     }
 
     [HttpPost("setCargueInfPropiaSem")]
@@ -74,15 +53,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await suministrosRepository.SetCargueInfPropiaSemAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await suministrosRepository.SetCargueInfPropiaSemAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = result });
     }
 
     [HttpPost("setCargueInfCompetidor")]
@@ -93,15 +65,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await suministrosRepository.SetCargueInfCompetidorAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await suministrosRepository.SetCargueInfCompetidorAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = result });
     }
 
     [HttpPost("setCargueInfCompetidorSemestral")]
@@ -112,15 +77,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await suministrosRepository.SetCargueInfCompetidorSemestralAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await suministrosRepository.SetCargueInfCompetidorSemestralAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = result });
     }
 
     [HttpPost("setTerceros")]
@@ -131,15 +89,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await suministrosRepository.SetTercerosAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await suministrosRepository.SetTercerosAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = result });
     }
 
     [HttpPost("guardarProductividad")]
@@ -160,10 +111,6 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             // Legacy suministros/controller.js:10-25 answers HTTP 400 for empty data or a missing ANNO/MES.
             return BadRequest(new { data = ex.Message, message = ex.Message });
         }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
     }
 
     [HttpPost("cargueProductividad")]
@@ -174,16 +121,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var (propios, terceros) = await cargueProductividadService.ConsultarAsync(request.anno, request.mes, cancellationToken);
-            return Ok(new { data = new { propios, terceros } });
-        }
-        catch (Exception ex)
-        {
-            // Legacy suministros/controller.js:135-143 answers HTTP 500 with the failure detail.
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error al cargar la productividad", detail = ex.Message });
-        }
+        var (propios, terceros) = await cargueProductividadService.ConsultarAsync(request.anno, request.mes, cancellationToken);
+        return Ok(new { data = new { propios, terceros } });
     }
 
     [HttpPost("guardarQRTRural")]
@@ -194,15 +133,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await suministrosRepository.GuardarQrtRuralAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await suministrosRepository.GuardarQrtRuralAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = result });
     }
 
     [HttpPost("existeRelleno")]
@@ -213,16 +145,9 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var mesCierre = request.semestre == 1 ? 6 : 12;
-            var raw = await validacionesRepository.ExecuteAsync("fauco_existerelleno", request.aps, request.anno, mesCierre, cancellationToken);
-            return Ok(new { data = raw == "1" });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var mesCierre = request.semestre == 1 ? 6 : 12;
+        var raw = await validacionesRepository.ExecuteAsync("fauco_existerelleno", request.aps, request.anno, mesCierre, cancellationToken);
+        return Ok(new { data = raw == "1" });
     }
 
     [HttpPost("getcanCertificate")]
@@ -241,15 +166,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await suministrosRepository.CertificarAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await suministrosRepository.CertificarAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = result });
     }
 
     [HttpPost("Certificarsemestral")]
@@ -260,22 +178,15 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
+        var result = await suministrosRepository.CertificarSemestralAsync(request, tokenContext.SisuId, cancellationToken);
+        // Legacy suministros/controller.js:592: res == 0 throws "No se pueden certificar las variables" (HTTP 500).
+        if (result == 0)
         {
-            var result = await suministrosRepository.CertificarSemestralAsync(request, tokenContext.SisuId, cancellationToken);
-            // Legacy suministros/controller.js:592: res == 0 throws "No se pueden certificar las variables" (HTTP 500).
-            if (result == 0)
-            {
-                const string mensaje = "No se pueden certificar las variables";
-                return StatusCode(StatusCodes.Status500InternalServerError, new { data = mensaje, message = mensaje });
-            }
+            const string mensaje = "No se pueden certificar las variables";
+            return StatusCode(StatusCodes.Status500InternalServerError, new { data = mensaje, message = mensaje });
+        }
 
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        return Ok(new { data = result });
     }
 
     [HttpPost("certificarMensual")]
@@ -306,15 +217,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            await suministrosRepository.NewCostoPodaAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = "OK" });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        await suministrosRepository.NewCostoPodaAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = "OK" });
     }
 
     [HttpPost("registrarPoda")]
@@ -325,15 +229,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            await suministrosRepository.RegistrarPodaAsync(request, tokenContext.SisuId, cancellationToken);
-            return Ok(new { data = "OK" });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        await suministrosRepository.RegistrarPodaAsync(request, tokenContext.SisuId, cancellationToken);
+        return Ok(new { data = "OK" });
     }
 
     [HttpPost("setReversion")]
@@ -349,15 +246,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Ok(new ReversionResponse(false, "El motivo es obligatorio.", null));
         }
 
-        try
-        {
-            var result = await suministrosRepository.SetReversionAsync(request, (int)tokenContext.SisuId, cancellationToken);
-            return Ok(result);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await suministrosRepository.SetReversionAsync(request, (int)tokenContext.SisuId, cancellationToken);
+        return Ok(result);
     }
 
     [HttpGet("getReversion")]
@@ -368,15 +258,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var data = await suministrosRepository.GetReversionAsync(cancellationToken);
-            return Ok(data);
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var data = await suministrosRepository.GetReversionAsync(cancellationToken);
+        return Ok(data);
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
@@ -392,15 +275,8 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await action();
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await action();
+        return Ok(new { data = result });
     }
 
     private async Task<IActionResult> ExecuteDataAsync<T>(Func<Task<T>> action)
@@ -410,14 +286,7 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await action();
-            return Ok(new { data = result });
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
-        }
+        var result = await action();
+        return Ok(new { data = result });
     }
 }
