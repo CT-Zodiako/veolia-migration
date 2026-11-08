@@ -13,19 +13,18 @@ public sealed class CargaGenericaAuthentication
 [ApiController]
 [Route("api/v1/sui853Configuracion")]
 [MiddlewareFilter(typeof(CargaGenericaAuthentication))]
-public sealed class CargaGenericaController(ICargaGenericaRepository repository, IGoogleSheetsService sheets,
-    ILogger<CargaGenericaController> logger) : ControllerBase
+public sealed class CargaGenericaController(ICargaGenericaRepository repository, IGoogleSheetsService sheets) : ControllerBase
 {
     [HttpPost("tablasSui")]
     public Task<IActionResult> Tables(CancellationToken ct) => Execute(async () =>
-        (object)await repository.TablesAsync(ct), ct, anySystem: true);
+        (object)await repository.TablesAsync(ct), anySystem: true);
 
     [HttpPost("listarHojasDrive")]
     public Task<IActionResult> Sheets(SheetRequest request, CancellationToken ct) => Execute(async () =>
     {
         CargaGenericaValidation.Sheet(request.SheetId);
         return new { ok = true, source = "DRIVE_SHEETS", sheets = await sheets.ListMetadataAsync(request.SheetId, ct) };
-    }, ct);
+    });
 
     [HttpPost("cargaDriveDinamica")]
     public Task<IActionResult> Load(CargaGenericaRequest request, CancellationToken ct) => Execute(async () =>
@@ -61,7 +60,7 @@ public sealed class CargaGenericaController(ICargaGenericaRepository repository,
             tableSummary = new { owner = "SUI", tableName = table, columnsUsed = names, useExecuteMany = false },
             insertResult = new { ok = true, code = "OK", message = "Carga completada.", inserted }
         };
-    }, ct);
+    });
 
     [HttpPost("truncateTable")]
     public Task<IActionResult> Truncate(TruncateRequest request, CancellationToken ct) => Execute(async () =>
@@ -70,11 +69,11 @@ public sealed class CargaGenericaController(ICargaGenericaRepository repository,
         if (!request.Confirm) throw new ArgumentException("Se requiere confirmación explícita para vaciar la tabla.");
         await repository.TruncateAsync(table, ct);
         return new { ok = true, source = "DB_TRUNCATE", owner = "SUI", tableName = table };
-    }, ct);
+    });
 
     // anySystem: legacy routes.js:53-57 listed the tables for any token; only the Drive/load/truncate steps keep the
     // SUI 853 system check (odd/tasks/sui853-carga-generica.md).
-    private async Task<IActionResult> Execute(Func<Task<object>> action, CancellationToken ct, bool anySystem = false)
+    private async Task<IActionResult> Execute(Func<Task<object>> action, bool anySystem = false)
     {
         // Signature and revocation are checked by the controller-scoped middleware.
         if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out var context))
@@ -85,12 +84,6 @@ public sealed class CargaGenericaController(ICargaGenericaRepository repository,
         catch (ArgumentException ex)
         {
             return BadRequest(new { status = 400, data = new { ok = false, code = "INVALID_PARAMS", message = ex.Message } });
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (Exception ex)
-        {
-            logger.LogError("Carga generica failed ({ExceptionType}); trace {TraceId}", ex.GetType().Name, HttpContext.TraceIdentifier);
-            return StatusCode(500, new { status = 500, data = new { ok = false, code = "OPERATION_FAILED", message = "No se pudo completar la operación." } });
         }
     }
 }

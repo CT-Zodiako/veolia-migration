@@ -25,16 +25,6 @@ public sealed class Sui853ContractMapperTests
         Assert.Same(data, dictionary["data"]);
     }
 
-    [Fact]
-    public void MapError_ReturnsStatus500AndLegacyErrorText()
-    {
-        var result = mapper.MapError();
-        var dictionary = ToDictionary(result);
-
-        Assert.Equal(500, dictionary["status"]);
-        Assert.Equal("Error", dictionary["data"]);
-    }
-
     private static IDictionary<string, object?> ToDictionary(object instance)
     {
         return instance

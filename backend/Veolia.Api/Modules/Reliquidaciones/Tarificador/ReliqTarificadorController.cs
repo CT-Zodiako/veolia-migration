@@ -37,43 +37,36 @@ public sealed class ReliqTarificadorController(IReliqTarificadorRepository repos
         if (request.ReliqId <= 0)
             return UnprocessableEntity(Envelope("error", null, "reliqId es obligatorio."));
 
-        try
+        var estado = await repository.EstadoReliquidacionAsync(request.ReliqId, cancellationToken);
+        if (string.IsNullOrWhiteSpace(estado))
+            return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
+
+        var puedeAprobar = EsEstadoAprobable(estado);
+        if (!puedeAprobar)
         {
-            var estado = await repository.EstadoReliquidacionAsync(request.ReliqId, cancellationToken);
-            if (string.IsNullOrWhiteSpace(estado))
-                return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
-
-            var puedeAprobar = EsEstadoAprobable(estado);
-            if (!puedeAprobar)
+            var estadoActual = new EstadoReliquidacionResponseDto
             {
-                var estadoActual = new EstadoReliquidacionResponseDto
-                {
-                    Ok = true,
-                    Estado = estado,
-                    PuedeAprobar = false
-                };
-
-                return Conflict(Envelope("error", estadoActual, "RELIQ_ALREADY_APPLIED"));
-            }
-
-            var resultado = await repository.AprobarReliquidacionAsync(request.ReliqId, tokenContext.SisuId, cancellationToken);
-            var mensaje = string.IsNullOrWhiteSpace(resultado.Mensaje) ? "Proceso aplicado correctamente." : resultado.Mensaje;
-            var data = new AprobarReliquidacionResponseDto
-            {
-                // Igual que el legacy (tarificador/controller.js:220-227): "ok" refleja que la
-                // llamada al PL/SQL se ejecutó sin excepción, no una comparación contra un
-                // literal mágico ("STUB_OK"/"OK") que el JSON real nunca contiene.
                 Ok = true,
-                Mensaje = mensaje,
-                Resultado = resultado
+                Estado = estado,
+                PuedeAprobar = false
             };
 
-            return Ok(Envelope("ok", data, mensaje));
+            return Conflict(Envelope("error", estadoActual, "RELIQ_ALREADY_APPLIED"));
         }
-        catch (Exception ex)
+
+        var resultado = await repository.AprobarReliquidacionAsync(request.ReliqId, tokenContext.SisuId, cancellationToken);
+        var mensaje = string.IsNullOrWhiteSpace(resultado.Mensaje) ? "Proceso aplicado correctamente." : resultado.Mensaje;
+        var data = new AprobarReliquidacionResponseDto
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+            // Igual que el legacy (tarificador/controller.js:220-227): "ok" refleja que la
+            // llamada al PL/SQL se ejecutó sin excepción, no una comparación contra un
+            // literal mágico ("STUB_OK"/"OK") que el JSON real nunca contiene.
+            Ok = true,
+            Mensaje = mensaje,
+            Resultado = resultado
+        };
+
+        return Ok(Envelope("ok", data, mensaje));
     }
 
     [HttpPost("estadoReliquidacion")]
@@ -85,25 +78,18 @@ public sealed class ReliqTarificadorController(IReliqTarificadorRepository repos
         if (request.ReliqId <= 0)
             return UnprocessableEntity(Envelope("error", null, "reliqId es obligatorio."));
 
-        try
-        {
-            var estado = await repository.EstadoReliquidacionAsync(request.ReliqId, cancellationToken);
-            if (string.IsNullOrWhiteSpace(estado))
-                return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
+        var estado = await repository.EstadoReliquidacionAsync(request.ReliqId, cancellationToken);
+        if (string.IsNullOrWhiteSpace(estado))
+            return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
 
-            var data = new EstadoReliquidacionResponseDto
-            {
-                Ok = true,
-                Estado = estado,
-                PuedeAprobar = EsEstadoAprobable(estado)
-            };
-
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
+        var data = new EstadoReliquidacionResponseDto
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+            Ok = true,
+            Estado = estado,
+            PuedeAprobar = EsEstadoAprobable(estado)
+        };
+
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     private async Task<IActionResult> GetResumenAsync(
@@ -117,17 +103,10 @@ public sealed class ReliqTarificadorController(IReliqTarificadorRepository repos
         if (request.ReliqId <= 0)
             return UnprocessableEntity(Envelope("error", null, "reliqId es obligatorio."));
 
-        try
-        {
-            // Legacy (tarificador/controller.js resumen*) answered 200 with resultado:null when
-            // the package returned no resumen; a 404 here broke the whole preview.
-            var data = await getResumen(request.ReliqId, cancellationToken) ?? new ResumenResponseDto();
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        // Legacy (tarificador/controller.js resumen*) answered 200 with resultado:null when
+        // the package returned no resumen; a 404 here broke the whole preview.
+        var data = await getResumen(request.ReliqId, cancellationToken) ?? new ResumenResponseDto();
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

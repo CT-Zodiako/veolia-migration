@@ -17,18 +17,11 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Reliq <= 0)
             return UnprocessableEntity(Envelope("error", null, "reliq es obligatorio."));
 
-        try
-        {
-            var data = await repository.CompararCostosAsync(request.Reliq, cancellationToken);
-            if (data.Count == 0)
-                return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
+        var data = await repository.CompararCostosAsync(request.Reliq, cancellationToken);
+        if (data.Count == 0)
+            return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
 
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("compararCostosCargue")]
@@ -40,15 +33,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Reliq <= 0 || request.ApsaId <= 0)
             return UnprocessableEntity(Envelope("error", null, "reliq y apsaId son obligatorios."));
 
-        try
-        {
-            var result = await repository.CompararCostosCargueAsync(request.Reliq, request.ApsaId, cancellationToken);
-            return Ok(Envelope("ok", new { resultado = result }, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var result = await repository.CompararCostosCargueAsync(request.Reliq, request.ApsaId, cancellationToken);
+        return Ok(Envelope("ok", new { resultado = result }, "OK"));
     }
 
     [HttpPost("compararTarifas")]
@@ -60,18 +46,11 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Reliq <= 0)
             return UnprocessableEntity(Envelope("error", null, "reliq es obligatorio."));
 
-        try
-        {
-            var data = await repository.CompararTarifasAsync(request.Reliq, cancellationToken);
-            if (data.Count == 0)
-                return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
+        var data = await repository.CompararTarifasAsync(request.Reliq, cancellationToken);
+        if (data.Count == 0)
+            return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
 
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("resumenCompararTarifas")]
@@ -83,18 +62,11 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Reliq <= 0 || request.ApsaId <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
-        try
-        {
-            var data = await repository.ResumenCompararTarifasAsync(request.Reliq, request.ApsaId, request.Anno, request.Mes, cancellationToken);
-            if (data is null)
-                return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
+        var data = await repository.ResumenCompararTarifasAsync(request.Reliq, request.ApsaId, request.Anno, request.Mes, cancellationToken);
+        if (data is null)
+            return NotFound(Envelope("error", null, "RELIQ_NOT_FOUND"));
 
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("getReliInfoUsuarios")]
@@ -106,15 +78,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.IdReliq <= 0)
             return UnprocessableEntity(Envelope("error", null, "idReliq es obligatorio."));
 
-        try
-        {
-            var data = await repository.GetReliInfoUsuariosAsync(request.IdReliq, cancellationToken);
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.GetReliInfoUsuariosAsync(request.IdReliq, cancellationToken);
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("getResumenEmpresa")]
@@ -126,15 +91,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.IdReliq <= 0)
             return UnprocessableEntity(Envelope("error", null, "idReliq es obligatorio."));
 
-        try
-        {
-            var data = await repository.GetResumenEmpresaAsync(request.IdReliq, cancellationToken);
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.GetResumenEmpresaAsync(request.IdReliq, cancellationToken);
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("getResumenAPS")]
@@ -146,15 +104,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.IdReliq <= 0)
             return UnprocessableEntity(Envelope("error", null, "idReliq es obligatorio."));
 
-        try
-        {
-            var data = await repository.GetResumenApsAsync(request.IdReliq, cancellationToken);
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.GetResumenApsAsync(request.IdReliq, cancellationToken);
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("getResumenRelleno")]
@@ -166,15 +117,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.IdReliq <= 0)
             return UnprocessableEntity(Envelope("error", null, "idReliq es obligatorio."));
 
-        try
-        {
-            var data = await repository.GetResumenRellenoAsync(request.IdReliq, cancellationToken);
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.GetResumenRellenoAsync(request.IdReliq, cancellationToken);
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("getReliInfoAdicional")]
@@ -186,15 +130,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.IdReliq <= 0)
             return UnprocessableEntity(Envelope("error", null, "idReliq es obligatorio."));
 
-        try
-        {
-            var data = await repository.GetReliInfoAdicionalAsync(request.IdReliq, cancellationToken);
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.GetReliInfoAdicionalAsync(request.IdReliq, cancellationToken);
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("updateReliInfoUsuarios")]
@@ -209,15 +146,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Data.Any(x => x.IuaeId <= 0 || x.ReliId <= 0 || x.Cantidad < 0 || x.Toneladas < 0))
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
-        try
-        {
-            var affected = await repository.UpdateReliInfoUsuariosAsync(request.Data, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope("ok", new { affected }, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var affected = await repository.UpdateReliInfoUsuariosAsync(request.Data, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope("ok", new { affected }, "OK"));
     }
 
     [HttpPost("updateResumenEmpresa")]
@@ -232,15 +162,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Data.Any(x => x.InedId <= 0 || x.ReliId <= 0 || x.Cblj < 0))
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
-        try
-        {
-            var affected = await repository.UpdateResumenEmpresaAsync(request.Data, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope("ok", new { affected }, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var affected = await repository.UpdateResumenEmpresaAsync(request.Data, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope("ok", new { affected }, "OK"));
     }
 
     [HttpPost("updateResumenAPS")]
@@ -255,15 +178,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Data.Any(x => x.IaedId <= 0 || x.ReliId <= 0 || x.Qrtz < 0))
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
-        try
-        {
-            var affected = await repository.UpdateResumenApsAsync(request.Data, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope("ok", new { affected }, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var affected = await repository.UpdateResumenApsAsync(request.Data, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope("ok", new { affected }, "OK"));
     }
 
     [HttpPost("updateResumenRellno")]
@@ -278,15 +194,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Data.Any(x => x.IareId <= 0 || x.ReliId <= 0 || x.Qrs < 0))
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
-        try
-        {
-            var affected = await repository.UpdateResumenRellenoAsync(request.Data, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope("ok", new { affected }, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var affected = await repository.UpdateResumenRellenoAsync(request.Data, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope("ok", new { affected }, "OK"));
     }
 
     [HttpPost("updateResumenAdicional")]
@@ -301,15 +210,8 @@ public sealed class ReliqCargueController(IReliqCargueRepository repository) : C
         if (request.Data.Any(x => x.CeadId <= 0 || x.ReliId <= 0 || x.Cdf < 0 || x.Ctl < 0))
             return UnprocessableEntity(Envelope("error", null, "Parámetros inválidos."));
 
-        try
-        {
-            var affected = await repository.UpdateResumenAdicionalAsync(request.Data, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope("ok", new { affected }, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var affected = await repository.UpdateResumenAdicionalAsync(request.Data, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope("ok", new { affected }, "OK"));
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

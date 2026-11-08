@@ -30,16 +30,18 @@ public sealed class Sui853ReadmodelsContractTests(AuthApiSmokeFactory factory) :
     }
 
     [Fact]
-    public async Task RQ_APS_SUI_01_VcfgApsEmpresa_WhenRepositoryFails_Returns500Envelope()
+    public async Task RQ_APS_SUI_01_VcfgApsEmpresa_WhenRepositoryFails_ReturnsGlobalHandlerEnvelope()
     {
         factory.Sui853Repository.FailNextEmpresa();
 
         var response = await client.PostAsJsonAsync("/api/v1/sui853Configuracion/vcfgapsempresa", new { });
         var payload = await ReadJsonAsync(response);
 
+        // odd/tasks/oracle-error-context.md S6: the global handler answers instead of the legacy { status: 500, data: "Error" }.
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal(500, payload.GetProperty("status").GetInt32());
-        Assert.Equal("Error", payload.GetProperty("data").GetString());
+        Assert.Equal("error", payload.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Object, payload.GetProperty("data").ValueKind);
+        Assert.Equal("Ocurrió un error procesando la solicitud.", payload.GetProperty("message").GetString());
     }
 
     [Fact]
@@ -55,16 +57,18 @@ public sealed class Sui853ReadmodelsContractTests(AuthApiSmokeFactory factory) :
     }
 
     [Fact]
-    public async Task RQ_APS_SUI_02_VcfgApsDocumento_WhenRepositoryFails_Returns500Envelope()
+    public async Task RQ_APS_SUI_02_VcfgApsDocumento_WhenRepositoryFails_ReturnsGlobalHandlerEnvelope()
     {
         factory.Sui853Repository.FailNextDocumento();
 
         var response = await client.PostAsJsonAsync("/api/v1/sui853Configuracion/vcfgapsdocumento", new { });
         var payload = await ReadJsonAsync(response);
 
+        // odd/tasks/oracle-error-context.md S6: the global handler answers instead of the legacy { status: 500, data: "Error" }.
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal(500, payload.GetProperty("status").GetInt32());
-        Assert.Equal("Error", payload.GetProperty("data").GetString());
+        Assert.Equal("error", payload.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Object, payload.GetProperty("data").ValueKind);
+        Assert.Equal("Ocurrió un error procesando la solicitud.", payload.GetProperty("message").GetString());
     }
 
     [Fact]
@@ -81,16 +85,18 @@ public sealed class Sui853ReadmodelsContractTests(AuthApiSmokeFactory factory) :
     }
 
     [Fact]
-    public async Task RQ_APS_SUI_03_TcfgAps_WhenRepositoryFails_Returns500Envelope()
+    public async Task RQ_APS_SUI_03_TcfgAps_WhenRepositoryFails_ReturnsGlobalHandlerEnvelope()
     {
         factory.Sui853Repository.FailNextTcfg();
 
         var response = await client.PostAsJsonAsync("/api/v1/sui853Configuracion/tcfgAps", new { });
         var payload = await ReadJsonAsync(response);
 
+        // odd/tasks/oracle-error-context.md S6: the global handler answers instead of the legacy { status: 500, data: "Error" }.
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal(500, payload.GetProperty("status").GetInt32());
-        Assert.Equal("Error", payload.GetProperty("data").GetString());
+        Assert.Equal("error", payload.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Object, payload.GetProperty("data").ValueKind);
+        Assert.Equal("Ocurrió un error procesando la solicitud.", payload.GetProperty("message").GetString());
     }
 
     private static async Task<JsonElement> ReadJsonAsync(HttpResponseMessage response)

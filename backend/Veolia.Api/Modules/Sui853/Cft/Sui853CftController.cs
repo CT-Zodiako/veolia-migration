@@ -217,20 +217,7 @@ public sealed class Sui853CftController(ISui853CftRepository repository) : Contr
             return Unauthorized(unauthorized);
         }
 
-        try
-        {
-            var data = await action();
-            return Ok(new ApiEnvelopeResponse<T>("success", data, successMessage, HttpContext.TraceIdentifier, null));
-        }
-        catch (Oracle.ManagedDataAccess.Client.OracleException ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, $"Oracle error: {ex.Message}", HttpContext.TraceIdentifier, $"ORA-{Math.Abs(ex.Number):D5}"));
-        }
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, "Ocurrió un error procesando la consulta de CFT.", HttpContext.TraceIdentifier, null));
-        }
+        var data = await action();
+        return Ok(new ApiEnvelopeResponse<T>("success", data, successMessage, HttpContext.TraceIdentifier, null));
     }
 }

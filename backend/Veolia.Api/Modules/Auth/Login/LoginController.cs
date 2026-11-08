@@ -81,19 +81,8 @@ public class LoginController(ILoginRepository loginRepository, AuthContractMappe
     [HttpGet("getSistemasByCorreo")]
     public async Task<IActionResult> GetSistemasByCorreo([FromQuery] string correo, CancellationToken cancellationToken)
     {
-        try
-        {
-            var sistemas = await loginRepository.GetSistemasByCorreoAsync(correo, cancellationToken);
-            return Ok(sistemas);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new
-            {
-                status = 500,
-                response = ex.Message
-            });
-        }
+        var sistemas = await loginRepository.GetSistemasByCorreoAsync(correo, cancellationToken);
+        return Ok(sistemas);
     }
 
     [HttpPost("logout")]

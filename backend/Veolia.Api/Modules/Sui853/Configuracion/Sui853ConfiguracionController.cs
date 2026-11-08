@@ -11,42 +11,21 @@ public sealed class Sui853ConfiguracionController(
     [HttpPost("vcfgapsempresa")]
     public async Task<IActionResult> VcfgApsEmpresa(CancellationToken cancellationToken)
     {
-        try
-        {
-            var data = await repository.GetVcfgApsEmpresaAsync(cancellationToken);
-            return Ok(contractMapper.MapOk(data));
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapError());
-        }
+        var data = await repository.GetVcfgApsEmpresaAsync(cancellationToken);
+        return Ok(contractMapper.MapOk(data));
     }
 
     [HttpPost("vcfgapsdocumento")]
     public async Task<IActionResult> VcfgApsDocumento(CancellationToken cancellationToken)
     {
-        try
-        {
-            var data = await repository.GetVcfgApsDocumentoAsync(cancellationToken);
-            return Ok(contractMapper.MapOk(data));
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapError());
-        }
+        var data = await repository.GetVcfgApsDocumentoAsync(cancellationToken);
+        return Ok(contractMapper.MapOk(data));
     }
 
     [HttpPost("tcfgAps")]
     public async Task<IActionResult> TcfgAps(CancellationToken cancellationToken)
     {
-        try
-        {
-            var data = await repository.GetTcfgApsAsync(cancellationToken);
-            return Ok(contractMapper.MapOk(data));
-        }
-        catch
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, contractMapper.MapError());
-        }
+        var data = await repository.GetTcfgApsAsync(cancellationToken);
+        return Ok(contractMapper.MapOk(data));
     }
 }

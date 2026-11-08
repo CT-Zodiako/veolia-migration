@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging.Abstractions;
 using Veolia.Api.Modules.Sui853.General;
 
 namespace Veolia.Api.Tests;
@@ -49,7 +48,7 @@ public sealed class Sui853FacContractTests
     [Fact]
     public async Task RequiresAuthenticationBeforeRepositoryAccess()
     {
-        var controller = new FacController(new UnreachableRepository(), NullLogger<FacController>.Instance)
+        var controller = new FacController(new UnreachableRepository())
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };

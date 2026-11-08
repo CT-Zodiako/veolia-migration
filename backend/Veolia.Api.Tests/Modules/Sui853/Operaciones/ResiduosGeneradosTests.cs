@@ -7,7 +7,6 @@ using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.Logging.Abstractions;
 using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Modules.Sui853.Comercial;
 using Veolia.Api.Modules.Sui853.Operaciones;
@@ -97,7 +96,7 @@ public sealed class ResiduosGeneradosTests
         if (system.HasValue)
             http.Request.Headers["x-access-token"] = "test." + Convert.ToBase64String(Encoding.UTF8.GetBytes(
                 JsonSerializer.Serialize(new { SISU_ID = 1, idSistema = system.Value }))) + ".test";
-        return new(repository, NullLogger<ResiduosGeneradosController>.Instance)
+        return new(repository)
         { ControllerContext = new ControllerContext { HttpContext = http } };
     }
 

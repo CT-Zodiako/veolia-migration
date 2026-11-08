@@ -18,19 +18,8 @@ public class AsignacionesController(
             return denied;
         }
 
-        try
-        {
-            var (asignadas, sinAsignar) = await asignacionesRepository.GetApsAsignadasAsync(request.id, cancellationToken);
-            return Ok(contractMapper.MapApsAsignadas(asignadas, sinAsignar));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new
-            {
-                status = 500,
-                response = ex.Message
-            });
-        }
+        var (asignadas, sinAsignar) = await asignacionesRepository.GetApsAsignadasAsync(request.id, cancellationToken);
+        return Ok(contractMapper.MapApsAsignadas(asignadas, sinAsignar));
     }
 
     [HttpPost("setApsxUsuario")]
@@ -41,23 +30,12 @@ public class AsignacionesController(
             return denied;
         }
 
-        try
-        {
-            var response = await asignacionesRepository.SetApsxUsuarioAsync(request.id, request.outAps, request.inAps, cancellationToken);
-            var mapped = contractMapper.MapSetApsxUsuarioResult(response);
+        var response = await asignacionesRepository.SetApsxUsuarioAsync(request.id, request.outAps, request.inAps, cancellationToken);
+        var mapped = contractMapper.MapSetApsxUsuarioResult(response);
 
-            return mapped is null
-                ? StatusCode(StatusCodes.Status200OK)
-                : Ok(mapped);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new
-            {
-                status = 500,
-                response = ex.Message
-            });
-        }
+        return mapped is null
+            ? StatusCode(StatusCodes.Status200OK)
+            : Ok(mapped);
     }
 
     [HttpPost("getSistemasPorUsuario")]

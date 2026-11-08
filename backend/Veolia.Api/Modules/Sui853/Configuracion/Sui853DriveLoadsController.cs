@@ -31,7 +31,7 @@ public sealed class Sui853DriveLoadsController(ISui853DriveLoadsRepository repos
         EnsureFilesFound(files, aps.Nombre, request.Anno.ToString(CultureInfo.InvariantCulture));
         var rows = Sui853DriveLoadMapper.MapResiduos(aps.ApsId, aps.Nombre, request.Anno, files);
         return await LoadAsync(DriveLoadTarget.Residuos, files, rows, "Carga completada correctamente", ct);
-    }, ct);
+    });
 
     [HttpPost("cargueFacturacion")]
     public Task<IActionResult> CargueFacturacion([FromBody] CargueFacturacionRequest request, CancellationToken ct) => ExecuteAsync(async () =>
@@ -59,7 +59,7 @@ public sealed class Sui853DriveLoadsController(ISui853DriveLoadsRepository repos
         EnsureFilesFound(files, aps.Nombre, request.Anno.ToString(CultureInfo.InvariantCulture));
         var rows = Sui853DriveLoadMapper.MapComercial(aps.ApsId, aps.Nombre, empresa, request.Anno, files);
         return await LoadAsync(DriveLoadTarget.Comercial, files, rows, "Carga comercial completada correctamente", ct);
-    }, ct);
+    });
 
     /// <summary>Legacy answered "completada" with zero files; an empty harvest is now rejected and nothing is deleted.</summary>
     private static void EnsureFilesFound(IReadOnlyList<DriveHarvestFile> files, string apsName, string periodo)
@@ -139,7 +139,7 @@ public sealed class Sui853DriveLoadsController(ISui853DriveLoadsRepository repos
         });
     }
 
-    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action, CancellationToken ct)
+    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action)
     {
         // Signature and revocation are checked by AuthJwtParityMiddleware before controller execution.
         if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out var context))
@@ -171,16 +171,6 @@ public sealed class Sui853DriveLoadsController(ISui853DriveLoadsRepository repos
             {
                 status = 502,
                 data = new { ok = false, type = "HARVEST_ERROR", message = $"No se pudo leer {where}; {NothingApplied}.", fileName = ex.FileName }
-            });
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (Exception ex)
-        {
-            logger.LogError("Drive load failed ({ExceptionType}); trace {TraceId}", ex.GetType().Name, HttpContext.TraceIdentifier);
-            return StatusCode(500, new
-            {
-                status = 500,
-                data = new { ok = false, type = "DB_ERROR", message = $"No se pudo completar la carga; {NothingApplied}." }
             });
         }
     }

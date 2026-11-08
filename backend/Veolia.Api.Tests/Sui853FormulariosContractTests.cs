@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging.Abstractions;
 using Veolia.Api.Modules.Sui853.Configuracion;
 
 namespace Veolia.Api.Tests;
@@ -125,7 +124,7 @@ public sealed class Sui853FormulariosContractTests
     }
 
     [Fact]
-    public async Task ReturnsReloadedRowAndHandlesMissingRowAndSanitizedErrors()
+    public async Task ReturnsReloadedRowAndHandlesMissingRowAndLeavesFailuresToTheGlobalHandler()
     {
         var repo = new StubRepository { Saved = ValidRow() };
         repo.Saved.HEADER_TXT = "Database result";
@@ -135,10 +134,9 @@ public sealed class Sui853FormulariosContractTests
         Assert.Equal("Database result", json.GetProperty("data").GetProperty("HEADER_TXT").GetString());
         repo.Saved = null;
         Assert.IsType<NotFoundObjectResult>(await controller.Update(ValidRow(), default));
+        // odd/tasks/oracle-error-context.md S6: the global handler answers (and sanitizes) repository failures.
         repo.Fail = true;
-        var error = Assert.IsType<ObjectResult>(await controller.List(default));
-        Assert.Equal(500, error.StatusCode);
-        Assert.DoesNotContain("database-detail", JsonSerializer.Serialize(error.Value));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => controller.List(default));
     }
 
     private static FormulariosController Controller(StubRepository repository, int? system)
@@ -148,7 +146,7 @@ public sealed class Sui853FormulariosContractTests
         if (system.HasValue)
             context.Request.Headers["x-access-token"] = "test." + Convert.ToBase64String(Encoding.UTF8.GetBytes(
                 JsonSerializer.Serialize(new { SISU_ID = 1, idSistema = system.Value }))) + ".test";
-        return new FormulariosController(repository, NullLogger<FormulariosController>.Instance)
+        return new FormulariosController(repository)
         { ControllerContext = new ControllerContext { HttpContext = context } };
     }
 

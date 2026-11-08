@@ -5,11 +5,11 @@ namespace Veolia.Api.Modules.Sui853.Configuracion;
 
 [ApiController]
 [Route("api/v1/sui853Configuracion")]
-public sealed class FormulariosController(IFormulariosRepository repository, ILogger<FormulariosController> logger) : ControllerBase
+public sealed class FormulariosController(IFormulariosRepository repository) : ControllerBase
 {
     [HttpPost("getFormularios")]
     public Task<IActionResult> List(CancellationToken cancellationToken)
-        => ExecuteAsync(async () => Ok(new { status = 200, data = await repository.ListAsync(cancellationToken) }), cancellationToken);
+        => ExecuteAsync(async () => Ok(new { status = 200, data = await repository.ListAsync(cancellationToken) }));
 
     [HttpPost("updateFormulario")]
     public Task<IActionResult> Update([FromBody] FormularioRow row, CancellationToken cancellationToken)
@@ -19,21 +19,15 @@ public sealed class FormulariosController(IFormulariosRepository repository, ILo
             return saved is null
                 ? NotFound(new { status = 404, message = "No se encontró el registro." })
                 : Ok(new { status = 200, data = saved });
-        }, cancellationToken);
+        });
 
     // Legacy routes.js:22-31 served getFormularios and updateFormulario to any system's token (user decision,
     // legacy-characterization-tests S11); a valid token is still required.
-    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action, CancellationToken cancellationToken)
+    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action)
     {
         // Signature and expiry are checked by AuthJwtParityMiddleware before controller execution.
         if (!AuthTokenContextAccessor.TryRead(Request.Headers["x-access-token"].FirstOrDefault(), out _))
             return Unauthorized(new { status = 401, message = "No autorizado." });
-        try { return await action(); }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
-        catch (Exception ex)
-        {
-            logger.LogError("Formularios operation failed ({ExceptionType}); trace {TraceId}", ex.GetType().Name, HttpContext.TraceIdentifier);
-            return StatusCode(500, new { status = 500, message = "No se pudo completar la operación de formularios." });
-        }
+        return await action();
     }
 }

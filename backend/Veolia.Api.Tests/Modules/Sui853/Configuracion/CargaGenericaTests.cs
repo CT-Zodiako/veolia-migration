@@ -13,7 +13,6 @@ using Veolia.Api.Infrastructure.Data;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging.Abstractions;
 using Veolia.Api.Infrastructure.GoogleDrive;
 using Veolia.Api.Modules.Sui853.Configuracion;
 
@@ -228,7 +227,7 @@ public sealed class CargaGenericaTests
         var http = new DefaultHttpContext();
         if (system.HasValue) http.Request.Headers["x-access-token"] = "test." + Convert.ToBase64String(Encoding.UTF8.GetBytes(
             JsonSerializer.Serialize(new { SISU_ID = 1, idSistema = system.Value }))) + ".test";
-        return new(repository, sheets, NullLogger<CargaGenericaController>.Instance)
+        return new(repository, sheets)
         { ControllerContext = new ControllerContext { HttpContext = http } };
     }
 

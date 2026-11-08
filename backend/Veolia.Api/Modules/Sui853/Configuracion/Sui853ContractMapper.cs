@@ -7,10 +7,4 @@ public sealed class Sui853ContractMapper
         status = StatusCodes.Status200OK,
         data
     };
-
-    public object MapError(string error = "Error") => new
-    {
-        status = StatusCodes.Status500InternalServerError,
-        data = error
-    };
 }

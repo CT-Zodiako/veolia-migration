@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging.Abstractions;
 using Veolia.Api.Modules.Sui853.Comercial;
 
 namespace Veolia.Api.Tests;
@@ -64,7 +63,7 @@ public sealed class Sui853ComercialContractTests
     public async Task BothEndpointsRejectMissingAuthenticationBeforeRepositoryAccess()
     {
         var repository = new UnreachableRepository();
-        var controller = new ComercialController(repository, NullLogger<ComercialController>.Instance)
+        var controller = new ComercialController(repository)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };

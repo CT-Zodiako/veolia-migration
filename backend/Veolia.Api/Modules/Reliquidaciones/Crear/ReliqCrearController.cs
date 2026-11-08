@@ -6,7 +6,7 @@ namespace Veolia.Api.Modules.Reliquidaciones.Crear;
 
 [ApiController]
 [Route("api/v1/reliqCrear")]
-public sealed class ReliqCrearController(IReliqCrearRepository repository) : ControllerBase
+public sealed class ReliqCrearController(IReliqCrearRepository repository, ILogger<ReliqCrearController> logger) : ControllerBase
 {
     [HttpPost("crear")]
     public async Task<IActionResult> Crear([FromBody] CrearReliquidacionRequestDto request, CancellationToken cancellationToken)
@@ -48,13 +48,12 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
             var created = await repository.CrearAsync(request, tokenContext.SisuId, cancellationToken);
             return Ok(Envelope("ok", created, "Reliquidación creada correctamente."));
         }
+        // The user must see why the extraction failed, so this keeps its message instead of the global handler's.
         catch (ReliqExtraccionFallidaException ex)
         {
+            logger.LogError(ex, "Extracción de reliquidación fallida resultado={Resultado} usuario={Usuario} endpoint={Endpoint} traceId={TraceId}",
+                ex.Resultado, tokenContext.SisuId, $"{Request.Method} {Request.Path}", HttpContext.TraceIdentifier);
             return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, ex.Message));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
         }
     }
 
@@ -69,15 +68,8 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         // replicar ese comportamiento; GetReliquidacionByAps sigue exigiéndolo para el filtro puntual.
         var apsaId = payload.ApsaId > 0 ? payload.ApsaId : (long?)null;
 
-        try
-        {
-            var data = await repository.GetReliquidacionesAsync(apsaId, cancellationToken);
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        var data = await repository.GetReliquidacionesAsync(apsaId, cancellationToken);
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("getReliquidacionByAps")]
@@ -89,17 +81,10 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         if (payload.ApsaId <= 0)
             return UnprocessableEntity(Envelope("error", null, "apsaId es obligatorio."));
 
-        try
-        {
-            // Legacy (reliq/controller.js getReliquidacionByAps) devuelve la LISTA completa de
-            // reliquidaciones activas del APS (alimenta el selector del cargue), no una sola fila.
-            var data = await repository.GetReliquidacionByApsAsync(payload.ApsaId, cancellationToken);
-            return Ok(Envelope("ok", data, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        // Legacy (reliq/controller.js getReliquidacionByAps) devuelve la LISTA completa de
+        // reliquidaciones activas del APS (alimenta el selector del cargue), no una sola fila.
+        var data = await repository.GetReliquidacionByApsAsync(payload.ApsaId, cancellationToken);
+        return Ok(Envelope("ok", data, "OK"));
     }
 
     [HttpPost("update")]
@@ -127,18 +112,11 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         request.RelqDesde = relqDesde;
         request.RelqHasta = relqHasta;
 
-        try
-        {
-            var updated = await repository.ActualizarAsync(request, tokenContext.SisuId, cancellationToken);
-            if (!updated)
-                return NotFound(Envelope("error", null, "No se encontró la reliquidación."));
+        var updated = await repository.ActualizarAsync(request, tokenContext.SisuId, cancellationToken);
+        if (!updated)
+            return NotFound(Envelope("error", null, "No se encontró la reliquidación."));
 
-            return Ok(Envelope("ok", new { request.RelqId }, "Reliquidación actualizada correctamente."));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope("ok", new { request.RelqId }, "Reliquidación actualizada correctamente."));
     }
 
     [HttpPost("delete")]
@@ -150,18 +128,11 @@ public sealed class ReliqCrearController(IReliqCrearRepository repository) : Con
         if (payload.RelqId <= 0)
             return UnprocessableEntity(Envelope("error", null, "relqId es obligatorio."));
 
-        try
-        {
-            var deleted = await repository.EliminarAsync(payload.RelqId, cancellationToken);
-            if (!deleted)
-                return NotFound(Envelope("error", null, "No se encontró la reliquidación."));
+        var deleted = await repository.EliminarAsync(payload.RelqId, cancellationToken);
+        if (!deleted)
+            return NotFound(Envelope("error", null, "No se encontró la reliquidación."));
 
-            return Ok(Envelope("ok", new { payload.RelqId }, "Reliquidación eliminada correctamente."));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", null, $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope("ok", new { payload.RelqId }, "Reliquidación eliminada correctamente."));
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

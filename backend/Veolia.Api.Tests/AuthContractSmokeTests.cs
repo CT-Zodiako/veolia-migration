@@ -226,14 +226,16 @@ public sealed class AuthContractSmokeTests(AuthApiSmokeFactory factory) : IClass
     }
 
     [Fact]
-    public async Task R_AUTH_06_GetApsAsignadas_WhenRepositoryFails_Returns500ParityErrorShape()
+    public async Task R_AUTH_06_GetApsAsignadas_WhenRepositoryFails_ReturnsGlobalHandlerEnvelope()
     {
         var response = await PostWithTokenAsync("/api/v1/auth/getApsAsignadas", new { id = 500 });
         var payload = await ReadJsonAsync(response);
 
+        // odd/tasks/oracle-error-context.md S6: the global handler answers; the exception text no longer leaks.
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal(500, payload.GetProperty("status").GetInt32());
-        Assert.Equal("Simulated getApsAsignadas failure", payload.GetProperty("response").GetString());
+        Assert.Equal("error", payload.GetProperty("status").GetString());
+        Assert.Equal("Ocurrió un error procesando la solicitud.", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("Simulated getApsAsignadas failure", payload.GetRawText());
     }
 
     [Fact]
@@ -543,7 +545,7 @@ public sealed class AuthContractSmokeTests(AuthApiSmokeFactory factory) : IClass
     }
 
     [Fact]
-    public async Task R_AUTH_06_SetApsxUsuario_WhenRepositoryFails_Returns500ParityErrorShape()
+    public async Task R_AUTH_06_SetApsxUsuario_WhenRepositoryFails_ReturnsGlobalHandlerEnvelope()
     {
         var response = await PostWithTokenAsync("/api/v1/auth/setApsxUsuario", new
         {
@@ -553,9 +555,11 @@ public sealed class AuthContractSmokeTests(AuthApiSmokeFactory factory) : IClass
         });
         var payload = await ReadJsonAsync(response);
 
+        // odd/tasks/oracle-error-context.md S6: the global handler answers; the exception text no longer leaks.
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal(500, payload.GetProperty("status").GetInt32());
-        Assert.Equal("Simulated setApsxUsuario failure", payload.GetProperty("response").GetString());
+        Assert.Equal("error", payload.GetProperty("status").GetString());
+        Assert.Equal("Ocurrió un error procesando la solicitud.", payload.GetProperty("message").GetString());
+        Assert.DoesNotContain("Simulated setApsxUsuario failure", payload.GetRawText());
     }
 
     [Fact]
