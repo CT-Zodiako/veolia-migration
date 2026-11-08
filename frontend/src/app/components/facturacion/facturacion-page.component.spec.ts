@@ -109,7 +109,7 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
 
     expect(textos(el, '.filtros-resumen label')).toEqual(['Tipo de factura', 'Tipo de tarifa']);
     expect(el.querySelector('.nota-resumen')?.textContent?.trim()).toBe('Tarjetas y gráficas se calculan con las filas que ya devuelve la tabla.');
-    const tarjetas = Array.from(el.querySelectorAll('.resumen-tarjeta')).map((t) =>
+    const tarjetas = Array.from(el.querySelectorAll('.resumen-tarjeta:not(.resumen-toneladas)')).map((t) =>
       Array.from(t.children).map((c) => c.textContent?.trim()).join(' | '));
     expect(tarjetas).toEqual([
       'Estrato 4 · tarifa plena | 238.594,26 | Sin subsidio ni contribución',
@@ -118,6 +118,10 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
       'Brecha estrato 6 / estrato 1 | 11,5 veces | Lo que paga cada uno'
     ]);
     // User: "esto quitalo" (the TAFNA card): the summary keeps only the four tariff cards.
+    // User: "de esto quiero un card un reusmen de estas [TRA TRBL TRLU TRRA]".
+    const ton = el.querySelector('.resumen-toneladas') as HTMLElement;
+    expect(ton.querySelector('.etiqueta')?.textContent?.trim()).toBe('Toneladas por suscriptor');
+    expect(textos(ton, '.ton-codigo')).toEqual(['TRA', 'TRBL', 'TRLU', 'TRRA']);
     expect(el.textContent).not.toContain('TAFNA · residuos no aprovechables');
     expect(el.querySelector('.resumen-tarjeta .tono-subsidio')?.textContent?.trim()).toBe('−70 % frente a la tarifa plena');
     expect(el.querySelector('.resumen-tarjeta .tono-contribucion')?.textContent?.trim()).toBe('+245 % frente a la tarifa plena');

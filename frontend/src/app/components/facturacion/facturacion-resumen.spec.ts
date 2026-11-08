@@ -71,6 +71,28 @@ describe('resumirFacturacion — cards (S4)', () => {
   });
 });
 
+describe('resumirFacturacion — toneladas por suscriptor (TRA, TRBL, TRLU, TRRA)', () => {
+  // User: "de esto quiero un card un reusmen de estas [TRA TRBL TRLU TRRA]". One value per APS and month.
+  it('summarises TRA, TRBL, TRLU and TRRA of the selection with 6 decimals', () => {
+    const filas = filasDiseno().map((f) => ({ ...f, TARI_TRA: 0.003146133430766, TARI_TRBL: 0.003959923886026, TARI_TRLU: 0.001032992297860, TARI_TRRA: 0.000127490248315 }));
+
+    const r = resumirFacturacion(filas, DISENO);
+
+    expect(r.toneladas.map((t) => [t.codigo, t.descripcion, t.valor])).toEqual([
+      ['TRA', 'Aprovechables', '0,003146'],
+      ['TRBL', 'Barrido y limpieza', '0,003960'],
+      ['TRLU', 'Limpieza urbana', '0,001033'],
+      ['TRRA', 'Rechazos del aprovechamiento', '0,000127']
+    ]);
+  });
+
+  it('shows "—" for a missing value and an empty list without rows', () => {
+    const r = resumirFacturacion(filasDiseno().map((f) => ({ ...f, TARI_TRA: 0.5 })), DISENO);
+    expect(r.toneladas.map((t) => t.valor)).toEqual(['0,500000', '—', '—', '—']);
+    expect(resumirFacturacion([], {}).toneladas.map((t) => t.valor)).toEqual(['—', '—', '—', '—']);
+  });
+});
+
 describe('resumirFacturacion — charts (S5)', () => {
   it('lists each clase de uso in the design order with tarifa plena, what it pays and subsidio/contribución tone', () => {
     const r = resumirFacturacion(filasDiseno(), DISENO);

@@ -80,6 +80,21 @@ export interface TarifaEstratosResumen {
   estrato6: number | null;
 }
 
+/** One TRx value (toneladas por suscriptor, CRA 720) for the summary card. */
+export interface ToneladaResumen {
+  codigo: string;
+  descripcion: string;
+  valor: string;
+}
+
+/** Toneladas por suscriptor shown in the summary card: one value per APS and month. */
+export const TONELADAS_SUSCRIPTOR: ReadonlyArray<readonly [string, string, string]> = [
+  ['TRA', 'Aprovechables', 'TARI_TRA'],
+  ['TRBL', 'Barrido y limpieza', 'TARI_TRBL'],
+  ['TRLU', 'Limpieza urbana', 'TARI_TRLU'],
+  ['TRRA', 'Rechazos del aprovechamiento', 'TARI_TRRA']
+];
+
 export interface FiltroResumen {
   tipoFactura?: string | null;
   tipoTarifa?: string | null;
@@ -101,6 +116,7 @@ export interface ResumenFacturacion {
   claseComponentes: string | null;
   subtituloComponentes: string;
   componentes: ComponenteResumen[];
+  toneladas: ToneladaResumen[];
   totalesComponentes: TotalesComponentes;
   subtituloTarifas: string;
   porTipoTarifa: TarifaEstratosResumen[];
@@ -289,6 +305,13 @@ export function resumirFacturacion(filas: readonly FilaFacturacion[], filtro: Fi
     return { tipoTarifa: tipo, estrato1: paga('ESTRATO 1'), estrato4: paga('ESTRATO 4'), estrato6: paga('ESTRATO 6') };
   });
 
+  // Same value on every row of the APS and month; take the first row that has it.
+  const fuenteToneladas = seleccion.length ? seleccion : filas;
+  const toneladas: ToneladaResumen[] = TONELADAS_SUSCRIPTOR.map(([codigo, descripcion, columna]) => {
+    const fila = fuenteToneladas.find((f) => numero(f[columna]) !== null);
+    return { codigo, descripcion, valor: formatoNumero(numero(fila?.[columna]), 6) };
+  });
+
   return {
     vacio: filas.length === 0,
     opcionesTipoFactura,
@@ -302,6 +325,7 @@ export function resumirFacturacion(filas: readonly FilaFacturacion[], filtro: Fi
     claseComponentes,
     subtituloComponentes: claseComponentes ? `${claseComponentes} · por componente` : '',
     componentes,
+    toneladas,
     totalesComponentes: {
       plena: totalPlena,
       syc: totalSyC,

@@ -100,6 +100,17 @@ const RESUMEN_ABIERTO_KEY = 'facturacion-resumen-abierto';
                   <span [class]="'detalle tono-' + t.tono">{{ t.detalle }}</span>
                 </div>
               }
+              <div class="resumen-tarjeta resumen-toneladas">
+                <span class="etiqueta">Toneladas por suscriptor</span>
+                <dl class="ton-lista">
+                  @for (t of resumen().toneladas; track t.codigo) {
+                    <div class="ton-fila" [title]="t.descripcion">
+                      <dt><span class="ton-codigo">{{ t.codigo }}</span><span class="ton-desc">{{ t.descripcion }}</span></dt>
+                      <dd class="ton-valor">{{ t.valor }}</dd>
+                    </div>
+                  }
+                </dl>
+              </div>
             </div>
 
             <div class="resumen-graficas">
@@ -329,6 +340,12 @@ const RESUMEN_ABIERTO_KEY = 'facturacion-resumen-abierto';
     }
     .resumen-tarjeta .unidad { font-size: 14px; font-weight: 500; color: var(--color-text-secondary); }
     .resumen-tarjeta .detalle { font-size: 12px; color: var(--color-text-secondary); }
+    .ton-lista { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    .ton-fila { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .ton-fila dt { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+    .ton-codigo { font-size: 12px; font-weight: 700; color: var(--color-text-primary); }
+    .ton-desc { font-size: 11px; color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ton-valor { margin: 0; font-size: 14px; font-weight: 600; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
     .resumen-tarjeta .detalle.tono-subsidio { color: var(--fact-subsidio); }
     .resumen-tarjeta .detalle.tono-contribucion { color: var(--fact-contribucion); }
     .resumen-graficas {
