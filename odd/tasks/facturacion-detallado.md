@@ -12,8 +12,8 @@ Design reference (user download, copied into the repo): design/facturacion-detal
 - S7: Empty/missing data: while loading or with no rows, cards and charts show an empty state instead of wrong numbers; a missing estrato/component shows "—" rather than 0.
 
 ## Tasks
-- T1 S1-S7 implement dashboard in the Facturación tab — worker — commit: pending
-- T2 S1-S7 verify + ego-lite with real data — inline — pending
+- T1 S1-S7 implement dashboard in the Facturación tab — worker — commit: 1c10c31
+- T2 S1-S7 verify + ego-lite with real data — inline — done (Cartagena sep 2026 reproduces the design numbers)
 
 ## Log
 - L1: "quieor que en http://localhost:4200/facturacion solo la tab de facturacion  que qeude aca '/Users/zodiako/Downloads/detallado de facturacion.html'"
