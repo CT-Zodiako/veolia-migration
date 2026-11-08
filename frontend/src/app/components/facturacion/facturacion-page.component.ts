@@ -1,18 +1,25 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, afterRenderEffect, computed, inject, signal, viewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
+import { ThemeService } from '../../services/theme.service';
+import { FilaFacturacion, resumirFacturacion } from './facturacion-resumen';
+import { PaletaGraficas, graficaClases, graficaComponentes, graficaTiposTarifa } from './facturacion-graficas';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { FacturacionService } from '../../services/facturacion.service';
 import { FacturacionRequest, FacturacionResponse } from '../../models/facturacion.models';
 import { redondearFilas } from '../../shared/redondeo.util';
 
+Chart.register(...registerables);
+
 type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'facturaciondinc' | 'facturacionelectronica';
 
 @Component({
   selector: 'app-facturacion-page',
   standalone: true,
-  imports: [CommonModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent],
   template: `
     <section>
       <app-parametros-consulta
@@ -26,6 +33,102 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
       ></app-parametros-consulta>
 
       <div *ngIf="error()" class="error-message">{{ error() }}</div>
+
+      <!-- Detallado de facturación (design/facturacion-detallado): only while the Facturación tab is active. -->
+      @if (currentTab() === 'facturacion') {
+        <div class="card-section filtros-resumen">
+          <div class="form-group">
+            <label for="facturacion-tipo-factura">Tipo de factura</label>
+            <p-select
+              inputId="facturacion-tipo-factura"
+              [options]="resumen().opcionesTipoFactura"
+              [ngModel]="resumen().tipoFactura"
+              (ngModelChange)="tipoFactura.set($event)"
+              [disabled]="!resumen().opcionesTipoFactura.length"
+              placeholder="—"
+              [style]="{ width: '100%' }"
+            ></p-select>
+          </div>
+          <div class="form-group">
+            <label for="facturacion-tipo-tarifa">Tipo de tarifa</label>
+            <p-select
+              inputId="facturacion-tipo-tarifa"
+              [options]="resumen().opcionesTipoTarifa"
+              [ngModel]="resumen().tipoTarifa"
+              (ngModelChange)="tipoTarifa.set($event)"
+              [disabled]="!resumen().opcionesTipoTarifa.length"
+              placeholder="—"
+              [style]="{ width: '100%' }"
+            ></p-select>
+          </div>
+          <p class="nota-resumen">Tarjetas y gráficas se calculan con las filas que ya devuelve la tabla.</p>
+        </div>
+
+        <div class="facturacion-resumen">
+          @if (loadingTabs().has('facturacion') || resumen().vacio) {
+            <div class="card-section resumen-vacio">
+              <i class="pi pi-chart-bar"></i>
+              <span>{{ loadingTabs().has('facturacion')
+                ? 'Cargando filas de facturación…'
+                : filasResumen() === null
+                  ? 'Seleccione APS, año y mes para ver las tarjetas y gráficas.'
+                  : 'No hay filas de facturación para calcular las tarjetas y gráficas.' }}</span>
+            </div>
+          } @else {
+            <div class="resumen-tarjetas">
+              @for (t of tarjetasResumen(); track t.etiqueta) {
+                <div class="resumen-tarjeta">
+                  <span class="etiqueta">{{ t.etiqueta }}</span>
+                  <span class="valor">{{ t.valor }}@if (t.unidad) {<span class="unidad"> {{ t.unidad }}</span>}</span>
+                  <span [class]="'detalle tono-' + t.tono">{{ t.detalle }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="resumen-graficas">
+              <div class="resumen-grafica">
+                <div class="encabezado">
+                  <h2>Tarifa plena y lo que paga cada clase</h2>
+                  <p class="subtitulo">{{ resumen().subtituloClases }}</p>
+                </div>
+                <ul class="leyenda">
+                  <li><span class="punto punto-plena"></span>Tarifa plena</li>
+                  <li><span class="punto tono-subsidio"></span>Paga menos (subsidio)</li>
+                  <li><span class="punto tono-contribucion"></span>Paga más (contribución)</li>
+                </ul>
+                <div class="lienzo" [style.height.px]="resumen().clases.length * 23 + 34">
+                  <canvas #graficaClases aria-label="Tarifa plena y lo que paga cada clase" role="img"></canvas>
+                </div>
+              </div>
+
+              <div class="resumen-grafica">
+                <div class="encabezado">
+                  <h2>De qué se compone la tarifa plena</h2>
+                  <p class="subtitulo">Estrato 4 · parte de cada componente</p>
+                </div>
+                <div class="lienzo" [style.height.px]="resumen().componentes.length * 31">
+                  <canvas #graficaComponentes aria-label="De qué se compone la tarifa plena" role="img"></canvas>
+                </div>
+              </div>
+
+              <div class="resumen-grafica">
+                <div class="encabezado">
+                  <h2>Lo que paga según el tipo de tarifa</h2>
+                  <p class="subtitulo">{{ resumen().subtituloTarifas }}</p>
+                </div>
+                <ul class="leyenda">
+                  <li><span class="cuadro tono-subsidio"></span>Estrato 1</li>
+                  <li><span class="cuadro tono-neutro"></span>Estrato 4</li>
+                  <li><span class="cuadro tono-contribucion"></span>Estrato 6</li>
+                </ul>
+                <div class="lienzo" [style.height.px]="resumen().porTipoTarifa.length * 64 + 34">
+                  <canvas #graficaTarifas aria-label="Lo que paga según el tipo de tarifa" role="img"></canvas>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
 
       <div class="table-wrapper table-scroll">
       <p-tabs [value]="currentTab()" (valueChange)="onTabChange($event)">
@@ -93,6 +196,125 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
     </section>
   `,
   styles: [`
+    /* Subsidio / contribución colors of the design; lighter in dark mode for contrast. */
+    :host {
+      --fact-subsidio: #1f5fbf;
+      --fact-contribucion: #b45309;
+      --fact-neutro: #8a94a6;
+      --fact-componente: #16335a;
+      --fact-pista: #eef1f6;
+    }
+    :host-context(.app-dark) {
+      --fact-subsidio: #6ea2f0;
+      --fact-contribucion: #f59e0b;
+      --fact-neutro: #94a3b8;
+      --fact-componente: #93b4e0;
+      --fact-pista: #334155;
+    }
+    .card-section {
+      background: var(--color-bg-card);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .filtros-resumen {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 16px;
+      padding: 16px 20px;
+    }
+    .filtros-resumen .form-group { flex: 0 1 200px; min-width: 160px; }
+    .filtros-resumen label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--color-text-body);
+    }
+    .nota-resumen {
+      margin: 0 0 0 auto;
+      max-width: 340px;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      align-self: center;
+    }
+    .resumen-vacio {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--color-text-secondary);
+      font-size: 14px;
+    }
+    .resumen-vacio .pi { font-size: 18px; }
+    .resumen-tarjetas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .resumen-tarjeta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 16px 18px;
+      background: var(--color-bg-card);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .resumen-tarjeta .etiqueta { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); }
+    .resumen-tarjeta .valor {
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.15;
+      color: var(--color-text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .resumen-tarjeta .unidad { font-size: 14px; font-weight: 500; color: var(--color-text-secondary); }
+    .resumen-tarjeta .detalle { font-size: 12px; color: var(--color-text-secondary); }
+    .resumen-tarjeta .detalle.tono-subsidio { color: var(--fact-subsidio); }
+    .resumen-tarjeta .detalle.tono-contribucion { color: var(--fact-contribucion); }
+    .resumen-graficas {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 1100px) {
+      .resumen-graficas { grid-template-columns: minmax(0, 1fr); }
+    }
+    .resumen-grafica {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 18px 20px;
+      background: var(--color-bg-card);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .resumen-grafica .encabezado { display: flex; flex-direction: column; gap: 2px; }
+    .resumen-grafica h2 { margin: 0; font-size: 16px; font-weight: 600; color: var(--color-text-primary); }
+    .resumen-grafica .subtitulo { margin: 0; font-size: 12px; color: var(--color-text-secondary); }
+    .leyenda {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 16px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+    .leyenda li { display: flex; align-items: center; gap: 6px; }
+    .leyenda .punto, .leyenda .cuadro { width: 10px; height: 10px; border-radius: 50%; }
+    .leyenda .cuadro { border-radius: 2px; }
+    .leyenda .punto-plena { background: var(--color-bg-card); border: 1.5px solid var(--fact-neutro); }
+    .leyenda .tono-subsidio { background: var(--fact-subsidio); }
+    .leyenda .tono-contribucion { background: var(--fact-contribucion); }
+    .leyenda .tono-neutro { background: var(--fact-neutro); }
+    .lienzo { position: relative; width: 100%; }
     .error-message {
       background: var(--color-bg-danger-soft);
       border: 1px solid var(--color-border-danger-soft);
@@ -104,7 +326,7 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
     }
   `]
 })
-export class FacturacionPageComponent {
+export class FacturacionPageComponent implements OnDestroy {
   /** Legacy Facturación grids offered 10/20/100/200 rows per page. */
   readonly paginadorLegacy = [10, 20, 100, 200];
 
@@ -119,6 +341,22 @@ export class FacturacionPageComponent {
   /** Tabs con consulta en vuelo (puede haber más de una si el usuario
    *  cambia de pestaña mientras otra carga). */
   readonly loadingTabs = signal<ReadonlySet<FacturacionTab>>(new Set());
+
+  /** Facturación rows before rounding (rounding turns a missing value into 0; the summary shows "—"). */
+  readonly filasResumen = signal<FilaFacturacion[] | null>(null);
+  readonly tipoFactura = signal<string | null>(null);
+  readonly tipoTarifa = signal<string | null>(null);
+  readonly resumen = computed(() =>
+    resumirFacturacion(this.filasResumen() ?? [], { tipoFactura: this.tipoFactura(), tipoTarifa: this.tipoTarifa() })
+  );
+  readonly tarjetasResumen = computed(() => [...this.resumen().tarjetas, this.resumen().tafna]);
+
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly theme = inject(ThemeService);
+  private readonly lienzoClases = viewChild<ElementRef<HTMLCanvasElement>>('graficaClases');
+  private readonly lienzoComponentes = viewChild<ElementRef<HTMLCanvasElement>>('graficaComponentes');
+  private readonly lienzoTarifas = viewChild<ElementRef<HTMLCanvasElement>>('graficaTarifas');
+  private graficas: Chart[] = [];
 
   readonly columnasFacturacion: TablaColumn[] = [
     { field: 'CLAS_NOMBRE', header: 'Clase Uso', filtrable: true },
@@ -344,7 +582,48 @@ export class FacturacionPageComponent {
     COSTINCEN: 6, CTL: 6, VBA: 6, CP: 6, CCC: 6, CLAV: 6, CLP: 6, CCEI: 6, CCEM: 6
   };
 
-  constructor(private readonly service: FacturacionService) {}
+  constructor(private readonly service: FacturacionService) {
+    // Redraw the charts when their data, the theme or the rendered canvases change.
+    afterRenderEffect(() => {
+      const resumen = this.resumen();
+      this.theme.oscuro();
+      const lienzos = [this.lienzoClases(), this.lienzoComponentes(), this.lienzoTarifas()];
+      this.destruirGraficas();
+      if (lienzos.some((l) => !l)) return;
+      const paleta = this.paleta();
+      const configs = [graficaClases(resumen, paleta), graficaComponentes(resumen, paleta), graficaTiposTarifa(resumen, paleta)];
+      lienzos.forEach((lienzo, i) => {
+        const ctx = lienzo!.nativeElement.getContext('2d');
+        if (ctx) this.graficas.push(new Chart(ctx, configs[i]));
+      });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destruirGraficas();
+  }
+
+  private destruirGraficas(): void {
+    this.graficas.forEach((g) => g.destroy());
+    this.graficas = [];
+  }
+
+  private paleta(): PaletaGraficas {
+    const css = getComputedStyle(this.host.nativeElement);
+    const v = (nombre: string) => css.getPropertyValue(nombre).trim();
+    return {
+      subsidio: v('--fact-subsidio'),
+      contribucion: v('--fact-contribucion'),
+      neutro: v('--fact-neutro'),
+      componente: v('--fact-componente'),
+      pista: v('--fact-pista'),
+      fondo: v('--color-bg-card'),
+      texto: v('--color-text-body'),
+      textoSuave: v('--color-text-secondary'),
+      rejilla: v('--color-border'),
+      fuente: css.fontFamily
+    };
+  }
 
   consultar(): void {
     const aps = this.aps;
@@ -360,6 +639,7 @@ export class FacturacionPageComponent {
     // blocked the page on the slowest one (fatelectronica > 2 min in Oracle).
     this.error.set('');
     this.resultados.set({});
+    this.filasResumen.set(null);
     this.cargarTab(this.currentTab());
   }
 
@@ -381,6 +661,7 @@ export class FacturacionPageComponent {
         // in flight, DISCARD the stale response instead of mixing periods.
         if (this.aps === aps && this.anno === anno && this.mes === mes) {
           this.resultados.update(actual => ({ ...actual, [tab]: this.transformarFilas(tab, resp) }));
+          if (tab === 'facturacion') this.filasResumen.set(resp.filas ?? []);
         }
         this.finalizarCarga(tab);
       },
@@ -435,6 +716,7 @@ export class FacturacionPageComponent {
 
   limpiar(): void {
     this.resultados.set({});
+    this.filasResumen.set(null);
     this.error.set('');
   }
 

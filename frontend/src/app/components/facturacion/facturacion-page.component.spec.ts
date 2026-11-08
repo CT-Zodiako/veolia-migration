@@ -57,3 +57,106 @@ describe('FacturacionPageComponent (502)', () => {
     }
   }, RENDER_TIMEOUT_MS);
 });
+
+// odd/tasks/facturacion-detallado.md S2-S7: cards and charts of the design, only on the Facturación tab.
+describe('FacturacionPageComponent — detallado de facturación', () => {
+  const filas = [
+    { CLAS_NOMBRE: 'ESTRATO 1', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 71578.28, TARI_TAFNA: 3364.61 },
+    { CLAS_NOMBRE: 'ESTRATO 4', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 238594.26, TARI_TAFNA: 3364.61, TARI_TRT: 579, TARI_TDF: 195, TARI_TBL: 148, TARI_TLU: 45, TARI_TTL: 19, TARI_TC: 12, TARI_TA: 2 },
+    { CLAS_NOMBRE: 'ESTRATO 6', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 823150.19, TARI_TAFNA: 3364.61 },
+    { CLAS_NOMBRE: 'ESTRATO 1', PARA_NOMBRE: 'Sin Aforo', TIPO_FACT: 'Acueducto', TARIFAPLENA: 62326.23, TARIFASYC: 18697.87, TARI_TAFNA: 3364.61 }
+  ];
+
+  beforeEach(() => {
+    // jsdom has no canvas: the charts are skipped instead of logging "Not implemented".
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  });
+
+  function montar(respuesta = { periodo: null, filas }) {
+    const detafacturacion = vi.fn(() => of({ periodo: null, filas: [] }));
+    TestBed.configureTestingModule({
+      imports: [FacturacionPageComponent],
+      providers: [
+        { provide: FacturacionService, useValue: { facturacion: vi.fn(() => of(respuesta)), detafacturacion } },
+        { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of([])) } },
+        estadoParametros()
+      ]
+    });
+    const fixture = TestBed.createComponent(FacturacionPageComponent);
+    const component = fixture.componentInstance;
+    component.aps = 7;
+    component.anno = 2025;
+    component.mes = 9;
+    fixture.detectChanges();
+    component.consultar();
+    fixture.detectChanges();
+    return { fixture, component, el: fixture.nativeElement as HTMLElement };
+  }
+
+  const textos = (el: HTMLElement, selector: string) =>
+    Array.from(el.querySelectorAll(selector)).map((n) => n.textContent?.replace(/\s+/g, ' ').trim());
+
+  it('shows the selectors, the note, the cards and the three charts on the Facturación tab', () => {
+    const { el } = montar();
+
+    expect(textos(el, '.filtros-resumen label')).toEqual(['Tipo de factura', 'Tipo de tarifa']);
+    expect(el.querySelector('.nota-resumen')?.textContent?.trim()).toBe('Tarjetas y gráficas se calculan con las filas que ya devuelve la tabla.');
+    const tarjetas = Array.from(el.querySelectorAll('.resumen-tarjeta')).map((t) =>
+      Array.from(t.children).map((c) => c.textContent?.trim()).join(' | '));
+    expect(tarjetas).toEqual([
+      'Estrato 4 · tarifa plena | 238.594,26 | Sin subsidio ni contribución',
+      'Estrato 1 paga | 71.578,28 | −70 % frente a la tarifa plena',
+      'Estrato 6 paga | 823.150,19 | +245 % frente a la tarifa plena',
+      'Brecha estrato 6 / estrato 1 | 11,5 veces | Lo que paga cada uno',
+      'TAFNA · residuos no aprovechables | 3.364,61 | Toneladas. Igual para todas las filas'
+    ]);
+    expect(el.querySelector('.resumen-tarjeta .tono-subsidio')?.textContent?.trim()).toBe('−70 % frente a la tarifa plena');
+    expect(el.querySelector('.resumen-tarjeta .tono-contribucion')?.textContent?.trim()).toBe('+245 % frente a la tarifa plena');
+    expect(textos(el, '.resumen-grafica h2')).toEqual([
+      'Tarifa plena y lo que paga cada clase',
+      'De qué se compone la tarifa plena',
+      'Lo que paga según el tipo de tarifa'
+    ]);
+    expect(textos(el, '.resumen-grafica .subtitulo')).toEqual([
+      'Aforo Ordinario · Acueducto',
+      'Estrato 4 · parte de cada componente',
+      'Estratos 1, 4 y 6 · Acueducto'
+    ]);
+    expect(el.querySelectorAll('.resumen-grafica canvas').length).toBe(3);
+    expect(el.querySelector('.resumen-vacio')).toBeNull();
+  }, RENDER_TIMEOUT_MS);
+
+  it('recomputes the cards when another tipo de tarifa is chosen', () => {
+    const { fixture, component, el } = montar();
+
+    component.tipoTarifa.set('Sin Aforo');
+    fixture.detectChanges();
+
+    expect(textos(el, '.resumen-tarjeta .valor')).toEqual(['—', '18.697,87', '—', '—', '3.364,61']);
+    expect(textos(el, '.resumen-grafica .subtitulo')[0]).toBe('Sin Aforo · Acueducto');
+  }, RENDER_TIMEOUT_MS);
+
+  it('shows an empty state instead of cards and charts when the query returns no rows', () => {
+    const { el } = montar({ periodo: null, filas: [] });
+
+    expect(el.querySelector('.resumen-vacio')?.textContent).toContain('No hay filas de facturación');
+    expect(el.querySelectorAll('.resumen-tarjeta').length).toBe(0);
+    expect(el.querySelectorAll('.resumen-grafica').length).toBe(0);
+  }, RENDER_TIMEOUT_MS);
+
+  it('is absent on another tab, which keeps its table', () => {
+    const { fixture, component, el } = montar();
+
+    component.onTabChange('detafacturacion');
+    fixture.detectChanges();
+
+    expect(el.querySelector('.facturacion-resumen')).toBeNull();
+    expect(el.querySelector('.filtros-resumen')).toBeNull();
+    expect(el.querySelector('.nota-resumen')).toBeNull();
+    expect(fixture.debugElement.queryAll(By.directive(TablaAvanzadaComponent)).length).toBeGreaterThan(0);
+
+    component.onTabChange('facturacion');
+    fixture.detectChanges();
+    expect(el.querySelector('.facturacion-resumen')).not.toBeNull();
+  }, RENDER_TIMEOUT_MS);
+});
