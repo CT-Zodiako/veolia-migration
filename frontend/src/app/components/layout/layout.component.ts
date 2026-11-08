@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -57,6 +57,10 @@ export class LayoutComponent implements OnInit {
     this.sistemaSeleccionadoId = this.authState.sistema()?.SIST_ID ?? null;
     this.loadMenu();
     this.loadSistemasDisponibles();
+    // Navigation from outside the sidebar (dashboard cards, links) also opens the new page's parent.
+    this.router.events?.subscribe((event) => {
+      if (event instanceof NavigationEnd) this.expandirGrupoActivo();
+    });
   }
 
   get nombreSistema(): string {
@@ -122,6 +126,7 @@ export class LayoutComponent implements OnInit {
       next: ({ permissions, menuTree }: { permissions: MenuPermission[]; menuTree: any[] }) => {
         const permittedMenuIds = new Set((permissions || []).map((item) => item.MENU_ID));
         this.menuGroups = this.sidebarMenuService.buildMenuGroups(menuTree, permittedMenuIds);
+        this.expandirGrupoActivo();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -136,8 +141,21 @@ export class LayoutComponent implements OnInit {
     group.expanded = !group.expanded;
   }
 
+  // Screens add query params (e.g. /sui/integracion?aps=1020): compare the path only.
   isActive(path: string): boolean {
-    return this.router.url === path;
+    return this.router.url.split('?')[0] === path;
+  }
+
+  // The parent of the selected option is highlighted too, so the user knows where they are.
+  isGroupActive(group: MenuGroup): boolean {
+    return group.children.some((item) => this.isActive(item.path));
+  }
+
+  // Opens the parent of the current page (after the menu loads and on every navigation); never collapses others.
+  private expandirGrupoActivo(): void {
+    for (const group of this.menuGroups) {
+      if (this.isGroupActive(group)) group.expanded = true;
+    }
   }
 
   getPageTitle(): string {

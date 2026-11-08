@@ -61,6 +61,18 @@ describe('LayoutComponent (legacy App.vue + MenuService.js)', () => {
     ]);
   });
 
+  // User: "cuadno yo tneogun opcion selecioanda tambien seleccione al padre para saber ne qu epadre estoy".
+  it('marks and opens the parent of the selected option, ignoring the query string', () => {
+    const { component } = setup({ url: '/usuarios?aps=1020&mes=11' });
+    const [inicio, configuracion] = component.menuGroups;
+
+    expect(component.isActive('/usuarios')).toBe(true);
+    expect(component.isActive('/aps')).toBe(false);
+    expect(component.isGroupActive(configuracion)).toBe(true);
+    expect(component.isGroupActive(inicio)).toBe(false);
+    expect(component.menuGroups.map((g) => [g.label, g.expanded])).toEqual([['Inicio', false], ['Configuración', true]]);
+  });
+
   // Legacy routes.js:78-84 needs a token with idSistema; without a session system nothing is requested.
   it('shows no menu and requests nothing without a session system', () => {
     const { component, authService } = setup({ sistema: null });

@@ -35,6 +35,7 @@
           <button
             class="nav-item menu-parent"
             [class.expanded]="group.expanded"
+            [class.parent-active]="isGroupActive(group)"
             (click)="toggleExpand(group)"
           >
             <span class="nav-icon"><app-icon [name]="group.icon" [size]="18"></app-icon></span>

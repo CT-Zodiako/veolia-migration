@@ -189,6 +189,17 @@
   opacity: 1;
 }
 
+/* Parent of the selected option: same brand tone as the active option, lighter weight. */
+.menu-parent.parent-active {
+  color: var(--color-brand-strong);
+  font-weight: 700;
+  background: var(--color-bg-soft);
+}
+
+.menu-parent.parent-active .nav-icon {
+  background: rgba(241, 4, 0, 0.14);
+}
+
 .menu-parent.expanded .nav-arrow {
   background: var(--color-border);
   opacity: 1;
