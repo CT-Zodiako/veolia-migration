@@ -1,3 +1,26 @@
+/* Colores propios del dashboard sin token global: navy de marca del mockup y ámbar de "pendiente". */
+:host {
+  --dg-navy: #0b1f3a;
+  --dg-on-navy: #ffffff;
+  --dg-pista: var(--color-border-soft);
+  --dg-calculado-texto: #0e7a4f;
+  --dg-pendiente-texto: #8a5200;
+  --dg-pendiente-fondo: #fff1d6;
+  --dg-pendiente-barra: #c98a1b;
+  --dg-pendiente-fila: #fffaf0;
+}
+
+:host-context(.app-dark) {
+  --dg-navy: #93c5fd;
+  --dg-on-navy: #0f172a;
+  --dg-pista: var(--color-border);
+  --dg-calculado-texto: var(--color-text-success);
+  --dg-pendiente-texto: #fbbf24;
+  --dg-pendiente-fondo: #3d2a0a;
+  --dg-pendiente-barra: #d69e2e;
+  --dg-pendiente-fila: #241c10;
+}
+
 .card-section {
   background: var(--color-bg-card);
   border-radius: 12px;
@@ -13,13 +36,254 @@
   align-items: flex-start;
 }
 
-.parametros-row app-aps-selector {
-  flex: 0 1 220px;
-  min-width: 180px;
-}
-
 .parametros-row app-anno-selector,
 .parametros-row app-mes-selector {
-  flex: 0 1 130px;
+  flex: 0 1 150px;
   min-width: 110px;
+}
+
+/* KPIs a la izquierda (2 + 1), "Cálculos por fecha" a la derecha ocupando las dos filas. */
+.resumen-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.resumen-grid .card-section {
+  margin-bottom: 0;
+}
+
+.barras-card {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
+@media (max-width: 1100px) {
+  .resumen-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .barras-card {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+}
+
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpi-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.kpi-linea {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.kpi-valor {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+
+.kpi-total {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+}
+
+.kpi-pendientes .kpi-valor {
+  color: var(--dg-pendiente-texto);
+}
+
+.kpi-fecha {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kpi-pie {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.progreso {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--dg-pista);
+  overflow: hidden;
+}
+
+.progreso-relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-text-success);
+}
+
+.chips-pendientes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-pendiente {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dg-pendiente-texto);
+  background: var(--dg-pendiente-fondo);
+}
+
+.card-titulo {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.card-subtitulo {
+  margin: 2px 0 14px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.barra-fila {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--color-text-body);
+}
+
+.barra-pista {
+  height: 12px;
+  border-radius: 4px;
+  background: var(--dg-pista);
+  overflow: hidden;
+}
+
+.barra-relleno {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--dg-navy);
+}
+
+.barra-pendiente .barra-relleno {
+  background: var(--dg-pendiente-barra);
+}
+
+.barra-cantidad {
+  text-align: right;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.barras-vacio {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.tabla-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.estado-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.estado-chip {
+  padding: 4px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg-card);
+  color: var(--color-text-body);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.estado-chip:hover {
+  background: var(--color-bg-soft);
+}
+
+.estado-chip.activo {
+  border-color: var(--dg-navy);
+  background: var(--dg-navy);
+  color: var(--dg-on-navy);
+}
+
+.estado-chip:focus-visible {
+  outline: 2px solid var(--color-brand-accent);
+  outline-offset: 2px;
+}
+
+.estado-celda {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.estado-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.estado-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.estado-calculado {
+  color: var(--dg-calculado-texto);
+  background: var(--color-bg-success-soft);
+}
+
+.estado-pendiente {
+  color: var(--dg-pendiente-texto);
+  background: var(--dg-pendiente-fondo);
+}
+
+.estado-detalle {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Las celdas las renderiza app-tabla-avanzada (otro componente): la clase de cellClass solo
+   llega con ::ng-deep, acotado a este host para no teñir otras tablas. */
+:host ::ng-deep td.fila-pendiente {
+  background: var(--dg-pendiente-fila);
 }

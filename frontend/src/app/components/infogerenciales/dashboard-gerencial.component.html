@@ -1,15 +1,77 @@
-<section>
-  <div class="card-section">
+<section class="dashboard">
+  <div class="card-section filtros-card">
     <div class="parametros-row">
       <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
       <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
     </div>
   </div>
 
-  <div class="table-wrapper table-scroll">
+  <div class="resumen-grid">
+    <div class="card-section kpi-card kpi-calculados">
+      <span class="kpi-titulo">APS calculados</span>
+      <div class="kpi-linea">
+        <span class="kpi-valor">{{ kpis().calculados }}</span>
+        <span class="kpi-total">de {{ kpis().total }}</span>
+      </div>
+      <div class="progreso" role="progressbar" [attr.aria-valuenow]="kpis().porcentaje" aria-valuemin="0" aria-valuemax="100">
+        <div class="progreso-relleno" [style.width.%]="kpis().porcentaje"></div>
+      </div>
+      <span class="kpi-pie">{{ kpis().porcentaje }} % con cálculo</span>
+    </div>
+
+    <div class="card-section kpi-card kpi-pendientes">
+      <span class="kpi-titulo">Pendientes</span>
+      <span class="kpi-valor">{{ kpis().pendientes }}</span>
+      <div class="chips-pendientes" *ngIf="kpis().pendientes > 0">
+        <span class="chip-pendiente" *ngFor="let nombre of kpis().nombresPendientes.slice(0, maxChipsPendientes)">{{ nombre }}</span>
+        <span class="chip-pendiente" *ngIf="kpis().pendientes > maxChipsPendientes"
+          >+{{ kpis().pendientes - maxChipsPendientes }}</span
+        >
+      </div>
+    </div>
+
+    <div class="card-section kpi-card kpi-ultimo">
+      <span class="kpi-titulo">Último cálculo</span>
+      <span class="kpi-fecha">{{ kpis().ultimaFecha ?? '—' }}</span>
+      <span class="kpi-pie">{{ kpis().ultimaAps ?? 'Sin cálculos en el período' }}</span>
+    </div>
+
+    <div class="card-section barras-card">
+      <h3 class="card-titulo">Cálculos por fecha</h3>
+      <p class="card-subtitulo">Cuántos APS se calcularon cada día</p>
+      <div class="barras">
+        <div class="barra-fila" *ngFor="let barra of barras()" [class.barra-pendiente]="barra.pendiente">
+          <span class="barra-etiqueta">{{ barra.etiqueta }}</span>
+          <div class="barra-pista">
+            <div class="barra-relleno" [style.width.%]="barra.ancho"></div>
+          </div>
+          <span class="barra-cantidad">{{ barra.cantidad }}</span>
+        </div>
+        <p class="barras-vacio" *ngIf="barras().length === 0">No hay datos para mostrar.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-section tabla-card">
+    <div class="tabla-encabezado">
+      <h3 class="card-titulo">Estado de cálculo por APS</h3>
+      <div class="estado-chips" role="group" aria-label="Filtrar por estado">
+        <button
+          type="button"
+          class="estado-chip"
+          *ngFor="let f of filtros"
+          [class.activo]="filtro() === f.valor"
+          [attr.aria-pressed]="filtro() === f.valor"
+          (click)="setFiltro(f.valor)"
+        >
+          {{ f.etiqueta }} · {{ conteos()[f.valor] }}
+        </button>
+      </div>
+    </div>
+
     <app-tabla-avanzada
       [columnas]="columnas"
-      [rows]="rows()"
+      [rows]="filasFiltradas()"
       [cellClass]="cellClass"
       [cellTemplate]="celda"
       [loading]="loading()"
@@ -18,8 +80,20 @@
     ></app-tabla-avanzada>
   </div>
 
-  <ng-template #celda let-value let-col="col">
-    <ng-container *ngIf="col.field === 'TARI_FECHACREACION'; else crudo">{{ formatearFecha(value) }}</ng-container>
-    <ng-template #crudo>{{ value }}</ng-template>
+  <ng-template #celda let-value let-row="row" let-col="col">
+    <ng-container [ngSwitch]="col.field">
+      <span *ngSwitchCase="'TARI_FECHACREACION'" class="estado-celda">
+        <ng-container *ngIf="estaCalculado(row); else pendiente">
+          <span class="estado-pill estado-calculado"><span class="estado-punto" aria-hidden="true"></span>Calculado</span>
+          <span class="estado-detalle">{{ fechaCalculo(row) }}</span>
+        </ng-container>
+        <ng-template #pendiente>
+          <span class="estado-pill estado-pendiente"><span class="estado-punto" aria-hidden="true"></span>Pendiente</span>
+          <span class="estado-detalle">Sin cálculo</span>
+        </ng-template>
+      </span>
+      <ng-container *ngSwitchCase="'SISU_CORREO'">{{ value || '—' }}</ng-container>
+      <ng-container *ngSwitchDefault>{{ value }}</ng-container>
+    </ng-container>
   </ng-template>
 </section>
