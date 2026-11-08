@@ -22,7 +22,6 @@ interface MesOption {
         optionLabel="label"
         optionValue="value"
         [placeholder]="placeholder"
-        [showClear]="true"
         [style]="{width: '100%'}"
         (onChange)="onSelect($event.value)"
       >

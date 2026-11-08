@@ -20,7 +20,6 @@ import { ParametrosConsultaStateService } from '../../services/parametros-consul
         [placeholder]="placeholder"
         [filter]="true"
         filterBy="APSA_NOMAPS"
-        [showClear]="true"
         [disabled]="loading || apsList.length === 0"
         [style]="{width: '100%'}"
         (onChange)="onSelect($event.value)">
