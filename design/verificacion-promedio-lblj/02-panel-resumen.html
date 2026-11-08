@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 Panel resumen sobre las tablas · Verificación · Promedio LBLJ</title>
+<style>
+:root{--color-bg-page:#f1f5f9;--color-bg-card:#ffffff;--color-bg-soft:#f8fafc;--color-bg-danger-soft:#fff2f2;--color-border:#e2e8f0;--color-border-soft:#f1f5f9;--color-border-danger-soft:#ffcdcc;--color-text-primary:#0f172a;--color-text-body:#334155;--color-text-secondary:#64748b;--color-text-muted:#94a3b8;--color-brand-strong:#780200;--color-brand-medium:#c40300;--color-brand-accent:#f10400;--color-bg-success-soft:#f0fdf4;--color-border-success-soft:#bbf7d0;--color-text-success:#16a34a;--color-scrollbar-track:#f1f5f9;--color-scrollbar-thumb:#cbd5e1}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--color-bg-page);color:var(--color-text-body);line-height:1.5;-webkit-font-smoothing:antialiased}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;flex-shrink:0;background:var(--color-bg-card);border-right:1px solid var(--color-border);box-shadow:inset 4px 0 0 #f10400;position:fixed;height:100vh;overflow-y:auto}
+.sidebar-header{padding:22px 20px;border-bottom:1px solid var(--color-border);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:18px;font-weight:700;color:var(--color-brand-strong);line-height:1.1}
+.logo small{display:block;font-size:12px;font-weight:500;color:var(--color-text-secondary)}
+.sidebar-toggle{width:30px;height:30px;border-radius:10px;border:none;background:var(--color-bg-soft);color:var(--color-text-secondary);font-size:14px}
+.sidebar nav{padding:8px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;color:var(--color-text-secondary);text-decoration:none;font-size:14px;font-weight:500;margin-bottom:4px;width:100%;background:none;border:0;font-family:inherit;text-align:left}
+.nav-item:hover{background:var(--color-bg-soft);color:var(--color-text-primary)}
+.nav-item.active{background:var(--color-bg-danger-soft);color:var(--color-brand-strong);font-weight:700;box-shadow:inset 3px 0 0 #f10400}
+.nav-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--color-bg-soft);font-size:14px}
+.nav-item.active .nav-icon{background:rgba(241,4,0,0.14)}
+.sub{padding-left:20px}
+.sub .nav-item{padding:6px 12px;font-size:13px}
+.sub .nav-icon{width:26px;height:26px}
+.main{margin-left:260px;flex:1;min-width:0}
+.top-bar{height:64px;background:var(--color-bg-card);border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+.top-bar-title{font-size:18px;font-weight:600;color:var(--color-text-primary)}
+.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-secondary);font-size:16px;font-family:inherit;cursor:pointer}
+.content{padding:24px}
+.card-section{background:var(--color-bg-card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:20px}
+.parametros-row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:var(--color-text-body)}
+.select{border:1px solid var(--color-border);border-radius:8px;padding:7px 10px;font-size:14px;background:var(--color-bg-card);color:var(--color-text-primary);font-family:inherit;min-width:130px}
+.select.aps{min-width:220px}
+.periodo-note{font-size:13px;color:var(--color-text-secondary);margin-left:auto;align-self:center}
+.periodo-note b{color:var(--color-text-primary);font-weight:600}
+.tabs{display:flex;border-bottom:1px solid var(--color-border);margin-bottom:12px}
+.tab{padding:6px 12px;font-size:13px;background:none;border:0;color:var(--color-text-secondary);font-family:inherit;cursor:pointer}
+.tab:hover{color:var(--color-brand-medium)}
+.tab[aria-selected="true"]{color:var(--color-brand-strong);box-shadow:inset 0 -2px 0 #f10400;font-weight:600}
+.toolbar{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--color-border);border-bottom:0;border-radius:12px 12px 0 0;background:var(--color-bg-soft)}
+.toolbar .tb{height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-body);font-size:12px;font-family:inherit;cursor:pointer}
+.toolbar .sp{flex:1}
+.toolbar .count{font-size:12px;color:var(--color-text-secondary)}
+.table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:0 0 12px 12px}
+table{border-collapse:collapse;width:100%}
+th{font-size:12px;font-weight:600;padding:4px 6px;text-align:left;white-space:nowrap;color:var(--color-text-primary);border-bottom:1px solid var(--color-border);background:var(--color-bg-soft)}
+td{font-size:13px;line-height:1.3;padding:5px 8px;border-bottom:1px solid var(--color-border-soft);white-space:nowrap;color:var(--color-text-body)}
+.text-right{text-align:right}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.fila-total td{background:var(--color-bg-soft);font-weight:600}
+.fila-promedio td{background:var(--color-bg-page);font-weight:600;font-style:italic}
+.muted{color:var(--color-text-secondary)}
+.flag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:1px 6px;border-radius:8px;background:var(--color-bg-danger-soft);border:1px solid var(--color-border-danger-soft);color:var(--color-brand-strong)}
+.partial{display:inline-block;font-size:11px;font-weight:600;padding:0 5px;border-radius:6px;border:1px solid var(--color-border);color:var(--color-text-body);background:var(--color-bg-soft);margin-left:4px;font-style:normal}
+.note{font-size:12px;color:var(--color-text-secondary)}
+.note b{color:var(--color-text-body)}
+:focus-visible{outline:2px solid var(--color-brand-accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1024px){.sidebar{display:none}.main{margin-left:0}.periodo-note{margin-left:0;width:100%}}
+
+.panel-head{display:flex;align-items:baseline;gap:12px;margin-bottom:4px;flex-wrap:wrap}
+.panel-head h2{font-size:16px;font-weight:700;color:var(--color-brand-strong)}
+.panel-head .sp{flex:1}
+.collapse{border:1px solid var(--color-border);background:var(--color-bg-card);border-radius:8px;height:30px;padding:0 10px;font-size:12px;font-family:inherit;color:var(--color-text-body);cursor:pointer}
+.sum-grid{display:grid;grid-template-columns:minmax(300px,2.2fr) 150px 1fr 1fr 1fr;align-items:center;margin-top:12px;border-top:1px solid var(--color-border)}
+.sum-grid [role=cell],.sum-grid [role=rowheader],.sum-grid [role=columnheader]{padding:6px 8px;border-bottom:1px solid var(--color-border-soft);font-size:13px;font-variant-numeric:tabular-nums}
+.sum-grid .h{font-size:12px;font-weight:600;color:var(--color-text-primary);background:var(--color-bg-soft);border-bottom:1px solid var(--color-border)}
+.sum-grid .r{text-align:right}
+.sum-grid .prom{font-weight:700;color:var(--color-text-primary);font-size:14px}
+.sum-grid .t{background:var(--color-bg-soft);font-weight:600}
+.spark-axis{display:flex;justify-content:space-between;width:132px;font-size:10px;color:var(--color-text-secondary)}
+.tablas-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" aria-label="Menú principal">
+  <div class="sidebar-header"><div class="logo">Veolia<small>Sistema de Tarifas</small></div><button class="sidebar-toggle" aria-label="Contraer menú">«</button></div>
+  <nav aria-label="Secciones">
+    <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">⌂</span>Inicio</a>
+    <button class="nav-item" aria-expanded="true"><span class="nav-icon" aria-hidden="true">▦</span>Suministros</button>
+    <div class="sub">
+      <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">↥</span>Cargue Mensual</a>
+      <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">↥</span>Cargue Semestral</a>
+      <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">%</span>Descuentos en Costos</a>
+      <a class="nav-item active" href="#" aria-current="page"><span class="nav-icon" aria-hidden="true">✓</span>Verificación</a>
+      <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">♣</span>Costo de Poda</a>
+    </div>
+    <button class="nav-item" aria-expanded="false"><span class="nav-icon" aria-hidden="true">▤</span>Información Gerencial</button>
+    <button class="nav-item" aria-expanded="false"><span class="nav-icon" aria-hidden="true">♻</span>PGIRS</button>
+  </nav>
+</aside>
+<div class="main">
+  <header class="top-bar"><div class="top-bar-title">Verificación</div><button class="icon-btn" aria-label="Cambiar a modo oscuro">☾</button></header>
+  <main class="content">
+  <section class="card-section" aria-label="Parámetros de consulta">
+    <div class="parametros-row">
+      <div class="form-group"><label for="p-aps">APS</label><select id="p-aps" class="select aps"><option>Pereira – Dosquebradas</option></select></div>
+      <div class="form-group"><label for="p-ano">Año</label><select id="p-ano" class="select"><option>2026</option></select></div>
+      <div class="form-group"><label for="p-mes">Mes</label><select id="p-mes" class="select"><option>Octubre</option></select></div>
+      <p class="periodo-note">Mes consultado <b>Octubre 2026</b> · Semestre anterior <b>Ene–Jun 2026</b></p>
+    </div>
+  </section>
+
+  <section class="card-section" aria-labelledby="sum-title">
+    <div class="panel-head"><h2 id="sum-title">Promedio LBLJ · Ene–Jun 2026</h2><span class="note">Semestre anterior a Octubre 2026 · INED_LBLJ por empresa</span><span class="sp"></span><button class="collapse" aria-expanded="true" aria-controls="sum-body">Ocultar resumen</button></div>
+    <div id="sum-body">
+      <div class="sum-grid" role="table" aria-label="Promedio LBLJ por empresa, enero a junio de 2026">
+        <div role="row" style="display:contents"><div role="columnheader" class="h">EMPRESA</div><div role="columnheader" class="h">Tendencia Ene → Jun</div><div role="columnheader" class="h r">PROM. LBLJ Ene–Jun</div><div role="columnheader" class="h r">LBLJ Oct 2026</div><div role="columnheader" class="h r">Oct vs promedio</div></div>
+        <div role="row" style="display:contents"><div role="rowheader">Aseo Técnico de Pereira S.A. E.S.P.</div><div role="cell"><svg style="color:var(--color-brand-strong)" width="132" height="28" viewBox="0 0 132 28" aria-hidden="true"><polyline points="3.0,25.0 28.2,20.4 53.4,13.8 78.6,21.9 103.8,7.7 129.0,3.0" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="3.0" cy="25.0" r="2" fill="currentColor"/><circle cx="28.2" cy="20.4" r="2" fill="currentColor"/><circle cx="53.4" cy="13.8" r="2" fill="currentColor"/><circle cx="78.6" cy="21.9" r="2" fill="currentColor"/><circle cx="103.8" cy="7.7" r="2" fill="currentColor"/><circle cx="129.0" cy="3.0" r="2" fill="currentColor"/></svg></div><div role="cell" class="r prom">3412.0198</div><div role="cell" class="r">3448.1207</div><div role="cell" class="r">▲ +1.1 %</div></div><div role="row" style="display:contents"><div role="rowheader">Veolia Aseo Dosquebradas S.A. E.S.P.</div><div role="cell"><svg style="color:var(--color-brand-strong)" width="132" height="28" viewBox="0 0 132 28" aria-hidden="true"><polyline points="3.0,25.0 28.2,22.4 53.4,12.5 78.6,16.5 103.8,6.9 129.0,3.0" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="3.0" cy="25.0" r="2" fill="currentColor"/><circle cx="28.2" cy="22.4" r="2" fill="currentColor"/><circle cx="53.4" cy="12.5" r="2" fill="currentColor"/><circle cx="78.6" cy="16.5" r="2" fill="currentColor"/><circle cx="103.8" cy="6.9" r="2" fill="currentColor"/><circle cx="129.0" cy="3.0" r="2" fill="currentColor"/></svg></div><div role="cell" class="r prom">2102.3108</div><div role="cell" class="r">2421.5530</div><div role="cell" class="r"><span class="flag">▲ +15.2 % · Revisar</span></div></div><div role="row" style="display:contents"><div role="rowheader">Servicios Ambientales de Risaralda S.A. E.S.P.</div><div role="cell"><svg style="color:var(--color-brand-strong)" width="132" height="28" viewBox="0 0 132 28" aria-hidden="true"><polyline points="3.0,25.0 28.2,21.4 53.4,14.5" fill="none" stroke="currentColor" stroke-width="1.6"/><polyline points="103.8,9.7 129.0,3.0" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="3.0" cy="25.0" r="2" fill="currentColor"/><circle cx="28.2" cy="21.4" r="2" fill="currentColor"/><circle cx="53.4" cy="14.5" r="2" fill="currentColor"/><line x1="78.6" y1="22" x2="78.6" y2="26" stroke="var(--color-text-secondary)" stroke-width="1.4"/><circle cx="103.8" cy="9.7" r="2" fill="currentColor"/><circle cx="129.0" cy="3.0" r="2" fill="currentColor"/></svg> <span class="sr-only">Abril sin reporte</span></div><div role="cell" class="r prom">1258.9210 <span class="partial" title="Promedio sobre 5 de 6 meses">5/6</span></div><div role="cell" class="r">1274.6618</div><div role="cell" class="r">▲ +1.3 %</div></div><div role="row" style="display:contents"><div role="rowheader">Limpieza Urbana del Café S.A. E.S.P.</div><div role="cell"><svg style="color:var(--color-brand-strong)" width="132" height="28" viewBox="0 0 132 28" aria-hidden="true"><polyline points="3.0,25.0 28.2,19.2 53.4,16.7 78.6,12.6 103.8,6.9 129.0,3.0" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="3.0" cy="25.0" r="2" fill="currentColor"/><circle cx="28.2" cy="19.2" r="2" fill="currentColor"/><circle cx="53.4" cy="16.7" r="2" fill="currentColor"/><circle cx="78.6" cy="12.6" r="2" fill="currentColor"/><circle cx="103.8" cy="6.9" r="2" fill="currentColor"/><circle cx="129.0" cy="3.0" r="2" fill="currentColor"/></svg></div><div role="cell" class="r prom">883.2258</div><div role="cell" class="r">892.7406</div><div role="cell" class="r">▲ +1.1 %</div></div><div role="row" style="display:contents"><div role="rowheader">Empresa de Aseo de Santa Rosa de Cabal E.S.P.</div><div role="cell"><svg style="color:var(--color-brand-strong)" width="132" height="28" viewBox="0 0 132 28" aria-hidden="true"><polyline points="3.0,21.6 28.2,25.0 53.4,13.8 78.6,11.0 103.8,5.4 129.0,3.0" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="3.0" cy="21.6" r="2" fill="currentColor"/><circle cx="28.2" cy="25.0" r="2" fill="currentColor"/><circle cx="53.4" cy="13.8" r="2" fill="currentColor"/><circle cx="78.6" cy="11.0" r="2" fill="currentColor"/><circle cx="103.8" cy="5.4" r="2" fill="currentColor"/><circle cx="129.0" cy="3.0" r="2" fill="currentColor"/></svg></div><div role="cell" class="r prom">646.1298</div><div role="cell" class="r">571.3352</div><div role="cell" class="r"><span class="flag">▼ -11.6 % · Revisar</span></div></div><div role="row" style="display:contents"><div role="rowheader">Aseo Integral La Virginia S.A.S. E.S.P.</div><div role="cell"><svg style="color:var(--color-brand-strong)" width="132" height="28" viewBox="0 0 132 28" aria-hidden="true"><polyline points="3.0,19.1 28.2,25.0 53.4,14.6 78.6,9.6 103.8,12.5 129.0,3.0" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="3.0" cy="19.1" r="2" fill="currentColor"/><circle cx="28.2" cy="25.0" r="2" fill="currentColor"/><circle cx="53.4" cy="14.6" r="2" fill="currentColor"/><circle cx="78.6" cy="9.6" r="2" fill="currentColor"/><circle cx="103.8" cy="12.5" r="2" fill="currentColor"/><circle cx="129.0" cy="3.0" r="2" fill="currentColor"/></svg></div><div role="cell" class="r prom">312.8390</div><div role="cell" class="r">316.2209</div><div role="cell" class="r">▲ +1.1 %</div></div><div role="row" style="display:contents"><div role="rowheader">Empresa Municipal de Aseo de Marsella E.S.P.</div><div role="cell"><svg style="color:var(--color-brand-strong)" width="132" height="28" viewBox="0 0 132 28" aria-hidden="true"><polyline points="3.0,25.0 28.2,19.5 53.4,20.5 78.6,10.4 103.8,14.2 129.0,3.0" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="3.0" cy="25.0" r="2" fill="currentColor"/><circle cx="28.2" cy="19.5" r="2" fill="currentColor"/><circle cx="53.4" cy="20.5" r="2" fill="currentColor"/><circle cx="78.6" cy="10.4" r="2" fill="currentColor"/><circle cx="103.8" cy="14.2" r="2" fill="currentColor"/><circle cx="129.0" cy="3.0" r="2" fill="currentColor"/></svg></div><div role="cell" class="r prom">146.5072</div><div role="cell" class="r">148.5513</div><div role="cell" class="r">▲ +1.4 %</div></div><div role="row" style="display:contents"><div role="rowheader" class="t">Total APS</div><div role="cell" class="t note">Suma de las 7 empresas</div><div role="cell" class="t r">8761.9535</div><div role="cell" class="t r">9073.1835</div><div role="cell" class="t r">▲ +3.6 %</div></div>
+      </div>
+      <p class="note" style="margin-top:8px"><span class="partial" style="margin:0">5/6</span> Servicios Ambientales de Risaralda no reportó Abril 2026: el promedio usa 5 meses y la tendencia muestra un hueco (marca gris). <b>Revisar</b> = desviación de Octubre ≥ 10 % frente al promedio.</p>
+    </div>
+  </section>
+  <section class="card-section" aria-label="Resúmenes de verificación">
+    <div class="tabs" role="tablist" aria-label="Resúmenes">
+      <button class="tab" role="tab" aria-selected="true">Resumen Empresa</button>
+      <button class="tab" role="tab" aria-selected="false" tabindex="-1">Resumen APS</button>
+      <button class="tab" role="tab" aria-selected="false" tabindex="-1">Resumen Relleno</button>
+    </div>
+    <p class="tablas-sub">Tabla del mes consultado (Octubre 2026), sin cambios.</p>
+    <div class="toolbar"><button class="tb">Columnas (14)</button><button class="tb">Vistas</button><button class="tb">Densidad</button><span class="sp"></span><span class="count">7 empresas</span><button class="tb">Exportar CSV</button></div>
+    <div class="table-scroll" role="region" aria-label="Tabla Resumen Empresa" tabindex="0"><table><thead><tr><th scope="col">EMPRESA</th><th scope="col" class="text-right">CBLJ</th><th scope="col" class="text-right">LBLJ</th><th scope="col" class="text-right">N</th><th scope="col" class="text-right">M3AGUA</th><th scope="col" class="text-right">CP</th></tr></thead><tbody><tr><td>Aseo Técnico de Pereira S.A. E.S.P.</td><td class="num">41283.5612</td><td class="num">3448.1207</td><td class="num">128450</td><td class="num">23506.3500</td><td class="num">269.7450</td></tr><tr><td>Veolia Aseo Dosquebradas S.A. E.S.P.</td><td class="num">39871.2245</td><td class="num">2421.5530</td><td class="num">64210</td><td class="num">11750.4300</td><td class="num">134.8410</td></tr><tr><td>Servicios Ambientales de Risaralda S.A. E.S.P.</td><td class="num">42110.8730</td><td class="num">1274.6618</td><td class="num">31875</td><td class="num">5833.1250</td><td class="num">66.9375</td></tr><tr><td>Limpieza Urbana del Café S.A. E.S.P.</td><td class="num">40562.1196</td><td class="num">892.7406</td><td class="num">22340</td><td class="num">4088.2200</td><td class="num">46.9140</td></tr></tbody></table></div>
+  </section>
+  </main>
+</div>
+</div>
+<script>
+const c=document.querySelector('.collapse');c.addEventListener('click',()=>{const o=c.getAttribute('aria-expanded')==='true';c.setAttribute('aria-expanded',String(!o));document.getElementById('sum-body').hidden=o;c.textContent=o?'Mostrar resumen':'Ocultar resumen';});
+</script>
+</body>
+</html>

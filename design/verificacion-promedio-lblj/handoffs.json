@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "chosen": "05-grupos-en-tarjetas.html",
+  "handoffs": {
+    "05-grupos-en-tarjetas.html": {
+      "status": "in_progress",
+      "queued": false,
+      "sentAt": "2026-11-08T19:22:18.584Z",
+      "startedAt": "2026-11-08T19:22:35.021Z",
+      "implementedAt": null
+    }
+  }
+}

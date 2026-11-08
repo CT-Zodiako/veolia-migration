@@ -1,0 +1,34 @@
+{
+  "title": "Menú · padre de la opción activa",
+  "brief": "Hacer más notorio en el sidebar el padre de la opción seleccionada para saber en qué sección está el usuario (Veolia, sistema RELIQUIDACIONES).",
+  "artboards": [
+    {
+      "file": "01-bloque-relleno.html",
+      "title": "Bloque relleno",
+      "tradeoff": "Más notorio sin cambiar la estructura; el padre y su hija compiten un poco por la atención",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "02-riel-continuo.html",
+      "title": "Riel continuo",
+      "tradeoff": "Une padre e hija con una sola línea roja: se lee como un camino; menos peso de color de fondo",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "03-encabezado-solido.html",
+      "title": "Encabezado sólido",
+      "tradeoff": "El más notorio de todos; mucho color, puede competir con los botones primarios de la pantalla",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "04-migas-en-barra.html",
+      "title": "Migas en la barra superior",
+      "tradeoff": "Dice dónde estás también fuera del menú (sirve con el sidebar colapsado); suma un elemento nuevo a la barra",
+      "width": 1440,
+      "height": 900
+    }
+  ]
+}

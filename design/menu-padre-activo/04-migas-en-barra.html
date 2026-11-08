@@ -1,0 +1,69 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Migas en la barra superior</title><style>
+:root{--color-bg-app:#f1f5f9;--color-bg-card:#ffffff;--color-bg-soft:#f8fafc;--color-border:#e2e8f0;--color-border-soft:#f1f5f9;
+--color-text-primary:#0f172a;--color-text-body:#334155;--color-text-secondary:#64748b;--color-bg-danger-soft:#fff2f2;--color-bg-danger-soft-alt:#ffe6e5;
+--color-border-danger-soft:#ffcdcc;--color-brand-strong:#780200;--color-brand-medium:#c40300;--color-brand-accent:#f10400;--icon-active:rgba(241,4,0,.14)}
+html.app-dark{--color-bg-app:#0f172a;--color-bg-card:#1e293b;--color-bg-soft:#172033;--color-border:#334155;--color-border-soft:#1e293b;
+--color-text-primary:#f1f5f9;--color-text-body:#cbd5e1;--color-text-secondary:#94a3b8;--color-bg-danger-soft:#3f1212;--color-bg-danger-soft-alt:#4a1717;
+--color-border-danger-soft:#5c2323;--color-brand-strong:#ffa5a3;--color-brand-medium:#ff6966;--color-brand-accent:#ff2a26;--icon-active:rgba(255,42,38,.22)}
+*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--color-bg-app);color:var(--color-text-body)}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.sidebar{background:var(--color-bg-card);border-right:1px solid var(--color-border);box-shadow:inset 4px 0 0 #f10400;display:flex;flex-direction:column}
+.brand{padding:22px 20px 16px;border-bottom:1px solid var(--color-border)}.brand b{color:#f10400;font-size:22px;letter-spacing:.5px}.brand small{display:block;color:var(--color-text-secondary);font-size:12px;margin-top:4px}
+nav{padding:18px 14px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:14px;background:none;color:var(--color-text-secondary);font:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;text-align:left}
+.nav-item:hover{background:var(--color-bg-soft);color:var(--color-text-primary)}
+.nav-icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--color-bg-soft);font-size:16px;flex-shrink:0}
+.nav-label{flex:1}.nav-arrow{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;opacity:.7}
+.submenu{margin:2px 0 8px 20px;padding-left:10px;border-left:1px solid var(--color-border)}
+.submenu-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;color:var(--color-text-secondary);text-decoration:none;font-size:13px;margin-bottom:2px}
+.submenu-item:hover{background:var(--color-bg-soft);color:var(--color-text-primary)}
+.submenu-icon{width:22px;height:22px;border-radius:8px;display:grid;place-items:center;background:var(--color-bg-soft);font-size:12px;flex-shrink:0}
+.submenu-item .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.submenu-item.active{background:var(--color-bg-danger-soft);color:var(--color-brand-strong);font-weight:600;box-shadow:inset 3px 0 0 #f10400}
+.submenu-item.active .submenu-icon{background:var(--icon-active)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--color-brand-accent);outline-offset:2px}
+main{display:flex;flex-direction:column}
+.top{height:64px;background:var(--color-bg-card);border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.top h1{margin:0;font-size:18px;font-weight:600;color:var(--color-text-primary)}
+.theme{border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-body);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}
+.content{padding:24px}.card{background:var(--color-bg-card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:20px}
+.filters{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.field label{display:block;font-size:13px;font-weight:600;color:var(--color-text-body);margin-bottom:6px}
+.field div{border:1px solid var(--color-border);border-radius:8px;padding:9px 12px;font-size:14px;color:var(--color-text-primary);background:var(--color-bg-card)}
+.field div.ph{color:var(--color-text-secondary)}
+.note{font-size:13px;color:var(--color-text-secondary);margin:0}
+.note b{color:var(--color-text-primary)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.menu-parent.parent-active{color:var(--color-brand-strong);font-weight:700;background:var(--color-bg-danger-soft)}
+.menu-parent.parent-active .nav-icon{background:var(--icon-active)}
+.crumbs{display:flex;flex-direction:column;gap:2px}
+.crumbs ol{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.crumbs ol li+li::before{content:"›";margin-right:6px;color:var(--color-text-secondary)}
+.crumbs .parent-crumb{display:inline-flex;align-items:center;gap:6px;color:var(--color-brand-strong);font-weight:700;background:var(--color-bg-danger-soft);border:1px solid var(--color-border-danger-soft);border-radius:999px;padding:1px 10px}
+.mini{margin:auto 14px 18px;border:1px dashed var(--color-border);border-radius:14px;padding:12px;font-size:12px;color:var(--color-text-secondary)}
+.mini .rail{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}
+.mini .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--color-bg-soft);font-size:16px}
+.mini .ic.on{background:var(--color-bg-danger-soft);box-shadow:inset 3px 0 0 #f10400,0 0 0 2px var(--color-border-danger-soft)}
+</style></head><body>
+<div class="app"><aside class="sidebar"><div class="brand"><b>VEOLIA</b><small>RELIQUIDACIONES</small></div>
+<nav aria-label="Menú principal">
+<div class="menu-group group-active"><button class="nav-item menu-parent expanded parent-active" aria-expanded="true" aria-current="true"><span class="nav-icon" aria-hidden="true">⚡</span><span class="nav-label">Procesos</span><span class="nav-arrow" aria-hidden="true">−</span></button>
+<div class="submenu">
+<a href="#" class="submenu-item" title="Reliquidación - Crear"><span class="submenu-icon" aria-hidden="true">✍️</span><span class="lbl">Reliquidación - Crear</span></a>
+<a href="#" class="submenu-item" title="Reliquidación - Cargue"><span class="submenu-icon" aria-hidden="true">🚚</span><span class="lbl">Reliquidación - Cargue</span></a>
+<a href="#" class="submenu-item active" aria-current="page" title="Reliquidación - Comparar Costo"><span class="submenu-icon" aria-hidden="true">⚖️</span><span class="lbl">Reliquidación - Comparar Costo</span></a>
+<a href="#" class="submenu-item" title="Reliquidación - Comparar Tarifas"><span class="submenu-icon" aria-hidden="true">📈</span><span class="lbl">Reliquidación - Comparar Tarifas</span></a>
+</div>
+</div>
+<div class="menu-group"><button class="nav-item menu-parent" aria-expanded="false"><span class="nav-icon" aria-hidden="true">🧮</span><span class="nav-label">Tarificador</span><span class="nav-arrow" aria-hidden="true">+</span></button>
+</div>
+<div class="menu-group"><button class="nav-item menu-parent" aria-expanded="false"><span class="nav-icon" aria-hidden="true">⚙️</span><span class="nav-label">Configuración</span><span class="nav-arrow" aria-hidden="true">+</span></button>
+</div>
+</nav><div class="mini" aria-label="Vista con sidebar colapsado">Sidebar colapsado<div class="rail"><span class="ic on" title="Procesos">⚡</span><span class="ic" title="Tarificador">🧮</span><span class="ic" title="Configuración">⚙️</span></div></div></aside>
+<main><header class="top"><div class="crumbs"><ol aria-label="Ubicación"><li><span class="parent-crumb">⚡ Procesos</span></li><li>Reliquidación</li></ol><h1>Reliquidación - Comparar Costo</h1></div>
+<button class="theme" type="button" onclick="document.documentElement.classList.toggle('app-dark')">Modo claro / oscuro</button></header>
+<div class="content"><section class="card" aria-label="Parámetros"><div class="filters">
+<div class="field"><label>APS</label><div>Palmira</div></div><div class="field"><label>Reliquidación</label><div class="ph">Seleccione reliquidación</div></div>
+<div class="field"><label>Horizonte Desde</label><div class="ph">—</div></div><div class="field"><label>Horizonte Hasta</label><div class="ph">—</div></div></div></section>
+<section class="card"><p class="note"><b>Migas en la barra superior.</b> Además de marcar el padre en el menú, la barra superior muestra «Procesos › Reliquidación - Comparar Costo» con el padre como chip rojo. Abajo a la izquierda se ve cómo quedaría con el sidebar colapsado: el ícono del padre sigue marcado aunque no haya texto.</p></section></div></main></div></body></html>

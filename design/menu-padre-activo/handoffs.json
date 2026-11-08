@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "03-encabezado-solido.html",
+  "handoffs": {
+    "03-encabezado-solido.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-08T19:00:25.064Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-08T19:12:56.989Z",
+      "note": "Solid brand header on the active parent + soft docked submenu panel; light and dark checked in ego-lite.",
+      "previewUrl": "http://localhost:4200/reliquidacion/comparar-costo"
+    }
+  }
+}

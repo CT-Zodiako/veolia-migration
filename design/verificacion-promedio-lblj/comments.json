@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "comments": [
+    {
+      "id": "abshny2a",
+      "file": "05-grupos-en-tarjetas.html",
+      "selector": "body > div:nth-of-type(1) > div > main > section:nth-of-type(1) > div > div:nth-of-type(4)",
+      "excerpt": "Mes Cerrado / Verificado Folio #842",
+      "comment": "esto cambialo por un botón el cual va a traer toda la información de abajo la de toneladas suscriptores, es decir sol ose acicia cuando lo presiones consultara y traer y mostrara los datos",
+      "createdAt": "2026-11-08T18:52:44.765Z",
+      "status": "resolved",
+      "sentAt": "2026-11-08T18:52:44.946Z",
+      "resolvedAt": "2026-11-08T18:56:25.383Z"
+    },
+    {
+      "id": "0bxlbl97",
+      "file": "05-grupos-en-tarjetas.html",
+      "selector": "#prom-sec",
+      "excerpt": "Promedio Semestre Anterior Ene–Jun 2026 · promedio de los 6 meses del semestre anterior a Agosto 2026 · APS Palmira Presioná Consultar promedio semestre anterior para traer el promedio Ene–Jun 2026 de Palmira. Toneladas, Suscriptores, Otros y Costos se cargan solo al consultar. Si cambiás APS, Año o",
+      "comment": "mas compacto que no consuma tood este epspacio la información",
+      "createdAt": "2026-11-08T18:57:14.935Z",
+      "status": "resolved",
+      "sentAt": "2026-11-08T18:57:14.947Z",
+      "resolvedAt": "2026-11-08T18:59:34.358Z"
+    },
+    {
+      "id": "andrb0q7",
+      "file": "05-grupos-en-tarjetas.html",
+      "selector": "#prom-data",
+      "excerpt": "TONELADAS 10 QRT (Residuos recolectados y transportados) 158,52 QBL (Barrido y limpieza) 287,25 QLU (Limpieza urbana) 154,24 QR (Rechazos de aprovechamiento) 0,00 QNA (No aprovechables) 582,25 Qa (Aprovechables) 258,25 QRS (Residuos sólidos dispuestos) 4888,25 QRSmun (Dispuestos del municipio) 2154,",
+      "comment": "dejalo com oestba Nantes como el primer que me diste",
+      "createdAt": "2026-11-08T19:00:52.267Z",
+      "status": "resolved",
+      "sentAt": "2026-11-08T19:00:52.276Z",
+      "resolvedAt": "2026-11-08T19:03:39.834Z"
+    },
+    {
+      "id": "ejdutw8o",
+      "file": "05-grupos-en-tarjetas.html",
+      "selector": "#prom-sec > div:nth-of-type(1)",
+      "excerpt": "Promedio Semestre Anterior Ene–Jun 2026 · semestre anterior a Agosto 2026 · APS Palmira Valores Auditados Consultado hace un momento · Ene–Jun 2026",
+      "comment": "asi esta bien",
+      "createdAt": "2026-11-08T19:00:58.787Z",
+      "status": "resolved",
+      "sentAt": "2026-11-08T19:00:58.798Z",
+      "resolvedAt": "2026-11-08T19:04:01.230Z"
+    }
+  ]
+}

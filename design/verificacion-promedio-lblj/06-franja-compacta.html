@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 Franja compacta · Verificación · Promedio semestre anterior</title>
+<style>
+:root{--color-bg-page:#f1f5f9;--color-bg-card:#ffffff;--color-bg-soft:#f8fafc;--color-bg-danger-soft:#fff2f2;--color-bg-danger-soft-alt:#ffe6e5;--color-border:#e2e8f0;--color-border-soft:#f1f5f9;--color-border-danger-soft:#ffcdcc;--color-text-primary:#0f172a;--color-text-body:#334155;--color-text-secondary:#64748b;--color-text-muted:#94a3b8;--color-brand-strong:#780200;--color-brand-medium:#c40300;--color-brand-accent:#f10400;--color-bg-success-soft:#f0fdf4;--color-border-success-soft:#bbf7d0;--color-text-success:#16a34a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--color-bg-page);color:var(--color-text-body);line-height:1.5;-webkit-font-smoothing:antialiased}
+button,select{font-family:inherit}
+.ic{flex-shrink:0;vertical-align:middle}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;flex-shrink:0;background:var(--color-bg-card);border-right:1px solid var(--color-border);box-shadow:inset 4px 0 0 #f10400;position:fixed;height:100vh;overflow-y:auto}
+.sidebar-header{padding:22px 20px;border-bottom:1px solid var(--color-border);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:18px;font-weight:700;color:var(--color-brand-strong);line-height:1.1}
+.logo small{display:block;font-size:12px;font-weight:500;color:var(--color-text-secondary)}
+.sidebar-toggle{width:30px;height:30px;border-radius:10px;border:none;background:var(--color-bg-soft);color:var(--color-text-secondary);font-size:14px}
+.sidebar nav{padding:8px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;color:var(--color-text-secondary);text-decoration:none;font-size:14px;font-weight:500;margin-bottom:4px;width:100%;background:none;border:0;text-align:left}
+.nav-item:hover{background:var(--color-bg-soft);color:var(--color-text-primary)}
+.nav-item.active{background:var(--color-bg-danger-soft);color:var(--color-brand-strong);font-weight:700;box-shadow:inset 3px 0 0 #f10400}
+.nav-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--color-bg-soft)}
+.nav-item.active .nav-icon{background:rgba(241,4,0,0.14)}
+.sub{padding-left:20px}
+.sub .nav-item{padding:6px 12px;font-size:13px}
+.sub .nav-icon{width:26px;height:26px}
+.main{margin-left:260px;flex:1;min-width:0}
+.top-bar{height:64px;background:var(--color-bg-card);border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+.top-bar-title{font-size:18px;font-weight:600;color:var(--color-text-primary)}
+.top-actions{display:flex;align-items:center;gap:12px}
+.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-secondary);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn:hover{background:var(--color-bg-soft);color:var(--color-brand-medium)}
+.sys-pill{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:18px;border:0;background:#c40300;color:#fff;font-size:13px;font-weight:700;letter-spacing:.4px;cursor:pointer}
+.sys-pill:hover{background:#9c0300}
+.user{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 10px 0 4px;border-radius:20px;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-body);font-size:14px;cursor:pointer}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--color-bg-danger-soft);color:var(--color-brand-strong);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.content{padding:24px 24px 96px}
+.card-section{background:var(--color-bg-card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:20px}
+.filters{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.fg label{display:block;font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px;color:var(--color-text-body)}
+.combo{position:relative;display:flex;align-items:center;height:40px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-card);color:var(--color-text-secondary)}
+.combo:focus-within{border-color:var(--color-brand-accent)}
+.combo select{appearance:none;-webkit-appearance:none;border:0;background:transparent;height:100%;font-size:14px;color:var(--color-text-primary);padding:0 64px 0 12px;width:100%;cursor:pointer}
+.combo.has-ic select{padding-left:36px}
+.combo .lead{position:absolute;left:11px;pointer-events:none;color:var(--color-text-secondary)}
+.combo .clear{position:absolute;right:32px;width:24px;height:24px;border:0;background:none;border-radius:6px;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.combo .clear:hover{background:var(--color-bg-soft);color:var(--color-brand-medium)}
+.combo .chev{position:absolute;right:10px;pointer-events:none}
+.w-aps{width:240px}.w-ano{width:150px}.w-mes{width:180px}
+.status{margin-left:auto;display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:var(--color-bg-success-soft);border:1px solid var(--color-border-success-soft);color:var(--color-text-primary);font-size:14px;font-weight:600}
+.status .ic{color:var(--color-text-success)}
+.folio{font-size:12px;font-weight:600;padding:1px 8px;border-radius:6px;background:var(--color-bg-card);border:1px solid var(--color-border-success-soft);color:var(--color-text-body)}
+.sec-title{display:flex;align-items:center;gap:12px;margin-bottom:4px;flex-wrap:wrap}
+.sec-title h2{font-size:18px;font-weight:700;color:var(--color-text-primary);padding-left:12px;box-shadow:inset 4px 0 0 #f10400;line-height:1.3}
+.sec-sub{font-size:13px;color:var(--color-text-secondary);margin:0 0 16px 16px}
+.sec-sub b{color:var(--color-text-body)}
+.chip-ok{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 10px;border-radius:14px;background:var(--color-bg-success-soft);border:1px solid var(--color-border-success-soft);color:var(--color-text-primary)}
+.chip-ok .ic{color:var(--color-text-success)}
+.count-chip{font-size:12px;font-weight:600;padding:1px 8px;border-radius:12px;background:var(--color-bg-soft);border:1px solid var(--color-border);color:var(--color-text-body)}
+.code{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:6px;background:var(--color-bg-soft);border:1px solid var(--color-border);color:var(--color-text-primary)}
+.code.brand{background:var(--color-bg-danger-soft);border-color:var(--color-border-danger-soft);color:var(--color-brand-strong)}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+.note{font-size:12px;color:var(--color-text-secondary)}
+.note b{color:var(--color-text-body)}
+.flag{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;padding:0 6px;border-radius:8px;background:var(--color-bg-danger-soft);border:1px solid var(--color-border-danger-soft);color:var(--color-brand-strong)}
+/* tabs card */
+.tabs-row{display:flex;align-items:flex-end;border-bottom:1px solid var(--color-border);margin-bottom:12px}
+.tab{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;background:none;border:0;color:var(--color-text-secondary);cursor:pointer}
+.tab:hover{color:var(--color-brand-medium)}
+.tab[aria-selected="true"]{color:var(--color-brand-strong);box-shadow:inset 0 -2px 0 #f10400;font-weight:600}
+.tabs-row .model{margin-left:auto;padding-bottom:8px}
+.toolbar{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--color-border);border-bottom:0;border-radius:12px 12px 0 0;background:var(--color-bg-soft);flex-wrap:wrap}
+.tb{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-body);font-size:13px;cursor:pointer}
+.tb:hover{border-color:var(--color-text-secondary)}
+.tb.primary{background:#c40300;border-color:#c40300;color:#fff;font-weight:600}
+.tb.primary:hover{background:#9c0300}
+.tb.sq{width:32px;padding:0;justify-content:center}
+.sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--color-border);border-radius:8px;overflow:hidden;background:var(--color-bg-card)}
+.seg button{height:30px;padding:0 12px;border:0;background:none;font-size:13px;color:var(--color-text-body);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--color-bg-danger-soft);color:var(--color-brand-strong);font-weight:700}
+.table-scroll{overflow-x:auto;border:1px solid var(--color-border)}
+table{border-collapse:collapse;width:100%}
+th{font-size:12px;font-weight:600;padding:8px;text-align:left;white-space:nowrap;color:var(--color-text-primary);border-bottom:1px solid var(--color-border);background:var(--color-bg-soft)}
+th.r{text-align:right}
+td{font-size:13px;line-height:1.3;padding:8px;border-bottom:1px solid var(--color-border-soft);white-space:nowrap;color:var(--color-text-primary)}
+td.z{color:var(--color-text-secondary)}
+.tfoot{display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid var(--color-border);border-top:0;border-radius:0 0 12px 12px;font-size:13px;color:var(--color-text-secondary)}
+.pg{min-width:30px;height:30px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-body);font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+.pg[aria-current="page"]{background:var(--color-bg-danger-soft);border-color:var(--color-border-danger-soft);color:var(--color-brand-strong);font-weight:700}
+.pg:disabled{color:var(--color-text-secondary);background:var(--color-bg-soft)}
+.pp{height:30px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-card);color:var(--color-text-body);font-size:13px;padding:0 8px}
+.fab{position:fixed;right:24px;bottom:24px;display:flex;flex-direction:column;gap:10px;z-index:20}
+.fab button{width:48px;height:48px;border-radius:50%;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-brand-strong);box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.fab button.fab-main{background:#c40300;border-color:#c40300;color:#fff}
+:focus-visible{outline:2px solid var(--color-brand-accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1024px){.sidebar{display:none}.main{margin-left:0}.status{margin-left:0}}
+
+.bands{border:1px solid var(--color-border);border-radius:12px;overflow:hidden}
+.band{display:grid;grid-template-columns:170px 1fr;align-items:center;border-bottom:1px solid var(--color-border-soft)}
+.band:last-child{border-bottom:0}
+.band h3{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--color-text-primary);padding:10px 14px;background:var(--color-bg-soft);height:100%;border-right:1px solid var(--color-border)}
+.band h3 .ic{color:var(--color-brand-strong)}
+.band h3 small{font-weight:400;color:var(--color-text-secondary);margin-left:auto}
+.kvs{display:flex;flex-wrap:wrap;column-gap:0;row-gap:4px;padding:8px 6px;list-style:none}
+.kv{display:inline-flex;align-items:baseline;gap:6px;padding:2px 12px;border-right:1px solid var(--color-border-soft);font-size:13px}
+.kv:last-child{border-right:0}
+.kv .k{font-weight:700;color:var(--color-text-secondary);font-size:12px}
+.kv .k.brand{color:var(--color-brand-strong)}
+.kv .v{font-weight:600;color:var(--color-text-primary);font-variant-numeric:tabular-nums}
+.sec-sub{margin-bottom:10px}
+.card-section.tight{padding:16px 20px}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" aria-label="Menú principal">
+  <div class="sidebar-header"><div class="logo">Veolia<small>Sistema de Tarifas</small></div><button class="sidebar-toggle" aria-label="Contraer menú">«</button></div>
+  <nav aria-label="Secciones">
+    <a class="nav-item" href="#"><span class="nav-icon"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg></span>Inicio</a>
+    <button class="nav-item" aria-expanded="true"><span class="nav-icon"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span>Suministros</button>
+    <div class="sub">
+      <a class="nav-item" href="#"><span class="nav-icon"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg></span>Cargue Mensual</a>
+      <a class="nav-item" href="#"><span class="nav-icon"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg></span>Cargue Semestral</a>
+      <a class="nav-item" href="#"><span class="nav-icon"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="9" cy="7" rx="5" ry="2.5"/><path d="M4 7v4c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V7"/><path d="M10 15.5c.9 1.2 2.8 2 5 2 2.8 0 5-1.1 5-2.5v-4c0-1.4-2.2-2.5-5-2.5"/></svg></span>Descuentos en Costos</a>
+      <a class="nav-item active" href="#" aria-current="page"><span class="nav-icon"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Verificación</a>
+    </div>
+    <button class="nav-item" aria-expanded="false"><span class="nav-icon"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M10 4v16M15 4v16"/></svg></span>Información Gerencial</button>
+  </nav>
+</aside>
+<div class="main">
+  <header class="top-bar"><div class="top-bar-title">Verificación</div>
+    <div class="top-actions">
+      <button class="icon-btn" aria-label="Cambiar a modo oscuro"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
+      <button class="sys-pill" aria-haspopup="menu" aria-label="Sistema activo: VEO-REGULATOR. Cambiar sistema">VEO-REGULATOR<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="user" aria-haspopup="menu"><span class="avatar" aria-hidden="true">S</span>soporte<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></button>
+    </div>
+  </header>
+  <main class="content">
+  <section class="card-section" aria-label="Parámetros de consulta">
+    <div class="filters">
+      <div class="fg"><label for="p-aps">APS</label><div class="combo w-aps has-ic"><svg class="ic lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="10" height="18" rx="1"/><path d="M15 9h4v12h-4"/><path d="M8 7h4M8 11h4M8 15h4"/></svg><select id="p-aps"><option>Palmira</option></select><button class="clear" aria-label="Limpiar APS"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7L7 17"/></svg></button><svg class="ic chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></div></div>
+      <div class="fg"><label for="p-ano">Año</label><div class="combo w-ano"><select id="p-ano"><option>2026</option></select><button class="clear" aria-label="Limpiar Año"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7L7 17"/></svg></button><svg class="ic chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></div></div>
+      <div class="fg"><label for="p-mes">Mes</label><div class="combo w-mes has-ic"><svg class="ic lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><select id="p-mes"><option>Agosto</option></select><button class="clear" aria-label="Limpiar Mes"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7L7 17"/></svg></button><svg class="ic chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></div></div>
+      <div class="status" role="status"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 10"/></svg><span>Mes Cerrado / Verificado</span><span class="folio">Folio #842</span></div>
+    </div>
+  </section>
+  <section class="card-section tight" aria-labelledby="prom-t">
+    <div class="sec-title"><h2 id="prom-t">Promedio Semestre Anterior</h2><span class="chip-ok"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Valores Auditados</span></div>
+    <p class="sec-sub"><b>Ene–Jun 2026</b> · promedio de los 6 meses del semestre anterior a Agosto 2026 · APS Palmira · pasá el cursor sobre un código para ver su nombre</p>
+    <div class="bands"><div class="band"><h3><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17h2l1-9h12l1 9h2"/><path d="M9 8a3 3 0 0 1 6 0"/><path d="M3 17v2h18v-2"/></svg>Toneladas<small>10</small></h3><ul class="kvs" aria-label="Toneladas"><li class="kv" title="Residuos recolectados y transportados"><span class="k">QRT</span><span class="v">158,52</span></li><li class="kv" title="Barrido y limpieza"><span class="k">QBL</span><span class="v">287,25</span></li><li class="kv" title="Limpieza urbana"><span class="k">QLU</span><span class="v">154,24</span></li><li class="kv" title="Rechazos de aprovechamiento"><span class="k">QR</span><span class="v">0,00</span></li><li class="kv" title="No aprovechables"><span class="k">QNA</span><span class="v">582,25</span></li><li class="kv" title="Aprovechables"><span class="k">Qa</span><span class="v">258,25</span></li><li class="kv" title="Residuos sólidos dispuestos"><span class="k">QRS</span><span class="v">4888,25</span></li><li class="kv" title="Dispuestos del municipio"><span class="k">QRSmun</span><span class="v">2154,21</span></li><li class="kv" title="Disposición (C)"><span class="k">C</span><span class="v">1524,02</span></li><li class="kv" title="TAFNA"><span class="k">TAFNA</span><span class="v">12255,25</span></li></ul></div><div class="band"><h3><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2A5 5 0 0 1 21 19"/></svg>Suscriptores<small>4</small></h3><ul class="kvs" aria-label="Suscriptores"><li class="kv" title="Suscriptores"><span class="k">N</span><span class="v">151000,05</span></li><li class="kv" title="Suscriptores aforados"><span class="k">Na</span><span class="v">2548,25</span></li><li class="kv" title="Aforados aprovechamiento"><span class="k">Naa</span><span class="v">1254,45</span></li><li class="kv" title="Desocupados"><span class="k">Nd</span><span class="v">258,25</span></li></ul></div><div class="band"><h3><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Otros<small>2</small></h3><ul class="kvs" aria-label="Otros"><li class="kv" title="Longitud barrido (km)"><span class="k">Lbl</span><span class="v">41000,05</span></li><li class="kv" title="Volumen lixiviados"><span class="k">VL</span><span class="v">2548,25</span></li></ul></div><div class="band"><h3><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="9" cy="7" rx="5" ry="2.5"/><path d="M4 7v4c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V7"/><path d="M10 15.5c.9 1.2 2.8 2 5 2 2.8 0 5-1.1 5-2.5v-4c0-1.4-2.2-2.5-5-2.5"/></svg>Costos<small>2</small></h3><ul class="kvs" aria-label="Costos"><li class="kv" title="Costo recolección y transporte"><span class="k brand">CRTcomp</span><span class="v">141000,05</span></li><li class="kv" title="Costo disposición final"><span class="k brand">CDFcomp</span><span class="v">78254,02</span></li></ul></div></div>
+  </section>
+  <section class="card-section" aria-label="Resúmenes de verificación">
+    <div class="tabs-row">
+      <div role="tablist" aria-label="Resúmenes" style="display:flex">
+        <button class="tab" role="tab" aria-selected="true"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="10" height="18" rx="1"/><path d="M15 9h4v12h-4"/><path d="M8 7h4M8 11h4M8 15h4"/></svg>Resumen Empresa</button>
+        <button class="tab" role="tab" aria-selected="false" tabindex="-1"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Resumen APS</button>
+        <button class="tab" role="tab" aria-selected="false" tabindex="-1"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>Resumen Relleno</button>
+      </div>
+      <span class="note model">Modelo Tarifario Res. CRA 720</span>
+    </div>
+    <div class="toolbar">
+      <button class="tb" aria-haspopup="true"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M10 4v16M15 4v16"/></svg>Ver Columnas<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="tb"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg>Restaurar columnas</button>
+      <button class="tb"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>Guardar vista</button>
+      <button class="tb primary"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>Exportar</button>
+      <span class="sp"></span>
+      <span class="note" id="dens-l">Densidad de la tabla:</span>
+      <div class="seg" role="group" aria-labelledby="dens-l"><button aria-pressed="true">Normal</button><button aria-pressed="false">Compacta</button></div>
+      <button class="tb sq" aria-label="Pantalla completa"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+    <div class="table-scroll" role="region" aria-label="Tabla Resumen Empresa, Agosto 2026" tabindex="0">
+      <table><thead><tr><th scope="col">EMPRESA</th><th scope="col" class="r">CBLJ</th><th scope="col" class="r">LBLJ</th><th scope="col" class="r">N</th><th scope="col" class="r">M3AGUA</th><th scope="col" class="r">CP</th><th scope="col" class="r">M2CCJ</th><th scope="col" class="r">M2LAVJ</th><th scope="col" class="r">TIJ</th><th scope="col" class="r">KLPJ</th><th scope="col" class="r">TMJ</th><th scope="col" class="r">CLAVJ</th></tr></thead><tbody><tr><td>SERVI AMBIENTALES VALLE S.A. E.S.P.</td><td class="num">75176.37</td><td class="num z">0</td><td class="num z">0</td><td class="num z">0</td><td class="num">2264513.13</td><td class="num">174447.6</td><td class="num z">0</td><td class="num z">0</td><td class="num z">0</td><td class="num z">0</td><td class="num z">0</td></tr><tr><td>VEOLIA ASEO PALMIRA S.A. E.S.P.</td><td class="num">78499.52</td><td class="num z">0</td><td class="num z">0</td><td class="num z">0</td><td class="num">292592196</td><td class="num">2236057.33</td><td class="num z">0</td><td class="num">37</td><td class="num z">0</td><td class="num">289</td><td class="num z">0</td></tr></tbody></table>
+    </div>
+    <div class="tfoot"><span>Mostrando 2 de 2 registros</span><span class="sp"></span>
+      <nav aria-label="Paginación" style="display:flex;gap:6px"><button class="pg" disabled aria-label="Página anterior">‹</button><button class="pg" aria-current="page">1</button><button class="pg" disabled aria-label="Página siguiente">›</button></nav>
+      <label class="sr-only" for="pp">Registros por página</label><select id="pp" class="pp"><option>10 por página</option><option>25 por página</option></select>
+    </div>
+  </section>
+
+  </main>
+</div>
+</div>
+<div class="fab"><button aria-label="Base de datos de verificación"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></button><button class="fab-main" aria-label="Soporte"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg></button></div>
+</body>
+</html>

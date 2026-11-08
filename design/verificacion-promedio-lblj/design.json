@@ -1,0 +1,55 @@
+{
+  "title": "Verificación · Promedio LBLJ Ene–Jun",
+  "brief": "Suministros > Verificación: mostrar el promedio de LBLJ (INED_LBLJ, tabla Empresas) por empresa de enero a junio del semestre anterior al mes consultado, para analistas regulatorios internos",
+  "artboards": [
+    {
+      "file": "01-columna-en-tabla.html",
+      "title": "Columna en tabla Empresa",
+      "tradeoff": "Cero navegación nueva y sale en el CSV de la tabla; los 6 meses quedan detrás de un expandible y la tabla de 14 columnas se ensancha",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "02-panel-resumen.html",
+      "title": "Panel resumen sobre las tablas",
+      "tradeoff": "Promedio, tendencia y desviación visibles en cualquier pestaña de un vistazo; empuja las tablas ~380 px hacia abajo y no forma parte de la exportación de tabla-avanzada",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "03-pestana-semestral.html",
+      "title": "Pestaña Promedio semestral",
+      "tradeoff": "Máxima trazabilidad (matriz mes a mes, total APS, desviación, exportable); queda oculta tras una cuarta pestaña, lejos de la vista diaria Resumen Empresa",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "04-promedio-sem-anterior.html",
+      "title": "Promedio semestre anterior (boceto del usuario)",
+      "tradeoff": "Fiel al boceto: 18 indicadores de las 3 fuentes en una sola card bajo las tablas, visibles en cualquier pestaña; es un solo valor por APS (sin detalle mensual ni por empresa) y no sale en el CSV",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "05-grupos-en-tarjetas.html",
+      "title": "Grupos en tarjetas (referencia del usuario)",
+      "tradeoff": "Fiel a la referencia y bajo demanda: antes de consultar es una sola línea (la tabla queda arriba); al presionar Consultar aparecen los 18 promedios en tiles agrupados, muy legibles, pero la sección ocupa ~745 px y empuja la tabla Empresa debajo del primer pliegue",
+      "width": 1440,
+      "height": 1250
+    },
+    {
+      "file": "06-franja-compacta.html",
+      "title": "Franja compacta por grupos",
+      "tradeoff": "Los promedios ocupan ~1/3 de la altura y la tabla queda visible sin scroll; más densa, menos escaneable y los nombres solo aparecen al pasar el cursor",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "07-kpi-primero.html",
+      "title": "KPI primero + detalle desplegable",
+      "tradeoff": "Guía la atención con 6 KPI y la variación de Agosto frente al promedio (marca Revisar ≥ 10 %); alguien tiene que definir cuáles son los KPI y el umbral, y con el detalle abierto es la más alta",
+      "width": 1440,
+      "height": 1220
+    }
+  ]
+}

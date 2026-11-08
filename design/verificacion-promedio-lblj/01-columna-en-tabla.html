@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 Columna en tabla Empresa · Verificación · Promedio LBLJ</title>
+<style>
+:root{--color-bg-page:#f1f5f9;--color-bg-card:#ffffff;--color-bg-soft:#f8fafc;--color-bg-danger-soft:#fff2f2;--color-border:#e2e8f0;--color-border-soft:#f1f5f9;--color-border-danger-soft:#ffcdcc;--color-text-primary:#0f172a;--color-text-body:#334155;--color-text-secondary:#64748b;--color-text-muted:#94a3b8;--color-brand-strong:#780200;--color-brand-medium:#c40300;--color-brand-accent:#f10400;--color-bg-success-soft:#f0fdf4;--color-border-success-soft:#bbf7d0;--color-text-success:#16a34a;--color-scrollbar-track:#f1f5f9;--color-scrollbar-thumb:#cbd5e1}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--color-bg-page);color:var(--color-text-body);line-height:1.5;-webkit-font-smoothing:antialiased}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;flex-shrink:0;background:var(--color-bg-card);border-right:1px solid var(--color-border);box-shadow:inset 4px 0 0 #f10400;position:fixed;height:100vh;overflow-y:auto}
+.sidebar-header{padding:22px 20px;border-bottom:1px solid var(--color-border);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:18px;font-weight:700;color:var(--color-brand-strong);line-height:1.1}
+.logo small{display:block;font-size:12px;font-weight:500;color:var(--color-text-secondary)}
+.sidebar-toggle{width:30px;height:30px;border-radius:10px;border:none;background:var(--color-bg-soft);color:var(--color-text-secondary);font-size:14px}
+.sidebar nav{padding:8px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;color:var(--color-text-secondary);text-decoration:none;font-size:14px;font-weight:500;margin-bottom:4px;width:100%;background:none;border:0;font-family:inherit;text-align:left}
+.nav-item:hover{background:var(--color-bg-soft);color:var(--color-text-primary)}
+.nav-item.active{background:var(--color-bg-danger-soft);color:var(--color-brand-strong);font-weight:700;box-shadow:inset 3px 0 0 #f10400}
+.nav-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--color-bg-soft);font-size:14px}
+.nav-item.active .nav-icon{background:rgba(241,4,0,0.14)}
+.sub{padding-left:20px}
+.sub .nav-item{padding:6px 12px;font-size:13px}
+.sub .nav-icon{width:26px;height:26px}
+.main{margin-left:260px;flex:1;min-width:0}
+.top-bar{height:64px;background:var(--color-bg-card);border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+.top-bar-title{font-size:18px;font-weight:600;color:var(--color-text-primary)}
+.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-secondary);font-size:16px;font-family:inherit;cursor:pointer}
+.content{padding:24px}
+.card-section{background:var(--color-bg-card);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:20px}
+.parametros-row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:var(--color-text-body)}
+.select{border:1px solid var(--color-border);border-radius:8px;padding:7px 10px;font-size:14px;background:var(--color-bg-card);color:var(--color-text-primary);font-family:inherit;min-width:130px}
+.select.aps{min-width:220px}
+.periodo-note{font-size:13px;color:var(--color-text-secondary);margin-left:auto;align-self:center}
+.periodo-note b{color:var(--color-text-primary);font-weight:600}
+.tabs{display:flex;border-bottom:1px solid var(--color-border);margin-bottom:12px}
+.tab{padding:6px 12px;font-size:13px;background:none;border:0;color:var(--color-text-secondary);font-family:inherit;cursor:pointer}
+.tab:hover{color:var(--color-brand-medium)}
+.tab[aria-selected="true"]{color:var(--color-brand-strong);box-shadow:inset 0 -2px 0 #f10400;font-weight:600}
+.toolbar{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--color-border);border-bottom:0;border-radius:12px 12px 0 0;background:var(--color-bg-soft)}
+.toolbar .tb{height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-body);font-size:12px;font-family:inherit;cursor:pointer}
+.toolbar .sp{flex:1}
+.toolbar .count{font-size:12px;color:var(--color-text-secondary)}
+.table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:0 0 12px 12px}
+table{border-collapse:collapse;width:100%}
+th{font-size:12px;font-weight:600;padding:4px 6px;text-align:left;white-space:nowrap;color:var(--color-text-primary);border-bottom:1px solid var(--color-border);background:var(--color-bg-soft)}
+td{font-size:13px;line-height:1.3;padding:5px 8px;border-bottom:1px solid var(--color-border-soft);white-space:nowrap;color:var(--color-text-body)}
+.text-right{text-align:right}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.fila-total td{background:var(--color-bg-soft);font-weight:600}
+.fila-promedio td{background:var(--color-bg-page);font-weight:600;font-style:italic}
+.muted{color:var(--color-text-secondary)}
+.flag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:1px 6px;border-radius:8px;background:var(--color-bg-danger-soft);border:1px solid var(--color-border-danger-soft);color:var(--color-brand-strong)}
+.partial{display:inline-block;font-size:11px;font-weight:600;padding:0 5px;border-radius:6px;border:1px solid var(--color-border);color:var(--color-text-body);background:var(--color-bg-soft);margin-left:4px;font-style:normal}
+.note{font-size:12px;color:var(--color-text-secondary)}
+.note b{color:var(--color-text-body)}
+:focus-visible{outline:2px solid var(--color-brand-accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1024px){.sidebar{display:none}.main{margin-left:0}.periodo-note{margin-left:0;width:100%}}
+
+.col-prom{background:var(--color-bg-soft)}
+th.col-prom{color:var(--color-brand-strong);box-shadow:inset 0 -2px 0 #f10400}
+td.col-prom{font-weight:600;color:var(--color-text-primary)}
+.exp{border:1px solid var(--color-border);background:var(--color-bg-card);border-radius:6px;width:24px;height:24px;font-size:12px;color:var(--color-text-body);cursor:pointer;margin-left:6px;vertical-align:middle}
+.exp[aria-expanded="true"]{background:#780200;color:#fff;border-color:#780200}
+tr.detalle td{background:var(--color-bg-soft);padding:10px 12px;white-space:normal}
+.mini{display:grid;grid-template-columns:repeat(6,minmax(96px,1fr)) minmax(140px,1.2fr);gap:0;max-width:880px;border:1px solid var(--color-border);border-radius:8px;overflow:hidden;background:var(--color-bg-card)}
+.mini div{padding:6px 10px;border-right:1px solid var(--color-border-soft)}
+.mini div:last-child{border-right:0;background:var(--color-bg-soft)}
+.mini dt{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase}
+.mini dd{font-size:13px;font-variant-numeric:tabular-nums;color:var(--color-text-primary)}
+.legend{display:flex;gap:20px;margin-top:10px;flex-wrap:wrap}
+.hint{position:relative}
+.hint .tip{display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:5;width:280px;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);padding:10px 12px;font-size:12px;font-weight:400;color:var(--color-text-body);white-space:normal;text-align:left}
+.hint:hover .tip,.hint:focus-within .tip{display:block}
+.info{border:0;background:none;color:var(--color-brand-strong);font-size:12px;cursor:help;margin-left:4px;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" aria-label="Menú principal">
+  <div class="sidebar-header"><div class="logo">Veolia<small>Sistema de Tarifas</small></div><button class="sidebar-toggle" aria-label="Contraer menú">«</button></div>
+  <nav aria-label="Secciones">
+    <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">⌂</span>Inicio</a>
+    <button class="nav-item" aria-expanded="true"><span class="nav-icon" aria-hidden="true">▦</span>Suministros</button>
+    <div class="sub">
+      <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">↥</span>Cargue Mensual</a>
+      <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">↥</span>Cargue Semestral</a>
+      <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">%</span>Descuentos en Costos</a>
+      <a class="nav-item active" href="#" aria-current="page"><span class="nav-icon" aria-hidden="true">✓</span>Verificación</a>
+      <a class="nav-item" href="#"><span class="nav-icon" aria-hidden="true">♣</span>Costo de Poda</a>
+    </div>
+    <button class="nav-item" aria-expanded="false"><span class="nav-icon" aria-hidden="true">▤</span>Información Gerencial</button>
+    <button class="nav-item" aria-expanded="false"><span class="nav-icon" aria-hidden="true">♻</span>PGIRS</button>
+  </nav>
+</aside>
+<div class="main">
+  <header class="top-bar"><div class="top-bar-title">Verificación</div><button class="icon-btn" aria-label="Cambiar a modo oscuro">☾</button></header>
+  <main class="content">
+  <section class="card-section" aria-label="Parámetros de consulta">
+    <div class="parametros-row">
+      <div class="form-group"><label for="p-aps">APS</label><select id="p-aps" class="select aps"><option>Pereira – Dosquebradas</option></select></div>
+      <div class="form-group"><label for="p-ano">Año</label><select id="p-ano" class="select"><option>2026</option></select></div>
+      <div class="form-group"><label for="p-mes">Mes</label><select id="p-mes" class="select"><option>Octubre</option></select></div>
+      <p class="periodo-note">Mes consultado <b>Octubre 2026</b> · Semestre anterior <b>Ene–Jun 2026</b></p>
+    </div>
+  </section>
+
+  <section class="card-section" aria-label="Resúmenes de verificación">
+    <div class="tabs" role="tablist" aria-label="Resúmenes">
+      <button class="tab" role="tab" aria-selected="true">Resumen Empresa</button>
+      <button class="tab" role="tab" aria-selected="false" tabindex="-1">Resumen APS</button>
+      <button class="tab" role="tab" aria-selected="false" tabindex="-1">Resumen Relleno</button>
+    </div>
+    <div class="toolbar"><button class="tb">Columnas (15)</button><button class="tb">Vistas</button><button class="tb">Densidad</button><span class="sp"></span><span class="count">7 empresas · 9 de 15 columnas visibles, desplazar → para TIJ…QRSJ</span><button class="tb">Exportar CSV</button><button class="tb" aria-label="Pantalla completa">⤢</button></div>
+    <div class="table-scroll" role="region" aria-label="Tabla Resumen Empresa, desplazable horizontalmente" tabindex="0">
+      <table>
+        <thead><tr><th scope="col">EMPRESA</th><th scope="col" class="text-right">CBLJ</th><th scope="col" class="text-right">LBLJ<br><span class="muted" style="font-weight:400">Oct 2026</span></th>
+        <th scope="col" class="text-right col-prom"><span class="hint">PROM. LBLJ<br><span style="font-weight:400">Ene–Jun 2026</span><button class="info" aria-describedby="tip-prom">ⓘ<span class="sr-only">Cómo se calcula</span></button><span class="tip" role="tooltip" id="tip-prom">Promedio simple de INED_LBLJ de enero a junio de 2026 (semestre anterior al mes consultado). Si falta un mes, se promedia sobre los meses disponibles y se marca <b>n/6</b>.</span></span></th>
+        <th scope="col" class="text-right">N</th><th scope="col" class="text-right">M3AGUA</th><th scope="col" class="text-right">CP</th><th scope="col" class="text-right">M2CCJ</th><th scope="col" class="text-right">M2LAVJ</th></tr>
+</thead>
+        <tbody><tr><td>Aseo Técnico de Pereira S.A. E.S.P.</td><td class="num">41283.5612</td><td class="num">3448.1207</td>
+<td class="num col-prom">3412.0198<button class="exp" aria-expanded="false" aria-controls="det-0" aria-label="Ver meses Ene–Jun 2026 de Aseo Técnico de Pereira S.A. E.S.P.">▾</button></td>
+<td class="num">128450</td><td class="num">23506.3500</td><td class="num">269.7450</td><td class="num">6620.3917</td><td class="num">1275.8047</td></tr><tr class="detalle" id="det-0" hidden><td colspan="9"><dl class="mini"><div><dt>Ene 2026</dt><dd>3392.4185</dd></div><div><dt>Feb 2026</dt><dd>3401.7730</dd></div><div><dt>Mar 2026</dt><dd>3415.0264</dd></div><div><dt>Abr 2026</dt><dd>3398.6612</dd></div><div><dt>May 2026</dt><dd>3427.3341</dd></div><div><dt>Jun 2026</dt><dd>3436.9058</dd></div><div><dt>Prom. Ene–Jun · 6 meses</dt><dd><b>3412.0198</b></dd></div></dl></td></tr><tr><td>Veolia Aseo Dosquebradas S.A. E.S.P.</td><td class="num">39871.2245</td><td class="num">2421.5530</td>
+<td class="num col-prom">2102.3108<button class="exp" aria-expanded="false" aria-controls="det-1" aria-label="Ver meses Ene–Jun 2026 de Veolia Aseo Dosquebradas S.A. E.S.P.">▾</button></td>
+<td class="num">64210</td><td class="num">11750.4300</td><td class="num">134.8410</td><td class="num">4649.3818</td><td class="num">895.9746</td></tr><tr class="detalle" id="det-1" hidden><td colspan="9"><dl class="mini"><div><dt>Ene 2026</dt><dd>2087.6143</dd></div><div><dt>Feb 2026</dt><dd>2091.2208</dd></div><div><dt>Mar 2026</dt><dd>2104.8875</dd></div><div><dt>Abr 2026</dt><dd>2099.4031</dd></div><div><dt>May 2026</dt><dd>2112.6650</dd></div><div><dt>Jun 2026</dt><dd>2118.0742</dd></div><div><dt>Prom. Ene–Jun · 6 meses</dt><dd><b>2102.3108</b></dd></div></dl></td></tr><tr><td>Servicios Ambientales de Risaralda S.A. E.S.P.</td><td class="num">42110.8730</td><td class="num">1274.6618</td>
+<td class="num col-prom">1258.9210<span class="partial" title="Promedio sobre 5 de 6 meses">5/6</span><button class="exp" aria-expanded="true" aria-controls="det-2" aria-label="Ver meses Ene–Jun 2026 de Servicios Ambientales de Risaralda S.A. E.S.P.">▴</button></td>
+<td class="num">31875</td><td class="num">5833.1250</td><td class="num">66.9375</td><td class="num">2447.3507</td><td class="num">471.6249</td></tr><tr class="detalle" id="det-2"><td colspan="9"><dl class="mini"><div><dt>Ene 2026</dt><dd>1248.9316</dd></div><div><dt>Feb 2026</dt><dd>1252.4470</dd></div><div><dt>Mar 2026</dt><dd>1259.1182</dd></div><div><dt>Abr 2026</dt><dd>— <span class='muted'>sin reporte</span></dd></div><div><dt>May 2026</dt><dd>1263.7754</dd></div><div><dt>Jun 2026</dt><dd>1270.3329</dd></div><div><dt>Prom. Ene–Jun · 5 meses</dt><dd><b>1258.9210</b></dd></div></dl><p class="note" style="margin-top:6px">Abril 2026 sin reporte de LBLJ para esta empresa: el promedio se calcula sobre los 5 meses disponibles, no se toma Abril como 0.</p></td></tr><tr><td>Limpieza Urbana del Café S.A. E.S.P.</td><td class="num">40562.1196</td><td class="num">892.7406</td>
+<td class="num col-prom">883.2258<button class="exp" aria-expanded="false" aria-controls="det-3" aria-label="Ver meses Ene–Jun 2026 de Limpieza Urbana del Café S.A. E.S.P.">▾</button></td>
+<td class="num">22340</td><td class="num">4088.2200</td><td class="num">46.9140</td><td class="num">1714.0620</td><td class="num">330.3140</td></tr><tr class="detalle" id="det-3" hidden><td colspan="9"><dl class="mini"><div><dt>Ene 2026</dt><dd>876.2251</dd></div><div><dt>Feb 2026</dt><dd>879.9064</dd></div><div><dt>Mar 2026</dt><dd>881.4417</dd></div><div><dt>Abr 2026</dt><dd>884.0372</dd></div><div><dt>May 2026</dt><dd>887.6295</dd></div><div><dt>Jun 2026</dt><dd>890.1148</dd></div><div><dt>Prom. Ene–Jun · 6 meses</dt><dd><b>883.2258</b></dd></div></dl></td></tr><tr><td>Empresa de Aseo de Santa Rosa de Cabal E.S.P.</td><td class="num">43018.4407</td><td class="num">571.3352</td>
+<td class="num col-prom">646.1298<button class="exp" aria-expanded="false" aria-controls="det-4" aria-label="Ver meses Ene–Jun 2026 de Empresa de Aseo de Santa Rosa de Cabal E.S.P.">▾</button></td>
+<td class="num">18905</td><td class="num">3459.6150</td><td class="num">39.7005</td><td class="num">1096.9636</td><td class="num">211.3940</td></tr><tr class="detalle" id="det-4" hidden><td colspan="9"><dl class="mini"><div><dt>Ene 2026</dt><dd>642.1870</dd></div><div><dt>Feb 2026</dt><dd>640.5523</dd></div><div><dt>Mar 2026</dt><dd>645.9031</dd></div><div><dt>Abr 2026</dt><dd>647.2286</dd></div><div><dt>May 2026</dt><dd>649.8714</dd></div><div><dt>Jun 2026</dt><dd>651.0367</dd></div><div><dt>Prom. Ene–Jun · 6 meses</dt><dd><b>646.1298</b></dd></div></dl></td></tr><tr><td>Aseo Integral La Virginia S.A.S. E.S.P.</td><td class="num">44507.3381</td><td class="num">316.2209</td>
+<td class="num col-prom">312.8390<button class="exp" aria-expanded="false" aria-controls="det-5" aria-label="Ver meses Ene–Jun 2026 de Aseo Integral La Virginia S.A.S. E.S.P.">▾</button></td>
+<td class="num">9870</td><td class="num">1806.2100</td><td class="num">20.7270</td><td class="num">607.1441</td><td class="num">117.0017</td></tr><tr class="detalle" id="det-5" hidden><td colspan="9"><dl class="mini"><div><dt>Ene 2026</dt><dd>311.4528</dd></div><div><dt>Feb 2026</dt><dd>309.8817</dd></div><div><dt>Mar 2026</dt><dd>312.6693</dd></div><div><dt>Abr 2026</dt><dd>314.0071</dd></div><div><dt>May 2026</dt><dd>313.2450</dd></div><div><dt>Jun 2026</dt><dd>315.7782</dd></div><div><dt>Prom. Ene–Jun · 6 meses</dt><dd><b>312.8390</b></dd></div></dl></td></tr><tr><td>Empresa Municipal de Aseo de Marsella E.S.P.</td><td class="num">46890.0254</td><td class="num">148.5513</td>
+<td class="num col-prom">146.5072<button class="exp" aria-expanded="false" aria-controls="det-6" aria-label="Ver meses Ene–Jun 2026 de Empresa Municipal de Aseo de Marsella E.S.P.">▾</button></td>
+<td class="num">4120</td><td class="num">753.9600</td><td class="num">8.6520</td><td class="num">285.2185</td><td class="num">54.9640</td></tr><tr class="detalle" id="det-6" hidden><td colspan="9"><dl class="mini"><div><dt>Ene 2026</dt><dd>145.3302</dd></div><div><dt>Feb 2026</dt><dd>146.0018</dd></div><div><dt>Mar 2026</dt><dd>145.8855</dd></div><div><dt>Abr 2026</dt><dd>147.1240</dd></div><div><dt>May 2026</dt><dd>146.6627</dd></div><div><dt>Jun 2026</dt><dd>148.0391</dd></div><div><dt>Prom. Ene–Jun · 6 meses</dt><dd><b>146.5072</b></dd></div></dl></td></tr></tbody>
+      </table>
+    </div>
+    <div class="legend note"><span><b>PROM. LBLJ</b> se exporta en el CSV como columna <b>PROM_LBLJ_ENE_JUN_2026</b>.</span><span><span class="partial" style="margin:0">5/6</span> promedio con meses faltantes.</span><span>▾ abre los 6 meses de la empresa.</span></div>
+  </section>
+  </main>
+</div>
+</div>
+<script>
+document.querySelectorAll('.exp').forEach(b=>b.addEventListener('click',()=>{const o=b.getAttribute('aria-expanded')==='true';const d=document.getElementById(b.getAttribute('aria-controls'));if(d){b.setAttribute('aria-expanded',String(!o));b.textContent=o?'▾':'▴';d.hidden=o;}}));
+</script>
+</body>
+</html>
