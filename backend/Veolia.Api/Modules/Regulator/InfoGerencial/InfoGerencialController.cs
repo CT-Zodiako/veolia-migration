@@ -1,5 +1,4 @@
     using Microsoft.AspNetCore.Mvc;
-    using Oracle.ManagedDataAccess.Client;
     using Veolia.Api.Contracts.Responses;
     using Veolia.Api.Infrastructure.Auth;
 
@@ -18,19 +17,8 @@
             if (request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetDetalleCostosAsync(request.Anno, request.Mes, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetDetalleCostosAsync(request.Anno, request.Mes, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("detsubaporte")]
@@ -42,19 +30,8 @@
             if (request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetDetalleSubAporteAsync(request.Anno, request.Mes, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetDetalleSubAporteAsync(request.Anno, request.Mes, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("infoapsemprdivi")]
@@ -66,19 +43,8 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetInfoApsEmprDiviAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetInfoApsEmprDiviAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("infoemprdivi")]
@@ -90,19 +56,8 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetInfoEmprDiviAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetInfoEmprDiviAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("infoapsrelleno")]
@@ -114,19 +69,8 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetInfoApsRellenoAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetInfoApsRellenoAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("getDashBoardGerencial")]
@@ -138,19 +82,8 @@
             if (request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetDashBoardGerencialAsync(request.Anno, request.Mes, tokenContext.SisuId, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetDashBoardGerencialAsync(request.Anno, request.Mes, tokenContext.SisuId, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("costoPoda")]
@@ -162,19 +95,8 @@
             if (request.Aps <= 0)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps es obligatorio."));
 
-            try
-            {
-                var rows = await repository.GetCostoPodaAsync(request.Aps, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetCostoPodaAsync(request.Aps, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("getapsDesCost")]
@@ -186,19 +108,8 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetDescuentosAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetDescuentosAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("getapsDesCostUnico")]
@@ -210,19 +121,8 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                var rows = await repository.GetCatalogoDescuentoAsync(request.Id, request.Aps, request.Anno, request.Mes, request.IsNew, cancellationToken);
-                return Ok(Envelope("success", rows, "OK"));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            var rows = await repository.GetCatalogoDescuentoAsync(request.Id, request.Aps, request.Anno, request.Mes, request.IsNew, cancellationToken);
+            return Ok(Envelope("success", rows, "OK"));
         }
 
         [HttpPost("setapsDesCost")]
@@ -234,19 +134,8 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12 || request.Id <= 0)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno, mes e id son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                await repository.InsertDescuentoAsync(request.Aps, request.Anno, request.Mes, request.Id, request.Valor, tokenContext.SisuId, cancellationToken);
-                return Ok(Envelope("success", new { }, "Descuento registrado correctamente."));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            await repository.InsertDescuentoAsync(request.Aps, request.Anno, request.Mes, request.Id, request.Valor, tokenContext.SisuId, cancellationToken);
+            return Ok(Envelope("success", new { }, "Descuento registrado correctamente."));
         }
 
         [HttpPost("uptapsDesCost")]
@@ -258,19 +147,8 @@
             if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12 || request.Id <= 0)
                 return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno, mes e id son obligatorios. mes debe estar entre 1 y 12."));
 
-            try
-            {
-                await repository.UpdateDescuentoAsync(request.Aps, request.Anno, request.Mes, request.Id, request.Valor, cancellationToken);
-                return Ok(Envelope("success", new { }, "Descuento actualizado correctamente."));
-            }
-            catch (OracleException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Oracle error: {ex.Message}"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
+            await repository.UpdateDescuentoAsync(request.Aps, request.Anno, request.Mes, request.Id, request.Valor, cancellationToken);
+            return Ok(Envelope("success", new { }, "Descuento actualizado correctamente."));
         }
 
         private bool TryReadTokenContext(out AuthTokenContext tokenContext)

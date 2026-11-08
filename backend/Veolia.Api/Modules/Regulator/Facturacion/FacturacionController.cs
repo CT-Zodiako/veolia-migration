@@ -7,7 +7,7 @@ namespace Veolia.Api.Modules.Regulator.Facturacion;
 
 [ApiController]
 [Route("api/v1/facturacion")]
-public sealed class FacturacionController(IFacturacionRepository repository, ILogger<FacturacionController> logger) : ControllerBase
+public sealed class FacturacionController(IFacturacionRepository repository) : ControllerBase
 {
     [HttpPost("facturacion")]
     public Task<IActionResult> Facturacion([FromBody] FacturacionRequest request, CancellationToken cancellationToken)
@@ -57,17 +57,6 @@ public sealed class FacturacionController(IFacturacionRepository repository, ILo
         catch (ValidationException ex)
         {
             return BadRequest(new ApiEnvelopeResponse<object>("error", new { }, ex.Message, HttpContext.TraceIdentifier, null));
-        }
-        catch (Oracle.ManagedDataAccess.Client.OracleException ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, "Oracle devolvió un error durante la consulta de facturación.", HttpContext.TraceIdentifier, $"ORA-{Math.Abs(ex.Number):D5}"));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error procesando consulta de facturación. TraceId: {TraceId}", HttpContext.TraceIdentifier);
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, "Ocurrió un error procesando la consulta de facturación.", HttpContext.TraceIdentifier, null));
         }
     }
 

@@ -55,13 +55,12 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     }
 
     [Fact]
-    public async Task RQ_APS_CONF_02_ConsultaAps_InvalidId_Returns500LegacyError()
+    public async Task RQ_APS_CONF_02_ConsultaAps_InvalidId_Returns500GlobalErrorEnvelope()
     {
         var response = await PostWithTokenAsync("/api/v1/aps/consultaaps", new { aps = 0 });
         var payload = await ReadJsonAsync(response);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("Error", payload.GetProperty("data").GetString());
+        AssertGlobalErrorEnvelope(response, payload);
     }
 
     [Fact]
@@ -115,7 +114,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     }
 
     [Fact]
-    public async Task RQ_APS_CONF_03_Crear_WhenRepositoryFails_Returns500LegacyError()
+    public async Task RQ_APS_CONF_03_Crear_WhenRepositoryFails_Returns500GlobalErrorEnvelope()
     {
         var response = await PostWithTokenAsync("/api/v1/aps/crear", new
         {
@@ -129,8 +128,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         });
         var payload = await ReadJsonAsync(response);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("Error", payload.GetProperty("data").GetString());
+        AssertGlobalErrorEnvelope(response, payload);
     }
 
     [Fact]
@@ -174,7 +172,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     }
 
     [Fact]
-    public async Task RQ_APS_CONF_03_Editar_WhenRepositoryFails_Returns500LegacyError()
+    public async Task RQ_APS_CONF_03_Editar_WhenRepositoryFails_Returns500GlobalErrorEnvelope()
     {
         var response = await PutWithTokenAsync("/api/v1/aps/editar/5000", new
         {
@@ -188,8 +186,7 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         });
         var payload = await ReadJsonAsync(response);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("Error", payload.GetProperty("data").GetString());
+        AssertGlobalErrorEnvelope(response, payload);
     }
 
     [Fact]
@@ -230,13 +227,12 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     }
 
     [Fact]
-    public async Task RQ_APS_CONF_04_GetAps_WhenRepositoryFails_Returns500LegacyError()
+    public async Task RQ_APS_CONF_04_GetAps_WhenRepositoryFails_Returns500GlobalErrorEnvelope()
     {
         var response = await GetWithTokenAsync("/api/v1/aps", BuildJwtToken(sisuId: 500));
         var payload = await ReadJsonAsync(response);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("Error", payload.GetProperty("data").GetString());
+        AssertGlobalErrorEnvelope(response, payload);
     }
 
     // TO-BE hardening (S10 "Exigir token en las 6 anónimas"): legacy left this route anonymous.
@@ -265,13 +261,12 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
     }
 
     [Fact]
-    public async Task RQ_APS_CONF_05_UsuarioPorAps_InvalidAps_Returns500LegacyError()
+    public async Task RQ_APS_CONF_05_UsuarioPorAps_InvalidAps_Returns500GlobalErrorEnvelope()
     {
         var response = await PostWithTokenAsync("/api/v1/aps/usuarioPorAPS", new { aps = 0 });
         var payload = await ReadJsonAsync(response);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("Error", payload.GetProperty("data").GetString());
+        AssertGlobalErrorEnvelope(response, payload);
     }
 
     [Fact]
@@ -283,6 +278,17 @@ public sealed class ApsContractSmokeTests(AuthApiSmokeFactory factory) : IClassF
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(JsonValueKind.Array, payload.ValueKind);
         Assert.Equal(0, payload.GetArrayLength());
+    }
+
+    // odd/tasks/oracle-error-context.md S4/S6: repository failures reach the global handler envelope
+    // instead of the old { data: "Error", message: ex.Message } body.
+    private static void AssertGlobalErrorEnvelope(HttpResponseMessage response, JsonElement payload)
+    {
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("error", payload.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Object, payload.GetProperty("data").ValueKind);
+        Assert.Equal("Ocurrió un error procesando la solicitud.", payload.GetProperty("message").GetString());
+        Assert.False(string.IsNullOrEmpty(payload.GetProperty("traceId").GetString()));
     }
 
     private async Task<HttpResponseMessage> PostWithTokenAsync(string url, object body)

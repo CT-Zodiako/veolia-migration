@@ -55,10 +55,6 @@
             {
                 return StatusCode(StatusCodes.Status503ServiceUnavailable, Envelope("error", Array.Empty<object>(), "DataSourceNotReady"));
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-            }
         }
 
         private async Task<IActionResult> HandleHistorialAsync(
@@ -82,10 +78,6 @@
             catch (OracleException ex) when (IsDataSourceNotReady(ex))
             {
                 return StatusCode(StatusCodes.Status503ServiceUnavailable, Envelope("error", Array.Empty<object>(), "DataSourceNotReady"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
             }
         }
 

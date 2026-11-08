@@ -27,15 +27,8 @@ public sealed class GeneralController(IGeneralRepository repository) : Controlle
         if (!TryReadTokenContext(out _))
             return Unauthorized(new { message = "No Autorizado!" });
 
-        try
-        {
-            var rows = await repository.ConsultarUsoAsync(cancellationToken);
-            return Ok(rows);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var rows = await repository.ConsultarUsoAsync(cancellationToken);
+        return Ok(rows);
     }
 
     [HttpGet("paracostos")]
@@ -44,15 +37,8 @@ public sealed class GeneralController(IGeneralRepository repository) : Controlle
         if (!TryReadTokenContext(out _))
             return Unauthorized(new { message = "No Autorizado!" });
 
-        try
-        {
-            var rows = await repository.ConsultarCostosAsync(cancellationToken);
-            return Ok(rows);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var rows = await repository.ConsultarCostosAsync(cancellationToken);
+        return Ok(rows);
     }
 
     [HttpGet("paraindices")]
@@ -61,31 +47,13 @@ public sealed class GeneralController(IGeneralRepository repository) : Controlle
         if (!TryReadTokenContext(out _))
             return Unauthorized(new { message = "No Autorizado!" });
 
-        try
-        {
-            var rows = await repository.ConsultarIndicesAsync(cancellationToken);
-            return Ok(rows);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var rows = await repository.ConsultarIndicesAsync(cancellationToken);
+        return Ok(rows);
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
     {
         var token = Request.Headers["x-access-token"].FirstOrDefault();
         return AuthTokenContextAccessor.TryRead(token, out tokenContext);
-    }
-
-    private static object MapLegacyError(Exception ex)
-    {
-        var oracleEx = ex as Oracle.ManagedDataAccess.Client.OracleException;
-        return new
-        {
-            data = "Error",
-            message = ex.Message,
-            oraCode = oracleEx is not null ? $"ORA-{Math.Abs(oracleEx.Number):D5}" : null
-        };
     }
 }

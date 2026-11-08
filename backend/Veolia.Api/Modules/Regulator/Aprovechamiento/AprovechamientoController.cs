@@ -17,15 +17,8 @@ public sealed class AprovechamientoController(IAprovechamientoRepository reposit
         if (!PeriodoValido(request.Aps, request.Anno, request.Mes))
             return BadRequest(Envelope("error", (object?)null, "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-        try
-        {
-            var row = await repository.ConsultarAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
-            return Ok(Envelope("success", row, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", (object?)null, $"Error: {ex.Message}"));
-        }
+        var row = await repository.ConsultarAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+        return Ok(Envelope("success", row, "OK"));
     }
 
     [HttpPost("actualizar")]
@@ -37,15 +30,8 @@ public sealed class AprovechamientoController(IAprovechamientoRepository reposit
         if (!PeriodoValido(request.Aps, request.Anno, request.Mes))
             return BadRequest(Envelope("error", (object?)null, "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-        try
-        {
-            await repository.ActualizarAsync(request.Aps, request.Anno, request.Mes, request.Activar, tokenContext.SisuId, cancellationToken);
-            return Ok(Envelope("success", (object?)null, "Estado de aprovechamiento actualizado."));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", (object?)null, $"Error: {ex.Message}"));
-        }
+        await repository.ActualizarAsync(request.Aps, request.Anno, request.Mes, request.Activar, tokenContext.SisuId, cancellationToken);
+        return Ok(Envelope("success", (object?)null, "Estado de aprovechamiento actualizado."));
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)

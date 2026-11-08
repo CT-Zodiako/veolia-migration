@@ -10,15 +10,8 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        try
-        {
-            var data = await empresasRepository.GetAllAsync(cancellationToken);
-            return Ok(data);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var data = await empresasRepository.GetAllAsync(cancellationToken);
+        return Ok(data);
     }
 
     [HttpPost("crear")]
@@ -29,64 +22,36 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
             return Unauthorized(new { message = "No Autorizado!" });
         }
 
-        try
-        {
-            var result = await empresasRepository.CreateAsync(
-                request.nombre,
-                request.estado,
-                request.propia,
-                NormalizeNuap(request.nuap),
-                tokenContext.SisuId,
-                cancellationToken);
+        var result = await empresasRepository.CreateAsync(
+            request.nombre,
+            request.estado,
+            request.propia,
+            NormalizeNuap(request.nuap),
+            tokenContext.SisuId,
+            cancellationToken);
 
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        return Ok(result);
     }
 
     [HttpPost("consultarpropias")]
     public async Task<IActionResult> ConsultarPropias([FromBody] EmpresaConsultarPropiasRequest request, CancellationToken cancellationToken)
     {
-        try
-        {
-            var data = await empresasRepository.ConsultarPropiasAsync(request.aps, request.propia, cancellationToken);
-            return Ok(data);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var data = await empresasRepository.ConsultarPropiasAsync(request.aps, request.propia, cancellationToken);
+        return Ok(data);
     }
 
     [HttpPost("consultaempr")]
     public async Task<IActionResult> ConsultaEmpr([FromBody] EmpresaConsultaEmprRequest request, CancellationToken cancellationToken)
     {
-        try
-        {
-            var data = await empresasRepository.ConsultaEmprAsync(request.empr, cancellationToken);
-            return Ok(data);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var data = await empresasRepository.ConsultaEmprAsync(request.empr, cancellationToken);
+        return Ok(data);
     }
 
     [HttpPut("editar/{id:long}")]
     public async Task<IActionResult> Editar(long id, [FromBody] EmpresaEditRequest request, CancellationToken cancellationToken)
     {
-        try
-        {
-            var result = await empresasRepository.UpdateAsync(id, request.nombre, request.estado, request.propia, NormalizeNuap(request.nuap), cancellationToken);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var result = await empresasRepository.UpdateAsync(id, request.nombre, request.estado, request.propia, NormalizeNuap(request.nuap), cancellationToken);
+        return Ok(result);
     }
 
     [HttpDelete("eliminar/{id:long}")]
@@ -95,15 +60,8 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
         if (!TryReadTokenContext(out _))
             return Unauthorized(new { message = "No Autorizado!" });
 
-        try
-        {
-            var result = await empresasRepository.EliminarAsync(id, cancellationToken);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var result = await empresasRepository.EliminarAsync(id, cancellationToken);
+        return Ok(result);
     }
 
     [HttpPatch("toggle-estado/{id:long}")]
@@ -112,15 +70,8 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
         if (!TryReadTokenContext(out _))
             return Unauthorized(new { message = "No Autorizado!" });
 
-        try
-        {
-            var result = await empresasRepository.ToggleEstadoAsync(id, cancellationToken);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, MapLegacyError(ex));
-        }
+        var result = await empresasRepository.ToggleEstadoAsync(id, cancellationToken);
+        return Ok(result);
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
@@ -132,17 +83,6 @@ public sealed class EmpresasController(IEmpresasRepository empresasRepository) :
     // AUGE_EMPRESAS.EMPR_NUAP is NOT NULL DEFAULT '0': an explicit NULL bind skips the default.
     private static string NormalizeNuap(string? nuap)
         => string.IsNullOrWhiteSpace(nuap) ? "0" : nuap;
-
-    private static object MapLegacyError(Exception ex)
-    {
-        var oracleEx = ex as Oracle.ManagedDataAccess.Client.OracleException;
-        return new
-        {
-            data = "Error",
-            message = ex.Message,
-            oraCode = oracleEx is not null ? $"ORA-{Math.Abs(oracleEx.Number):D5}" : null
-        };
-    }
 }
 
 public sealed record EmpresaCreateRequest(string nombre, int estado, int propia, string? nuap);

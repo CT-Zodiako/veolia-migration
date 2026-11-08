@@ -17,15 +17,8 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         if (request.Anno <= 0 || request.Mes is < 1 or > 12)
             return BadRequest(Envelope("error", Array.Empty<object>(), "anno y mes son obligatorios. mes debe estar entre 1 y 12."));
 
-        try
-        {
-            var rows = await repository.GetByPeriodAsync(request.Anno, request.Mes, cancellationToken);
-            return Ok(Envelope("success", rows, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-        }
+        var rows = await repository.GetByPeriodAsync(request.Anno, request.Mes, cancellationToken);
+        return Ok(Envelope("success", rows, "OK"));
     }
 
     [HttpGet]
@@ -34,15 +27,8 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
 
-        try
-        {
-            var rows = await repository.GetAllAsync(cancellationToken);
-            return Ok(Envelope("success", rows, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-        }
+        var rows = await repository.GetAllAsync(cancellationToken);
+        return Ok(Envelope("success", rows, "OK"));
     }
 
     [HttpGet("{id:long}")]
@@ -54,18 +40,11 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         if (id <= 0)
             return BadRequest(Envelope("error", Array.Empty<object>(), "id inválido."));
 
-        try
-        {
-            var row = await repository.GetByIdAsync(id, cancellationToken);
-            if (row is null)
-                return NotFound(Envelope("error", Array.Empty<object>(), "Índice no encontrado."));
+        var row = await repository.GetByIdAsync(id, cancellationToken);
+        if (row is null)
+            return NotFound(Envelope("error", Array.Empty<object>(), "Índice no encontrado."));
 
-            return Ok(Envelope("success", row, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope("success", row, "OK"));
     }
 
     [HttpPost("crear")]
@@ -86,10 +65,6 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         {
             return Conflict(Envelope("error", Array.Empty<object>(), "Ya existen índices activos para ese período."));
         }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-        }
     }
 
     [HttpPut("editar")]
@@ -101,19 +76,12 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         if (!PayloadValido(request.Anno, request.Mes, request.Valores) || request.Valores.Any(v => v.Val is null))
             return BadRequest(Envelope("error", Array.Empty<object>(), "Payload inválido para editar índices."));
 
-        try
-        {
-            var updated = await repository.EditarAsync(request, cancellationToken);
-            if (!updated)
-                return NotFound(Envelope("error", Array.Empty<object>(), "Índices no encontrados para el período."));
+        var updated = await repository.EditarAsync(request, cancellationToken);
+        if (!updated)
+            return NotFound(Envelope("error", Array.Empty<object>(), "Índices no encontrados para el período."));
 
-            var rows = await repository.GetByPeriodAsync(request.Anno, request.Mes, cancellationToken);
-            return Ok(Envelope("success", rows, "Índices actualizados."));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-        }
+        var rows = await repository.GetByPeriodAsync(request.Anno, request.Mes, cancellationToken);
+        return Ok(Envelope("success", rows, "Índices actualizados."));
     }
 
     [HttpDelete("eliminar/{id:long}")]
@@ -125,18 +93,11 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         if (id <= 0 || anno <= 0 || mes is < 1 or > 12)
             return BadRequest(Envelope("error", Array.Empty<object>(), "id, anno y mes son obligatorios."));
 
-        try
-        {
-            var deleted = await repository.EliminarAsync(id, anno, mes, cancellationToken);
-            if (!deleted)
-                return NotFound(Envelope("error", Array.Empty<object>(), "Índice no encontrado o ya eliminado."));
+        var deleted = await repository.EliminarAsync(id, anno, mes, cancellationToken);
+        if (!deleted)
+            return NotFound(Envelope("error", Array.Empty<object>(), "Índice no encontrado o ya eliminado."));
 
-            return Ok(Envelope("success", new { id, deleted = true }, "Índice eliminado."));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-        }
+        return Ok(Envelope("success", new { id, deleted = true }, "Índice eliminado."));
     }
 
     [HttpGet("catalogo")]
@@ -145,15 +106,8 @@ public sealed class IndicesController(IIndicesRepository repository) : Controlle
         if (!TryReadTokenContext(out _))
             return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
 
-        try
-        {
-            var rows = await repository.GetCatalogoAsync(cancellationToken);
-            return Ok(Envelope("success", rows, "OK"));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, Envelope("error", Array.Empty<object>(), $"Error: {ex.Message}"));
-        }
+        var rows = await repository.GetCatalogoAsync(cancellationToken);
+        return Ok(Envelope("success", rows, "OK"));
     }
 
     private bool TryReadTokenContext(out AuthTokenContext tokenContext)
