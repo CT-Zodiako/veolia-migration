@@ -11,6 +11,7 @@ import { TablaGenericaComponent } from '../shared/tabla-generica.component';
 import { SuiFormato, SuiTab, InformeDatasetItem } from '../../models/sui-integracion.models';
 import { SuiIntegracionService } from '../../services/sui-integracion.service';
 import { InformesService } from '../../services/informes.service';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
 const TODOS_LOS_TABS: SuiTab[] = ['F19', 'F23', 'F24', 'F35', 'F36', 'RESUMEN'];
@@ -198,9 +199,14 @@ export class SuiIntegracionPageComponent implements OnInit {
     private readonly informesService: InformesService,
     private readonly confirmationService: ConfirmationService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    parametrosState: ParametrosConsultaStateService
   ) {
-    this.restore();
+    // APS/año/mes compartidos entre pantallas; en 'sui-integracion-state' solo queda el tab.
+    this.aps.set(parametrosState.getAps());
+    this.anno.set(parametrosState.getAnno());
+    this.mes.set(parametrosState.getMes());
+    this.restoreTab();
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const tab = (params.get('tab') as SuiTab) || this.currentTab();
       this.currentTab.set(TODOS_LOS_TABS.includes(tab) ? tab : 'F19');
@@ -217,8 +223,7 @@ export class SuiIntegracionPageComponent implements OnInit {
       this.router.navigate([], { relativeTo: this.route, queryParams: params, queryParamsHandling: 'merge', replaceUrl: true });
     });
     effect(() => {
-      const state = { aps: this.aps(), mes: this.mes(), anno: this.anno(), tab: this.currentTab() };
-      localStorage.setItem('sui-integracion-state', JSON.stringify(state));
+      localStorage.setItem('sui-integracion-state', JSON.stringify({ tab: this.currentTab() }));
     });
   }
 
@@ -380,14 +385,11 @@ export class SuiIntegracionPageComponent implements OnInit {
     this.currentTab.set(TODOS_LOS_TABS.includes(tab) ? tab : 'F19');
   }
 
-  private restore(): void {
+  private restoreTab(): void {
     try {
       const raw = localStorage.getItem('sui-integracion-state');
       if (!raw) return;
-      const parsed = JSON.parse(raw) as { aps?: number; mes?: number; anno?: number; tab?: SuiTab };
-      if (Number.isFinite(parsed.aps)) this.aps.set(Number(parsed.aps));
-      if (Number.isFinite(parsed.mes)) this.mes.set(Number(parsed.mes));
-      if (Number.isFinite(parsed.anno)) this.anno.set(Number(parsed.anno));
+      const parsed = JSON.parse(raw) as { tab?: SuiTab };
       if (parsed.tab && TODOS_LOS_TABS.includes(parsed.tab)) this.currentTab.set(parsed.tab);
     } catch { /* ignore */ }
   }

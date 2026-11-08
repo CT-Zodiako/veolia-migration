@@ -1,3 +1,4 @@
+import { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
@@ -8,6 +9,9 @@ import { Table } from 'primeng/table';
 import { ProyeccionesPageComponent } from './proyecciones-page.component';
 import { ProyeccionesService } from '../../services/proyecciones.service';
 import { Proyeccion } from '../../models/proyecciones.models';
+import { AuthService } from '../../services/auth.service';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
+import { ApsSelectorComponent } from '../shared/aps-selector.component';
 
 const proyeccion = (overrides: Partial<Proyeccion>): Proyeccion => ({
   proyId: 1, apsaId: 3, apsaNombre: 'Tunja', proyNombre: 'Base', proyDescripcion: 'Escenario', proyTipo100: 1,
@@ -15,7 +19,7 @@ const proyeccion = (overrides: Partial<Proyeccion>): Proyeccion => ({
   sisuCorreo: 'ana@veolia.com', ...overrides
 });
 
-function setup(ultimaTarifa: { anno: number; mes: number }[] = [{ anno: 2025, mes: 3 }]) {
+function setup(ultimaTarifa: { anno: number; mes: number }[] = [{ anno: 2025, mes: 3 }], extra: Provider[] = []) {
   const rows = [
     proyeccion({ proyId: 1 }),
     proyeccion({ proyId: 22, apsaId: 4, apsaNombre: 'Sogamoso', proyNombre: 'Alterna', proyTipo100: 2, proyTipoNombre: 'Subsidios o Contribuciones', proyMesDes: 11, sisuCorreo: 'luis@veolia.com' })
@@ -32,7 +36,8 @@ function setup(ultimaTarifa: { anno: number; mes: number }[] = [{ anno: 2025, me
     providers: [
       provideHttpClient(), provideHttpClientTesting(),
       { provide: ProyeccionesService, useValue: service },
-      { provide: ConfirmationService, useValue: { confirm: vi.fn() } }
+      { provide: ConfirmationService, useValue: { confirm: vi.fn() } },
+      ...extra
     ]
   });
   const fixture = TestBed.createComponent(ProyeccionesPageComponent);
@@ -104,6 +109,25 @@ describe('ProyeccionesPageComponent create (P1/P6)', () => {
     });
     expect(add).toHaveBeenCalledWith({ severity: 'success', summary: 'Proyecciones', detail: 'Proyección creada correctamente.' });
     expect(component.showDialog()).toBe(false);
+  });
+
+  // S1 (fixes-generales): the APS picked inside the create form is a form field, not the shared selection.
+  it('does not write the shared APS from the create form selector', () => {
+    const parametros = { getAps: vi.fn(() => null), setAps: vi.fn() };
+    localStorage.setItem('usuario', JSON.stringify({ SISU_ID: 7 }));
+    const { fixture, component } = setup(undefined, [
+      { provide: ParametrosConsultaStateService, useValue: parametros },
+      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [{ APSA_ID: 3, APSA_NOMAPS: 'Tunja' }] })) } }
+    ]);
+    component.nueva();
+    fixture.detectChanges();
+    const selector = fixture.debugElement.query(By.directive(ApsSelectorComponent))?.componentInstance as ApsSelectorComponent;
+    component.form.apsaId = 3;
+    fixture.detectChanges();
+    selector.onSelect(3);
+    localStorage.removeItem('usuario');
+
+    expect(parametros.setAps).not.toHaveBeenCalled();
   });
 
   it('rolls a December last tariff over to January', () => {

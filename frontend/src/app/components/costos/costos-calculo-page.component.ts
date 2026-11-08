@@ -23,6 +23,8 @@ import { TarifaRow, TarifasService } from '../../services/tarifas.service';
 import { TafnaService } from '../../services/tafna.service';
 import { TrnaService } from '../../services/trna.service';
 import { UsuariosGraficoService } from '../../services/usuarios-grafico.service';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 import {
   GraficaCalculo,
   graficaLbl,
@@ -187,10 +189,10 @@ type GraficaClave = 'qrt' | 'qa' | 'tafna' | 'lbl' | 'trna' | 'usuarios' | 'tari
   `]
 })
 export class CostosCalculoPageComponent {
-  private readonly storageKey = 'costos-calculo-filtros';
+  // Arrancan en constructor desde el APS/período compartido entre pantallas (ParametrosConsultaStateService).
   readonly aps = signal<number | null>(null);
   readonly mes = signal<number | null>(null);
-  readonly anno = signal<number | null>(new Date().getFullYear());
+  readonly anno = signal<number | null>(null);
 
   // Regla de negocio legacy (Calculo.vue): el año/mes que se selecciona en
   // pantalla es el "mes actual", pero todo el pipeline (verificar, calcular,
@@ -226,9 +228,13 @@ export class CostosCalculoPageComponent {
     private readonly notification: NotificationService,
     private readonly tafnaService: TafnaService,
     private readonly trnaService: TrnaService,
-    private readonly usuariosGraficoService: UsuariosGraficoService
+    private readonly usuariosGraficoService: UsuariosGraficoService,
+    parametrosState: ParametrosConsultaStateService
   ) {
-    this.restoreState();
+    const periodo = periodoInicial(parametrosState);
+    this.aps.set(parametrosState.getAps());
+    this.anno.set(periodo.anno);
+    this.mes.set(periodo.mes);
 
     this.route.queryParamMap.subscribe((params) => {
       this.aps.set(this.readNumber(params.get('aps')) ?? this.aps());
@@ -238,7 +244,6 @@ export class CostosCalculoPageComponent {
 
     effect(() => {
       const state = { aps: this.aps(), mes: this.mes(), anno: this.anno() };
-      localStorage.setItem(this.storageKey, JSON.stringify(state));
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { aps: state.aps ?? undefined, mes: state.mes ?? undefined, anno: state.anno ?? undefined },
@@ -429,20 +434,8 @@ export class CostosCalculoPageComponent {
     });
   }
 
-  private restoreState(): void {
-    try {
-      const raw = localStorage.getItem(this.storageKey);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as { aps?: number; mes?: number; anno?: number };
-      if (Number.isFinite(parsed.aps)) this.aps.set(Number(parsed.aps));
-      if (Number.isFinite(parsed.mes)) this.mes.set(Number(parsed.mes));
-      if (Number.isFinite(parsed.anno)) this.anno.set(Number(parsed.anno));
-    } catch {
-      // ignore invalid localStorage state
-    }
-  }
-
   private readNumber(value: string | null): number | null {
+    if (value === null || value === '') return null;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }

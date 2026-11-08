@@ -78,7 +78,7 @@
       <input pInputText name="proyApsNombre" [value]="form.apsaNombre" readonly />
     </ng-container>
     <ng-template #apsEditable>
-      <app-aps-selector [selectedAps]="form.apsaId || null" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
+      <app-aps-selector [selectedAps]="form.apsaId || null" [persistir]="false" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
     </ng-template>
     <label>Nombre</label>
     <input pInputText name="proyNombre" [(ngModel)]="form.proyNombre" />

@@ -26,12 +26,14 @@ function crear() {
     consultaCostos: vi.fn(() => of({ status: 'success', data: [], message: 'OK' })),
     consultaTarifas: vi.fn(() => of({ status: 'success', data: [], message: 'OK' }))
   };
+  // The APS selector restores the stored APS only after loading the session user's assigned list.
+  localStorage.setItem('usuario', JSON.stringify({ SISU_ID: 7 }));
   TestBed.configureTestingModule({
     imports: [InformeProyeccionesComponent],
     providers: [
       { provide: InfoGeneralesService, useValue: service },
       { provide: ProyeccionesService, useValue: { consulta: vi.fn(() => of({ status: 'success', data: [proyeccion], message: 'OK' })) } },
-      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [] })) } },
+      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [{ APSA_ID: 5, APSA_NOMAPS: 'APS 5' }] })) } },
       {
         provide: ParametrosConsultaStateService,
         useValue: {
@@ -89,6 +91,8 @@ function columnasNuevas(component: InformeProyeccionesComponent): Record<string,
 }
 
 describe('InformeProyeccionesComponent (1001) - legacy InformeProyecciones.vue', () => {
+  afterEach(() => localStorage.removeItem('usuario'));
+
   // InformeProyecciones.vue:17-26 tabs; seleccionarProyeccion.vue:132-148 stores the projection and every tab queries
   // (stapsSeleccionado, stProyId) (Energia.vue:296-301); seleccionarProyeccion.vue:19-21,135 shows its description.
   it('queries each tab with the selected APS and projection and shows the projection description', async () => {

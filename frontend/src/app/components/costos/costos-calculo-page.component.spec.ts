@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { MessageModule } from 'primeng/message';
 import { DividerModule } from 'primeng/divider';
@@ -15,11 +15,16 @@ import { TarifasService } from '../../services/tarifas.service';
 import { TafnaService } from '../../services/tafna.service';
 import { TrnaService } from '../../services/trna.service';
 import { UsuariosGraficoService } from '../../services/usuarios-grafico.service';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 
 interface Opciones {
   existarifa?: string;
   prechecks?: { puedeCalcular: boolean; prechecks: { nombre: string; estado: string; mensaje: string }[] };
   exitoso?: boolean;
+  /** Shared APS/año/mes saved by any screen (ParametrosConsultaStateService). */
+  compartido?: { aps: number | null; anno: number | null; mes: number | null };
+  /** URL query params; when given the component keeps the values it starts with (no manual set). */
+  query?: Record<string, string>;
 }
 
 function setup(opciones: Opciones = {}) {
@@ -40,10 +45,22 @@ function setup(opciones: Opciones = {}) {
   const suministros = { cenrtificarEditar: vi.fn(() => of({ data: opciones.existarifa ?? '0' })) };
   const tarifas = { getResumen: vi.fn(() => of([])), getTarifa: vi.fn(() => of([{ APS: 5, ANNO: 2025, MES: 12, TFT: 1.5 }])) };
   const notification = { success: vi.fn(), warn: vi.fn(), error: vi.fn() };
+  const compartido = opciones.compartido ?? { aps: null, anno: null, mes: null };
+  const parametros = {
+    getAps: vi.fn(() => compartido.aps), getAnno: vi.fn(() => compartido.anno), getMes: vi.fn(() => compartido.mes),
+    setAps: vi.fn(), setAnno: vi.fn(), setMes: vi.fn()
+  };
+  const ruta = opciones.query
+    ? [
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap(opciones.query)) } },
+        { provide: Router, useValue: { navigate: vi.fn() } }
+      ]
+    : [provideRouter([])];
   TestBed.configureTestingModule({
     imports: [CostosCalculoPageComponent],
     providers: [
-      provideRouter([]),
+      ...ruta,
+      { provide: ParametrosConsultaStateService, useValue: parametros },
       { provide: CostosService, useValue: costos },
       { provide: ValidacionesService, useValue: validaciones },
       { provide: SuministrosService, useValue: suministros },
@@ -58,18 +75,35 @@ function setup(opciones: Opciones = {}) {
   TestBed.overrideComponent(CostosCalculoPageComponent, {
     set: { imports: [CommonModule, MessageModule, DividerModule, ...CommonPrimeNgModules], schemas: [CUSTOM_ELEMENTS_SCHEMA] }
   });
-  localStorage.removeItem('costos-calculo-filtros');
   const fixture = TestBed.createComponent(CostosCalculoPageComponent);
   const component = fixture.componentInstance;
-  component.aps.set(5);
-  component.anno.set(2026);
-  component.mes.set(1);
+  if (!opciones.query) {
+    component.aps.set(5);
+    component.anno.set(2026);
+    component.mes.set(1);
+  }
   fixture.detectChanges();
-  return { fixture, component, costos, validaciones, suministros, tarifas, notification, tafna, trna, usuarios };
+  return { fixture, component, costos, validaciones, suministros, tarifas, notification, tafna, trna, usuarios, parametros };
 }
 
 describe('CostosCalculoPageComponent (401) — legacy views/procesos/Calculo.vue', () => {
   afterEach(() => localStorage.removeItem('costos-calculo-filtros'));
+
+  // S1 (fixes-generales): the screen starts from the APS/period shared by every screen, not a private key.
+  it('starts from the shared APS and period, ignoring the old costos-calculo-filtros key', () => {
+    localStorage.setItem('costos-calculo-filtros', JSON.stringify({ aps: 1, mes: 6, anno: 2020 }));
+    const { component, costos } = setup({ compartido: { aps: 8, anno: 2026, mes: 3 }, query: {} });
+
+    expect([component.aps(), component.anno(), component.mes()]).toEqual([8, 2026, 3]);
+    expect(costos.consultarCostos).toHaveBeenLastCalledWith(8, 2, 2026);
+  });
+
+  // S1: URL query params (deep link from Costo CLUS) still override the shared selection.
+  it('lets the URL query params override the shared APS and period', () => {
+    const { component } = setup({ compartido: { aps: 8, anno: 2026, mes: 3 }, query: { aps: '4', anno: '2025', mes: '7' } });
+
+    expect([component.aps(), component.anno(), component.mes()]).toEqual([4, 2025, 7]);
+  });
 
   // Legacy Calculo.vue (actualizaInfoGeneral): existarifacert, costos and resumen for the selected month - 1.
   it('loads costos, resumen and the certification gate for the previous month', () => {

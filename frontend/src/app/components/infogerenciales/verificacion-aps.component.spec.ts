@@ -20,12 +20,14 @@ function crear(estado = estadoParametros(2025, 3)) {
     infoapsemprdivi: vi.fn(() => of({ status: 'success', data: [aps], message: 'OK' })),
     infoapsrelleno: vi.fn(() => of({ status: 'success', data: [relleno], message: 'OK' }))
   };
+  // The APS selector restores the stored APS only after loading the session user's assigned list.
+  localStorage.setItem('usuario', JSON.stringify({ SISU_ID: 7 }));
   TestBed.configureTestingModule({
     imports: [VerificacionApsComponent],
     providers: [
       { provide: InfoGerencialService, useValue: service },
       { provide: EmpresasService, useValue: { getEmpresasPropias: vi.fn(() => of([])) } },
-      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [] })) } },
+      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [{ APSA_ID: 5, APSA_NOMAPS: 'APS 5' }] })) } },
       estado
     ]
   });
@@ -43,6 +45,8 @@ function consultar(component: VerificacionApsComponent): void {
 const encabezados = (cols: { field: string; header: string }[]) => cols.map((c) => `${c.field}:${c.header}`);
 
 describe('VerificacionApsComponent (307) - legacy Verificacion.vue', () => {
+  afterEach(() => localStorage.removeItem('usuario'));
+
   // Verificacion.vue:26-140 Resumen Empresa columns and :388-458 Resumen Relleno columns (IARE_C shown twice, as
   // "QRSmunrecp" and "C").
   it('shows the legacy Resumen Empresa and Resumen Relleno columns in the legacy order', () => {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, ChangeDetectorRef, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -36,11 +36,13 @@ import { ParametrosConsultaStateService } from '../../services/parametros-consul
     .text-danger { color: var(--color-brand-accent); }
   `]
 })
-export class ApsSelectorComponent implements OnInit {
+export class ApsSelectorComponent implements OnChanges, OnInit {
   @Input() label = 'APS';
   @Input() placeholder = 'Seleccione APS';
   @Input() selectedAps: number | null = null;
-  
+  // false en selectores dentro de formularios (crear/editar): no escriben el APS compartido entre pantallas.
+  @Input() persistir = true;
+
   @Output() selectedApsChange = new EventEmitter<number | null>();
 
   apsList: ApsItem[] = [];
@@ -53,14 +55,14 @@ export class ApsSelectorComponent implements OnInit {
     private parametrosState: ParametrosConsultaStateService
   ) {}
 
-  ngOnInit(): void {
-    if (this.selectedAps === null) {
-      const guardado = this.parametrosState.getAps();
-      if (guardado !== null) {
-        this.selectedAps = guardado;
-        this.selectedApsChange.emit(guardado);
-      }
+  ngOnChanges(changes: SimpleChanges): void {
+    // Un APS que llega del host (URL, otra pantalla) se comparte igual que una selección del usuario.
+    if (changes['selectedAps'] && this.selectedAps !== null) {
+      this.guardar(this.selectedAps);
     }
+  }
+
+  ngOnInit(): void {
     this.loadAps();
   }
 
@@ -86,6 +88,7 @@ export class ApsSelectorComponent implements OnInit {
       next: (response) => {
         this.apsList = response.asignadas || [];
         this.loading = false;
+        this.restaurarGuardado();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -100,6 +103,26 @@ export class ApsSelectorComponent implements OnInit {
     const apsId = value ? Number(value) : null;
     this.selectedAps = apsId;
     this.selectedApsChange.emit(apsId);
-    this.parametrosState.setAps(apsId);
+    this.guardar(apsId);
+  }
+
+  // El APS guardado se aplica recién con la lista cargada y solo si está entre los asignados al usuario.
+  private restaurarGuardado(): void {
+    if (this.selectedAps !== null) return;
+    const guardado = this.parametrosState.getAps();
+    if (guardado === null) return;
+    if (this.apsList.some(a => Number(a.APSA_ID) === guardado)) {
+      this.selectedAps = guardado;
+      this.selectedApsChange.emit(guardado);
+    } else {
+      this.selectedApsChange.emit(null);
+      this.guardar(null);
+    }
+  }
+
+  private guardar(apsId: number | null): void {
+    if (this.persistir) {
+      this.parametrosState.setAps(apsId);
+    }
   }
 }

@@ -6,6 +6,7 @@ import { SuiIntegracionPageComponent } from './sui-integracion-page.component';
 import { SuiIntegracionService } from '../../services/sui-integracion.service';
 import { InformesService } from '../../services/informes.service';
 import { AuthService } from '../../services/auth.service';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { estadoParametros } from '../infogerenciales/informes-gerenciales.spec-helpers';
 
 type Col = [field: string, header: string, decimales?: number];
@@ -40,8 +41,23 @@ const LEGACY: Record<'F19' | 'F23' | 'F24' | 'F35' | 'F36', Col[]> = {
 // First render compiles PrimeNG tabs + several tabla-avanzada grids; slow under a loaded jsdom run.
 const RENDER_TIMEOUT_MS = 30000;
 
-function crear() {
+interface Opciones {
+  /** Shared APS/año/mes saved by any screen (ParametrosConsultaStateService). */
+  compartido?: { aps: number | null; anno: number | null; mes: number | null };
+  /** Raw value already stored under this screen's own 'sui-integracion-state' key. */
+  estadoPropio?: object;
+}
+
+function crear(opciones: Opciones = {}) {
   localStorage.clear();
+  if (opciones.estadoPropio) localStorage.setItem('sui-integracion-state', JSON.stringify(opciones.estadoPropio));
+  const compartido = opciones.compartido;
+  const parametros = compartido
+    ? { provide: ParametrosConsultaStateService, useValue: {
+        getAps: vi.fn(() => compartido.aps), getAnno: vi.fn(() => compartido.anno), getMes: vi.fn(() => compartido.mes),
+        setAps: vi.fn(), setAnno: vi.fn(), setMes: vi.fn()
+      } }
+    : estadoParametros();
   const service = {
     consuformu19: vi.fn(() => of({ formato: 'F19', filas: [] })),
     consuformu23: vi.fn(() => of({ formato: 'F23', filas: [] })),
@@ -60,7 +76,7 @@ function crear() {
       { provide: InformesService, useValue: { getCostosJson: vi.fn(() => of({ semestre: '', dataset: [] })) } },
       { provide: ConfirmationService, useValue: { confirm } },
       { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of([])) } },
-      estadoParametros()
+      parametros
     ]
   });
   const fixture = TestBed.createComponent(SuiIntegracionPageComponent);
@@ -69,6 +85,20 @@ function crear() {
 }
 
 describe('SuiIntegracionPageComponent (801)', () => {
+  afterEach(() => localStorage.clear());
+
+  // S1 (fixes-generales): APS/año/mes come from the selection shared by every screen; only the tab stays private.
+  it('starts from the shared APS and period and still restores its own tab', () => {
+    const { component } = crear({
+      compartido: { aps: 8, anno: 2026, mes: 3 },
+      estadoPropio: { aps: 1, mes: 6, anno: 2020, tab: 'F35' }
+    });
+
+    expect([component.aps(), component.anno(), component.mes()]).toEqual([8, 2026, 3]);
+    expect(component.currentTab()).toBe('F35');
+    expect(JSON.parse(localStorage.getItem('sui-integracion-state') ?? '{}')).toEqual({ tab: 'F35' });
+  }, RENDER_TIMEOUT_MS);
+
   it('shows the curated legacy columns, headers and rounding per format', () => {
     const { component } = crear();
 

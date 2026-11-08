@@ -24,11 +24,13 @@ function crear(guardado: { aps?: number | null; anno?: number | null; mes?: numb
     setApsDesCost: vi.fn(() => of({ status: 'success', data: {}, message: 'Descuento registrado correctamente.' })),
     uptApsDesCost: vi.fn(() => of({ status: 'success', data: {}, message: 'Descuento actualizado correctamente.' }))
   };
+  // The APS selector restores the stored APS only after loading the session user's assigned list.
+  localStorage.setItem('usuario', JSON.stringify({ SISU_ID: 7 }));
   TestBed.configureTestingModule({
     imports: [DescuentoCostosComponent],
     providers: [
       { provide: InfoGerencialService, useValue: service },
-      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [] })) } },
+      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [{ APSA_ID: 5, APSA_NOMAPS: 'APS 5' }] })) } },
       {
         provide: ParametrosConsultaStateService,
         useValue: {
@@ -56,6 +58,8 @@ function seleccionarPeriodo(component: DescuentoCostosComponent): void {
 }
 
 describe('DescuentoCostosComponent (605) - legacy Descuentos.vue', () => {
+  afterEach(() => localStorage.removeItem('usuario'));
+
   // Descuentos.vue:277-289 getapsDesCost(aps, month-1); grid PARA_NOMBRE + DESC_VALOR rounded to 4 decimals
   // (Descuentos.vue:15-37 redondeo(DESC_VALOR, 4), :260-262).
   it('lists the discounts of the previous month with DESC_VALOR rounded to 4 decimals', () => {

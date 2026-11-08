@@ -18,11 +18,13 @@ const filas = [
 
 function crear(guardado: { aps?: number | null; anno?: number | null; mes?: number | null }) {
   const getTarxCos = vi.fn(() => of(filas));
+  // The APS selector restores the stored APS only after loading the session user's assigned list.
+  localStorage.setItem('usuario', JSON.stringify({ SISU_ID: 7 }));
   TestBed.configureTestingModule({
     imports: [DetalleTarifasComponent],
     providers: [
       { provide: TarifasService, useValue: { getTarxCos } },
-      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [] })) } },
+      { provide: AuthService, useValue: { getApsAsignadas: vi.fn(() => of({ asignadas: [{ APSA_ID: 5, APSA_NOMAPS: 'APS 5' }] })) } },
       {
         provide: ParametrosConsultaStateService,
         useValue: {
@@ -45,6 +47,8 @@ function crear(guardado: { aps?: number | null; anno?: number | null; mes?: numb
 const encabezados = (cols: { field: string; header: string }[]) => cols.map((c) => `${c.field}:${c.header}`);
 
 describe('DetalleTarifasComponent (501) - legacy Detalletarifas.vue', () => {
+  afterEach(() => localStorage.removeItem('usuario'));
+
   // Detalletarifas.vue:338-346: getTarxCos(aps, year/month of stDate - 1 month); January rolls back to December.
   it('queries tarifas for the APS and the month before the selected one', () => {
     const { fixture, component, getTarxCos } = crear({ aps: 5, anno: 2025, mes: 1 });
