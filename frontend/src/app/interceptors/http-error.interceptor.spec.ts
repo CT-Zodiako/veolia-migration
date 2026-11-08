@@ -2,7 +2,9 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { HttpContext, HttpErrorResponse } from '@angular/common/http';
 import { httpErrorInterceptor } from './http-error.interceptor';
+import { KEEP_ERROR_BODY } from './http-context.tokens';
 import { NotificationService } from '../services/notification.service';
 import { SupportErrorLogService } from '../services/support-error-log.service';
 
@@ -84,5 +86,33 @@ describe('httpErrorInterceptor', () => {
     const { supportLog } = fail(500, { status: 'error', message: 'x', traceId: '0HN8:00000002', detail });
 
     expect(supportLog.logs()).toHaveLength(0);
+  });
+
+  function failCapturing(keepBody: boolean) {
+    const ctx = setup(true);
+    let received: unknown;
+    const context = keepBody ? new HttpContext().set(KEEP_ERROR_BODY, true) : undefined;
+    ctx.http.post('/api/v1/sui853Configuracion/cargueResiduos', {}, { context }).subscribe({ error: (e) => (received = e) });
+    ctx.backend
+      .expectOne('/api/v1/sui853Configuracion/cargueResiduos')
+      .flush({ status: 500, data: { type: 'DB_ERROR', message: 'Fila 37 inválida', rowNumber: 37 }, message: 'Fila 37 inválida', traceId: '0HN8:9' }, { status: 500, statusText: 'x' });
+    return { ...ctx, received };
+  }
+
+  it('hands the original HttpErrorResponse to callers that ask for KEEP_ERROR_BODY, still toasting and logging', () => {
+    const { received, notification, supportLog } = failCapturing(true);
+
+    expect(received).toBeInstanceOf(HttpErrorResponse);
+    expect((received as HttpErrorResponse).error.data.rowNumber).toBe(37);
+    expect(notification.error).toHaveBeenCalledWith('Fila 37 inválida Código de soporte: 0HN8:9');
+    expect(supportLog.logs()).toHaveLength(1);
+    expect(supportLog.logs()[0].traceId).toBe('0HN8:9');
+  });
+
+  it('keeps rethrowing a plain Error with the toast message for every other request', () => {
+    const { received } = failCapturing(false);
+
+    expect(received).not.toBeInstanceOf(HttpErrorResponse);
+    expect((received as Error).message).toBe('Fila 37 inválida Código de soporte: 0HN8:9');
   });
 });

@@ -6,7 +6,7 @@ import { ErrorUxService } from '../services/error-ux.service';
 import { NotificationService } from '../services/notification.service';
 import { AuthState } from '../state/auth.state';
 import { SupportErrorLogService } from '../services/support-error-log.service';
-import { EXPECTED_ERROR_STATUSES } from './http-context.tokens';
+import { EXPECTED_ERROR_STATUSES, KEEP_ERROR_BODY } from './http-context.tokens';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const errorUx = inject(ErrorUxService);
@@ -54,7 +54,7 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
         });
       }
 
-      return throwError(() => new Error(message));
+      return throwError(() => (req.context.get(KEEP_ERROR_BODY) ? error : new Error(message)));
     })
   );
 };

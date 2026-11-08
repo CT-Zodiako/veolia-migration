@@ -97,4 +97,20 @@ describe('CargueResiduosComponent (30004)', () => {
     expect(component.error).toBe('Error al procesar los datos.');
     expect(component.showErrorDialog).toBe(false);
   });
+
+  // Global backend handler envelope: data is an empty object, the message is the readable one.
+  it('shows the server message without an empty dialog when the 500 carries no row detail', () => {
+    const { component } = setup({
+      cargueResiduos: vi.fn(() => throwError(() => new HttpErrorResponse({
+        status: 500,
+        error: { status: 'error', data: {}, message: 'Ocurrió un error procesando la solicitud.', traceId: '0HN8:1' }
+      })))
+    });
+    component.selectedApsId = 7;
+    component.selectedYear = 2024;
+    component.load();
+    expect(component.error).toBe('Ocurrió un error procesando la solicitud.');
+    expect(component.errorDetail).toBeNull();
+    expect(component.showErrorDialog).toBe(false);
+  });
 });

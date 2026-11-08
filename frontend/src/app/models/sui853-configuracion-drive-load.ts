@@ -78,8 +78,11 @@ export abstract class Sui853DriveLoadScreen implements OnInit {
       .subscribe({
         next: response => { this.result = response.data; },
         error: (err: HttpErrorResponse) => {
-          const detail = (err?.error?.data && typeof err.error.data === 'object') ? err.error.data as DriveLoadError : null;
-          this.error = detail?.message || 'Error al procesar los datos.';
+          // Row detail only when the backend describes the failure (type/message); the global
+          // error envelope sends `data: {}` and its readable text in `message`.
+          const data = err?.error?.data;
+          const detail = data && typeof data === 'object' && (data.type || data.message) ? data as DriveLoadError : null;
+          this.error = detail?.message || err?.error?.message || 'Error al procesar los datos.';
           this.errorDetail = detail;
           this.showErrorDialog = detail !== null;
         }

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { KEEP_ERROR_BODY } from '../interceptors/http-context.tokens';
 
 export interface LegacyEnvelope<T> {
   status: number;
@@ -113,6 +114,11 @@ export class Sui853ConfiguracionService {
 
   constructor(private readonly http: HttpClient) {}
 
+  // Drive load screens show the failing file/sheet/row from the error body.
+  private keepErrorBody(): HttpContext {
+    return new HttpContext().set(KEEP_ERROR_BODY, true);
+  }
+
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('jwtOken');
     return new HttpHeaders({
@@ -156,11 +162,11 @@ export class Sui853ConfiguracionService {
   }
 
   cargueResiduos(apsId: number, anno: number): Observable<LegacyEnvelope<DriveLoadResult>> {
-    return this.http.post<LegacyEnvelope<DriveLoadResult>>(`${this.baseUrl}/cargueResiduos`, { apsId, anno }, { headers: this.getHeaders() });
+    return this.http.post<LegacyEnvelope<DriveLoadResult>>(`${this.baseUrl}/cargueResiduos`, { apsId, anno }, { headers: this.getHeaders(), context: this.keepErrorBody() });
   }
 
   cargueFacturacion(apsId: number, anno: number, mes: string | null): Observable<LegacyEnvelope<DriveLoadResult>> {
-    return this.http.post<LegacyEnvelope<DriveLoadResult>>(`${this.baseUrl}/cargueFacturacion`, { apsId, anno, mes }, { headers: this.getHeaders() });
+    return this.http.post<LegacyEnvelope<DriveLoadResult>>(`${this.baseUrl}/cargueFacturacion`, { apsId, anno, mes }, { headers: this.getHeaders(), context: this.keepErrorBody() });
   }
 
   tcfgAps(): Observable<LegacyEnvelope<TcfgApsItem[]>> {
