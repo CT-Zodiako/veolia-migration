@@ -12,11 +12,11 @@ Branch: fixes-generales. Pilot (Costos) already implemented in the working tree.
 - S7 (user L3, verbatim intent): "dale extiendelo para que no de errore de todos los moudlos" — every module, not just Costos.
 
 ## Tasks
-- T0 S1-S2 pilot Costos + frontend — inline — commit: pending
-- T1 S3-S5 global handler + shared messages; Costos controller migrated to it — worker — commit: pending
-- T2 S6 Regulator controllers Aprovechamiento..InfoGerencial (Aps, Empresas, Facturacion, General, Indices, InfoGenerales, InfoGerencial, Aprovechamiento) — worker — commit: pending
-- T3 S6 Regulator controllers Informes..Validaciones (Informes, Killometros, Pgirs, Productividad, Proyecciones, Rellenos, Reversiones, SubCont, Sui, SuiReversiones, Suministros, Tafna, Tarifas, Toneladas, Trna, UsuariosGrafico, Validaciones) — worker — commit: pending
-- T4 S6 Reliquidaciones, Sui853, Auth controllers — worker — commit: pending
+- T0 S1-S2 pilot Costos + frontend — inline — commit: 71cf441
+- T1 S3-S5 global handler + shared messages; Costos controller migrated to it — worker — commit: c7163e6
+- T2 S6 Regulator controllers Aprovechamiento..InfoGerencial (Aps, Empresas, Facturacion, General, Indices, InfoGenerales, InfoGerencial, Aprovechamiento) — worker — commit: dbe3703
+- T3 S6 Regulator controllers Informes..Validaciones (Informes, Killometros, Pgirs, Productividad, Proyecciones, Rellenos, Reversiones, SubCont, Sui, SuiReversiones, Suministros, Tafna, Tarifas, Toneladas, Trna, UsuariosGrafico, Validaciones) — worker — commit: 94972dc
+- T4 S6 Reliquidaciones, Sui853, Auth controllers — worker — commit: 18d819e
 - T5 verify S1-S7 + ego-lite check — inline — pending
 
 ## Log
@@ -24,3 +24,5 @@ Branch: fixes-generales. Pilot (Costos) already implemented in the working tree.
 - L2: "arracna y pruebalo en egolite" (pilot in Costos; tested: real Oracle success paths, simulated 500 for the toast/panel)
 - L3: "dale extiendelo para que no de errore de todos los moudlos"
 - L4: Decision: no new logging dependency (built-in console logging); `detail` travels to every user (token has no support flag), shown only in the support panel.
+- L5: Kept module-specific 5xx catches with their own message plus an Error log: Sui ORA-20001/20002 (no package text in repo for them), ReliqCrear extraction failure (message pinned by contract tests).
+- L6: Pre-existing frontend gap (not changed): Sui853 Drive load screens read `err.error.data`, but httpErrorInterceptor rethrows `new Error(message)`, so their row-detail dialog never opens; the toast shows the backend message.
