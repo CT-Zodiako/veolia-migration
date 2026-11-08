@@ -95,6 +95,53 @@ describe('SidebarMenuService', () => {
     ]);
   });
 
+  // Shell redesign (odd/tasks/dashboard-gerencial-shell.md S3): DB groups are presented under fixed sections.
+  describe('groupIntoSections', () => {
+    const group = (label: string) => ({ id: 0, label, icon: 'folder', expanded: false, children: [] });
+    const view = (groups: ReturnType<typeof group>[]) =>
+      service.groupIntoSections(groups).map((s) => [s.label, s.groups.map((g) => g.label)]);
+
+    it('puts Inicio alone on top and the known groups under their section, matching labels without case or accents', () => {
+      const groups = [
+        'CONFIGURACION', 'Informes proyecciones', 'Sui', 'Reversiones', 'Inicio', 'Informes Gerenciales',
+        'Proyecciones', 'Cargue de Informacion', 'Procesos', 'Informes Comerciales', 'PGIRS', 'Suministros'
+      ].map(group);
+
+      expect(view(groups)).toEqual([
+        [null, ['Inicio']],
+        ['OPERACIÓN', ['Reversiones', 'Cargue de Informacion', 'Procesos', 'Suministros']],
+        ['INFORMES', ['Sui', 'Informes Gerenciales', 'Informes Comerciales', 'PGIRS']],
+        ['PLANEACIÓN', ['Informes proyecciones', 'Proyecciones']],
+        ['SISTEMA', ['CONFIGURACION']]
+      ]);
+    });
+
+    it('accepts the mockup label "Informes Gerencia" and accented "Configuración"', () => {
+      expect(view([group('Informes Gerencia'), group('Configuración')])).toEqual([
+        ['INFORMES', ['Informes Gerencia']],
+        ['SISTEMA', ['Configuración']]
+      ]);
+    });
+
+    it('sends unmapped groups to a final unlabeled block in their original order and skips empty sections', () => {
+      const groups = ['Tarificador', 'Procesos', 'CFT', 'General'].map(group);
+
+      expect(view(groups)).toEqual([
+        ['OPERACIÓN', ['Procesos']],
+        [null, ['Tarificador', 'CFT', 'General']]
+      ]);
+    });
+
+    it('keeps the same group objects so expanding a group is reflected in its section', () => {
+      const groups = [group('Procesos')];
+      expect(service.groupIntoSections(groups)[0].groups[0]).toBe(groups[0]);
+    });
+
+    it('returns no sections for no groups', () => {
+      expect(service.groupIntoSections([])).toEqual([]);
+    });
+  });
+
   // Legacy MenuService.js:320-336: 2002 "Informe PGIRS" opens InformePgirs.vue, 2003 "Resumen variables PGIRS"
   // opens ResumenPgirs.vue; the new screens show the same data, only the labels were crossed.
   it('labels the PGIRS options like legacy', () => {

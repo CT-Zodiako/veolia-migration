@@ -11,57 +11,75 @@
         [title]="sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'"
         (click)="toggleSidebar()"
       >
-        {{ sidebarCollapsed ? '»' : '«' }}
+        <i class="pi" [class.pi-angle-double-right]="sidebarCollapsed" [class.pi-angle-double-left]="!sidebarCollapsed"></i>
       </button>
     </div>
 
     <nav class="sidebar-nav">
-      <div *ngFor="let group of menuGroups" class="menu-group" [class.group-active]="isGroupActive(group)">
-        <!-- Ítem realmente suelto (sin agrupación real: el nodo hoja se envuelve
-             como "grupo" de un solo hijo con el mismo label) -> link directo -->
-        <a
-          *ngIf="group.children.length === 1 && group.label === group.children[0].label"
-          [routerLink]="group.children[0].path"
-          class="nav-item"
-          [class.active]="isActive(group.children[0].path)"
-        >
-          <span class="nav-icon"><app-icon [name]="group.children[0].icon" [size]="18"></app-icon></span>
-          <span class="nav-label">{{ group.children[0].label }}</span>
-        </a>
+      <div *ngFor="let section of menuSections" class="menu-section">
+        <div *ngIf="section.label" class="menu-section-title">{{ section.label }}</div>
 
-        <!-- Grupo real (label de grupo distinto al del hijo, o más de un hijo):
-             siempre mostrar el padre con sus hijos adentro, sin importar la cantidad -->
-        <ng-container *ngIf="!(group.children.length === 1 && group.label === group.children[0].label)">
-          <button
-            class="nav-item menu-parent"
-            [class.expanded]="group.expanded"
-            [class.parent-active]="isGroupActive(group)"
-            (click)="toggleExpand(group)"
+        <div *ngFor="let group of section.groups" class="menu-group" [class.group-active]="isGroupActive(group)">
+          <!-- Ítem realmente suelto (sin agrupación real: el nodo hoja se envuelve
+               como "grupo" de un solo hijo con el mismo label) -> link directo -->
+          <a
+            *ngIf="isLooseItem(group)"
+            [routerLink]="group.children[0].path"
+            class="nav-item"
+            [class.active]="isActive(group.children[0].path)"
+            [title]="group.children[0].label"
           >
-            <span class="nav-icon"><app-icon [name]="group.icon" [size]="18"></app-icon></span>
-            <span class="nav-label">{{ group.label }}</span>
-            <span class="nav-arrow">{{ group.expanded ? '−' : '+' }}</span>
-          </button>
+            <i class="nav-icon pi" [ngClass]="lineIcon(group)"></i>
+            <span class="nav-label">{{ group.children[0].label }}</span>
+          </a>
 
-          <div *ngIf="group.expanded" class="submenu">
-            <a
-              *ngFor="let item of group.children"
-              [routerLink]="item.path"
-              class="submenu-item"
-              [class.active]="isActive(item.path)"
+          <!-- Grupo real (label de grupo distinto al del hijo, o más de un hijo):
+               siempre mostrar el padre con sus hijos adentro, sin importar la cantidad -->
+          <ng-container *ngIf="!isLooseItem(group)">
+            <button
+              type="button"
+              class="nav-item menu-parent"
+              [class.expanded]="group.expanded"
+              [class.parent-active]="isGroupActive(group)"
+              [title]="group.label"
+              (click)="toggleExpand(group)"
             >
-              <span class="submenu-icon"><app-icon [name]="item.icon" [size]="15"></app-icon></span>
-              <span class="submenu-label">{{ item.label }}</span>
-            </a>
-          </div>
-        </ng-container>
+              <i class="nav-icon pi" [ngClass]="lineIcon(group)"></i>
+              <span class="nav-label">{{ group.label }}</span>
+              <i class="nav-arrow pi" [class.pi-angle-down]="group.expanded" [class.pi-angle-right]="!group.expanded"></i>
+            </button>
+
+            <div *ngIf="group.expanded" class="submenu">
+              <a
+                *ngFor="let item of group.children"
+                [routerLink]="item.path"
+                class="submenu-item"
+                [class.active]="isActive(item.path)"
+              >
+                <span class="submenu-dot"></span>
+                <span class="submenu-label">{{ item.label }}</span>
+              </a>
+            </div>
+          </ng-container>
+        </div>
       </div>
     </nav>
+
+    <div class="sidebar-user" [title]="usuarioNombre">
+      <span class="sidebar-user-avatar">{{ usuarioInicial }}</span>
+      <div class="sidebar-user-text">
+        <span class="sidebar-user-name">{{ usuarioNombre }}</span>
+        <span class="sidebar-user-status">Sesión activa</span>
+      </div>
+    </div>
   </aside>
 
   <main class="main-content" [class.collapsed]="sidebarCollapsed">
     <header class="top-bar">
-      <div class="top-bar-title">{{ getPageTitle() }}</div>
+      <div class="top-bar-heading">
+        <div *ngIf="getBreadcrumb() as breadcrumb" class="top-bar-breadcrumb">{{ breadcrumb }}</div>
+        <div class="top-bar-title">{{ getPageTitle() }}</div>
+      </div>
       <div class="top-bar-actions">
         <button
           type="button"
@@ -73,17 +91,14 @@
         </button>
         <div class="sistema-switch-container" *ngIf="sistemasDisponibles.length > 1">
           <button
-            pButton
             type="button"
             class="sistema-switch-button"
-            [loading]="cambiandoSistema"
+            [disabled]="cambiandoSistema"
             (click)="showSistemaDropdown = !showSistemaDropdown"
           >
-            <i class="pi pi-sitemap"></i>
+            <i class="pi" [class.pi-building]="!cambiandoSistema" [class.pi-spinner]="cambiandoSistema" [class.pi-spin]="cambiandoSistema"></i>
             <span>{{ nombreSistema }}</span>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <i class="pi pi-angle-down sistema-switch-chevron"></i>
           </button>
 
           <div *ngIf="showSistemaDropdown" class="sistema-dropdown">

@@ -1,12 +1,8 @@
 <div class="profile-container">
-  <button pButton class="profile-button" (click)="toggleDropdown()">
-    <div class="profile-avatar">
-      <img src="/VeoliaLogo.png" alt="Veolia" />
-    </div>
-    <span class="profile-name">{{ user()?.SISU_NOMBRE || 'Usuario' }}</span>
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+  <button type="button" class="profile-button" (click)="toggleDropdown()">
+    <span class="profile-avatar">{{ inicial() }}</span>
+    <span class="profile-name">{{ nombre() }}</span>
+    <i class="pi pi-angle-down profile-chevron"></i>
   </button>
 
   <div *ngIf="showDropdown" class="profile-dropdown">

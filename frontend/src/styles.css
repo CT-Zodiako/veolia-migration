@@ -35,6 +35,20 @@
   /* Papel del "libro" de documentación (Dashboard) -- distinto de --color-bg-card
      a propósito, busca un tono cálido tipo página en vez de superficie neutra. */
   --color-bg-book-page: #fdfbf3;
+
+  /* App shell (sidebar + top bar), navy palette from the Dashboard gerencial mockup. The sidebar stays
+     navy in both themes; --shell-accent is the fixed brand red for the active bar/dot. */
+  --shell-sidebar-bg: #0b1f3a;
+  --shell-sidebar-bg-hover: #13294a;
+  --shell-sidebar-bg-active: #1b3459;
+  --shell-sidebar-border: rgba(255, 255, 255, 0.08);
+  --shell-sidebar-text: #dbe4f0;
+  --shell-sidebar-text-strong: #ffffff;
+  --shell-sidebar-text-muted: #8a9bb5;
+  --shell-sidebar-dot: #5f7392;
+  --shell-accent: #f10400;
+  --shell-avatar-bg: #0b1f3a;
+  --shell-avatar-text: #ffffff;
 }
 
 .app-dark {
@@ -64,6 +78,18 @@
   --color-text-success: #4ade80;
 
   --color-bg-book-page: #2a2622;
+
+  --shell-sidebar-bg: #0b1f3a;
+  --shell-sidebar-bg-hover: #13294a;
+  --shell-sidebar-bg-active: #1b3459;
+  --shell-sidebar-border: rgba(255, 255, 255, 0.1);
+  --shell-sidebar-text: #dbe4f0;
+  --shell-sidebar-text-strong: #ffffff;
+  --shell-sidebar-text-muted: #8a9bb5;
+  --shell-sidebar-dot: #5f7392;
+  --shell-accent: #f10400;
+  --shell-avatar-bg: #1b3459;
+  --shell-avatar-text: #ffffff;
 }
 
 /* Reset y base */

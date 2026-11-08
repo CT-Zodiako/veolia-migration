@@ -14,6 +14,11 @@ export interface MenuGroup {
   children: SidebarMenuItem[];
 }
 
+export interface MenuSection {
+  label: string | null;
+  groups: MenuGroup[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class SidebarMenuService {
   private readonly iconMap: Record<string, string> = {
@@ -193,6 +198,70 @@ export class SidebarMenuService {
     }
 
     return groups;
+  }
+
+  // Shell sections (odd/tasks/dashboard-gerencial-shell.md S3), keyed by normalized AUGE_MENU parent label.
+  // null = the top block without heading (Inicio).
+  private readonly sectionByLabel: Record<string, string | null> = {
+    'inicio': null,
+    'suministros': 'OPERACIÓN',
+    'procesos': 'OPERACIÓN',
+    'cargue de informacion': 'OPERACIÓN',
+    'reversiones': 'OPERACIÓN',
+    'informes comerciales': 'INFORMES',
+    'informes gerencia': 'INFORMES',
+    'informes gerenciales': 'INFORMES',
+    'sui': 'INFORMES',
+    'pgirs': 'INFORMES',
+    'proyecciones': 'PLANEACIÓN',
+    'informes proyecciones': 'PLANEACIÓN',
+    'configuracion': 'SISTEMA'
+  };
+
+  private readonly sectionOrder: Array<string | null> = [null, 'OPERACIÓN', 'INFORMES', 'PLANEACIÓN', 'SISTEMA'];
+
+  // PrimeIcons line icons for the parent rows of the navy sidebar.
+  private readonly lineIconByLabel: Record<string, string> = {
+    'inicio': 'pi-home',
+    'suministros': 'pi-box',
+    'procesos': 'pi-sitemap',
+    'cargue de informacion': 'pi-upload',
+    'reversiones': 'pi-replay',
+    'informes comerciales': 'pi-chart-bar',
+    'informes gerencia': 'pi-chart-line',
+    'informes gerenciales': 'pi-chart-line',
+    'sui': 'pi-globe',
+    'pgirs': 'pi-sync',
+    'proyecciones': 'pi-calendar',
+    'informes proyecciones': 'pi-file',
+    'configuracion': 'pi-sliders-h'
+  };
+
+  /** Groups the sidebar groups under the shell sections, keeping each section's groups in their original
+   *  order; unmapped groups go to a final unlabeled block and empty sections are dropped. */
+  groupIntoSections(groups: MenuGroup[]): MenuSection[] {
+    const sections: MenuSection[] = this.sectionOrder.map((label) => ({ label, groups: [] }));
+    const sinSeccion: MenuSection = { label: null, groups: [] };
+
+    for (const group of groups) {
+      const key = this.normalize(group.label);
+      if (key in this.sectionByLabel) {
+        sections[this.sectionOrder.indexOf(this.sectionByLabel[key])].groups.push(group);
+      } else {
+        sinSeccion.groups.push(group);
+      }
+    }
+
+    return [...sections, sinSeccion].filter((section) => section.groups.length > 0);
+  }
+
+  /** PrimeIcons class for a parent row; generic folder when the label is not known. */
+  lineIcon(label: string): string {
+    return this.lineIconByLabel[this.normalize(label)] ?? 'pi-folder';
+  }
+
+  private normalize(label: string): string {
+    return label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
   /** Lista plana (sin agrupar) de todos los ítems de menú a los que el usuario tiene permiso. */

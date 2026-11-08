@@ -1,6 +1,8 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { MessageService } from 'primeng/api';
 import { LayoutComponent } from './layout.component';
 import { AuthService } from '../../services/auth.service';
 
@@ -135,5 +137,109 @@ describe('LayoutComponent (legacy App.vue + MenuService.js)', () => {
     const { component } = setup();
     component.toggleSidebar();
     expect(localStorage.getItem('sidebarCollapsed')).toBe('true');
+  });
+
+  // Shell redesign S3: the permitted groups are shown under sections, Inicio on top without heading.
+  it('organises the permitted groups into sections', () => {
+    const { component } = setup();
+    expect(component.menuSections.map((s) => [s.label, s.groups.map((g) => g.label)])).toEqual([
+      [null, ['Inicio']],
+      ['SISTEMA', ['Configuración']]
+    ]);
+  });
+
+  it('has no sections when the menu request fails', () => {
+    const { component } = setup({ auth: { getUserMenu: vi.fn(() => throwError(() => ({ status: 500 }))) } });
+    expect(component.menuSections).toEqual([]);
+  });
+
+  // Shell redesign S3: breadcrumb above the title names the parent group of the current option.
+  it.each([
+    ['/usuarios?aps=1020', 'Configuración'],
+    ['/aps', 'Configuración'],
+    ['/', ''],
+    ['/ruta-fuera-del-menu', '']
+  ])('breadcrumb for %s is "%s"', (url, breadcrumb) => {
+    const { component } = setup({ url });
+    expect(component.getBreadcrumb()).toBe(breadcrumb);
+  });
+
+  // Shell redesign S3: user card at the bottom of the sidebar.
+  it('shows the session user initial and name in the user card', () => {
+    const { component } = setup({ usuario: { SISU_ID: 9, SISU_NOMBRE: 'soporte', SISU_CORREO: 'soporte@veolia.com' } });
+    expect(component.usuarioNombre).toBe('soporte');
+    expect(component.usuarioInicial).toBe('S');
+  });
+
+  it('falls back to "Usuario" without a session user', () => {
+    const { component } = setup({ usuario: null });
+    expect(component.usuarioNombre).toBe('Usuario');
+    expect(component.usuarioInicial).toBe('U');
+  });
+});
+
+@Component({ standalone: true, template: '' })
+class BlankPageComponent {}
+
+// Shell redesign S3 rendered with the real template.
+describe('LayoutComponent shell (rendered)', () => {
+  afterEach(() => localStorage.clear());
+
+  async function render(url: string) {
+    localStorage.clear();
+    localStorage.setItem('jwtOken', 'tok');
+    localStorage.setItem('usuario', JSON.stringify({ SISU_ID: 9, SISU_NOMBRE: 'Ana', SISU_APELLIDO: 'Pérez', SISU_CORREO: 'ana@veolia.com' }));
+    localStorage.setItem('sistema', JSON.stringify({ SIST_ID: 1, SIST_NOMBRE: 'VEO-Regulator' }));
+    TestBed.configureTestingModule({
+      imports: [LayoutComponent],
+      providers: [
+        provideRouter([{ path: '**', component: BlankPageComponent }]),
+        MessageService,
+        {
+          provide: AuthService,
+          useValue: {
+            getUserMenu: vi.fn(() => of([{ MENU_ID: 100 }, { MENU_ID: 200 }, { MENU_ID: 201 }, { MENU_ID: 204 }])),
+            getGeneralMenuTree: vi.fn(() => of(TREE)),
+            getSistemasByCorreo: vi.fn(() => of([{ SIST_ID: 1, SIST_NOMBRE: 'VEO-Regulator' }])),
+            switchSistema: vi.fn(() => of({})),
+            logout: vi.fn(() => of({}))
+          }
+        }
+      ]
+    });
+    await TestBed.inject(Router).navigateByUrl(url);
+    const fixture = TestBed.createComponent(LayoutComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const texts = (selector: string) => Array.from(el.querySelectorAll(selector)).map((n) => n.textContent?.replace(/\s+/g, ' ').trim());
+    return { fixture, el, texts };
+  }
+
+  it('renders section headings only for non-empty sections, Inicio without heading', async () => {
+    const { texts } = await render('/');
+    expect(texts('.menu-section-title')).toEqual(['SISTEMA']);
+    expect(texts('.menu-section .nav-label')).toEqual(['Inicio', 'Configuración']);
+  });
+
+  it('marks the active parent and child and shows the breadcrumb over the title', async () => {
+    const { texts } = await render('/usuarios?aps=1020');
+    expect(texts('.menu-parent.parent-active .nav-label')).toEqual(['Configuración']);
+    expect(texts('.submenu-item.active')).toEqual(['Usuarios']);
+    expect(texts('.top-bar-breadcrumb')).toEqual(['Configuración']);
+    expect(texts('.top-bar-title')).toEqual(['Gestión de Usuarios']);
+  });
+
+  it('shows no breadcrumb for a route outside the menu', async () => {
+    const { el } = await render('/ruta-fuera-del-menu');
+    expect(el.querySelector('.top-bar-breadcrumb')).toBeNull();
+  });
+
+  it('shows the user card with initial, name and "Sesión activa"', async () => {
+    const { texts } = await render('/');
+    expect(texts('.sidebar-user-avatar')).toEqual(['A']);
+    expect(texts('.sidebar-user-name')).toEqual(['Ana']);
+    expect(texts('.sidebar-user-status')).toEqual(['Sesión activa']);
   });
 });

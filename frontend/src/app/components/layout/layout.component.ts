@@ -6,12 +6,11 @@ import { forkJoin } from 'rxjs';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AuthService, MenuPermission, Sistema } from '../../services/auth.service';
 import { AuthState } from '../../state/auth.state';
-import { SidebarMenuService, MenuGroup } from '../../services/sidebar-menu.service';
+import { SidebarMenuService, MenuGroup, MenuSection } from '../../services/sidebar-menu.service';
 import { ThemeService } from '../../services/theme.service';
 import { ProfileComponent } from './profile/profile.component';
 import { SupportErrorLogPanelComponent } from '../shared/support-error-log-panel.component';
 import { AyudaFlotanteComponent } from '../shared/ayuda-flotante.component';
-import { IconComponent } from '../shared/icon.component';
 
 @Component({
   selector: 'app-layout',
@@ -23,14 +22,14 @@ import { IconComponent } from '../shared/icon.component';
     ...CommonPrimeNgModules,
     ProfileComponent,
     SupportErrorLogPanelComponent,
-    AyudaFlotanteComponent,
-    IconComponent
+    AyudaFlotanteComponent
   ],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })
 export class LayoutComponent implements OnInit {
   menuGroups: MenuGroup[] = [];
+  menuSections: MenuSection[] = [];
   usuario: any = null;
   sidebarCollapsed = false;
   sistemasDisponibles: Sistema[] = [];
@@ -61,6 +60,14 @@ export class LayoutComponent implements OnInit {
     this.router.events?.subscribe((event) => {
       if (event instanceof NavigationEnd) this.expandirGrupoActivo();
     });
+  }
+
+  get usuarioNombre(): string {
+    return this.usuario?.SISU_NOMBRE || this.usuario?.SISU_CORREO || 'Usuario';
+  }
+
+  get usuarioInicial(): string {
+    return this.usuarioNombre.charAt(0).toUpperCase();
   }
 
   get nombreSistema(): string {
@@ -115,7 +122,7 @@ export class LayoutComponent implements OnInit {
   loadMenu(): void {
     const idSistema = this.authState.sistemaId();
     if (!idSistema) {
-      this.menuGroups = [];
+      this.setMenuGroups([]);
       return;
     }
 
@@ -125,15 +132,30 @@ export class LayoutComponent implements OnInit {
     }).subscribe({
       next: ({ permissions, menuTree }: { permissions: MenuPermission[]; menuTree: any[] }) => {
         const permittedMenuIds = new Set((permissions || []).map((item) => item.MENU_ID));
-        this.menuGroups = this.sidebarMenuService.buildMenuGroups(menuTree, permittedMenuIds);
+        this.setMenuGroups(this.sidebarMenuService.buildMenuGroups(menuTree, permittedMenuIds));
         this.expandirGrupoActivo();
         this.cdr.detectChanges();
       },
       error: () => {
-        this.menuGroups = [];
+        this.setMenuGroups([]);
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // Sections are computed once per menu load (not per change detection) and share the group objects.
+  private setMenuGroups(groups: MenuGroup[]): void {
+    this.menuGroups = groups;
+    this.menuSections = this.sidebarMenuService.groupIntoSections(groups);
+  }
+
+  lineIcon(group: MenuGroup): string {
+    return this.sidebarMenuService.lineIcon(group.label);
+  }
+
+  // A loose option (Inicio) is its own group: it has no parent to show.
+  isLooseItem(group: MenuGroup): boolean {
+    return group.children.length === 1 && group.label === group.children[0].label;
   }
 
 
@@ -156,6 +178,12 @@ export class LayoutComponent implements OnInit {
     for (const group of this.menuGroups) {
       if (this.isGroupActive(group)) group.expanded = true;
     }
+  }
+
+  // Top-bar breadcrumb: the parent group of the current option ('' outside the menu or for loose options).
+  getBreadcrumb(): string {
+    const group = this.menuGroups.find((g) => !this.isLooseItem(g) && this.isGroupActive(g));
+    return group?.label ?? '';
   }
 
   getPageTitle(): string {

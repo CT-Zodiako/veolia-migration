@@ -48,6 +48,13 @@ describe('ProfileComponent (legacy components/layout/AppProfile.vue)', () => {
     expect(TestBed.inject(AuthState).user()).toBeNull();
   });
 
+  // Shell redesign S3: the top-bar user pill shows the initial and the name.
+  it('shows the user initial and name in the top-bar pill', () => {
+    const { el } = setup();
+    expect(el.querySelector('.profile-avatar')?.textContent?.trim()).toBe('A');
+    expect(el.querySelector('.profile-name')?.textContent?.trim()).toBe('Ana');
+  });
+
   // Legacy AuthService.js:34-35 swallows logout errors and AppProfile.vue:60 still goes to /login.
   it('still ends the session when the logout request fails', () => {
     const { component, router } = setup(vi.fn(() => throwError(() => ({ status: 500 }))));

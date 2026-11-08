@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../../shared/primeng-imports';
@@ -23,6 +23,8 @@ export class ProfileComponent {
   // Signals directos para el template
   readonly userName = this.authState.userFullName;
   readonly user = this.authState.user;
+  readonly nombre = computed(() => this.user()?.SISU_NOMBRE || 'Usuario');
+  readonly inicial = computed(() => this.nombre().charAt(0).toUpperCase());
 
   toggleDropdown(): void {
     this.showDropdown = !this.showDropdown;
