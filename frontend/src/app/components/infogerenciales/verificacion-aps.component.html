@@ -26,14 +26,24 @@
     }
     @if (promedio()) {
       <span class="promedio-meta"><i class="pi pi-check-circle" aria-hidden="true"></i>Consultado hace un momento</span>
+      <button
+        type="button"
+        class="promedio-toggle"
+        aria-controls="promedio-grupos"
+        [attr.aria-expanded]="!promedioPlegado()"
+        [attr.aria-label]="promedioPlegado() ? 'Desplegar promedio semestre anterior' : 'Plegar promedio semestre anterior'"
+        (click)="togglePromedio()"
+      >
+        <i class="pi" [class.pi-chevron-down]="!promedioPlegado()" [class.pi-chevron-right]="promedioPlegado()" aria-hidden="true"></i>
+      </button>
     } @else {
       <span class="promedio-vacio">Sin consultar</span>
     }
   </div>
   <p class="sr-only" aria-live="polite">{{ anuncioPromedio() }}</p>
 
-  @if (promedio()) {
-    <div class="promedio-grupos">
+  @if (promedio() && !promedioPlegado()) {
+    <div class="promedio-grupos" id="promedio-grupos">
       @for (grupo of gruposPromedio; track grupo.titulo) {
         <section class="gcard" [attr.aria-label]="grupo.titulo" [class.gcard-media]="grupo.columnas === 2">
           <div class="ghead">

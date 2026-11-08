@@ -222,6 +222,43 @@ describe('VerificacionApsComponent (307) - legacy Verificacion.vue', () => {
       expect(boton(fixture).disabled).toBe(false);
     });
 
+    // design/pantallas-implementadas/03-verificacion-claro.html (comment w3vg779g "y eso que se pueda colapsar").
+    it('collapses and expands the consulted groups from the header button and remembers it', () => {
+      localStorage.removeItem('verificacion-promedio-plegado');
+      const { fixture, component } = crear();
+      const toggle = () => seccion(fixture).querySelector('.promedio-toggle') as HTMLButtonElement | null;
+
+      expect(toggle()).toBeNull();
+      consultarPromedio(fixture, component);
+      expect(toggle()?.getAttribute('aria-expanded')).toBe('true');
+      expect(seccion(fixture).querySelectorAll('.gcard').length).toBe(4);
+
+      toggle()!.click();
+      fixture.detectChanges();
+      expect(toggle()?.getAttribute('aria-expanded')).toBe('false');
+      expect(toggle()?.getAttribute('aria-label')).toBe('Desplegar promedio semestre anterior');
+      expect(seccion(fixture).querySelectorAll('.gcard').length).toBe(0);
+      expect(seccion(fixture).textContent).toContain('Consultado hace un momento');
+      expect(localStorage.getItem('verificacion-promedio-plegado')).toBe('true');
+
+      toggle()!.click();
+      fixture.detectChanges();
+      expect(toggle()?.getAttribute('aria-expanded')).toBe('true');
+      expect(seccion(fixture).querySelectorAll('.gcard').length).toBe(4);
+      expect(localStorage.getItem('verificacion-promedio-plegado')).toBe('false');
+    });
+
+    it('starts collapsed when the user left it collapsed', () => {
+      localStorage.setItem('verificacion-promedio-plegado', 'true');
+      const { fixture, component } = crear();
+
+      consultarPromedio(fixture, component);
+
+      expect((seccion(fixture).querySelector('.promedio-toggle') as HTMLElement).getAttribute('aria-expanded')).toBe('false');
+      expect(seccion(fixture).querySelectorAll('.gcard').length).toBe(0);
+      localStorage.removeItem('verificacion-promedio-plegado');
+    });
+
     it('renders the 18 S2 values under their groups and codes with comma decimals', () => {
       const { fixture, component } = crear();
 

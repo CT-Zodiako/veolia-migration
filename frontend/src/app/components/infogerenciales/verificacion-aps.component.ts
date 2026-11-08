@@ -78,6 +78,8 @@ const GRUPOS_PROMEDIO: GrupoPromedio[] = [
 ];
 
 // Coma decimal, hasta 4 decimales y sin separador de miles, como el artboard 05.
+const CLAVE_PROMEDIO_PLEGADO = 'verificacion-promedio-plegado';
+
 const FORMATO_PROMEDIO = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 4, useGrouping: false });
 
 // Legacy 307 Verificacion.vue: APS + month selector (Selector.vue, default today), one query per summary for the
@@ -177,6 +179,14 @@ export class VerificacionApsComponent {
   readonly gruposPromedio = GRUPOS_PROMEDIO;
   readonly promedio = signal<VariablesApsResponse | null>(null);
   readonly cargandoPromedio = signal(false);
+  // design/pantallas-implementadas/03: the consulted groups fold from the header; the choice survives reloads.
+  readonly promedioPlegado = signal(localStorage.getItem(CLAVE_PROMEDIO_PLEGADO) === 'true');
+
+  togglePromedio(): void {
+    const plegado = !this.promedioPlegado();
+    this.promedioPlegado.set(plegado);
+    localStorage.setItem(CLAVE_PROMEDIO_PLEGADO, String(plegado));
+  }
   readonly anuncioPromedio = signal('');
   readonly parametrosCompletos = computed(() => !!this.aps() && !!this.anno() && !!this.mes());
   readonly subtituloPromedio = computed(() => {
