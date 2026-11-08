@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { MessageModule } from 'primeng/message';
 import { DividerModule } from 'primeng/divider';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -135,6 +135,29 @@ describe('CostosCalculoPageComponent (401) — legacy views/procesos/Calculo.vue
     expect(costos.runPrechecks).toHaveBeenCalledWith(5, 12, 2025);
     expect(costos.calculartarifas).toHaveBeenCalledWith(5, 12, 2025);
     expect(notification[metodo as 'success' | 'warn']).toHaveBeenCalledWith(mensaje);
+  });
+
+  // httpErrorInterceptor already toasts every failed request (e.g. the Oracle ORA-01476 message);
+  // the page must not add a second, generic toast on top of it.
+  it.each([
+    ['calculartarifas', (c: CostosCalculoPageComponent) => c.aplicar()],
+    ['runPrechecks', (c: CostosCalculoPageComponent) => c.aplicar()],
+    ['validapreactualiza', (c: CostosCalculoPageComponent) => c.verificar()],
+    ['certificarTarifas', (c: CostosCalculoPageComponent) => {
+      c.certificarDisabled.set(false);
+      c.certificar();
+    }]
+  ] as const)('leaves the toast of a failed %s to the HTTP interceptor', (metodo, accion) => {
+    const { component, costos, notification } = setup();
+    costos[metodo].mockReturnValue(throwError(() => new Error('No fue posible calcular tarifas. Intentalo nuevamente.')) as never);
+
+    accion(component);
+
+    expect(notification.error).not.toHaveBeenCalled();
+    expect(notification.success).not.toHaveBeenCalled();
+    expect(component.applyingVerificacion()).toBe(false);
+    expect(component.loadingVerificar()).toBe(false);
+    expect(component.loadingCertificar()).toBe(false);
   });
 
   // Legacy Calculo.vue (onCertificar): certifica the previous month and toasts "Certificado".
