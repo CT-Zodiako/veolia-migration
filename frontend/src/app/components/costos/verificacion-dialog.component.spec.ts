@@ -37,6 +37,23 @@ describe('VerificacionDialogComponent — legacy components/costos/verificacion.
     expect(component.tabs.map((t) => [t.nombre, t.rows.length])).toEqual([['VEOLIA', 1], ['COMPETIDOR', 1]]);
   });
 
+  // User report "los tabs no funcioan aqui": clicking the second company shows its rows and stays selected.
+  it('switches to the clicked company tab and keeps it across change detection', async () => {
+    const { fixture, el } = setup();
+    const tabs = Array.from(el.querySelectorAll('.p-dialog [role="tab"]')) as HTMLElement[];
+
+    tabs[1].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const visibles = Array.from(el.querySelectorAll('.p-dialog [role="tabpanel"]'))
+      .filter((p) => !(p as HTMLElement).hidden && (p as HTMLElement).querySelector('tbody td'))
+      .map((p) => (p as HTMLElement).querySelector('tbody td')?.textContent?.trim());
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(visibles).toEqual(['COMPETIDOR']);
+  });
+
   // Legacy Calculo.vue:9-16 dialog "VERIFICACION DE VARIABLES" with Aplicar / Cancelar; verificacion.vue:6-25 columns.
   it('renders the legacy header, columns and buttons', () => {
     const { el } = setup();

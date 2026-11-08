@@ -23,12 +23,13 @@ interface EmpresaTab {
       [style]="{ width: '50vw' }"
       [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
     >
-      <p-tabs *ngIf="tabs.length" [value]="tabs[0].key">
+      <!-- The selected tab lives in tabActivo: binding [value] to tabs[0] re-selected the first company every cycle. -->
+      <p-tabs *ngIf="tabs.length" [value]="tabActivo" (valueChange)="tabActivo = $event">
         <p-tablist>
-          <p-tab *ngFor="let tab of tabs" [value]="tab.key">{{ tab.nombre }}</p-tab>
+          <p-tab *ngFor="let tab of tabs; trackBy: porKey" [value]="tab.key">{{ tab.nombre }}</p-tab>
         </p-tablist>
         <p-tabpanels>
-          <p-tabpanel *ngFor="let tab of tabs" [value]="tab.key">
+          <p-tabpanel *ngFor="let tab of tabs; trackBy: porKey" [value]="tab.key">
             <p-table [value]="tab.rows" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '100%' }">
               <ng-template pTemplate="header">
                 <tr>
@@ -69,26 +70,22 @@ interface EmpresaTab {
 })
 export class VerificacionDialogComponent {
   @Input() visible = false;
-  @Input() detalle: VerificacionDetalle[] = [];
   @Input() applying = false;
+
+  // Tabs are built once per detalle (not per change detection) so the selected tab survives re-renders.
+  @Input() set detalle(detalle: VerificacionDetalle[] | null | undefined) {
+    this.tabs = agruparPorEmpresa(detalle ?? []);
+    this.tabActivo = this.tabs[0]?.key ?? '';
+  }
+
+  tabs: EmpresaTab[] = [];
+  tabActivo: string | number | undefined = '';
 
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() aplicar = new EventEmitter<void>();
 
-  get tabs(): EmpresaTab[] {
-    const byKey = new Map<string, EmpresaTab>();
-    for (const row of this.detalle ?? []) {
-      const key = `${row.empresaPropia}|${row.empresaNombre}`;
-      let tab = byKey.get(key);
-      if (!tab) {
-        tab = { key, nombre: row.empresaNombre, rows: [] };
-        byKey.set(key, tab);
-      }
-      tab.rows.push(row);
-    }
-    // Legacy (verificacion.vue): sort `${EMPR_PROPIA}|${EMPR_NOMBRE}` descending,
-    // so the empresa propia (flag 1) comes first.
-    return Array.from(byKey.values()).sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0));
+  porKey(_: number, tab: EmpresaTab): string {
+    return tab.key;
   }
 
   // Legacy verificacion.vue:23,50-52: redondeo(VALI_VALOR, 6) = parseFloat(valor.toFixed(6)).
@@ -103,5 +100,23 @@ export class VerificacionDialogComponent {
 
   cerrar(): void {
     this.onVisibleChange(false);
+  }
+}
+
+function agruparPorEmpresa(detalle: VerificacionDetalle[]): EmpresaTab[] {
+  {
+    const byKey = new Map<string, EmpresaTab>();
+    for (const row of detalle) {
+      const key = `${row.empresaPropia}|${row.empresaNombre}`;
+      let tab = byKey.get(key);
+      if (!tab) {
+        tab = { key, nombre: row.empresaNombre, rows: [] };
+        byKey.set(key, tab);
+      }
+      tab.rows.push(row);
+    }
+    // Legacy (verificacion.vue): sort `${EMPR_PROPIA}|${EMPR_NOMBRE}` descending,
+    // so the empresa propia (flag 1) comes first.
+    return Array.from(byKey.values()).sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0));
   }
 }
