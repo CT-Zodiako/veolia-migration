@@ -66,12 +66,12 @@ export class AjusteProductividadComponent {
           this.loading.set(true);
           const periodo = periodoAnterior(anno, mes);
           return this.service.consultar({ aps, anno: periodo.anno, mes: periodo.mes }).pipe(
-            catchError((err) => {
+            catchError(() => {
               // A failed consulta behaves as "no record" so Agregar stays reachable.
+              // httpErrorInterceptor already toasted the failure.
               this.item.set(null);
               this.consultado.set(true);
               this.loading.set(false);
-              this.messages.add({ severity: 'error', summary: 'Ajuste Productividad', detail: err?.error?.message || 'Error al consultar.' });
               return EMPTY;
             })
           );
@@ -159,10 +159,8 @@ export class AjusteProductividadComponent {
         this.messages.add({ severity: 'success', summary: 'Ajuste Productividad', detail: 'Valor guardado correctamente.' });
         this.consultar();
       },
-      error: (err) => {
-        this.loading.set(false);
-        this.messages.add({ severity: 'error', summary: 'Ajuste Productividad', detail: err?.error?.message || 'No se pudo guardar.' });
-      }
+      // httpErrorInterceptor already toasted the failure.
+      error: () => this.loading.set(false)
     });
   }
 }

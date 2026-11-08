@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { Observable, Subject, of, throwError } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { CargueProductividadComponent } from './cargue-productividad.component';
 import { SuministrosService } from '../../services/suministros.service';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
+import { NotificationService } from '../../services/notification.service';
 
 const PROPIO = {
   'COD APS': 1033, APS: 'SAN PEDRO', 'COD EMPRESA': 1002, EMPRESA: 'VEOLIA', ANNO: 2025, MES: 12,
@@ -21,15 +21,17 @@ type CargueResponse = { data: { propios: unknown[]; terceros: unknown[] } };
 function setup(propios: unknown[] = [PROPIO], terceros: unknown[] = [], cargue?: (anno: number, mes: number) => Observable<CargueResponse>) {
   const service = {
     cargueProductividad: vi.fn(cargue ?? ((_anno: number, _mes: number) => of({ data: { propios, terceros } }))),
-    guardarProductividad: vi.fn((_propios: unknown, _terceros: unknown) => of({ data: 'Guardado productividad correctamente' }))
+    guardarProductividad: vi.fn((_propios: unknown, _terceros: unknown): Observable<unknown> => of({ data: 'Guardado productividad correctamente' }))
   };
+  const notification = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() };
   TestBed.configureTestingModule({
     imports: [CargueProductividadComponent],
     providers: [
       { provide: SuministrosService, useValue: service },
       // Preselected period January 2026 (saved by the user in the shared selectors).
       { provide: ParametrosConsultaStateService, useValue: { getAnno: () => 2026, getMes: () => 1 } },
-      { provide: ConfirmationService, useValue: { confirm: vi.fn((opts: { accept: () => void }) => opts.accept()) } }
+      { provide: ConfirmationService, useValue: { confirm: vi.fn((opts: { accept: () => void }) => opts.accept()) } },
+      { provide: NotificationService, useValue: notification }
     ]
   });
   // Year/month selectors and the pivot grid are out of scope: render them as plain elements.
@@ -41,7 +43,7 @@ function setup(propios: unknown[] = [PROPIO], terceros: unknown[] = [], cargue?:
   const messages = fixture.debugElement.injector.get(MessageService);
   const add = vi.spyOn(messages, 'add');
   fixture.detectChanges();
-  return { fixture, component, service, add };
+  return { fixture, component, service, add, notification };
 }
 
 describe('CargueProductividadComponent (311) — legacy CargueProductividad.vue', () => {
@@ -141,14 +143,16 @@ describe('CargueProductividadComponent (311) — legacy CargueProductividad.vue'
     expect(labels.some((l) => l?.includes('Cargar'))).toBe(false);
   });
 
-  // Backend 500 body (legacy controller.js:135-143): { message: "Error al cargar la productividad", detail }.
-  it('clears the tabs and shows the error detail when the load fails', () => {
+  // httpErrorInterceptor already toasts every failed request and rethrows new Error(message):
+  // the page must not add a second toast on top of it (L4).
+  it('clears the tabs and leaves the toast to the HTTP interceptor when the load fails', () => {
     let fail = false;
-    const { fixture, component, add } = setup([PROPIO], [], () => fail
-      ? throwError(() => new HttpErrorResponse({ status: 500, error: { message: 'Error al cargar la productividad', detail: 'gsec.json not found' } }))
+    const { fixture, component, add, notification } = setup([PROPIO], [], () => fail
+      ? throwError(() => new Error('Error al cargar la productividad'))
       : of({ data: { propios: [PROPIO], terceros: [PROPIO] } }));
     fixture.detectChanges();
     expect(component.cargado()).toBe(true);
+    add.mockClear();
 
     fail = true;
     component.onMesChange(2);
@@ -159,15 +163,79 @@ describe('CargueProductividadComponent (311) — legacy CargueProductividad.vue'
     expect(component.cargado()).toBe(false);
     expect(component.cargando()).toBe(false);
     expect((fixture.nativeElement as HTMLElement).querySelectorAll('p-tab').length).toBe(0);
-    expect(add).toHaveBeenLastCalledWith(expect.objectContaining({
-      severity: 'error', summary: 'Error al consultar Cargue Productividad', detail: 'gsec.json not found'
-    }));
+    expect(add).not.toHaveBeenCalled();
+    expect(notification.error).not.toHaveBeenCalled();
   });
 
-  it('falls back to the error message when the response has no detail', () => {
-    const { add } = setup([], [], () => throwError(() => new HttpErrorResponse({ status: 500, error: { message: 'Error al cargar la productividad' } })));
+  it('adds no toast when the load fails on init', () => {
+    const { component, add, notification } = setup([], [], () => throwError(() => new Error('Error al cargar la productividad')));
 
-    expect(add).toHaveBeenLastCalledWith(expect.objectContaining({ severity: 'error', detail: 'Error al cargar la productividad' }));
+    expect(component.cargado()).toBe(false);
+    expect(component.cargando()).toBe(false);
+    expect(add).not.toHaveBeenCalled();
+    expect(notification.error).not.toHaveBeenCalled();
+  });
+
+  it('leaves the toast of a failed save to the HTTP interceptor', () => {
+    const { fixture, component, service, add, notification } = setup();
+    fixture.detectChanges();
+    add.mockClear();
+    service.guardarProductividad.mockReturnValue(throwError(() => new Error('No fue posible guardar.')));
+
+    component.confirmarGuardar();
+
+    expect(component.guardando()).toBe(false);
+    expect(add).not.toHaveBeenCalled();
+    expect(notification.error).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['mes', (c: CargueProductividadComponent) => c.onMesChange(null)],
+    ['año', (c: CargueProductividadComponent) => c.onAnnoChange(null)]
+  ] as const)('cancels the in-flight load and clears the tabs when %s is cleared', (_campo, limpiar) => {
+    const pending: Subject<CargueResponse>[] = [];
+    const { fixture, component, service } = setup([], [], () => {
+      const subject = new Subject<CargueResponse>();
+      pending.push(subject);
+      return subject;
+    });
+    pending[0].next({ data: { propios: [PROPIO], terceros: [PROPIO] } });
+    component.onMesChange(3);
+    expect(component.cargando()).toBe(true);
+
+    limpiar(component);
+    fixture.detectChanges();
+
+    expect(pending[1].observed).toBe(false);
+    pending[1].next({ data: { propios: [{ ...PROPIO, MES: 2 }], terceros: [] } });
+    expect(component.propios()).toEqual([]);
+    expect(component.terceros()).toEqual([]);
+    expect(component.cargado()).toBe(false);
+    expect(component.cargando()).toBe(false);
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('p-tab').length).toBe(0);
+    expect(service.cargueProductividad).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears the previous period immediately while the new one loads, so it cannot be saved', () => {
+    const pending: Subject<CargueResponse>[] = [];
+    const { fixture, component } = setup([], [], () => {
+      const subject = new Subject<CargueResponse>();
+      pending.push(subject);
+      return subject;
+    });
+    pending[0].next({ data: { propios: [PROPIO], terceros: [PROPIO] } });
+    fixture.detectChanges();
+    expect(component.cargado()).toBe(true);
+
+    component.onMesChange(3);
+    fixture.detectChanges();
+
+    expect(component.cargando()).toBe(true);
+    expect(component.propios()).toEqual([]);
+    expect(component.terceros()).toEqual([]);
+    expect(component.cargado()).toBe(false);
+    const labels = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button')).map((b) => b.textContent?.trim());
+    expect(labels.some((l) => l?.includes('Guardar'))).toBe(false);
   });
 
   it('ignores the response of a previous period when the selector changes quickly', () => {

@@ -80,12 +80,15 @@ export class CargueProductividadComponent implements OnInit {
   }
 
   cargar(): void {
+    // Drop the previous period (and its in-flight load) right away so its data cannot be saved
+    // while the new one loads, or when año/mes is cleared.
+    this.consulta?.unsubscribe();
+    this.limpiar();
     const anno = this.anno();
     const mes = this.mes();
     if (anno === null || mes === null) return;
 
     const periodo = periodoAnterior(anno, mes);
-    this.consulta?.unsubscribe();
     this.cargando.set(true);
     this.consulta = this.service.cargueProductividad(periodo.anno, periodo.mes).subscribe({
       next: (res) => {
@@ -96,15 +99,16 @@ export class CargueProductividadComponent implements OnInit {
         // Legacy service/CargueProductividad.js:20-24.
         this.messages.add({ severity: 'success', summary: 'Consulta realizada correctamente', life: 3000 });
       },
-      error: (err) => {
-        this.propios.set([]);
-        this.terceros.set([]);
-        this.cargado.set(false);
-        this.cargando.set(false);
-        // Backend 500 body (legacy suministros/controller.js:135-143): { message, detail }.
-        this.messages.add({ severity: 'error', summary: 'Error al consultar Cargue Productividad', detail: err?.error?.detail ?? err?.error?.message, life: 5000 });
-      }
+      // httpErrorInterceptor already toasted the failure (e.g. the backend message).
+      error: () => this.limpiar()
     });
+  }
+
+  private limpiar(): void {
+    this.propios.set([]);
+    this.terceros.set([]);
+    this.cargado.set(false);
+    this.cargando.set(false);
   }
 
   confirmarGuardar(): void {
@@ -129,10 +133,8 @@ export class CargueProductividadComponent implements OnInit {
         // Legacy service/CargueProductividad.js:53-57.
         this.messages.add({ severity: 'success', summary: 'Cargue Productividad guardado correctamente', life: 3000 });
       },
-      error: (err) => {
-        this.guardando.set(false);
-        this.messages.add({ severity: 'error', summary: 'Error al guardar Cargue Productividad', detail: err?.error?.message, life: 3000 });
-      }
+      // httpErrorInterceptor already toasted the failure.
+      error: () => this.guardando.set(false)
     });
   }
 

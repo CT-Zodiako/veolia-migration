@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AjusteProductividadComponent } from './ajuste-productividad.component';
 import { ProductividadService } from '../../services/productividad.service';
+import { NotificationService } from '../../services/notification.service';
 
 function setup(existente: boolean, anno: number, mes: number) {
   const item = existente ? { apsaId: 5, prodAnno: anno, prodMes: mes, prodValor: 0.8 } : null;
@@ -67,15 +68,17 @@ describe('AjusteProductividadComponent (303)', () => {
     function render(consulta: Observable<unknown>) {
       const service = {
         consultar: vi.fn(() => consulta),
-        crear: vi.fn(() => of({ data: null })),
-        editar: vi.fn(() => of({ data: null }))
+        crear: vi.fn((): Observable<unknown> => of({ data: null })),
+        editar: vi.fn((): Observable<unknown> => of({ data: null }))
       };
       const confirm = vi.fn((opts: { accept: () => void }) => opts.accept());
+      const notification = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() };
       TestBed.configureTestingModule({
         imports: [AjusteProductividadComponent],
         providers: [
           { provide: ProductividadService, useValue: service },
-          { provide: ConfirmationService, useValue: { confirm } }
+          { provide: ConfirmationService, useValue: { confirm } },
+          { provide: NotificationService, useValue: notification }
         ]
       });
       // APS/año/mes selectors are out of scope: render them as plain elements.
@@ -91,18 +94,46 @@ describe('AjusteProductividadComponent (303)', () => {
       fixture.detectChanges();
       const host = fixture.nativeElement as HTMLElement;
       const button = (label: string) => host.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
-      return { fixture, component, service, confirm, add, host, button };
+      return { fixture, component, service, confirm, add, notification, host, button };
     }
 
-    it('still offers Agregar when the consulta fails, keeping the error toast', () => {
-      const { component, add, button } = render(throwError(() => ({ error: { message: 'Error al consultar productividad.' } })));
+    // httpErrorInterceptor already toasted the failure and rethrows new Error(message) (L4).
+    it('still offers Agregar when the consulta fails, leaving the toast to the HTTP interceptor', () => {
+      const { component, add, notification, button } = render(throwError(() => new Error('Error al consultar productividad.')));
 
-      expect(add).toHaveBeenCalledWith({ severity: 'error', summary: 'Ajuste Productividad', detail: 'Error al consultar productividad.' });
+      expect(add).not.toHaveBeenCalled();
+      expect(notification.error).not.toHaveBeenCalled();
       expect(component.item()).toBeNull();
+      expect(component.consultado()).toBe(true);
       expect(component.loading()).toBe(false);
       expect(button('Agregar')).not.toBeNull();
       expect(button('Agregar')!.disabled).toBe(false);
       expect(button('Editar')).toBeNull();
+    });
+
+    it.each(['crear', 'editar'] as const)('leaves the toast of a failed %s to the HTTP interceptor', (metodo) => {
+      const existente = metodo === 'editar' ? { apsaId: 5, prodAnno: 2026, prodMes: 2, prodValor: 0.8 } : null;
+      const { component, service, add, notification } = render(of({ data: existente }));
+      service[metodo].mockReturnValue(throwError(() => new Error('No fue posible guardar.')));
+      component.iniciarEdicion();
+      component.editingValor.set(0.5);
+
+      component.confirmarGuardar();
+
+      expect(service[metodo]).toHaveBeenCalled();
+      expect(add).not.toHaveBeenCalled();
+      expect(notification.error).not.toHaveBeenCalled();
+      expect(component.loading()).toBe(false);
+      expect(component.editando()).toBe(true);
+    });
+
+    it('keeps the success toast after saving', () => {
+      const { component, add } = render(of({ data: null }));
+      component.iniciarEdicion();
+
+      component.confirmarGuardar();
+
+      expect(add).toHaveBeenCalledWith({ severity: 'success', summary: 'Ajuste Productividad', detail: 'Valor guardado correctamente.' });
     });
 
     it('Agregar starts the new value at 0 and saves it into the selected month', () => {
