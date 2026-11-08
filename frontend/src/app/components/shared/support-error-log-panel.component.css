@@ -200,3 +200,21 @@
 .app-dark .origen-backend { background: rgba(240, 168, 64, 0.15); color: #f0b45c; }
 .app-dark .origen-red { background: rgba(122, 167, 232, 0.15); color: #8fb4ec; }
 .app-dark .origen-frontend { background: rgba(181, 126, 232, 0.15); color: #c79aef; }
+
+.support-log-detail {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 8px;
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+
+.support-log-detail dt {
+  font-weight: 700;
+}
+
+.support-log-detail dd {
+  margin: 0;
+  font-family: monospace;
+  word-break: break-all;
+}

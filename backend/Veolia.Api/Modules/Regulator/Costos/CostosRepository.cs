@@ -27,7 +27,8 @@ public sealed class CostosRepository(
 
         try
         {
-            await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+            await OracleOperation.RunAsync("PK_VALIDACIONES.fauco_antesliquidar", new { aps, mes, anno },
+                () => connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken)));
 
             const string detalleSql = @"SELECT EMPR_NOMBRE AS EmpresaNombre,
        TRIM(VALI_GRUPO) AS Grupo,
@@ -38,8 +39,9 @@ FROM VAUCO_ANTESLIQUIDAR
 WHERE APSA_ID = :aps AND VALI_ANNO = :anno AND VALI_MES = :mes
 ORDER BY EMPR_NOMBRE, VALI_GRUPO, VALI_VAR";
 
-            var detalle = await connection.QueryAsync<VerificacionDetalleResponse>(
-                new CommandDefinition(detalleSql, new { aps, anno, mes }, cancellationToken: cancellationToken));
+            var detalle = await OracleOperation.RunAsync("VAUCO_ANTESLIQUIDAR", new { aps, anno, mes },
+                () => connection.QueryAsync<VerificacionDetalleResponse>(
+                    new CommandDefinition(detalleSql, new { aps, anno, mes }, cancellationToken: cancellationToken)));
 
             return new ValidapreactualizaResponse(true, detalle.ToList());
         }
@@ -79,7 +81,8 @@ ORDER BY EMPR_NOMBRE, VALI_GRUPO, VALI_VAR";
 
         try
         {
-            await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+            await OracleOperation.RunAsync("PK_LIQUIDAR.fauco_calculartarifas", new { aps, mes, anno, usuario },
+                () => connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: cancellationToken)));
 
             var returnCode = parameters.Get<int?>("res") ?? 1;
             var resultado = returnCode == 0
@@ -128,6 +131,13 @@ VALUES (:aps, :anno, :mes, SYSDATE, :usuario)";
             transaction.Rollback();
             throw new OracleTimeoutException("Se perdió la conexión con Oracle durante la certificación.");
         }
+        catch (OracleException ex)
+        {
+            transaction.Rollback();
+            throw new OracleOperationException("INSERT AUCO_TARICERTIFICADA",
+                new Dictionary<string, object?> { ["aps"] = aps, ["mes"] = mes, ["anno"] = anno, ["usuario"] = usuario },
+                ex.Number, ex.Message, ex);
+        }
         catch
         {
             transaction.Rollback();
@@ -137,12 +147,12 @@ VALUES (:aps, :anno, :mes, SYSDATE, :usuario)";
 
     private async Task<IReadOnlyList<PrecheckResultResponse>> RunPrechecksInternalAsync(int aps, int mes, int anno, CancellationToken cancellationToken)
     {
-        var checks = new (string Nombre, Func<Task<string?>> Execute)[]
+        var checks = new (string Nombre, string Operacion, Func<Task<string?>> Execute)[]
         {
-            ("certificarFauco_cpsuivsfact", () => validacionesRepository.ExecuteAsync("fauco_cpsuivsfact", aps, anno, mes, cancellationToken)),
-            ("certificarFauco_cpproductividad", () => validacionesRepository.ExecuteAsync("fauco_cpproductividad", aps, anno, mes, cancellationToken)),
-            ("certificarFauco_cpenero", () => validacionesRepository.ExecuteAsync("fauco_cpenero", aps, anno, mes, cancellationToken)),
-            ("cenrtificarEditar", () => suministrosRepository.CenrtificarEditarAsync(new Contracts.Requests.CertificarRequest(aps, anno, mes), cancellationToken))
+            ("certificarFauco_cpsuivsfact", "PK_VALGRAL.fauco_cpsuivsfact", () => validacionesRepository.ExecuteAsync("fauco_cpsuivsfact", aps, anno, mes, cancellationToken)),
+            ("certificarFauco_cpproductividad", "PK_VALGRAL.fauco_cpproductividad", () => validacionesRepository.ExecuteAsync("fauco_cpproductividad", aps, anno, mes, cancellationToken)),
+            ("certificarFauco_cpenero", "PK_VALGRAL.fauco_cpenero", () => validacionesRepository.ExecuteAsync("fauco_cpenero", aps, anno, mes, cancellationToken)),
+            ("cenrtificarEditar", "PK_VALGRAL.fauco_existarifa", () => suministrosRepository.CenrtificarEditarAsync(new Contracts.Requests.CertificarRequest(aps, anno, mes), cancellationToken))
         };
 
         var results = new List<PrecheckResultResponse>();
@@ -156,7 +166,7 @@ VALUES (:aps, :anno, :mes, SYSDATE, :usuario)";
                 continue;
             }
 
-            var raw = await check.Execute();
+            var raw = await OracleOperation.RunAsync(check.Operacion, new { aps, mes, anno }, check.Execute);
             if (IsSuccessfulCheck(raw))
             {
                 results.Add(new PrecheckResultResponse(check.Nombre, "success", "OK"));
@@ -220,8 +230,9 @@ VALUES (:aps, :anno, :mes, SYSDATE, :usuario)";
             ORDER BY CODCOSTO";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        var rows = await connection.QueryAsync<CostoItemResponse>(
-            new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken));
+        var rows = await OracleOperation.RunAsync("VAUCO_COSTOS", new { aps, anno, mes },
+            () => connection.QueryAsync<CostoItemResponse>(
+                new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken)));
         return rows.ToList();
     }
 
@@ -235,8 +246,9 @@ VALUES (:aps, :anno, :mes, SYSDATE, :usuario)";
             ORDER BY PARA_COSTO20021";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        var rows = await connection.QueryAsync<CostoClusItemResponse>(
-            new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken));
+        var rows = await OracleOperation.RunAsync("VACUO_COSTOSCLUS", new { aps, anno, mes },
+            () => connection.QueryAsync<CostoClusItemResponse>(
+                new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken)));
         return rows.ToList();
     }
 
@@ -252,8 +264,9 @@ VALUES (:aps, :anno, :mes, SYSDATE, :usuario)";
             ORDER BY INED_ANNO, INED_MES";
 
         using var connection = await OpenConnectionAsync(cancellationToken);
-        var rows = await connection.QueryAsync<ComportaClusItemResponse>(
-            new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken));
+        var rows = await OracleOperation.RunAsync("VAUCO_ACTICLUS", new { aps, anno, mes },
+            () => connection.QueryAsync<ComportaClusItemResponse>(
+                new CommandDefinition(sql, new { aps, anno, mes }, cancellationToken: cancellationToken)));
         return rows.ToList();
     }
 }

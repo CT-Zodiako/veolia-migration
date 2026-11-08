@@ -36,6 +36,13 @@ using Veolia.Api.Infrastructure.GoogleDrive;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Timestamped entries; error messages carry traceId so support can grep the toast's code.
+builder.Logging.AddSimpleConsole(options =>
+{
+    options.IncludeScopes = true;
+    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+});
+
 // IMPORTANTE: no tocar PropertyNamingPolicy acá. La gran mayoría de los
 // endpoints devuelven filas dinámicas de Dapper (columna Oracle preservada
 // tal cual, no afectadas por esta policy) o DTOs PascalCase pensados para el

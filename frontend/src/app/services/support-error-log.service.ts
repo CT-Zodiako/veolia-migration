@@ -9,7 +9,18 @@ export interface SupportErrorLogEntry {
   status: number;
   message: string;
   oraCode?: string;
+  /** Código que se cruza con el log del backend (traceId del envelope). */
+  traceId?: string;
+  /** Contexto técnico del error Oracle enviado por el backend. */
+  detalle?: SupportErrorDetalle;
   origen: SupportErrorOrigen;
+}
+
+export interface SupportErrorDetalle {
+  operacion: string;
+  oraCode: string;
+  constraint?: string | null;
+  oracleMessage: string;
 }
 
 /** Clasifica el origen del error a partir de la respuesta HTTP:

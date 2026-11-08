@@ -35,9 +35,10 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
-      const message = req.url.includes('filecargue')
-        ? errorUx.uploadMessage(error)
-        : errorUx.toUserMessage(error);
+      const message = conCodigoDeSoporte(
+        req.url.includes('filecargue') ? errorUx.uploadMessage(error) : errorUx.toUserMessage(error),
+        error
+      );
 
       notifications.error(message);
 
@@ -47,7 +48,9 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
           url: req.url,
           status: error.status,
           message: error.error?.message ?? error.message,
-          oraCode: error.error?.oraCode
+          oraCode: error.error?.oraCode,
+          traceId: error.error?.traceId,
+          detalle: error.error?.detail
         });
       }
 
@@ -55,6 +58,16 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
+
+// En errores de servidor el traceId es el código que el usuario le pasa a soporte: con él se
+// encuentra la línea exacta del log del backend (operación Oracle, parámetros, usuario).
+function conCodigoDeSoporte(message: string, error: { status?: number; error?: { traceId?: unknown } }): string {
+  const traceId = error.error?.traceId;
+  if ((error.status ?? 0) < 500 || typeof traceId !== 'string' || !traceId) {
+    return message;
+  }
+  return `${message} Código de soporte: ${traceId}`;
+}
 
 // 401 = token inválido/muerto; 403 = token ausente (middleware parity).
 // Se excluyen los endpoints públicos de auth (login, sistemas por correo):

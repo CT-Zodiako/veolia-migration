@@ -50,6 +50,14 @@
       </div>
       <p class="support-log-message">{{ entry.message }}</p>
       <span class="support-log-ora" *ngIf="entry.oraCode">{{ entry.oraCode }}</span>
+      <dl class="support-log-detail" *ngIf="entry.traceId || entry.detalle">
+        <ng-container *ngIf="entry.traceId"><dt>Código</dt><dd>{{ entry.traceId }}</dd></ng-container>
+        <ng-container *ngIf="entry.detalle">
+          <dt>Operación</dt><dd>{{ entry.detalle.operacion }}</dd>
+          <ng-container *ngIf="entry.detalle.constraint"><dt>Restricción</dt><dd>{{ entry.detalle.constraint }}</dd></ng-container>
+          <dt>Oracle</dt><dd>{{ entry.detalle.oracleMessage }}</dd>
+        </ng-container>
+      </dl>
     </div>
   </div>
 </div>
