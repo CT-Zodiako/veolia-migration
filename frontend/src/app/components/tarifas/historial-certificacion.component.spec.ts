@@ -18,4 +18,15 @@ describe('HistorialCertificacionComponent (503)', () => {
 
     expect(consulta).toHaveBeenCalledTimes(1);
   });
+
+  it('starts on the año/mes the user picked on another option', () => {
+    const consulta = vi.fn(() => of({ status: 'ok', data: [], message: '' }));
+    TestBed.configureTestingModule({
+      imports: [HistorialCertificacionComponent],
+      providers: [{ provide: InfoGeneralesService, useValue: { consultaHistorialCertificaciones: consulta } }, estadoParametros(2024, 5)]
+    });
+    const component = TestBed.createComponent(HistorialCertificacionComponent).componentInstance;
+
+    expect([component.anno, component.mes]).toEqual([2024, 5]);
+  });
 });

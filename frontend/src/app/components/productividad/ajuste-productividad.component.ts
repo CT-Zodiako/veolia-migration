@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -12,6 +13,7 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 
 @Component({
   selector: 'app-ajuste-productividad',
@@ -31,8 +33,9 @@ import { MesSelectorComponent } from '../shared/mes-selector.component';
 })
 export class AjusteProductividadComponent {
   aps = signal<number | null>(null);
-  anno = signal<number | null>(new Date().getFullYear());
-  mes = signal<number | null>(new Date().getMonth() + 1);
+  private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
+  anno = signal<number | null>(this.periodo.anno);
+  mes = signal<number | null>(this.periodo.mes);
 
   loading = signal(false);
   item = signal<ProductividadItem | null>(null);

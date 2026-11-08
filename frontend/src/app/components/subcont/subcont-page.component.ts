@@ -1,4 +1,5 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -14,6 +15,7 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 
 // Legacy SubCon.vue:231-239: the nine clases of the dialog (est1..est6, com, indu, ofi) and their labels (:78-198).
 const CLASES_LEGACY: { clase: number; nombre: string }[] = [
@@ -55,8 +57,9 @@ interface ClaseItem {
 })
 export class SubContPageComponent implements OnInit {
   aps = signal<number | null>(null);
-  anno = signal<number | null>(new Date().getFullYear());
-  mes = signal<number | null>(new Date().getMonth() + 1);
+  private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
+  anno = signal<number | null>(this.periodo.anno);
+  mes = signal<number | null>(this.periodo.mes);
 
   loading = signal(false);
   clases = signal<ClaseItem[]>([]);

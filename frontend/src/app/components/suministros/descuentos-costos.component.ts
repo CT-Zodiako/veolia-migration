@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -12,6 +13,7 @@ import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 
 @Component({
   selector: 'app-descuentos-costos',
@@ -22,8 +24,9 @@ import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.co
 })
 export class DescuentosCostosComponent {
   readonly aps = signal<number | null>(null);
-  readonly anno = signal<number | null>(new Date().getFullYear());
-  readonly mes = signal<number | null>(new Date().getMonth() + 1);
+  private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
+  readonly anno = signal<number | null>(this.periodo.anno);
+  readonly mes = signal<number | null>(this.periodo.mes);
 
   readonly loading = signal(false);
   readonly rows = signal<Record<string, unknown>[]>([]);

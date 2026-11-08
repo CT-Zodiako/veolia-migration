@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -6,6 +7,7 @@ import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { Sui853CftService } from '../../services/sui853-cft.service';
 import { CdftRow } from '../../models/sui853-cft.model';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 
 // Legacy cdft.vue formatMoney()/formatNumber(): toLocaleString("es-CO",
 // { minimumFractionDigits: 2 }) -- sin máximo explícito, Intl usa 3.
@@ -24,7 +26,8 @@ const FORMATO_NUMERO = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2
   styleUrl: './cdft-page.component.css'
 })
 export class CdftPageComponent implements OnInit {
-  readonly anno = signal<number>(new Date().getFullYear());
+  private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
+  readonly anno = signal<number>(this.periodo.anno);
   readonly rows = signal<CdftRow[]>([]);
   readonly loading = signal(false);
 

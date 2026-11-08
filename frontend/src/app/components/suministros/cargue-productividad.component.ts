@@ -1,4 +1,5 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -10,6 +11,7 @@ import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { PivotTablaComponent } from '../shared/pivot-tabla.component';
 import { PivotColumnDef } from '../../shared/pivot.util';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 
 @Component({
   selector: 'app-cargue-productividad',
@@ -20,8 +22,9 @@ import { PivotColumnDef } from '../../shared/pivot.util';
   styleUrls: ['./cargue-productividad.component.css']
 })
 export class CargueProductividadComponent {
-  anno = signal<number | null>(new Date().getFullYear());
-  mes = signal<number | null>(new Date().getMonth() + 1);
+  private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
+  anno = signal<number | null>(this.periodo.anno);
+  mes = signal<number | null>(this.periodo.mes);
 
   cargando = signal(false);
   guardando = signal(false);

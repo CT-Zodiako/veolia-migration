@@ -1,4 +1,5 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, inject } from '@angular/core';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -13,6 +14,7 @@ import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { ProyeccionSelectorComponent } from '../shared/proyeccion-selector.component';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 
 @Component({
   selector: 'app-subcont-proy-page',
@@ -29,8 +31,9 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
 export class SubcontProyPageComponent {
   apsaId = signal<number | null>(null);
   proyId = signal<number | null>(null);
-  anno = signal<number | null>(new Date().getFullYear());
-  mes = signal<number | null>(new Date().getMonth() + 1);
+  private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
+  anno = signal<number | null>(this.periodo.anno);
+  mes = signal<number | null>(this.periodo.mes);
 
   consultando = signal(false);
   guardando = signal(false);

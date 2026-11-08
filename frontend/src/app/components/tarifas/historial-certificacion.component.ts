@@ -1,4 +1,5 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
@@ -6,6 +7,7 @@ import { InfoGeneralesService } from '../../services/infogenerales.service';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 
 @Component({
   selector: 'app-historial-certificacion',
@@ -15,8 +17,9 @@ import { periodoAnterior } from '../../shared/periodo-anterior.util';
   styleUrl: './historial-certificacion.component.css'
 })
 export class HistorialCertificacionComponent {
-  anno: number | null = new Date().getFullYear();
-  mes: number | null = new Date().getMonth() + 1;
+  private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
+  anno: number | null = this.periodo.anno;
+  mes: number | null = this.periodo.mes;
 
   readonly loading = signal(false);
   readonly error = signal('');

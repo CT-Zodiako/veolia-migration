@@ -1,4 +1,5 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
+import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
@@ -13,6 +14,7 @@ import { catchError, finalize } from 'rxjs/operators';
 import { ValidacionesService, ValidacionRequest, ValidacionResponse } from '../../services/validaciones.service';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
+import { periodoInicial } from '../shared/periodo-inicial.util';
 
 interface ValidacionItem {
   id: string;
@@ -46,8 +48,9 @@ interface ApsOption { label: string; value: number; }
 export class ValidacionesPageComponent {
   // Filtros
   aps = signal<number>(1);
-  anno = signal<number | null>(2025);
-  mes = signal<number | null>(4);
+  private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
+  anno = signal<number | null>(this.periodo.anno);
+  mes = signal<number | null>(this.periodo.mes);
 
   readonly apsOptions: ApsOption[] = [
     { label: 'CVA', value: 1 },
