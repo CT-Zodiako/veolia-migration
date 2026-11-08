@@ -41,9 +41,10 @@
 .text-secondary { color: var(--text-color-secondary); }
 
 /* Promedio Semestre Anterior (artboard 05): botón en la card de filtros + sección de grupos en tarjetas. */
+/* Next to Mes, bottom-aligned with the selects (their .form-group keeps a 12px bottom margin). */
 .parametros-row .btn-promedio {
-  margin-left: auto;
   align-self: flex-end;
+  margin-bottom: 12px;
 }
 
 .promedio { padding: 14px 20px; }
