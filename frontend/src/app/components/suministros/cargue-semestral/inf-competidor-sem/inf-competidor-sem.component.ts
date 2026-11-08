@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, signal } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { MessageModule } from 'primeng/message';
 import * as Papa from 'papaparse';
 import { CommonPrimeNgModules } from '../../../../shared/primeng-imports';
 import { TablaAvanzadaComponent, TablaColumn } from '../../../shared/tabla-avanzada.component';
+import { CargueArchivoEstado, CargueArchivoPasosComponent, CargueArchivoResumen } from '../../../shared/cargue-archivo-pasos.component';
 import { EmpresasService, EmpresaItem } from '../../../../services/empresas.service';
 import { SuministrosService } from '../../../../services/suministros.service';
 import { CargueCompetidorSemFila } from '../../../../models/cargue-semestral.models';
@@ -58,7 +59,7 @@ function aNumero(valor: string | undefined): number | null {
 @Component({
   selector: 'app-inf-competidor-sem',
   standalone: true,
-  imports: [CommonModule, FormsModule, MessageModule, ...CommonPrimeNgModules, TablaAvanzadaComponent],
+  imports: [CommonModule, FormsModule, MessageModule, ...CommonPrimeNgModules, TablaAvanzadaComponent, CargueArchivoPasosComponent],
   templateUrl: './inf-competidor-sem.component.html',
   styleUrl: './inf-competidor-sem.component.css'
 })
@@ -75,6 +76,25 @@ export class InfCompetidorSemComponent implements OnChanges {
   readonly errores = signal<string[]>([]);
   readonly guardando = signal(false);
   readonly estado = signal('');
+  readonly procesando = signal(false);
+
+  readonly planoGuiaUrl = 'assets/layout/planos/plano_competidor_semestral.csv';
+
+  // Estado del cargue guiado: la pantalla sigue siendo dueña del parseo, la vista previa y el guardado.
+  readonly estadoCargue = computed<CargueArchivoEstado>(() => {
+    if (this.guardando()) return 'guardando';
+    if (this.procesando()) return 'validando';
+    if (this.errores().length) return 'error';
+    if (this.filas().length) return 'listo';
+    // Archivo leído sin filas de datos (solo encabezados): antes quedaba sin vista previa ni botón de guardar.
+    return this.nombreArchivo() ? 'error' : 'vacio';
+  });
+
+  readonly erroresCargue = computed(() =>
+    this.errores().length ? this.errores() : this.nombreArchivo() && !this.procesando() ? ['El archivo no tiene filas de datos.'] : []
+  );
+
+  readonly resumenCargue = computed<CargueArchivoResumen | null>(() => (this.filas().length ? { filas: this.filas().length } : null));
 
   constructor(
     private readonly empresasService: EmpresasService,
@@ -101,10 +121,11 @@ export class InfCompetidorSemComponent implements OnChanges {
     return columnasPreview;
   }
 
-  onArchivoSeleccionado(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const archivo = input.files?.[0];
-    if (!archivo) return;
+  get periodoDestino(): string {
+    return `Semestre ${this.semestre} de ${this.anno} (${this.semestre === 1 ? 'enero a junio' : 'julio a diciembre'})`;
+  }
+
+  onArchivoSeleccionado(archivo: File): void {
     if (this.empresaSeleccionada() === null) {
       this.estado.set('');
       this.errores.set(['Debe seleccionar una empresa antes de procesar el archivo.']);
@@ -113,11 +134,16 @@ export class InfCompetidorSemComponent implements OnChanges {
 
     this.nombreArchivo.set(archivo.name);
     this.estado.set('');
+    this.procesando.set(true);
 
     Papa.parse<FilaCsv>(archivo, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => this.procesarCsv(results.data)
+      complete: (results) => {
+        this.procesando.set(false);
+        this.procesarCsv(results.data);
+      },
+      error: () => this.procesando.set(false)
     });
   }
 
@@ -168,10 +194,6 @@ export class InfCompetidorSemComponent implements OnChanges {
     this.limpiarCargue();
   }
 
-  descargarPlano(): void {
-    window.open('assets/layout/planos/plano_competidor_semestral.csv', '_blank');
-  }
-
   guardar(): void {
     if (this.filas().length === 0 || this.empresaSeleccionada() === null) return;
 
@@ -202,6 +224,7 @@ export class InfCompetidorSemComponent implements OnChanges {
   }
 
   private limpiarCargue(): void {
+    this.procesando.set(false);
     this.nombreArchivo.set('');
     this.filas.set([]);
     this.errores.set([]);

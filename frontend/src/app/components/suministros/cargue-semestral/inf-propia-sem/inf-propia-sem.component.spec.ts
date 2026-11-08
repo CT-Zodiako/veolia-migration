@@ -6,25 +6,26 @@ import { InfPropiaSemComponent } from './inf-propia-sem.component';
 import { SuministrosService } from '../../../../services/suministros.service';
 import { EmpresasService } from '../../../../services/empresas.service';
 import { TablaAvanzadaComponent } from '../../../shared/tabla-avanzada.component';
+import { CargueArchivoPasosComponent } from '../../../shared/cargue-archivo-pasos.component';
 
 // Header of public/assets/layout/planos/plano_propio_semestral.csv (';'), linked by InfPropiaSemestral.vue.
 const HEADER = 'CODAPS;CODEMPRESA;ANNO;MES;QRT;QLU;QNA;QBL;QR;QRS;LBL;VL;ESCE;CTLMX;CPE;NAA;TAFA;CRTPRO;CDFPRO;QRSmunrecp';
 const FILA = '1014;1023;2026;3;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16';
 
-function csv(...rows: string[]): Event {
-  const file = new File([[HEADER, ...rows].join('\n')], 'plano_propio_semestral.csv', { type: 'text/csv' });
-  return { target: { files: [file] } } as unknown as Event;
+function csv(...rows: string[]): File {
+  return new File([[HEADER, ...rows].join('\n')], 'plano_propio_semestral.csv', { type: 'text/csv' });
 }
 
 function setup(aps = 1014, anno = 2026, semestre = 1) {
   const service = { setCargueInfPropiaSem: vi.fn((_payload: unknown) => of({ data: 1 })) };
   const empresas = { getEmpresasPropias: vi.fn(() => of([{ EMPR_EMPR: 1023, EMPR_NOMBRE: 'VEOLIA PROPIA' }])) };
+  const confirmation = { confirm: vi.fn((opts: { accept: () => void }) => opts.accept()) };
   TestBed.configureTestingModule({
     imports: [InfPropiaSemComponent],
     providers: [
       { provide: SuministrosService, useValue: service },
       { provide: EmpresasService, useValue: empresas },
-      { provide: ConfirmationService, useValue: { confirm: vi.fn((opts: { accept: () => void }) => opts.accept()) } }
+      { provide: ConfirmationService, useValue: confirmation }
     ]
   });
   const fixture = TestBed.createComponent(InfPropiaSemComponent);
@@ -33,12 +34,18 @@ function setup(aps = 1014, anno = 2026, semestre = 1) {
   fixture.componentRef.setInput('semestre', semestre);
   fixture.detectChanges();
   fixture.componentInstance.empresaSeleccionada.set(1023);
-  return { fixture, component: fixture.componentInstance, service, empresas };
+  return { fixture, component: fixture.componentInstance, confirmation, service, empresas };
 }
 
-async function load(fixture: ReturnType<typeof setup>['fixture'], event: Event): Promise<void> {
+function pasos(fixture: ReturnType<typeof setup>['fixture']): CargueArchivoPasosComponent {
+  return fixture.debugElement.query(By.directive(CargueArchivoPasosComponent)).componentInstance as CargueArchivoPasosComponent;
+}
+
+// The file is picked through the shared guided upload (app-cargue-archivo-pasos), like the user does.
+async function load(fixture: ReturnType<typeof setup>['fixture'], file: File): Promise<void> {
   const component = fixture.componentInstance;
-  component.onArchivoSeleccionado(event);
+  fixture.detectChanges();
+  pasos(fixture).archivoSeleccionado.emit(file);
   await vi.waitFor(() => expect(component.filas().length + component.errores().length).toBeGreaterThan(0));
   fixture.detectChanges();
 }
@@ -127,5 +134,85 @@ describe('InfPropiaSemComponent (702 Inf. Propia) — legacy InfPropiaSemestral.
 
     const { resumesem } = service.setCargueInfPropiaSem.mock.calls[0][0] as { resumesem: Record<string, unknown>[] };
     expect(resumesem[0]['qrsmunrecp']).toBeUndefined();
+  });
+  describe('guided upload (app-cargue-archivo-pasos)', () => {
+    it('replaces the native file input and keeps the Plano Guía URL', () => {
+      const { fixture } = setup();
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+
+      const inputs = Array.from(el.querySelectorAll('input[type="file"]'));
+      expect(inputs.length).toBe(1);
+      expect(inputs[0].closest('app-cargue-archivo-pasos')).not.toBeNull();
+      expect(el.querySelector('.descarga-plano')).toBeNull();
+      expect(pasos(fixture).planoGuiaUrl).toBe('assets/layout/planos/plano_propio_semestral.csv');
+      expect(pasos(fixture).titulo).toBe('Cargue de Información Propia Semestral');
+      expect(pasos(fixture).accept).toBe('.csv');
+    });
+
+  // The native input was disabled until an Empresa was chosen; the guided upload keeps step 2 locked the same way.
+  it('keeps the file step disabled with "Seleccioná una empresa primero" until an Empresa is chosen', () => {
+    const { fixture, component } = setup();
+    component.empresaSeleccionada.set(null);
+    fixture.detectChanges();
+
+    expect(pasos(fixture).disabled).toBe(true);
+    expect(pasos(fixture).disabledMessage).toBe('Seleccioná una empresa primero');
+
+    component.empresaSeleccionada.set(1023);
+    fixture.detectChanges();
+    expect(pasos(fixture).disabled).toBe(false);
+  });
+
+    it('reports the parsed rows and the destination semester to step 3', async () => {
+      const { fixture } = setup();
+
+      await load(fixture, csv(FILA));
+
+      expect(pasos(fixture).estado).toBe('listo');
+      expect(pasos(fixture).resumen).toEqual({ filas: 1 });
+      expect(pasos(fixture).periodoDestino).toBe('Semestre 1 de 2026 (enero a junio)');
+      expect(pasos(fixture).guardarLabel).toBe('Guardar Información Propia');
+      expect(fixture.debugElement.query(By.directive(TablaAvanzadaComponent))).not.toBeNull();
+    });
+
+    it('saves through the existing confirm dialog when step 3 emits Guardar, then clears the upload', async () => {
+      const { fixture, component, confirmation, service } = setup();
+      await load(fixture, csv(FILA));
+
+      pasos(fixture).guardar.emit();
+      fixture.detectChanges();
+
+      expect(confirmation.confirm).toHaveBeenCalledTimes(1);
+      expect(service.setCargueInfPropiaSem).toHaveBeenCalledTimes(1);
+      expect(component.estado()).toBe('Información propia semestral guardada correctamente.');
+      expect(pasos(fixture).estado).toBe('vacio');
+      expect(fixture.debugElement.query(By.directive(TablaAvanzadaComponent))).toBeNull();
+    });
+
+    it('shows the validation errors once, inside the guided upload', async () => {
+      const { fixture } = setup();
+
+      await load(fixture, csv('1014;1023;2026;7;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16'));
+
+      expect(pasos(fixture).estado).toBe('error');
+      expect(pasos(fixture).errores).toEqual(['Existen meses fuera del rango del semestre Seleccionado no concuerda con los del archivo!']);
+      expect((fixture.nativeElement as HTMLElement).querySelectorAll('.errores-box, p-message[severity="error"]').length).toBe(0);
+    });
+
+    it('clears the preview when the guided upload cancels or removes the file', async () => {
+      const { fixture, component } = setup();
+      await load(fixture, csv(FILA));
+
+      pasos(fixture).cancelar.emit();
+      fixture.detectChanges();
+      expect(component.filas()).toEqual([]);
+      expect(pasos(fixture).estado).toBe('vacio');
+
+      await load(fixture, csv(FILA));
+      pasos(fixture).archivoQuitado.emit();
+      fixture.detectChanges();
+      expect(component.filas()).toEqual([]);
+    });
   });
 });
