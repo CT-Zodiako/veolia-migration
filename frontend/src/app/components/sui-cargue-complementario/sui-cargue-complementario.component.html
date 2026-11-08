@@ -27,22 +27,21 @@
   </div>
 
   <div class="card-section" *ngIf="mostrarFormulario()">
-    <div class="cargue-header">
-      <h3>Cargue de Información Complementaria</h3>
-      <a class="descarga-plano" (click)="descargarPlano()">⚡ Descargar Plano Guía</a>
-    </div>
+    <app-cargue-archivo-pasos
+      titulo="Cargue de Información Complementaria"
+      [planoGuiaUrl]="planoGuiaUrl"
+      accept=".csv"
+      [periodoDestino]="periodoDestino()"
+      [estado]="estadoCargue()"
+      [errores]="errores()"
+      [resumen]="resumenCargue()"
+      (archivoSeleccionado)="onArchivoSeleccionado($event)"
+      (archivoQuitado)="cancelarCargue()"
+      (cancelar)="cancelarCargue()"
+      (guardar)="guardar()">
+    </app-cargue-archivo-pasos>
 
-    <div class="file-row">
-      <input type="file" accept=".csv" (change)="onArchivoSeleccionado($event)" #fileInput />
-      <span class="file-name" *ngIf="nombreArchivo()">{{ nombreArchivo() }}</span>
-      <button pButton label="Cancelar" severity="danger" [outlined]="true" [disabled]="!nombreArchivo()" (click)="cancelarCargue(); fileInput.value = ''"></button>
-    </div>
-
-    <div *ngIf="errores().length" class="errores-box">
-      <p-message *ngFor="let err of errores()" severity="error" [text]="err" styleClass="w-full mb-2"></p-message>
-    </div>
-
-    <div *ngIf="hayPreview()">
+    <div *ngIf="hayPreview()" class="preview">
       <h4>Vista Previa</h4>
       <app-tabla-avanzada
         [columnas]="columnasPreview"
@@ -51,10 +50,6 @@
         storageKey="sui-cargue-complementario"
         nombreExportar="Cargue_Complementario">
       </app-tabla-avanzada>
-
-      <div class="guardar-row">
-        <button pButton label="Guardar Información" icon="pi pi-save" [loading]="guardando()" (click)="guardar()"></button>
-      </div>
     </div>
   </div>
 </section>

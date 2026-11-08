@@ -6,6 +6,7 @@ import * as Papa from 'papaparse';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { CargueArchivoEstado, CargueArchivoPasosComponent, CargueArchivoResumen } from '../shared/cargue-archivo-pasos.component';
 import { SuiComplementoFilaPayload, SuiIntegracionService } from '../../services/sui-integracion.service';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
 
@@ -80,6 +81,9 @@ const CAMPOS_NUMERICOS: Array<{ campo: keyof FilaCsv; etiqueta: string }> = [
   { campo: 'F36_VL_MES', etiqueta: 'VL_MES' }
 ];
 
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre',
+  'Noviembre', 'Diciembre'];
+
 function estaVacio(valor: string | undefined): boolean {
   return valor === undefined || valor === null || valor.trim() === '';
 }
@@ -93,11 +97,14 @@ function aNumero(valor: string | undefined): number | null {
 @Component({
   selector: 'app-sui-cargue-complementario',
   standalone: true,
-  imports: [CommonModule, MessageModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent],
+  imports: [CommonModule, MessageModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent,
+    CargueArchivoPasosComponent],
   templateUrl: './sui-cargue-complementario.component.html',
   styleUrl: './sui-cargue-complementario.component.css'
 })
 export class SuiCargueComplementarioComponent {
+  readonly planoGuiaUrl = 'assets/layout/planos/sui_complemento.csv';
+
   readonly aps = signal<number | null>(null);
   readonly anno = signal<number | null>(null);
   readonly mes = signal<number | null>(null);
@@ -111,10 +118,34 @@ export class SuiCargueComplementarioComponent {
   readonly errores = signal<string[]>([]);
   readonly guardando = signal(false);
   readonly estado = signal('');
+  readonly validando = signal(false);
+  readonly columnasDetectadas = signal<number | null>(null);
 
   readonly filtrosValidos = computed(() => !!this.aps() && !!this.anno() && !!this.mes());
   readonly mostrarFormulario = computed(() => this.filtrosValidos() && this.archivosExistentes() === false);
   readonly hayPreview = computed(() => this.filas().length > 0 && this.errores().length === 0);
+
+  readonly estadoCargue = computed<CargueArchivoEstado>(() => {
+    if (this.guardando()) return 'guardando';
+    if (this.validando()) return 'validando';
+    if (this.errores().length) return 'error';
+    return this.hayPreview() ? 'listo' : 'vacio';
+  });
+
+  readonly resumenCargue = computed<CargueArchivoResumen | null>(() => {
+    if (!this.hayPreview()) return null;
+    const columnas = this.columnasDetectadas();
+    return columnas === null
+      ? { filas: this.filas().length }
+      : { filas: this.filas().length, columnas, columnasEsperadas: columnasPreview.length };
+  });
+
+  /** Los datos se guardan en el mes anterior al seleccionado (legacy :68-72). */
+  readonly periodoDestino = computed(() => {
+    if (!this.anno() || !this.mes()) return '';
+    const periodo = periodoAnterior(this.anno()!, this.mes()!);
+    return `${MESES[periodo.mes - 1]} ${periodo.anno}`;
+  });
 
   constructor(
     private readonly service: SuiIntegracionService,
@@ -151,22 +182,24 @@ export class SuiCargueComplementarioComponent {
     this.estado.set('');
   }
 
-  descargarPlano(): void {
-    window.open('assets/layout/planos/sui_complemento.csv', '_blank');
-  }
-
-  onArchivoSeleccionado(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const archivo = input.files?.[0];
-    if (!archivo) return;
-
+  onArchivoSeleccionado(archivo: File): void {
+    this.limpiarCargue();
     this.nombreArchivo.set(archivo.name);
     this.estado.set('');
+    this.validando.set(true);
 
     Papa.parse<FilaCsv>(archivo, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => this.procesarCsv(results.data)
+      complete: (results) => {
+        this.columnasDetectadas.set(results.meta.fields?.length ?? null);
+        this.procesarCsv(results.data);
+        this.validando.set(false);
+      },
+      error: () => {
+        this.errores.set(['No fue posible leer el archivo.']);
+        this.validando.set(false);
+      }
     });
   }
 
@@ -176,7 +209,8 @@ export class SuiCargueComplementarioComponent {
     const aps = this.aps();
     const anno = this.anno();
     const mes = this.mes();
-    const errores: string[] = [];
+    // Solo encabezados: error como en los demás cargues, no un regreso silencioso al paso 2 vacío.
+    const errores: string[] = data.length ? [] : ['El archivo no tiene filas de datos.'];
 
     data.forEach((fila, index) => {
       const filaApsId = aNumero(fila.APSA_ID);
@@ -271,6 +305,7 @@ export class SuiCargueComplementarioComponent {
 
   private limpiarCargue(): void {
     this.nombreArchivo.set('');
+    this.columnasDetectadas.set(null);
     this.filas.set([]);
     this.errores.set([]);
   }
