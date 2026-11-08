@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "comments": [
+    {
+      "id": "o3sf4jxa",
+      "file": "03-verificacion-claro.html",
+      "selector": "body > main > img",
+      "excerpt": "Verificación · claro: captura de la pantalla implementada",
+      "comment": "quita los marcos rojos a un gris como e lee los lectores el borde de los selectores",
+      "createdAt": "2026-11-08T21:45:44.741Z",
+      "status": "resolved",
+      "sentAt": "2026-11-08T21:45:44.753Z",
+      "resolvedAt": "2026-11-08T21:46:35.125Z"
+    },
+    {
+      "id": "w3vg779g",
+      "file": "03-verificacion-claro.html",
+      "selector": "body > main > img",
+      "excerpt": "Verificación · claro: captura de la pantalla implementada",
+      "comment": "y eso que se pueda colapsar",
+      "createdAt": "2026-11-08T21:49:15.896Z",
+      "status": "resolved",
+      "sentAt": "2026-11-08T21:49:15.931Z",
+      "resolvedAt": "2026-11-08T21:52:03.515Z",
+      "screenshot": ".screenshots/w3vg779g.png"
+    }
+  ]
+}

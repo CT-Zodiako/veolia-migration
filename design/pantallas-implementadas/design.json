@@ -1,0 +1,34 @@
+{
+  "title": "Pantallas implementadas · Facturación y Verificación",
+  "brief": "Capturas de las pantallas ya implementadas y desplegadas (Detallado Facturación /facturacion y Verificación /suministros/verificacion), en claro y oscuro, como referencia en el canvas.",
+  "artboards": [
+    {
+      "file": "01-facturacion-claro.html",
+      "title": "Detallado Facturación · claro",
+      "tradeoff": "Implementada (prod 4e697d6): resumen de tarifas plegable, 5 tarjetas, 3 gráficas y tabla por pestañas. Cartagena, Sep 2026.",
+      "width": 1440,
+      "height": 1752
+    },
+    {
+      "file": "02-facturacion-oscuro.html",
+      "title": "Detallado Facturación · oscuro",
+      "tradeoff": "La misma pantalla en modo oscuro.",
+      "width": 1440,
+      "height": 1752
+    },
+    {
+      "file": "03-verificacion-claro.html",
+      "title": "Verificación · claro · marcos grises · promedio plegable",
+      "tradeoff": "Propuesta sobre la pantalla implementada: marcos grises #cbd5e1 (borde de los selectores) y botón con flecha en el encabezado de Promedio Semestre Anterior que pliega/despliega los grupos; plegado queda solo el encabezado y la tabla sube. Solo maqueta: el código sigue rojo y sin plegar.",
+      "width": 1440,
+      "height": 1380
+    },
+    {
+      "file": "04-verificacion-oscuro.html",
+      "title": "Verificación · oscuro",
+      "tradeoff": "La misma pantalla en modo oscuro.",
+      "width": 1440,
+      "height": 1378
+    }
+  ]
+}

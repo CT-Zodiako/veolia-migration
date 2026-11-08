@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "03-verificacion-claro.html",
+  "handoffs": {
+    "03-verificacion-claro.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-08T21:58:58.298Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-08T22:01:24.335Z",
+      "note": "Frames use the selector border (--p-select-border-color) in light and dark; header chevron folds/unfolds the groups and remembers it.",
+      "previewUrl": "http://localhost:4200/suministros/verificacion"
+    }
+  }
+}
