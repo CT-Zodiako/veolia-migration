@@ -264,7 +264,7 @@ export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges,
   readonly valorMostrado = valorMostrado;
 
   columnasState!: ColumnasState;
-  compacta = true;
+  compacta = false;
   mostrarExport = false;
   mostrarGuardarVista = false;
   pantallaCompleta = signal(false);
@@ -371,7 +371,7 @@ export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges,
     this.columnasState.guardarPreset(nombre);
   }
 
-  private densidadPrevia = true;
+  private densidadPrevia = false;
 
   // En pantalla completa la densidad se fuerza a Compacta (sin opción Normal)
   // para maximizar filas visibles; al salir se restaura la densidad previa.
@@ -396,8 +396,9 @@ export class TablaAvanzadaComponent implements OnInit, AfterViewInit, OnChanges,
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    // Same exit path as the button, so density and rows per page are restored.
     if (this.pantallaCompleta()) {
-      this.pantallaCompleta.set(false);
+      this.togglePantallaCompleta();
     }
   }
 }

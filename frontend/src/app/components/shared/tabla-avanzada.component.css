@@ -55,6 +55,8 @@
 :host ::ng-deep .p-datatable-thead > tr > th {
   white-space: nowrap;
   padding: 4px 6px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* Celdas de datos compactas: padding y fuente mínimos para maximizar

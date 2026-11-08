@@ -50,4 +50,24 @@ describe('TablaAvanzadaComponent', () => {
 
     expect(fixture.componentInstance.rowsPerPageOptionsList).toEqual([10, 20, 50]);
   });
+
+  it('starts in Normal density and still forces Compacta in fullscreen, restoring Normal on exit', () => {
+    const tabla = TestBed.createComponent(TablaAvanzadaComponent).componentInstance;
+
+    expect(tabla.compacta).toBe(false);
+    tabla.togglePantallaCompleta();
+    expect(tabla.compacta).toBe(true);
+    tabla.togglePantallaCompleta();
+    expect(tabla.compacta).toBe(false);
+  });
+
+  it('restores Normal density when fullscreen is exited with Escape', () => {
+    const tabla = TestBed.createComponent(TablaAvanzadaComponent).componentInstance;
+
+    tabla.togglePantallaCompleta();
+    tabla.onEscape();
+
+    expect(tabla.pantallaCompleta()).toBe(false);
+    expect(tabla.compacta).toBe(false);
+  });
 });
