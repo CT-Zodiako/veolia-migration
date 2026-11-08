@@ -170,6 +170,35 @@ describe('CargueArchivoPasosComponent', () => {
     expect(el.querySelector('.file-tile')).toBeNull();
   });
 
+  // A rejected replacement must also drop the previous file in the screen (its preview and Guardar).
+  it('rejecting a replacement of an already selected file shows the error and emits archivoQuitado', () => {
+    const { el, fixture, quitados } = setup();
+    elegir(el, csv());
+    fixture.componentRef.setInput('estado', 'listo');
+    fixture.detectChanges();
+
+    elegir(el, new File(['x'], 'datos.xlsx'));
+    fixture.detectChanges();
+    expect(el.querySelector('.msg-error')!.textContent).toContain('El archivo no es CSV');
+    expect(quitados()).toBe(1);
+
+    // The screen clears in response (estado back to vacio): the client error stays visible.
+    fixture.componentRef.setInput('estado', 'vacio');
+    fixture.detectChanges();
+    expect(el.querySelector('.msg-error')!.textContent).toContain('El archivo no es CSV');
+
+    elegir(el, csv('vacio.csv', ''));
+    fixture.detectChanges();
+    expect(el.querySelector('.msg-error')!.textContent).toContain('El archivo está vacío');
+  });
+
+  it('a rejected file with nothing selected before does not emit archivoQuitado', () => {
+    const { el, fixture, quitados } = setup();
+    elegir(el, csv('vacio.csv', ''));
+    fixture.detectChanges();
+    expect(quitados()).toBe(0);
+  });
+
   it('error estado lists the screen errors in step 2', () => {
     const { el, fixture } = setup();
     elegir(el, csv());

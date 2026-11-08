@@ -106,8 +106,10 @@ export class CargueArchivoPasosComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['estado']) {
       this.estadoEntrada.set(this.estado);
-      // Las pantallas limpian el formulario después de guardar o cancelar: volver al paso 2 vacío.
-      if (!changes['estado'].firstChange && (this.estado === 'vacio' || this.estado === 'guardado')) {
+      // Las pantallas limpian el formulario después de guardar o cancelar: volver al paso 2 vacío. Un error local se
+      // mantiene al volver a vacío: es la pantalla limpiando el archivo anterior tras un reemplazo rechazado.
+      const vuelveAVacio = this.estado === 'vacio' && !this.errorLocal();
+      if (!changes['estado'].firstChange && (vuelveAVacio || this.estado === 'guardado')) {
         this.limpiarArchivo();
       }
     }
@@ -185,10 +187,13 @@ export class CargueArchivoPasosComponent implements OnChanges {
 
   private procesar(file: File): void {
     if (this.bloqueado()) return;
+    const habiaArchivo = !!this.archivo() && !this.errorLocal();
     this.archivo.set(file);
     const error = this.validar(file);
     this.errorLocal.set(error);
     if (!error) this.archivoSeleccionado.emit(file);
+    // Reemplazo rechazado: la pantalla todavía tiene el archivo anterior (vista previa y Guardar), que se quita.
+    else if (habiaArchivo) this.archivoQuitado.emit();
   }
 
   private validar(file: File): ErrorLocal | null {
