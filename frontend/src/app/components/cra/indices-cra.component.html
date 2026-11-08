@@ -30,7 +30,7 @@
             (ngModelChange)="editingValor.set($event)"
             mode="decimal"
             [minFractionDigits]="0"
-            [maxFractionDigits]="4"
+            [maxFractionDigits]="15"
           ></p-inputnumber>
           <ng-template #valorReadonly>{{ row.indiValor }}</ng-template>
         </td>
@@ -63,19 +63,19 @@
     <form (ngSubmit)="guardarNuevo()">
       <div class="form-group">
         <label>{{ nombreIndice(1) }}</label>
-        <p-inputnumber [ngModel]="nuevoIpc()" (ngModelChange)="nuevoIpc.set($event)" name="ipc" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full"></p-inputnumber>
+        <p-inputnumber [ngModel]="nuevoIpc()" (ngModelChange)="nuevoIpc.set($event)" name="ipc" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="15" styleClass="w-full"></p-inputnumber>
       </div>
       <div class="form-group">
         <label>{{ nombreIndice(2) }}</label>
-        <p-inputnumber [ngModel]="nuevoSmlv()" (ngModelChange)="nuevoSmlv.set($event)" name="smlv" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full"></p-inputnumber>
+        <p-inputnumber [ngModel]="nuevoSmlv()" (ngModelChange)="nuevoSmlv.set($event)" name="smlv" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="15" styleClass="w-full"></p-inputnumber>
       </div>
       <div class="form-group">
         <label>{{ nombreIndice(3) }}</label>
-        <p-inputnumber [ngModel]="nuevoIpcc()" (ngModelChange)="nuevoIpcc.set($event)" name="ipcc" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full"></p-inputnumber>
+        <p-inputnumber [ngModel]="nuevoIpcc()" (ngModelChange)="nuevoIpcc.set($event)" name="ipcc" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="15" styleClass="w-full"></p-inputnumber>
       </div>
       <div class="form-group">
         <label>{{ nombreIndice(4) }}</label>
-        <p-inputnumber [ngModel]="nuevoIoexp()" (ngModelChange)="nuevoIoexp.set($event)" name="ioexp" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="4" styleClass="w-full"></p-inputnumber>
+        <p-inputnumber [ngModel]="nuevoIoexp()" (ngModelChange)="nuevoIoexp.set($event)" name="ioexp" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="15" styleClass="w-full"></p-inputnumber>
       </div>
 
       <p-button type="submit" label="{{ guardandoNuevo() ? 'Guardando...' : 'Guardar' }}" [loading]="guardandoNuevo()" styleClass="w-full"></p-button>
