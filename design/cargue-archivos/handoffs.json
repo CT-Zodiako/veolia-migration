@@ -3,11 +3,13 @@
   "chosen": "03-pasos-guiados.html",
   "handoffs": {
     "03-pasos-guiados.html": {
-      "status": "in_progress",
+      "status": "implemented",
       "queued": false,
       "sentAt": "2026-11-08T20:12:36.659Z",
       "startedAt": "2026-11-08T20:12:55.758Z",
-      "implementedAt": null
+      "implementedAt": "2026-11-08T20:58:45.360Z",
+      "note": "Implemented: shared app-cargue-archivo-pasos (3dc8457, 1e00017) adopted in the 7 upload screens (2f01174, 38b989b, 5a62b28). Not visually checked in a browser.",
+      "previewUrl": "http://localhost:4200/"
     }
   }
 }
