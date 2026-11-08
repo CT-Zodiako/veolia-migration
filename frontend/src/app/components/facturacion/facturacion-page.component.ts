@@ -16,6 +16,8 @@ Chart.register(...registerables);
 
 type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'facturaciondinc' | 'facturacionelectronica';
 
+const RESUMEN_ABIERTO_KEY = 'facturacion-resumen-abierto';
+
 @Component({
   selector: 'app-facturacion-page',
   standalone: true,
@@ -36,6 +38,21 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
 
       <!-- Detallado de facturación (design/facturacion-detallado): only while the Facturación tab is active. -->
       @if (currentTab() === 'facturacion') {
+        <button
+          type="button"
+          class="resumen-toggle"
+          [attr.aria-expanded]="resumenAbierto()"
+          aria-controls="facturacion-resumen-bloque"
+          (click)="alternarResumen()"
+        >
+          <i class="pi pi-chart-bar" aria-hidden="true"></i>
+          <span class="resumen-toggle-titulo">Resumen de tarifas</span>
+          <span class="resumen-toggle-ayuda">Tarjetas y gráficas por tipo de factura y tarifa</span>
+          <i class="pi resumen-toggle-chevron" [class.pi-chevron-down]="!resumenAbierto()" [class.pi-chevron-up]="resumenAbierto()" aria-hidden="true"></i>
+        </button>
+      }
+      @if (currentTab() === 'facturacion' && resumenAbierto()) {
+        <div id="facturacion-resumen-bloque" class="resumen-bloque">
         <div class="card-section filtros-resumen">
           <div class="form-group">
             <label for="facturacion-tipo-factura">Tipo de factura</label>
@@ -128,6 +145,7 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
             </div>
           }
         </div>
+        </div>
       }
 
       <div class="table-wrapper table-scroll">
@@ -196,6 +214,27 @@ type FacturacionTab = 'facturacion' | 'detafacturacion' | 'facturacionclus' | 'f
     </section>
   `,
   styles: [`
+    .resumen-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.85rem 1.25rem;
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 12px;
+      background: var(--color-bg-card, #fff);
+      color: var(--color-text-primary, #0f172a);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .resumen-toggle:hover { border-color: var(--color-brand-accent, #e30613); }
+    .resumen-toggle:focus-visible { outline: 2px solid var(--color-brand-accent, #e30613); outline-offset: 2px; }
+    .resumen-toggle-titulo { font-weight: 600; }
+    .resumen-toggle-ayuda { color: var(--color-text-secondary, #64748b); font-size: 0.85rem; }
+    .resumen-toggle-chevron { margin-left: auto; color: var(--color-text-secondary, #64748b); }
+
     /* Subsidio / contribución colors of the design; lighter in dark mode for contrast. */
     :host {
       --fact-subsidio: #1f5fbf;
@@ -345,6 +384,8 @@ export class FacturacionPageComponent implements OnDestroy {
   /** Facturación rows before rounding (rounding turns a missing value into 0; the summary shows "—"). */
   readonly filasResumen = signal<FilaFacturacion[] | null>(null);
   readonly tipoFactura = signal<string | null>(null);
+  /** The summary block starts collapsed; the user's last choice is remembered. */
+  readonly resumenAbierto = signal(localStorage.getItem(RESUMEN_ABIERTO_KEY) === 'true');
   readonly tipoTarifa = signal<string | null>(null);
   readonly resumen = computed(() =>
     resumirFacturacion(this.filasResumen() ?? [], { tipoFactura: this.tipoFactura(), tipoTarifa: this.tipoTarifa() })
@@ -623,6 +664,12 @@ export class FacturacionPageComponent implements OnDestroy {
       rejilla: v('--color-border'),
       fuente: css.fontFamily
     };
+  }
+
+  alternarResumen(): void {
+    const abierto = !this.resumenAbierto();
+    this.resumenAbierto.set(abierto);
+    localStorage.setItem(RESUMEN_ABIERTO_KEY, String(abierto));
   }
 
   consultar(): void {

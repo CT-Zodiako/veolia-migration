@@ -18,3 +18,4 @@ Design reference (user download, copied into the repo): design/facturacion-detal
 ## Log
 - L1: "quieor que en http://localhost:4200/facturacion solo la tab de facturacion  que qeude aca '/Users/zodiako/Downloads/detallado de facturacion.html'"
 - L2: Assumption (not confirmed by the user): the extra filters, cards and charts are shown only while the Facturación tab is active; switching to another tab shows that tab exactly as today.
+- L3: "no los unas con los otros lo que haz es eso nuevo que se metio en un depslgable paraque encapusel esto" — the new filters, cards and charts go inside one collapsible block ("Resumen de tarifas") on the Facturación tab; not merged with APS/Año/Mes. Decision: starts collapsed; the last open/closed choice is remembered in localStorage.

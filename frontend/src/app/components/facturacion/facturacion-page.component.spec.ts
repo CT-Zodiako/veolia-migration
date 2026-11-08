@@ -70,9 +70,10 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
   beforeEach(() => {
     // jsdom has no canvas: the charts are skipped instead of logging "Not implemented".
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    localStorage.removeItem('facturacion-resumen-abierto');
   });
 
-  function montar(respuesta = { periodo: null, filas }) {
+  function montar(respuesta = { periodo: null, filas }, abrir = true) {
     const detafacturacion = vi.fn(() => of({ periodo: null, filas: [] }));
     TestBed.configureTestingModule({
       imports: [FacturacionPageComponent],
@@ -90,7 +91,12 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
     fixture.detectChanges();
     component.consultar();
     fixture.detectChanges();
-    return { fixture, component, el: fixture.nativeElement as HTMLElement };
+    const el = fixture.nativeElement as HTMLElement;
+    if (abrir) {
+      el.querySelector<HTMLButtonElement>('.resumen-toggle')!.click();
+      fixture.detectChanges();
+    }
+    return { fixture, component, el };
   }
 
   const textos = (el: HTMLElement, selector: string) =>
@@ -150,6 +156,7 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
     component.onTabChange('detafacturacion');
     fixture.detectChanges();
 
+    expect(el.querySelector('.resumen-toggle')).toBeNull();
     expect(el.querySelector('.facturacion-resumen')).toBeNull();
     expect(el.querySelector('.filtros-resumen')).toBeNull();
     expect(el.querySelector('.nota-resumen')).toBeNull();
@@ -157,6 +164,43 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
 
     component.onTabChange('facturacion');
     fixture.detectChanges();
+    expect(el.querySelector('.facturacion-resumen')).not.toBeNull();
+  }, RENDER_TIMEOUT_MS);
+
+  // User L3: the new filters, cards and charts live inside one collapsible block.
+  it('starts collapsed: only the toggle shows, the table stays right below it', () => {
+    const { el } = montar(undefined, false);
+
+    const toggle = el.querySelector<HTMLButtonElement>('.resumen-toggle')!;
+    expect(toggle.textContent).toContain('Resumen de tarifas');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(el.querySelector('.filtros-resumen')).toBeNull();
+    expect(el.querySelector('.facturacion-resumen')).toBeNull();
+  }, RENDER_TIMEOUT_MS);
+
+  it('opens and closes the block with the toggle and remembers the choice', () => {
+    const { fixture, el } = montar(undefined, false);
+    const toggle = el.querySelector<HTMLButtonElement>('.resumen-toggle')!;
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(el.querySelector('.filtros-resumen')).not.toBeNull();
+    expect(el.querySelectorAll('.resumen-tarjeta').length).toBeGreaterThan(0);
+    expect(localStorage.getItem('facturacion-resumen-abierto')).toBe('true');
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(el.querySelector('.facturacion-resumen')).toBeNull();
+    expect(localStorage.getItem('facturacion-resumen-abierto')).toBe('false');
+  }, RENDER_TIMEOUT_MS);
+
+  it('reopens expanded when the user left it open', () => {
+    localStorage.setItem('facturacion-resumen-abierto', 'true');
+    const { el } = montar(undefined, false);
+
+    expect(el.querySelector('.resumen-toggle')!.getAttribute('aria-expanded')).toBe('true');
     expect(el.querySelector('.facturacion-resumen')).not.toBeNull();
   }, RENDER_TIMEOUT_MS);
 });
