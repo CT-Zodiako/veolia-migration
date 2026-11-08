@@ -1,3 +1,5 @@
+<p-toast></p-toast>
+
 <section>
   <div class="card-section">
     <div class="parametros-row">
@@ -7,13 +9,26 @@
     </div>
   </div>
 
-  <div class="table-wrapper table-scroll">
-    <app-tabla-avanzada
-      [columnas]="columnas"
-      [rows]="rows()"
-      [loading]="loading()"
-      storageKey="descuentos-costos"
-      nombreExportar="DescuentosCostos"
-    ></app-tabla-avanzada>
+  <div class="card-section">
+    <div class="mb-3 flex justify-content-end">
+      <p-button label="Agregar" icon="pi pi-plus" [disabled]="aps() === null || anno() === null || mes() === null" (onClick)="abrirNuevo()"></p-button>
+    </div>
+
+    <div class="table-wrapper table-scroll">
+      <app-tabla-avanzada
+        [columnas]="columnas"
+        [rows]="rows()"
+        [accionesTemplate]="acciones"
+        [loading]="loading()"
+        storageKey="descuentos-costos"
+        nombreExportar="DescuentosCostos"
+      ></app-tabla-avanzada>
+    </div>
+
+    <ng-template #acciones let-row>
+      <p-button icon="pi pi-pencil" severity="info" size="small" (onClick)="abrirEdicion(row)"></p-button>
+    </ng-template>
   </div>
 </section>
+
+<app-descuento-costos-dialog (guardado)="recargar()"></app-descuento-costos-dialog>

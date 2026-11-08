@@ -23,3 +23,7 @@
   flex: 0 1 130px;
   min-width: 110px;
 }
+
+.card-section:last-child {
+  margin-bottom: 0;
+}
