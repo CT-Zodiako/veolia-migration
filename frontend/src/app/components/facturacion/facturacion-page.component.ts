@@ -390,7 +390,7 @@ export class FacturacionPageComponent implements OnDestroy {
   readonly resumen = computed(() =>
     resumirFacturacion(this.filasResumen() ?? [], { tipoFactura: this.tipoFactura(), tipoTarifa: this.tipoTarifa() })
   );
-  readonly tarjetasResumen = computed(() => [...this.resumen().tarjetas, this.resumen().tafna]);
+  readonly tarjetasResumen = computed(() => this.resumen().tarjetas);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly theme = inject(ThemeService);

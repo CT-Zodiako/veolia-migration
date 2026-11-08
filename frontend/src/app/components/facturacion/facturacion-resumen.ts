@@ -13,8 +13,7 @@ export const COLUMNAS_RESUMEN = {
   tipoFactura: 'TIPO_FACT',
   factorSubCon: 'TARI_SUBCONT',
   tarifaPlena: 'TARIFAPLENA',
-  tarifaSyC: 'TARIFASYC',
-  tafna: 'TARI_TAFNA'
+  tarifaSyC: 'TARIFASYC'
 } as const;
 
 /** Components of the tarifa plena, in the design order. */
@@ -81,7 +80,6 @@ export interface ResumenFacturacion {
   tipoFactura: string | null;
   tipoTarifa: string | null;
   tarjetas: TarjetaResumen[];
-  tafna: TarjetaResumen;
   subtituloClases: string;
   clases: ClasePagoResumen[];
   componentes: ComponenteResumen[];
@@ -227,16 +225,6 @@ export function resumirFacturacion(filas: readonly FilaFacturacion[], filtro: Fi
     }
   ];
 
-  // TAFNA is the same on every row; take the first one that has it.
-  const tafnaFila = (seleccion.length ? seleccion : filas).find((f) => numero(f[COLUMNAS_RESUMEN.tafna]) !== null);
-  const tafna: TarjetaResumen = {
-    etiqueta: 'TAFNA · residuos no aprovechables',
-    valor: formatoNumero(numero(tafnaFila?.[COLUMNAS_RESUMEN.tafna]), 2),
-    unidad: '',
-    detalle: 'Toneladas. Igual para todas las filas',
-    tono: 'neutro'
-  };
-
   const clases = ordenar(distintos(seleccion, COLUMNAS_RESUMEN.claseUso), ORDEN_CLASES).map((clase) => {
     const f = buscar(seleccion, clave(clase));
     const plena = numero(f?.[COLUMNAS_RESUMEN.tarifaPlena]);
@@ -264,7 +252,6 @@ export function resumirFacturacion(filas: readonly FilaFacturacion[], filtro: Fi
     tipoFactura,
     tipoTarifa,
     tarjetas,
-    tafna,
     subtituloClases: tipoTarifa && tipoFactura ? `${tipoTarifa} · ${tipoFactura}` : '',
     clases,
     componentes,

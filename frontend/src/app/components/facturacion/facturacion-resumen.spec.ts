@@ -56,18 +56,6 @@ describe('resumirFacturacion — cards (S4)', () => {
       { etiqueta: 'Brecha estrato 6 / estrato 1', valor: '11,5', unidad: 'veces', detalle: 'Lo que paga cada uno', tono: 'neutro' }
     ]);
   });
-
-  it('shows the TAFNA line with Colombian format', () => {
-    const r = resumirFacturacion(filasDiseno(), DISENO);
-
-    expect(r.tafna).toEqual({
-      etiqueta: 'TAFNA · residuos no aprovechables',
-      valor: '3.364,61',
-      unidad: '',
-      detalle: 'Toneladas. Igual para todas las filas',
-      tono: 'neutro'
-    });
-  });
 });
 
 describe('resumirFacturacion — charts (S5)', () => {
@@ -147,7 +135,6 @@ describe('resumirFacturacion — empty and missing data (S7)', () => {
     expect(r.opcionesTipoFactura).toEqual([]);
     expect(r.tipoFactura).toBeNull();
     expect(r.tarjetas.map((t) => t.valor)).toEqual(['—', '—', '—', '—']);
-    expect(r.tafna.valor).toBe('—');
     expect(r.clases).toEqual([]);
     expect(r.porTipoTarifa).toEqual([]);
   });

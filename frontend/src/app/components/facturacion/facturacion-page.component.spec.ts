@@ -113,9 +113,10 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
       'Estrato 4 · tarifa plena | 238.594,26 | Sin subsidio ni contribución',
       'Estrato 1 paga | 71.578,28 | −70 % frente a la tarifa plena',
       'Estrato 6 paga | 823.150,19 | +245 % frente a la tarifa plena',
-      'Brecha estrato 6 / estrato 1 | 11,5 veces | Lo que paga cada uno',
-      'TAFNA · residuos no aprovechables | 3.364,61 | Toneladas. Igual para todas las filas'
+      'Brecha estrato 6 / estrato 1 | 11,5 veces | Lo que paga cada uno'
     ]);
+    // User: "esto quitalo" (the TAFNA card): the summary keeps only the four tariff cards.
+    expect(el.textContent).not.toContain('TAFNA · residuos no aprovechables');
     expect(el.querySelector('.resumen-tarjeta .tono-subsidio')?.textContent?.trim()).toBe('−70 % frente a la tarifa plena');
     expect(el.querySelector('.resumen-tarjeta .tono-contribucion')?.textContent?.trim()).toBe('+245 % frente a la tarifa plena');
     expect(textos(el, '.resumen-grafica h2')).toEqual([
@@ -138,7 +139,7 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
     component.tipoTarifa.set('Sin Aforo');
     fixture.detectChanges();
 
-    expect(textos(el, '.resumen-tarjeta .valor')).toEqual(['—', '18.697,87', '—', '—', '3.364,61']);
+    expect(textos(el, '.resumen-tarjeta .valor')).toEqual(['—', '18.697,87', '—', '—']);
     expect(textos(el, '.resumen-grafica .subtitulo')[0]).toBe('Sin Aforo · Acueducto');
   }, RENDER_TIMEOUT_MS);
 
