@@ -118,13 +118,34 @@ const RESUMEN_ABIERTO_KEY = 'facturacion-resumen-abierto';
                 </div>
               </div>
 
-              <div class="resumen-grafica">
+              <div class="resumen-grafica grafica-componentes">
                 <div class="encabezado">
-                  <h2>De qué se compone la tarifa plena</h2>
-                  <p class="subtitulo">Estrato 4 · parte de cada componente</p>
+                  <h2>Tarifa plena vs. con subsidio y contribución</h2>
+                  <p class="subtitulo">{{ resumen().subtituloComponentes }}</p>
                 </div>
-                <div class="lienzo" [style.height.px]="resumen().componentes.length * 31">
-                  <canvas #graficaComponentes aria-label="De qué se compone la tarifa plena" role="img"></canvas>
+                <div class="form-group">
+                  <label for="facturacion-clase-componentes">Clase de uso</label>
+                  <p-select
+                    inputId="facturacion-clase-componentes"
+                    [options]="resumen().opcionesClaseComponentes"
+                    [ngModel]="resumen().claseComponentes"
+                    (ngModelChange)="claseComponentes.set($event)"
+                    [disabled]="!resumen().opcionesClaseComponentes.length"
+                    placeholder="—"
+                    [style]="{ width: '100%' }"
+                  ></p-select>
+                </div>
+                <p class="totales-componentes">
+                  <span>T. Plena <strong>{{ resumen().totalesComponentes.textoPlena }}</strong></span>
+                  <span>Tar. S&amp;C <strong>{{ resumen().totalesComponentes.textoSyC }}</strong></span>
+                </p>
+                <ul class="leyenda">
+                  <li><span class="cuadro tono-neutro"></span>Tarifa plena</li>
+                  <li><span class="cuadro tono-subsidio"></span>Menor (subsidio)</li>
+                  <li><span class="cuadro tono-contribucion"></span>Mayor (contribución)</li>
+                </ul>
+                <div class="lienzo" [style.height.px]="resumen().componentes.length * 28 + 34">
+                  <canvas #graficaComponentes aria-label="Tarifa plena vs. con subsidio y contribución" role="img"></canvas>
                 </div>
               </div>
 
@@ -240,15 +261,11 @@ const RESUMEN_ABIERTO_KEY = 'facturacion-resumen-abierto';
       --fact-subsidio: #1f5fbf;
       --fact-contribucion: #b45309;
       --fact-neutro: #8a94a6;
-      --fact-componente: #16335a;
-      --fact-pista: #eef1f6;
     }
     :host-context(.app-dark) {
       --fact-subsidio: #6ea2f0;
       --fact-contribucion: #f59e0b;
       --fact-neutro: #94a3b8;
-      --fact-componente: #93b4e0;
-      --fact-pista: #334155;
     }
     .card-section {
       background: var(--color-bg-card);
@@ -353,6 +370,23 @@ const RESUMEN_ABIERTO_KEY = 'facturacion-resumen-abierto';
     .leyenda .tono-subsidio { background: var(--fact-subsidio); }
     .leyenda .tono-contribucion { background: var(--fact-contribucion); }
     .leyenda .tono-neutro { background: var(--fact-neutro); }
+    .grafica-componentes .form-group { max-width: 220px; }
+    .grafica-componentes label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--color-text-body);
+    }
+    .totales-componentes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 20px;
+      margin: 0;
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+    .totales-componentes strong { color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
     .lienzo { position: relative; width: 100%; }
     .error-message {
       background: var(--color-bg-danger-soft);
@@ -387,8 +421,14 @@ export class FacturacionPageComponent implements OnDestroy {
   /** The summary block starts collapsed; the user's last choice is remembered. */
   readonly resumenAbierto = signal(localStorage.getItem(RESUMEN_ABIERTO_KEY) === 'true');
   readonly tipoTarifa = signal<string | null>(null);
+  /** Clase de uso of the plena vs. S&C comparison; kept while it exists in the selection, else estrato 1. */
+  readonly claseComponentes = signal<string | null>(null);
   readonly resumen = computed(() =>
-    resumirFacturacion(this.filasResumen() ?? [], { tipoFactura: this.tipoFactura(), tipoTarifa: this.tipoTarifa() })
+    resumirFacturacion(this.filasResumen() ?? [], {
+      tipoFactura: this.tipoFactura(),
+      tipoTarifa: this.tipoTarifa(),
+      claseComponentes: this.claseComponentes()
+    })
   );
   readonly tarjetasResumen = computed(() => this.resumen().tarjetas);
 
@@ -656,8 +696,6 @@ export class FacturacionPageComponent implements OnDestroy {
       subsidio: v('--fact-subsidio'),
       contribucion: v('--fact-contribucion'),
       neutro: v('--fact-neutro'),
-      componente: v('--fact-componente'),
-      pista: v('--fact-pista'),
       fondo: v('--color-bg-card'),
       texto: v('--color-text-body'),
       textoSuave: v('--color-text-secondary'),

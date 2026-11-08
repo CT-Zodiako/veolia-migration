@@ -2,7 +2,20 @@ import { formatoEje, resumirFacturacion } from './facturacion-resumen';
 
 type Fila = Record<string, unknown>;
 
-const COMPONENTES_E4 = { TARI_TRT: 579, TARI_TDF: 195, TARI_TBL: 148, TARI_TLU: 45, TARI_TTL: 19, TARI_TC: 12, TARI_TA: 2 };
+// Components of T. Plena (TARI_*) and of Tar. S&C (TARI_*SC) per estrato; each plena sums 1000.
+const PLENA = { TARI_TC: 12, TARI_TBL: 148, TARI_TLU: 45, TARI_TRT: 579, TARI_TDF: 195, TARI_TTL: 19, TARI_TA: 2 };
+const COMPONENTES_E1 = {
+  ...PLENA,
+  TARI_TCSC: 3.6, TARI_TBLSC: 44.4, TARI_TLUSC: 13.5, TARI_TRTSC: 173.7, TARI_TDFSC: 58.5, TARI_TTLSC: 5.7, TARI_TASC: 2
+};
+const COMPONENTES_E4 = {
+  ...PLENA,
+  TARI_TCSC: 12, TARI_TBLSC: 148, TARI_TLUSC: 45, TARI_TRTSC: 579, TARI_TDFSC: 195, TARI_TTLSC: 19, TARI_TASC: 2
+};
+const COMPONENTES_E6 = {
+  ...PLENA,
+  TARI_TCSC: 41.4, TARI_TBLSC: 510.6, TARI_TLUSC: 155.25, TARI_TRTSC: 1997.55, TARI_TDFSC: 672.75, TARI_TTLSC: 65.55, TARI_TASC: 6.9
+};
 
 function fila(clase: string, tarifa: string, plena: number | null, paga: number | null, extra: Fila = {}): Fila {
   return {
@@ -31,9 +44,9 @@ function filasDiseno(): Fila[] {
   // Table order of the design (Sin Aforo first), not the chart order.
   for (const tarifa of ['Sin Aforo', 'Aforo Ordinario', 'Aforo Permanente', 'No Rec. PaP', 'Desocupado']) {
     const [e1, e4, e6] = PAGOS[tarifa];
-    filas.push(fila('ESTRATO 1', tarifa, e4, e1, { TARI_SUBCONT: -0.7 }));
+    filas.push(fila('ESTRATO 1', tarifa, e4, e1, { TARI_SUBCONT: -0.7, ...COMPONENTES_E1 }));
     filas.push(fila('ESTRATO 4', tarifa, e4, e4, { TARI_SUBCONT: 0, ...COMPONENTES_E4 }));
-    filas.push(fila('ESTRATO 6', tarifa, e4, e6, { TARI_SUBCONT: 2.45 }));
+    filas.push(fila('ESTRATO 6', tarifa, e4, e6, { TARI_SUBCONT: 2.45, ...COMPONENTES_E6 }));
   }
   filas.push(fila('OFICIAL', 'Aforo Ordinario', 238594.26, 238594.26));
   filas.push(fila('COMERCIAL', 'Aforo Ordinario', 238594.26, 381750.82));
@@ -73,13 +86,61 @@ describe('resumirFacturacion — charts (S5)', () => {
     ]);
   });
 
-  it('computes the share of each component of the estrato 4 tarifa plena', () => {
+  // User: T. Plena = TC+TBL+TLU+TRT+TDF+TTL+TA and Tar. S&C = the same components with SC, compared per clase.
+  it('compares each plena component with its S&C component for estrato 1 (default clase)', () => {
     const r = resumirFacturacion(filasDiseno(), DISENO);
 
-    expect(r.componentes.map((c) => [c.componente, c.texto])).toEqual([
-      ['TRT', '57,9 %'], ['TDF', '19,5 %'], ['TBL', '14,8 %'], ['TLU', '4,5 %'], ['TTL', '1,9 %'], ['TC', '1,2 %'], ['TA', '0,2 %']
+    expect(r.claseComponentes).toBe('ESTRATO 1');
+    expect(r.subtituloComponentes).toBe('ESTRATO 1 · por componente');
+    expect(r.componentes.map((c) => [c.componente, c.plena, c.syc, c.tono])).toEqual([
+      ['TC', 12, 3.6, 'subsidio'],
+      ['TBL', 148, 44.4, 'subsidio'],
+      ['TLU', 45, 13.5, 'subsidio'],
+      ['TRT', 579, 173.7, 'subsidio'],
+      ['TDF', 195, 58.5, 'subsidio'],
+      ['TTL', 19, 5.7, 'subsidio'],
+      ['TA', 2, 2, 'neutro']
     ]);
-    expect(r.componentes[0].porcentaje).toBeCloseTo(57.9, 5);
+    expect(r.componentes.map((c) => [c.textoPlena, c.textoSyC])[3]).toEqual(['579,00', '173,70']);
+    expect(r.totalesComponentes.plena).toBeCloseTo(1000, 6);
+    expect(r.totalesComponentes.syc).toBeCloseTo(301.4, 6);
+    expect([r.totalesComponentes.textoPlena, r.totalesComponentes.textoSyC]).toEqual(['1.000,00', '301,40']);
+  });
+
+  it('compares each plena component with its S&C component for estrato 6 (contribución)', () => {
+    const r = resumirFacturacion(filasDiseno(), { ...DISENO, claseComponentes: 'ESTRATO 6' });
+
+    expect(r.claseComponentes).toBe('ESTRATO 6');
+    expect(r.subtituloComponentes).toBe('ESTRATO 6 · por componente');
+    expect(r.componentes.map((c) => [c.componente, c.plena, c.syc, c.tono])).toEqual([
+      ['TC', 12, 41.4, 'contribucion'],
+      ['TBL', 148, 510.6, 'contribucion'],
+      ['TLU', 45, 155.25, 'contribucion'],
+      ['TRT', 579, 1997.55, 'contribucion'],
+      ['TDF', 195, 672.75, 'contribucion'],
+      ['TTL', 19, 65.55, 'contribucion'],
+      ['TA', 2, 6.9, 'contribucion']
+    ]);
+    const sumaSyC = Object.entries(COMPONENTES_E6).filter(([k]) => k.endsWith('SC')).reduce((s, [, v]) => s + v, 0);
+    expect(r.totalesComponentes.plena).toBeCloseTo(1000, 6);
+    expect(r.totalesComponentes.syc).toBeCloseTo(sumaSyC, 6);
+    expect([r.totalesComponentes.textoPlena, r.totalesComponentes.textoSyC]).toEqual(['1.000,00', '3.450,00']);
+  });
+
+  it('offers the clases of the selection as clase de uso options and falls back to estrato 1 for an invalid choice', () => {
+    const r = resumirFacturacion(filasDiseno(), { ...DISENO, claseComponentes: 'ESTRATO 4' });
+    expect(r.opcionesClaseComponentes).toEqual(['ESTRATO 1', 'ESTRATO 2', 'ESTRATO 4', 'ESTRATO 6', 'COMERCIAL', 'OFICIAL']);
+    expect(r.claseComponentes).toBe('ESTRATO 4');
+    expect(r.componentes.every((c) => c.tono === 'neutro')).toBe(true);
+
+    // A clase absent from the current tipo de factura + tipo de tarifa falls back to the default.
+    const fuera = resumirFacturacion(filasDiseno(), { tipoFactura: 'Acueducto', tipoTarifa: 'Sin Aforo', claseComponentes: 'COMERCIAL' });
+    expect(fuera.opcionesClaseComponentes).toEqual(['ESTRATO 1', 'ESTRATO 4', 'ESTRATO 6']);
+    expect(fuera.claseComponentes).toBe('ESTRATO 1');
+
+    // Without estrato 1 the first clase is the default.
+    const sinE1 = resumirFacturacion(filasDiseno().filter((f) => f['CLAS_NOMBRE'] !== 'ESTRATO 1'), DISENO);
+    expect(sinE1.claseComponentes).toBe('ESTRATO 2');
   });
 
   it('lists what estratos 1, 4 and 6 pay per tipo de tarifa, in the design order, for the selected tipo de factura', () => {
@@ -137,21 +198,42 @@ describe('resumirFacturacion — empty and missing data (S7)', () => {
     expect(r.tarjetas.map((t) => t.valor)).toEqual(['—', '—', '—', '—']);
     expect(r.clases).toEqual([]);
     expect(r.porTipoTarifa).toEqual([]);
+    expect(r.opcionesClaseComponentes).toEqual([]);
+    expect(r.claseComponentes).toBeNull();
+    expect(r.totalesComponentes).toEqual({ plena: null, syc: null, textoPlena: '—', textoSyC: '—' });
   });
 
-  it('shows "—" instead of 0 for a missing estrato and a missing component', () => {
-    const filas = filasDiseno()
-      .filter((f) => f['CLAS_NOMBRE'] !== 'ESTRATO 1')
-      .map((f) => (f['CLAS_NOMBRE'] === 'ESTRATO 4' ? { ...f, TARI_TA: null, TARI_TTL: undefined } : f));
+  it('shows "—" instead of 0 for a missing estrato', () => {
+    const filas = filasDiseno().filter((f) => f['CLAS_NOMBRE'] !== 'ESTRATO 1');
 
     const r = resumirFacturacion(filas, DISENO);
 
     expect(r.tarjetas[1]).toEqual({ etiqueta: 'Estrato 1 paga', valor: '—', unidad: '', detalle: '—', tono: 'neutro' });
     expect(r.tarjetas[3].valor).toBe('—');
     expect(r.tarjetas[2].valor).toBe('823.150,19');
+    expect(r.porTipoTarifa[0].estrato1).toBeNull();
+  });
+
+  it('shows "—" for a missing component and leaves it out of the totals', () => {
+    const filas = filasDiseno().map((f) =>
+      f['CLAS_NOMBRE'] === 'ESTRATO 1' ? { ...f, TARI_TA: null, TARI_TTLSC: undefined, TARI_TCSC: '' } : f);
+
+    const r = resumirFacturacion(filas, DISENO);
+
     const ta = r.componentes.find((c) => c.componente === 'TA');
     const ttl = r.componentes.find((c) => c.componente === 'TTL');
-    expect([ta?.texto, ta?.porcentaje, ttl?.texto]).toEqual(['—', null, '—']);
-    expect(r.porTipoTarifa[0].estrato1).toBeNull();
+    const tc = r.componentes.find((c) => c.componente === 'TC');
+    expect([ta?.plena, ta?.textoPlena, ta?.syc, ta?.tono]).toEqual([null, '—', 2, 'neutro']);
+    expect([ttl?.plena, ttl?.syc, ttl?.textoSyC, ttl?.tono]).toEqual([19, null, '—', 'neutro']);
+    expect([tc?.syc, tc?.textoSyC]).toEqual([null, '—']);
+    expect(r.totalesComponentes.plena).toBeCloseTo(998, 6);
+    expect(r.totalesComponentes.syc).toBeCloseTo(292.1, 6);
+
+    const todoFalta = resumirFacturacion(
+      filasDiseno().map((f) => (f['CLAS_NOMBRE'] === 'ESTRATO 1' ? fila('ESTRATO 1', String(f['PARA_NOMBRE']), 1, 1, { TIPO_FACT: f['TIPO_FACT'] }) : f)),
+      DISENO
+    );
+    expect(todoFalta.componentes.every((c) => c.textoPlena === '—' && c.textoSyC === '—')).toBe(true);
+    expect(todoFalta.totalesComponentes).toEqual({ plena: null, syc: null, textoPlena: '—', textoSyC: '—' });
   });
 });

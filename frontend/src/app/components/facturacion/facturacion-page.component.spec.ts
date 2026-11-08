@@ -60,10 +60,12 @@ describe('FacturacionPageComponent (502)', () => {
 
 // odd/tasks/facturacion-detallado.md S2-S7: cards and charts of the design, only on the Facturación tab.
 describe('FacturacionPageComponent — detallado de facturación', () => {
+  // T. Plena components (TARI_*); each clase also carries its Tar. S&C components (TARI_*SC).
+  const PLENA = { TARI_TC: 12, TARI_TBL: 148, TARI_TLU: 45, TARI_TRT: 579, TARI_TDF: 195, TARI_TTL: 19, TARI_TA: 2 };
   const filas = [
-    { CLAS_NOMBRE: 'ESTRATO 1', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 71578.28, TARI_TAFNA: 3364.61 },
-    { CLAS_NOMBRE: 'ESTRATO 4', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 238594.26, TARI_TAFNA: 3364.61, TARI_TRT: 579, TARI_TDF: 195, TARI_TBL: 148, TARI_TLU: 45, TARI_TTL: 19, TARI_TC: 12, TARI_TA: 2 },
-    { CLAS_NOMBRE: 'ESTRATO 6', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 823150.19, TARI_TAFNA: 3364.61 },
+    { CLAS_NOMBRE: 'ESTRATO 1', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 71578.28, TARI_TAFNA: 3364.61, ...PLENA, TARI_TCSC: 3.6, TARI_TBLSC: 44.4, TARI_TLUSC: 13.5, TARI_TRTSC: 173.7, TARI_TDFSC: 58.5, TARI_TTLSC: 5.7, TARI_TASC: 0.6 },
+    { CLAS_NOMBRE: 'ESTRATO 4', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 238594.26, TARI_TAFNA: 3364.61, ...PLENA, TARI_TCSC: 12, TARI_TBLSC: 148, TARI_TLUSC: 45, TARI_TRTSC: 579, TARI_TDFSC: 195, TARI_TTLSC: 19, TARI_TASC: 2 },
+    { CLAS_NOMBRE: 'ESTRATO 6', PARA_NOMBRE: 'Aforo Ordinario', TIPO_FACT: 'Acueducto', TARIFAPLENA: 238594.26, TARIFASYC: 823150.19, TARI_TAFNA: 3364.61, ...PLENA, TARI_TCSC: 41.4, TARI_TBLSC: 510.6, TARI_TLUSC: 155.25, TARI_TRTSC: 1997.55, TARI_TDFSC: 672.75, TARI_TTLSC: 65.55, TARI_TASC: 6.9 },
     { CLAS_NOMBRE: 'ESTRATO 1', PARA_NOMBRE: 'Sin Aforo', TIPO_FACT: 'Acueducto', TARIFAPLENA: 62326.23, TARIFASYC: 18697.87, TARI_TAFNA: 3364.61 }
   ];
 
@@ -121,16 +123,46 @@ describe('FacturacionPageComponent — detallado de facturación', () => {
     expect(el.querySelector('.resumen-tarjeta .tono-contribucion')?.textContent?.trim()).toBe('+245 % frente a la tarifa plena');
     expect(textos(el, '.resumen-grafica h2')).toEqual([
       'Tarifa plena y lo que paga cada clase',
-      'De qué se compone la tarifa plena',
+      'Tarifa plena vs. con subsidio y contribución',
       'Lo que paga según el tipo de tarifa'
     ]);
+    expect(el.textContent).not.toContain('De qué se compone la tarifa plena');
     expect(textos(el, '.resumen-grafica .subtitulo')).toEqual([
       'Aforo Ordinario · Acueducto',
-      'Estrato 4 · parte de cada componente',
+      'ESTRATO 1 · por componente',
       'Estratos 1, 4 y 6 · Acueducto'
     ]);
     expect(el.querySelectorAll('.resumen-grafica canvas').length).toBe(3);
     expect(el.querySelector('.resumen-vacio')).toBeNull();
+  }, RENDER_TIMEOUT_MS);
+
+  // User: per component, T. Plena (TC..TA) against Tar. S&C (TC SC..TA SC) of the chosen clase de uso.
+  it('compares plena and S&C per component for the clase chosen in its own selector', () => {
+    const { fixture, component, el } = montar();
+
+    const tarjeta = el.querySelector<HTMLElement>('.grafica-componentes')!;
+    expect(tarjeta.querySelector('label')?.textContent?.trim()).toBe('Clase de uso');
+    expect(tarjeta.querySelector('p-select')).not.toBeNull();
+    expect(component.resumen().opcionesClaseComponentes).toEqual(['ESTRATO 1', 'ESTRATO 4', 'ESTRATO 6']);
+    expect(textos(tarjeta, '.leyenda li')).toEqual(['Tarifa plena', 'Menor (subsidio)', 'Mayor (contribución)']);
+    expect(textos(tarjeta, '.totales-componentes > span')).toEqual(['T. Plena 1.000,00', 'Tar. S&C 300,00']);
+    expect(tarjeta.querySelector('canvas')?.getAttribute('aria-label')).toBe('Tarifa plena vs. con subsidio y contribución');
+
+    component.claseComponentes.set('ESTRATO 6');
+    fixture.detectChanges();
+
+    expect(component.resumen().claseComponentes).toBe('ESTRATO 6');
+    expect(textos(tarjeta, '.subtitulo')).toEqual(['ESTRATO 6 · por componente']);
+    expect(textos(tarjeta, '.totales-componentes > span')).toEqual(['T. Plena 1.000,00', 'Tar. S&C 3.450,00']);
+
+    // The choice survives a filter change while it is available, else falls back to estrato 1.
+    component.tipoTarifa.set('Sin Aforo');
+    fixture.detectChanges();
+    expect(textos(tarjeta, '.subtitulo')).toEqual(['ESTRATO 1 · por componente']);
+    expect(textos(tarjeta, '.totales-componentes > span')).toEqual(['T. Plena —', 'Tar. S&C —']);
+    component.tipoTarifa.set('Aforo Ordinario');
+    fixture.detectChanges();
+    expect(textos(tarjeta, '.subtitulo')).toEqual(['ESTRATO 6 · por componente']);
   }, RENDER_TIMEOUT_MS);
 
   it('recomputes the cards when another tipo de tarifa is chosen', () => {
