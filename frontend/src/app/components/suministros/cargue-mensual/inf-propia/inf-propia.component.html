@@ -15,22 +15,25 @@
 
   <p-message *ngIf="estado()" severity="info" [text]="estado()" styleClass="w-full mb-3 mt-3"></p-message>
 
-  <div class="cargue-header">
-    <h4>Cargue de Información Propia</h4>
-    <a class="descarga-plano" (click)="descargarPlano()">⚡ Descargar Plano Guía</a>
-  </div>
+  <app-cargue-archivo-pasos
+    titulo="Cargue de Información Propia"
+    [planoGuiaUrl]="planoGuiaUrl"
+    planoGuiaDescripcion="Formato con las columnas del Inf. Propia (CODAPS a QA)."
+    accept=".csv"
+    [disabled]="empresaSeleccionada() === null"
+    disabledMessage="Seleccioná una empresa primero"
+    [periodoDestino]="periodoDestino"
+    [estado]="estadoCargue()"
+    [errores]="errores()"
+    [resumen]="{ filas: filas().length }"
+    guardarLabel="Guardar Información Propia"
+    (archivoSeleccionado)="onArchivoSeleccionado($event)"
+    (archivoQuitado)="cancelarCargue()"
+    (cancelar)="cancelarCargue()"
+    (guardar)="guardar()">
+  </app-cargue-archivo-pasos>
 
-  <div class="file-row">
-    <input type="file" accept=".csv" (change)="onArchivoSeleccionado($event)" [disabled]="empresaSeleccionada() === null" #fileInput />
-    <span class="file-name" *ngIf="nombreArchivo()">{{ nombreArchivo() }}</span>
-    <button pButton label="Cancelar" severity="danger" [outlined]="true" [disabled]="!nombreArchivo()" (click)="cancelarCargue(); fileInput.value = ''"></button>
-  </div>
-
-  <div *ngIf="errores().length" class="errores-box">
-    <p-message *ngFor="let err of errores()" severity="error" [text]="err" styleClass="w-full mb-2"></p-message>
-  </div>
-
-  <div *ngIf="filas().length">
+  <div *ngIf="filas().length" class="preview">
     <h4>Vista Previa</h4>
     <app-tabla-avanzada
       [columnas]="columnasPreview"
@@ -39,9 +42,5 @@
       storageKey="cargue-mensual-inf-propia"
       nombreExportar="Inf_Propia_Mensual">
     </app-tabla-avanzada>
-
-    <div class="guardar-row">
-      <button pButton label="Guardar Información Propia" icon="pi pi-save" [loading]="guardando()" (click)="guardar()"></button>
-    </div>
   </div>
 </div>

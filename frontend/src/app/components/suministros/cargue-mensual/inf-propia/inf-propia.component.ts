@@ -1,15 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, signal } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { MessageModule } from 'primeng/message';
 import * as Papa from 'papaparse';
 import { CommonPrimeNgModules } from '../../../../shared/primeng-imports';
 import { TablaAvanzadaComponent, TablaColumn } from '../../../shared/tabla-avanzada.component';
+import { CargueArchivoPasosComponent } from '../../../shared/cargue-archivo-pasos.component';
 import { EmpresasService, EmpresaItem } from '../../../../services/empresas.service';
 import { SuministrosService } from '../../../../services/suministros.service';
 import { CarguePropiaFila } from '../../../../models/cargue-mensual.models';
 import { periodoAnterior } from '../../../../shared/periodo-anterior.util';
+import { SIN_FILAS_DE_DATOS, estadoCargueMensual, periodoDestinoMensual } from '../cargue-pasos.util';
 
 interface FilaCsv {
   [key: string]: string | undefined;
@@ -55,7 +57,7 @@ function aNumero(valor: string | undefined): number | null {
 @Component({
   selector: 'app-inf-propia',
   standalone: true,
-  imports: [CommonModule, FormsModule, MessageModule, ...CommonPrimeNgModules, TablaAvanzadaComponent],
+  imports: [CommonModule, FormsModule, MessageModule, ...CommonPrimeNgModules, TablaAvanzadaComponent, CargueArchivoPasosComponent],
   templateUrl: './inf-propia.component.html',
   styleUrl: './inf-propia.component.css'
 })
@@ -71,7 +73,17 @@ export class InfPropiaComponent implements OnChanges {
   readonly filas = signal<CarguePropiaFila[]>([]);
   readonly errores = signal<string[]>([]);
   readonly guardando = signal(false);
+  readonly validando = signal(false);
   readonly estado = signal('');
+  readonly planoGuiaUrl = 'assets/layout/planos/plano_propio_mensual.csv';
+
+  /** Estado del cargue guiado: validando mientras se parsea, error/listo según la validación, guardando al guardar. */
+  readonly estadoCargue = computed(() => estadoCargueMensual({
+    validando: this.validando(),
+    guardando: this.guardando(),
+    errores: this.errores().length,
+    filas: this.filas().length
+  }));
 
   constructor(
     private readonly empresasService: EmpresasService,
@@ -98,10 +110,12 @@ export class InfPropiaComponent implements OnChanges {
     return columnasPreview;
   }
 
-  onArchivoSeleccionado(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const archivo = input.files?.[0];
-    if (!archivo) return;
+  // Los datos se guardan en el mes anterior al seleccionado (ver confirmarGuardado).
+  get periodoDestino(): string {
+    return periodoDestinoMensual(this.anno, this.mes);
+  }
+
+  onArchivoSeleccionado(archivo: File): void {
     if (this.empresaSeleccionada() === null) {
       this.estado.set('');
       this.errores.set(['Debe seleccionar una empresa antes de procesar el archivo.']);
@@ -110,11 +124,17 @@ export class InfPropiaComponent implements OnChanges {
 
     this.nombreArchivo.set(archivo.name);
     this.estado.set('');
+    this.filas.set([]);
+    this.errores.set([]);
+    this.validando.set(true);
 
     Papa.parse<FilaCsv>(archivo, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => this.procesarCsv(results.data)
+      complete: (results) => {
+        this.validando.set(false);
+        this.procesarCsv(results.data);
+      }
     });
   }
 
@@ -125,7 +145,7 @@ export class InfPropiaComponent implements OnChanges {
     const primera = data[0];
     let error = '';
     if (!primera) {
-      error = 'El archivo no contiene filas.';
+      error = SIN_FILAS_DE_DATOS;
     } else if (aNumero(primera.CODAPS) !== this.aps) {
       error = 'El APS Seleccionado no concuerda con el APS del archivo!';
     } else if (aNumero(primera.CODEMPRESA) !== empresa) {
@@ -162,10 +182,6 @@ export class InfPropiaComponent implements OnChanges {
 
   cancelarCargue(): void {
     this.limpiarCargue();
-  }
-
-  descargarPlano(): void {
-    window.open('assets/layout/planos/plano_propio_mensual.csv', '_blank');
   }
 
   guardar(): void {
@@ -211,6 +227,7 @@ export class InfPropiaComponent implements OnChanges {
   }
 
   private limpiarCargue(): void {
+    this.validando.set(false);
     this.nombreArchivo.set('');
     this.filas.set([]);
     this.errores.set([]);

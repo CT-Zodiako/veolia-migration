@@ -6,24 +6,25 @@ import { InfPropiaComponent } from './inf-propia.component';
 import { SuministrosService } from '../../../../services/suministros.service';
 import { EmpresasService } from '../../../../services/empresas.service';
 import { TablaAvanzadaComponent } from '../../../shared/tabla-avanzada.component';
+import { CargueArchivoPasosComponent } from '../../../shared/cargue-archivo-pasos.component';
 
 // Header of public/assets/layout/planos/plano_propio_mensual.csv (UTF-8 BOM, ';'), linked by InfPropiaMensual.vue:9-13.
 const HEADER = '﻿CODAPS;CODEMPRESA;ANNO;MES;CP;MT3AGUA;M2CC;M2LAV;TI;TM;KLP;T;QA';
 
-function csv(...rows: string[]): Event {
-  const file = new File([[HEADER, ...rows].join('\n')], 'plano_propio_mensual.csv', { type: 'text/csv' });
-  return { target: { files: [file] } } as unknown as Event;
+function csv(...rows: string[]): File {
+  return new File([[HEADER, ...rows].join('\n')], 'plano_propio_mensual.csv', { type: 'text/csv' });
 }
 
 function setup(aps = 1014, anno = 2026, mes = 1) {
   const service = { setCargueInfPropia: vi.fn((_payload: unknown) => of({ data: 1 })) };
+  const confirmation = { confirm: vi.fn((opts: { accept: () => void }) => opts.accept()) };
   const empresas = { getEmpresasPropias: vi.fn(() => of([{ EMPR_EMPR: 1023, EMPR_NOMBRE: 'VEOLIA PROPIA' }])) };
   TestBed.configureTestingModule({
     imports: [InfPropiaComponent],
     providers: [
       { provide: SuministrosService, useValue: service },
       { provide: EmpresasService, useValue: empresas },
-      { provide: ConfirmationService, useValue: { confirm: vi.fn((opts: { accept: () => void }) => opts.accept()) } }
+      { provide: ConfirmationService, useValue: confirmation }
     ]
   });
   const fixture = TestBed.createComponent(InfPropiaComponent);
@@ -31,12 +32,18 @@ function setup(aps = 1014, anno = 2026, mes = 1) {
   fixture.componentRef.setInput('anno', anno);
   fixture.componentRef.setInput('mes', mes);
   fixture.detectChanges();
-  return { fixture, component: fixture.componentInstance, service, empresas };
+  return { fixture, component: fixture.componentInstance, service, empresas, confirmation };
 }
 
-async function load(fixture: ReturnType<typeof setup>['fixture'], event: Event): Promise<void> {
+function pasos(fixture: ReturnType<typeof setup>['fixture']): CargueArchivoPasosComponent {
+  return fixture.debugElement.query(By.directive(CargueArchivoPasosComponent)).componentInstance as CargueArchivoPasosComponent;
+}
+
+// The file is picked through the shared guided upload (its archivoSeleccionado output).
+async function load(fixture: ReturnType<typeof setup>['fixture'], file: File): Promise<void> {
   const component = fixture.componentInstance;
-  component.onArchivoSeleccionado(event);
+  fixture.detectChanges();
+  pasos(fixture).archivoSeleccionado.emit(file);
   await vi.waitFor(() => expect(component.filas().length + component.errores().length).toBeGreaterThan(0));
   fixture.detectChanges();
 }
@@ -164,5 +171,102 @@ describe('InfPropiaComponent (701 Inf. Propia) — legacy InfPropiaMensual.vue',
     component.guardar();
 
     expect(component.estado()).toBe('Guardado Correctamente');
+  });
+
+  // cargue-archivos-pasos S2/S3: the native file input, the ⚡ link and the loose Cancelar/Guardar buttons are replaced by
+  // the shared guided upload, with the same Plano Guía file.
+  it('uses the shared guided upload with the same Plano Guía and no native file input of its own', () => {
+    const { fixture } = setup();
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(pasos(fixture).planoGuiaUrl).toBe('assets/layout/planos/plano_propio_mensual.csv');
+    expect(pasos(fixture).accept).toBe('.csv');
+    const propios = Array.from(host.querySelectorAll('input[type="file"]')).filter((i) => !i.closest('app-cargue-archivo-pasos'));
+    expect(propios).toEqual([]);
+    expect(host.textContent).not.toContain('⚡');
+  });
+
+  // S3/S5: a valid file is ready in step 3 with its row count and the real destination period (previous month).
+  it('reports listo with the row count and the previous month as destination period', async () => {
+    const { fixture } = setup(1014, 2026, 1);
+    fixture.componentInstance.empresaSeleccionada.set(1023);
+
+    await load(fixture, csv('1014;1023;2026;1;10;20;30;40;50;60;70;1;2'));
+
+    expect(pasos(fixture).estado).toBe('listo');
+    expect(pasos(fixture).resumen?.filas).toBe(1);
+    expect(pasos(fixture).periodoDestino).toBe('Diciembre 2025');
+    expect(pasos(fixture).guardarLabel).toBe('Guardar Información Propia');
+  });
+
+  // S5: the screen errors are shown once, inside the shared component.
+  it('passes the validation errors to the shared component (error estado) and shows them once', async () => {
+    const { fixture } = setup(1014, 2026, 1);
+    fixture.componentInstance.empresaSeleccionada.set(1023);
+
+    await load(fixture, csv('1014;1023;2025;12;10;20;30;40;50;60;70;1;2'));
+
+    expect(pasos(fixture).estado).toBe('error');
+    expect(pasos(fixture).errores).toEqual(['El AÑO y MES Seleccionado no concuerda con los del archivo!']);
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto.split('El AÑO y MES Seleccionado no concuerda con los del archivo!').length - 1).toBe(1);
+  });
+
+  // S5: Guardar of the shared component goes through the existing confirm dialog and save call; then it is cleared.
+  it('Guardar of the shared component confirms, saves and clears the upload', async () => {
+    const { fixture, component, service, confirmation } = setup(1014, 2026, 1);
+    fixture.componentInstance.empresaSeleccionada.set(1023);
+    await load(fixture, csv('1014;1023;2026;1;10;20;30;40;50;60;70;1;2'));
+
+    pasos(fixture).guardar.emit();
+    fixture.detectChanges();
+
+    expect(confirmation.confirm).toHaveBeenCalledTimes(1);
+    expect(service.setCargueInfPropia).toHaveBeenCalledTimes(1);
+    expect(component.filas()).toEqual([]);
+    expect(pasos(fixture).estado).toBe('vacio');
+  });
+
+  // cargue-archivos-pasos: a headers-only file is an error state like the semestral screens (no silent reset, no Guardar).
+  it('a headers-only CSV shows "El archivo no tiene filas de datos." in the error state', async () => {
+    const { fixture, component } = setup();
+    component.empresaSeleccionada.set(1023);
+
+    await load(fixture, csv());
+
+    expect(component.filas()).toEqual([]);
+    expect(pasos(fixture).estado).toBe('error');
+    expect(pasos(fixture).errores).toEqual(['El archivo no tiene filas de datos.']);
+    expect((fixture.nativeElement as HTMLElement).querySelector('button.btn-guardar')).toBeNull();
+  });
+
+  // S5: Cancelar / quitar of the shared component clear the preview like the old Cancelar button.
+  it('Cancelar and quitar of the shared component clear the preview', async () => {
+    const { fixture, component } = setup(1014, 2026, 1);
+    fixture.componentInstance.empresaSeleccionada.set(1023);
+    await load(fixture, csv('1014;1023;2026;1;10;20;30;40;50;60;70;1;2'));
+
+    pasos(fixture).cancelar.emit();
+    expect(component.filas()).toEqual([]);
+
+    await load(fixture, csv('1014;1023;2026;1;10;20;30;40;50;60;70;1;2'));
+    pasos(fixture).archivoQuitado.emit();
+    fixture.detectChanges();
+    expect(component.filas()).toEqual([]);
+    expect(pasos(fixture).estado).toBe('vacio');
+  });
+
+  // S4: Empresa first — step 2 is disabled with the message until an empresa is selected.
+  it('keeps the shared upload disabled until an empresa is selected', () => {
+    const { fixture, component } = setup();
+    component.empresaSeleccionada.set(null);
+    fixture.detectChanges();
+
+    expect(pasos(fixture).disabled).toBe(true);
+    expect(pasos(fixture).disabledMessage).toBe('Seleccioná una empresa primero');
+
+    component.empresaSeleccionada.set(1023);
+    fixture.detectChanges();
+    expect(pasos(fixture).disabled).toBe(false);
   });
 });

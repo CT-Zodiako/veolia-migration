@@ -5,14 +5,14 @@ import { ConfirmationService } from 'primeng/api';
 import { CargueComercialComponent } from './cargue-comercial.component';
 import { SuministrosService } from '../../../../services/suministros.service';
 import { TablaAvanzadaComponent } from '../../../shared/tabla-avanzada.component';
+import { CargueArchivoPasosComponent } from '../../../shared/cargue-archivo-pasos.component';
 
 // Header of public/assets/layout/planos/plano_usuarios.csv (UTF-8 BOM, ';' separated), the legacy guide file
 // linked by CargueComercial.vue:9-12.
 const HEADER = '\uFEFFCODAPS;APS;ANNO;MES;CODUSO;NOMUSO;CODFACTOR;CODTIPO;TIPO;TIPONOM;CANTIDAD;TONELADAS';
 
-function csv(...rows: string[]): Event {
-  const file = new File([[HEADER, ...rows].join('\n')], 'plano_usuarios.csv', { type: 'text/csv' });
-  return { target: { files: [file] } } as unknown as Event;
+function csv(...rows: string[]): File {
+  return new File([[HEADER, ...rows].join('\n')], 'plano_usuarios.csv', { type: 'text/csv' });
 }
 
 function setup(aps = 1033, anno = 2026, mes = 1) {
@@ -33,10 +33,25 @@ function setup(aps = 1033, anno = 2026, mes = 1) {
   return { fixture, component: fixture.componentInstance, service, confirmation };
 }
 
-async function load(fixture: ReturnType<typeof setup>['fixture'], event: Event): Promise<void> {
+function pasos(fixture: ReturnType<typeof setup>['fixture']): CargueArchivoPasosComponent {
+  return fixture.debugElement.query(By.directive(CargueArchivoPasosComponent)).componentInstance as CargueArchivoPasosComponent;
+}
+
+// The file is picked through the shared guided upload (its archivoSeleccionado output).
+async function load(fixture: ReturnType<typeof setup>['fixture'], file: File): Promise<void> {
   const component = fixture.componentInstance;
-  component.onArchivoSeleccionado(event);
+  fixture.detectChanges();
+  pasos(fixture).archivoSeleccionado.emit(file);
   await vi.waitFor(() => expect(component.filas().length + component.errores().length).toBeGreaterThan(0));
+  fixture.detectChanges();
+}
+
+// Picks a file through the shared component's own hidden input (runs its client checks).
+function elegirEnPasos(fixture: ReturnType<typeof setup>['fixture'], file: File): void {
+  const input = fixture.debugElement.query(By.directive(CargueArchivoPasosComponent)).nativeElement
+    .querySelector('input[type="file"]') as HTMLInputElement;
+  Object.defineProperty(input, 'files', { value: [file], configurable: true });
+  input.dispatchEvent(new Event('change'));
   fixture.detectChanges();
 }
 
@@ -180,5 +195,98 @@ describe('CargueComercialComponent (701 Inf. Usuarios) — legacy CargueComercia
     fixture.detectChanges();
 
     expect(component.estado()).toBe('GUARDADO EXITOSAMENTE');
+  });
+
+  // cargue-archivos-pasos S2/S3: the native file input, the ⚡ link and the loose Cancelar/Guardar buttons are replaced by
+  // the shared guided upload, with the same Plano Guía file.
+  it('uses the shared guided upload with the same Plano Guía and no native file input of its own', () => {
+    const { fixture } = setup();
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(pasos(fixture).planoGuiaUrl).toBe('assets/layout/planos/plano_usuarios.csv');
+    expect(pasos(fixture).accept).toBe('.csv');
+    const propios = Array.from(host.querySelectorAll('input[type="file"]')).filter((i) => !i.closest('app-cargue-archivo-pasos'));
+    expect(propios).toEqual([]);
+    expect(host.textContent).not.toContain('⚡');
+  });
+
+  // S3/S5: a valid file is ready in step 3 with its row count and the real destination period (previous month).
+  it('reports listo with the row count and the previous month as destination period', async () => {
+    const { fixture } = setup(1033, 2026, 1);
+
+    await load(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
+
+    expect(pasos(fixture).estado).toBe('listo');
+    expect(pasos(fixture).resumen?.filas).toBe(1);
+    expect(pasos(fixture).periodoDestino).toBe('Diciembre 2025');
+    expect(pasos(fixture).guardarLabel).toBe('Guardar Información de Usuarios');
+  });
+
+  // S5: the screen errors are shown once, inside the shared component.
+  it('passes the validation errors to the shared component (error estado) and shows them once', async () => {
+    const { fixture } = setup(1033, 2026, 1);
+
+    await load(fixture, csv('1033;SAN PEDRO;2025;12;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
+
+    expect(pasos(fixture).estado).toBe('error');
+    expect(pasos(fixture).errores).toEqual(['El AÑO y MES Seleccionado no concuerda con los del archivo!']);
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto.split('El AÑO y MES Seleccionado no concuerda con los del archivo!').length - 1).toBe(1);
+  });
+
+  // S5: Guardar of the shared component goes through the existing confirm dialog and save call; then it is cleared.
+  it('Guardar of the shared component confirms, saves and clears the upload', async () => {
+    const { fixture, component, service, confirmation } = setup(1033, 2026, 1);
+    await load(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
+
+    pasos(fixture).guardar.emit();
+    fixture.detectChanges();
+
+    expect(confirmation.confirm).toHaveBeenCalledTimes(1);
+    expect(service.filecarguecomercial).toHaveBeenCalledTimes(1);
+    expect(component.filas()).toEqual([]);
+    expect(pasos(fixture).estado).toBe('vacio');
+  });
+
+  // cargue-archivos-pasos: a headers-only file is an error state like the semestral screens (no silent reset, no Guardar).
+  it('a headers-only CSV shows "El archivo no tiene filas de datos." in the error state', async () => {
+    const { fixture, component } = setup();
+
+    await load(fixture, csv());
+
+    expect(component.filas()).toEqual([]);
+    expect(pasos(fixture).estado).toBe('error');
+    expect(pasos(fixture).errores).toEqual(['El archivo no tiene filas de datos.']);
+    expect((fixture.nativeElement as HTMLElement).querySelector('button.btn-guardar')).toBeNull();
+  });
+
+  // cargue-archivos-pasos: a replacement rejected by the client checks also drops the previous preview and Guardar.
+  it('a rejected replacement (wrong extension) clears the previous preview', async () => {
+    const { fixture, component } = setup(1033, 2026, 1);
+    elegirEnPasos(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
+    await vi.waitFor(() => expect(component.filas()).toHaveLength(1));
+    fixture.detectChanges();
+
+    elegirEnPasos(fixture, new File(['x'], 'plano_usuarios.xlsx'));
+
+    expect(component.filas()).toEqual([]);
+    expect(pasos(fixture).estado).toBe('vacio');
+    expect(fixture.debugElement.query(By.directive(TablaAvanzadaComponent))).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.msg-error')!.textContent).toContain('El archivo no es CSV');
+  });
+
+  // S5: Cancelar / quitar of the shared component clear the preview like the old Cancelar button.
+  it('Cancelar and quitar of the shared component clear the preview', async () => {
+    const { fixture, component } = setup(1033, 2026, 1);
+    await load(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
+
+    pasos(fixture).cancelar.emit();
+    expect(component.filas()).toEqual([]);
+
+    await load(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
+    pasos(fixture).archivoQuitado.emit();
+    fixture.detectChanges();
+    expect(component.filas()).toEqual([]);
+    expect(pasos(fixture).estado).toBe('vacio');
   });
 });
