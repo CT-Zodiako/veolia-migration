@@ -8,7 +8,7 @@ namespace Veolia.Api.Modules.Regulator.Costos;
 
 [ApiController]
 [Route("api/v1/costos")]
-public sealed class CostosController(ICostosRepository repository, ILogger<CostosController> logger) : ControllerBase
+public sealed class CostosController(ICostosRepository repository) : ControllerBase
 {
     [HttpPost("validapreactualiza")]
     public async Task<IActionResult> Validapreactualiza([FromBody] ValidapreactualizaRequest request, CancellationToken cancellationToken)
@@ -92,62 +92,5 @@ public sealed class CostosController(ICostosRepository repository, ILogger<Costo
         {
             return StatusCode(StatusCodes.Status412PreconditionFailed, new ApiEnvelopeResponse<object>("error", new { }, ex.Message, HttpContext.TraceIdentifier, null));
         }
-        catch (OracleTimeoutException ex)
-        {
-            logger.LogError(ex, "Oracle sin conexión usuario={Usuario} endpoint={Endpoint} traceId={TraceId}",
-                tokenContext.SisuId, Endpoint(), HttpContext.TraceIdentifier);
-            return StatusCode(StatusCodes.Status502BadGateway, new ApiEnvelopeResponse<object>("error", new { }, ex.Message, HttpContext.TraceIdentifier, "ORA-03135"));
-        }
-        catch (OracleOperationException ex)
-        {
-            logger.LogError(ex,
-                "Oracle falló en {Operacion} {OraCode} constraint={Constraint} {Parametros} usuario={Usuario} endpoint={Endpoint} traceId={TraceId} oracle=\"{OracleMessage}\"",
-                ex.Operation, ex.OraCode, ex.Constraint ?? "-", ex.FormatParameters(), tokenContext.SisuId, Endpoint(), HttpContext.TraceIdentifier, ex.OracleMessage);
-
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, FriendlyMessage(ex), HttpContext.TraceIdentifier, ex.OraCode,
-                    new ApiErrorDetail(ex.Operation, ex.OraCode, ex.Constraint, ex.OracleMessage)));
-        }
-        catch (Oracle.ManagedDataAccess.Client.OracleException ex)
-        {
-            logger.LogError(ex, "Oracle falló ORA-{OraNumber} usuario={Usuario} endpoint={Endpoint} traceId={TraceId}",
-                Math.Abs(ex.Number).ToString("D5"), tokenContext.SisuId, Endpoint(), HttpContext.TraceIdentifier);
-            var friendly = ex.Number switch
-            {
-                1 => "Conflicto de datos en Oracle. Verificá si el período ya está certificado.",
-                1400 => "Faltan datos obligatorios para completar la operación en Oracle.",
-                2291 => "No existe información relacionada para la operación solicitada.",
-                _ => $"Oracle error: {ex.Message}"
-            };
-
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, friendly, HttpContext.TraceIdentifier, $"ORA-{Math.Abs(ex.Number):D5}"));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error no controlado usuario={Usuario} endpoint={Endpoint} traceId={TraceId}",
-                tokenContext.SisuId, Endpoint(), HttpContext.TraceIdentifier);
-            var oraCode = ex.Message.Contains("ORA-") ? ExtractOraCode(ex.Message) : "ORA-00000";
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new ApiEnvelopeResponse<object>("error", new { }, "Ocurrió un error procesando la solicitud.", HttpContext.TraceIdentifier, oraCode));
-        }
-    }
-
-    private string Endpoint() => $"{Request.Method} {Request.Path}";
-
-    private static string FriendlyMessage(OracleOperationException ex) => ex.OraNumber switch
-    {
-        1 => ex.Constraint is null
-            ? "Oracle rechazó datos duplicados. La operación no se completó."
-            : $"Oracle rechazó datos duplicados (restricción {ex.Constraint}). La operación no se completó.",
-        1400 => "Faltan datos obligatorios para completar la operación en Oracle.",
-        2291 => "No existe información relacionada para la operación solicitada.",
-        _ => "Oracle devolvió un error al procesar la solicitud."
-    };
-
-    private static string? ExtractOraCode(string message)
-    {
-        var match = System.Text.RegularExpressions.Regex.Match(message, @"ORA-\d+");
-        return match.Success ? match.Value : null;
     }
 }

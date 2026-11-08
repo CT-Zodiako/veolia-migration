@@ -1,5 +1,6 @@
 using Veolia.Api.Infrastructure.Data;
 using Veolia.Api.Infrastructure.Auth;
+using Veolia.Api.Infrastructure.Errors;
 using Veolia.Api.Modules.Auth;
 using Veolia.Api.Modules.Regulator.Aps;
 using Veolia.Api.Modules.Regulator.Costos;
@@ -50,6 +51,7 @@ builder.Logging.AddSimpleConsole(options =>
 // exponen el nombre de columna Oracle en mayúsculas (ej. RellenoResponse)
 // fijan su propio contrato con [JsonPropertyName] en vez de cambiar esto acá.
 builder.Services.AddControllers();
+builder.Services.AddGlobalErrorHandling();
 
 builder.Services.AddCors(options =>
 {
@@ -106,6 +108,9 @@ var app = builder.Build();
 
 // Fail fast: without a strong Auth:JwtSecret no token can be issued or verified.
 AuthJwtSecret.EnsureConfigured(app.Configuration);
+
+// Outermost for /api: any exception left by a controller becomes the logged error envelope.
+app.UseGlobalErrorHandling();
 
 app.UseCors("FrontendPolicy");
 
