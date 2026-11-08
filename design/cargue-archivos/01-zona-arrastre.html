@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cargue de archivos — Zona de arrastre grande</title>
+<style>
+/* Tokens — design/system.md (frontend/src/styles.css, :root) */
+:root {
+  --color-bg-page: #f1f5f9;
+  --color-bg-card: #ffffff;
+  --color-bg-soft: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-border-soft: #f1f5f9;
+  --color-text-primary: #0f172a;
+  --color-text-body: #334155;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-bg-danger-soft: #fff2f2;
+  --color-border-danger-soft: #ffcdcc;
+  --color-bg-success-soft: #f0fdf4;
+  --color-border-success-soft: #bbf7d0;
+  --color-text-success: #16a34a;
+  --color-brand-strong: #780200;
+  --color-brand-medium: #c40300;
+  --color-brand-accent: #f10400;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-size: 14px;
+  color: var(--color-text-body);
+  background: var(--color-bg-page);
+}
+p { margin: 0; }
+h2, h3, h4 { margin: 0; }
+code { font-family: inherit; font-weight: 600; font-size: 13px; background: var(--color-bg-card); border: 1px solid var(--color-border-danger-soft); border-radius: 4px; padding: 0 4px; color: var(--color-text-primary); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.ic { width: 18px; height: 18px; flex: none; }
+
+/* Shell */
+.topbar { height: 64px; padding: 0 24px; background: var(--color-bg-card); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; }
+.topbar-title { font-size: 18px; font-weight: 600; color: var(--color-text-primary); }
+.dir-tag { font-size: 13px; color: var(--color-text-secondary); }
+.content { padding: 24px; }
+.card-section { background: var(--color-bg-card); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-bottom: 20px; container-type: inline-size; }
+.params { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.form-group label, .form-group .lbl { display: block; font-size: 13px; font-weight: 600; color: var(--color-text-body); margin-bottom: 4px; }
+.fake-select { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid var(--color-text-secondary); border-radius: 8px; color: var(--color-text-primary); background: var(--color-bg-card); }
+.fg-aps { flex: 0 1 220px; } .fg-anno, .fg-mes { flex: 0 1 130px; }
+
+/* Buttons and links */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; font: inherit; font-size: 14px; font-weight: 600; line-height: 1.2; cursor: pointer; text-decoration: none; transition: background-color .15s, border-color .15s; }
+.btn-sm { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+.btn-primary { background: #c40300; color: #fff; }
+.btn-primary:hover { background: #9c0300; }
+.btn-secondary { background: var(--color-bg-card); color: var(--color-text-primary); border-color: var(--color-text-secondary); }
+.btn-secondary:hover { background: var(--color-bg-soft); border-color: var(--color-text-primary); }
+.btn-ghost { background: transparent; color: var(--color-text-body); }
+.btn-ghost:hover { background: var(--color-bg-soft); color: var(--color-text-primary); }
+.btn:disabled { background: var(--color-border); color: var(--color-text-secondary); border-color: transparent; cursor: not-allowed; }
+.btn-primary[aria-busy="true"]:disabled { background: #9c0300; color: #fff; cursor: progress; }
+.icon-btn { width: 40px; padding: 0; }
+.link { display: inline-flex; align-items: center; gap: 6px; color: var(--color-brand-medium); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; border-radius: 4px; }
+.link:hover { color: var(--color-brand-strong); }
+:focus-visible { outline: 2px solid var(--color-brand-medium); outline-offset: 2px; }
+
+/* File tile */
+.file-tile { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg-card); flex-wrap: wrap; }
+.file-tile.is-error { border-color: var(--color-brand-accent); background: var(--color-bg-danger-soft); }
+.file-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--color-bg-soft); border: 1px solid var(--color-border); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--color-text-secondary); flex: none; }
+.file-icon .ic { width: 16px; height: 16px; }
+.file-icon b { font-size: 9px; line-height: 1; letter-spacing: .04em; color: var(--color-text-primary); margin-top: 1px; }
+.file-tile.is-error .file-icon { color: var(--color-brand-accent); }
+.file-main { flex: 1 1 200px; min-width: 0; }
+.file-name { font-weight: 600; color: var(--color-text-primary); overflow-wrap: anywhere; }
+.file-meta { font-size: 13px; color: var(--color-text-secondary); }
+.file-actions { display: flex; gap: 4px; align-items: center; }
+.ok { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--color-text-primary); }
+.ok .ic { color: var(--color-text-success); width: 16px; height: 16px; }
+
+/* Progress */
+.progress { height: 6px; background: var(--color-border); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+.progress > span { display: block; height: 100%; background: #c40300; border-radius: 4px; transition: width .2s ease-out; }
+.progress.indeterminate > span { width: 35%; animation: slide 1.1s ease-in-out infinite; }
+@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+.spin { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Messages (skill §3 recipe; error title uses brand-strong for AA on danger-soft) */
+.msg { display: flex; gap: 12px; padding: 12px; border-radius: 8px; border: 1px solid; font-size: 14px; color: var(--color-text-primary); }
+.msg > .ic { margin-top: 2px; }
+.msg-error { background: var(--color-bg-danger-soft); border-color: var(--color-border-danger-soft); }
+.msg-error > .ic { color: var(--color-brand-accent); }
+.msg-error .msg-title { color: var(--color-brand-strong); font-weight: 600; }
+.msg-success { background: var(--color-bg-success-soft); border-color: var(--color-border-success-soft); }
+.msg-success > .ic { color: var(--color-text-success); }
+.msg-success .msg-title { font-weight: 600; }
+.msg-body { display: grid; gap: 4px; }
+.msg-meta { font-size: 13px; color: var(--color-text-secondary); }
+.msg-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 6px; }
+
+/* Preview */
+.preview { margin-top: 16px; }
+.preview-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.preview-head h4 { font-size: 14px; font-weight: 600; color: var(--color-text-body); }
+.preview-head span { font-size: 13px; color: var(--color-text-secondary); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; line-height: 1.3; }
+th { font-size: 12px; font-weight: 600; white-space: nowrap; text-align: left; padding: 6px 8px; background: var(--color-bg-soft); color: var(--color-text-primary); border-bottom: 1px solid var(--color-border); }
+td { padding: 5px 8px; white-space: nowrap; color: var(--color-text-body); }
+.text-right { text-align: right; }
+
+/* Footer */
+.footer { display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-border); }
+.footer-note { margin-right: auto; font-size: 13px; color: var(--color-text-secondary); }
+
+/* Mockup controls + gallery */
+.mock-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; font-size: 13px; color: var(--color-text-secondary); }
+.mock-bar button { font: inherit; font-size: 13px; min-height: 32px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--color-text-secondary); background: var(--color-bg-card); color: var(--color-text-body); cursor: pointer; }
+.mock-bar button[aria-pressed="true"] { background: var(--color-text-primary); border-color: var(--color-text-primary); color: #fff; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+.tradeoff h2 { font-size: 16px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 8px; }
+.tradeoff ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.tradeoff .k { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); margin-top: 12px; }
+.gallery-title { font-size: 16px; font-weight: 600; color: var(--color-text-primary); margin: 8px 0 4px; }
+.gallery-sub { color: var(--color-text-secondary); margin-bottom: 12px; }
+.gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.snap { margin: 0; }
+.snap figcaption { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 8px; }
+.snap .card-section { margin: 0; }
+.snap [data-progress] { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .progress.indeterminate > span { width: 100%; opacity: .55; }
+}
+/* Dirección A — zona de arrastre grande */
+.up-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.up-head h3 { font-size: 16px; font-weight: 600; color: var(--color-text-primary); }
+.sub { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+.dz { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 20px; border: 2px dashed var(--color-text-secondary); border-radius: 12px; background: var(--color-bg-soft); color: var(--color-text-body); font: inherit; text-align: center; cursor: pointer; transition: background-color .15s, border-color .15s; }
+.dz:hover { border-color: var(--color-text-primary); background: var(--color-bg-card); }
+.dz-compact { flex-direction: row; justify-content: center; padding: 14px 16px; margin-top: 12px; }
+.dz-compact .dz-icon { width: 36px; height: 36px; }
+.dz-compact .dz-hint { display: none; }
+.dz-icon { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--color-bg-card); border: 1px solid var(--color-border); color: var(--color-brand-medium); }
+.dz-icon .ic { width: 24px; height: 24px; }
+.dz-text strong { color: var(--color-text-primary); font-weight: 600; }
+.fake-link { color: var(--color-brand-medium); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.dz-hint { font-size: 13px; color: var(--color-text-secondary); }
+.t-over { display: none; }
+.dz.is-over { border-style: solid; border-color: var(--color-brand-strong); background: var(--color-bg-danger-soft); }
+.dz.is-over .dz-icon { background: #c40300; color: #fff; border-color: #c40300; }
+.dz.is-over .t-idle { display: none; }
+.dz.is-over .t-over { display: inline; }
+.validating-text { font-size: 13px; color: var(--color-text-body); }
+.tile-stack { display: grid; gap: 12px; }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="topbar-title">Cargue Complementario</span>
+  <span class="dir-tag">Dirección A · Zona de arrastre grande</span>
+</header>
+<main class="content">
+  <section class="card-section params" aria-label="Parámetros de consulta">
+    <div class="form-group fg-aps"><span class="lbl">APS</span><div class="fake-select">1205 <span aria-hidden="true">▾</span></div></div>
+    <div class="form-group fg-anno"><span class="lbl">Año</span><div class="fake-select">2026 <span aria-hidden="true">▾</span></div></div>
+    <div class="form-group fg-mes"><span class="lbl">Mes</span><div class="fake-select">Octubre <span aria-hidden="true">▾</span></div></div>
+  </section>
+
+  <div class="layout">
+    <div>
+      <div class="mock-bar" id="mock-bar"><span>Maqueta · ver estado:</span></div>
+      <section class="card-section" id="live" aria-label="Cargue de archivo (interactivo: probá con un CSV real)"></section>
+      <input type="file" id="live-input" class="sr-only" accept=".csv,text/csv" tabindex="-1" aria-hidden="true">
+      <p id="live-status" class="sr-only" role="status" aria-live="polite"></p>
+    </div>
+    <aside class="card-section tradeoff" aria-label="Tradeoff de esta dirección">
+      <h2>A · Zona de arrastre grande</h2>
+      <p>Un área punteada ocupa el ancho de la card; el Plano Guía es un botón secundario en el encabezado. Al elegir el archivo, la zona se reemplaza por una ficha con nombre, tamaño, filas y columnas.</p>
+      <p class="k">Gana</p>
+      <ul><li>El objetivo de la pantalla es obvio de un vistazo.</li><li>Blanco grande para arrastrar desde el Explorador.</li><li>La ficha y el error ocupan el mismo lugar: nada salta.</li></ul>
+      <p class="k">Pierde</p>
+      <ul><li>~170 px de alto en reposo: en Cargue Mensual/Semestral (debajo de Empresa y dentro de pestañas) empuja la vista previa.</li><li>Para quien carga todos los meses, el área grande es redundante.</li></ul>
+      <p class="k">Probalo</p>
+      <p>Hacé clic o arrastrá un .csv real: valida extensión, vacío y encabezados contra el plano.</p>
+
+    </aside>
+  </div>
+
+  <h2 class="gallery-title">Estados del componente</h2>
+  <p class="gallery-sub">Mismo componente a ~440 px de ancho (columna angosta / pestaña de Cargue Mensual). Error de ejemplo: columnas que no coinciden con el Plano Guía.</p>
+  <div class="gallery" id="gallery"></div>
+</main>
+<script>
+/* ---------- Dirección A: zona de arrastre grande ---------- */
+function dropzone(id, over, compact) {
+  return `<button type="button" class="dz ${over ? 'is-over' : ''} ${compact ? 'dz-compact' : ''}" data-drop data-action="pick" data-focus aria-describedby="${id}-hint">
+    <span class="dz-icon">${ic('upload')}</span>
+    <span class="dz-text"><span class="t-idle"><strong>${compact ? 'Cargar otro archivo' : 'Arrastrá el archivo CSV aquí'}</strong> o <span class="fake-link">seleccioná uno</span></span><span class="t-over"><strong>Soltá el archivo para validarlo</strong></span></span>
+    <span class="dz-hint" id="${id}-hint">Solo archivos .csv · un archivo por cargue</span>
+  </button>`;
+}
+function renderCard(s, d, id) {
+  const over = s === 'dragover'; if (over) s = 'idle';
+  const head = `<div class="up-head"><div><h3>Cargue de Información Complementaria</h3><p class="sub">APS ${PERIODO.aps} · período ${PERIODO.sel} · archivo .csv con las columnas del Plano Guía</p></div>
+    <a href="#" class="btn btn-secondary" data-action="plano">${ic('download')}Descargar Plano Guía</a></div>`;
+  let body = '';
+  if (s === 'idle') body = dropzone(id, over, false);
+  else if (s === 'validating') body = `<div class="file-tile">${fileIcon()}<div class="file-main"><p class="file-name">${esc(d.name)}</p>
+      <p class="validating-text">Validando estructura… <span data-pct>${d.progress}</span> %</p>${progressBar(d)}</div></div>` + footer(s, d);
+  else if (s === 'selected' || s === 'saving') body = `<div class="file-tile">${fileIcon()}<div class="file-main"><p class="file-name">${esc(d.name)}</p><p class="file-meta">${meta(d)}</p>${s === 'saving' ? progressBar(d, true) : ''}</div>
+      ${s === 'selected' ? `<span class="ok">${ic('checkc')}Estructura válida</span>
+      <div class="file-actions"><button type="button" class="btn btn-ghost btn-sm" data-action="pick" data-focus>${ic('swap')}Cambiar</button><button type="button" class="btn btn-ghost icon-btn" data-action="remove" aria-label="Quitar ${esc(d.name)}">${ic('x')}</button></div>` : ''}
+    </div>${preview(d)}` + footer(s, d);
+  else if (s === 'error') body = `<div class="tile-stack"><div class="file-tile is-error">${fileIcon()}<div class="file-main"><p class="file-name">${esc(d.name)}</p><p class="file-meta">${fmtSize(d.size)} · no se puede cargar</p></div>
+      <div class="file-actions"><button type="button" class="btn btn-ghost icon-btn" data-action="remove" aria-label="Quitar ${esc(d.name)}" data-focus>${ic('x')}</button></div></div>${errorMsg(d)}</div>` + footer(s, d);
+  else if (s === 'success') body = successMsg(d) + dropzone(id, false, true);
+  return head + body;
+}
+
+/* ---------- Shared data + helpers (same in every direction) ---------- */
+const EXPECTED = ['APSA_ID','COM_ANNO','COM_MES','F24_DET','F24_F1ET','F24_CPEET','F24_PRTZET','F24_CEG','F35_CAMRERS','F35_QRS_MES','F35_DISPALT9','F35_INCCDFALT9','F35_PRCTCRRCP','F35_V0','F35_VM','F35_MCRS','F35_ICRSM','F35_ICCRS','F35_FREIN','F35_CAPPERDF','F36_VL_MES'];
+const PERIODO = { aps: '1205', sel: '2026-10', dest: '2026-09' };
+const MOCK = { name: 'sui_complemento_2026_10.csv', size: 2150, rows: 1, cols: 21, progress: 62, savedAt: '08/11/2026 10:42' };
+const ERR_COLS = { title: 'Faltan columnas del Plano Guía', body: 'El archivo no tiene las columnas <code>F24_DET</code> y <code>F35_V0</code>. Descargá el Plano Guía y copiá la fila de encabezados tal cual, sin cambiar nombres ni orden.' };
+const ERR_EMPTY = { title: 'El archivo no contiene filas', body: 'Solo encontramos la fila de encabezados. Completá al menos una fila de datos debajo de los encabezados del Plano Guía.' };
+const STATES = [['idle','Vacío'],['dragover','Arrastrando'],['validating','Validando'],['selected','Archivo listo'],['error','Error'],['saving','Guardando'],['success','Guardado']];
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const P = {
+  upload: '<path d="M12 15V4"/><path d="m7 9 5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>',
+  download: '<path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>',
+  file: '<path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4"/>',
+  checkc: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+  check: '<path d="m5 12 5 5 9-10"/>',
+  alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><path d="M12 16.5v.01"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  swap: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><path d="M4 20v-4.5h4.5"/>',
+  save: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 20v-6h8v6"/>',
+  spinner: '<path d="M12 3a9 9 0 1 0 9 9"/>'
+};
+function ic(name, cls = '') {
+  return `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${P[name]}</svg>`;
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1).replace('.', ',') + ' KB';
+  return (b / 1048576).toFixed(1).replace('.', ',') + ' MB';
+}
+function filas(n) { return n === 1 ? '1 fila' : n.toLocaleString('es-CO') + ' filas'; }
+function meta(d) { return `${fmtSize(d.size)} · ${filas(d.rows)} · ${d.cols} columnas`; }
+
+function fileIcon() { return `<span class="file-icon">${ic('file')}<b>CSV</b></span>`; }
+function progressBar(d, indeterminate) {
+  return indeterminate
+    ? `<div class="progress indeterminate" aria-hidden="true"><span></span></div>`
+    : `<div class="progress" role="progressbar" aria-label="Validación del archivo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${d.progress}"><span data-progress style="width:${d.progress}%"></span></div>`;
+}
+function planoLink(extra = '') {
+  return `<a href="#" class="link ${extra}" data-action="plano">${ic('download')}Descargar Plano Guía</a>`;
+}
+function errorMsg(d) {
+  return `<div class="msg msg-error" role="alert">${ic('alert')}<div class="msg-body">
+    <p class="msg-title">${d.error.title}</p><p>${d.error.body}</p>
+    <div class="msg-actions">${planoLink()}<button type="button" class="btn btn-secondary btn-sm" data-action="pick">Elegir otro archivo</button></div>
+  </div></div>`;
+}
+function successMsg(d) {
+  return `<div class="msg msg-success" role="status">${ic('checkc')}<div class="msg-body">
+    <p class="msg-title">Información guardada correctamente: ${filas(d.rows)} afectada${d.rows === 1 ? '' : 's'}.</p>
+    <p class="msg-meta">${esc(d.name)} · guardado en el período ${PERIODO.dest} · ${d.savedAt}</p>
+  </div></div>`;
+}
+function preview(d) {
+  return `<div class="preview">
+    <div class="preview-head"><h4>Vista previa</h4><span>${filas(d.rows)} · se muestra completa con la tabla avanzada</span></div>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Vista previa del archivo"><table>
+      <thead><tr><th>APS</th><th>AÑO</th><th>MES</th><th class="text-right">DET</th><th class="text-right">F1ET</th><th class="text-right">CPEET</th><th class="text-right">PRTZET</th><th class="text-right">CEG</th><th class="text-right">CAMRERS</th><th>…</th></tr></thead>
+      <tbody><tr><td>1205</td><td>2026</td><td>10</td><td class="text-right">18450.32</td><td class="text-right">1.00</td><td class="text-right">4520.10</td><td class="text-right">0.85</td><td class="text-right">312.40</td><td class="text-right">27815.00</td><td>+12</td></tr></tbody>
+    </table></div></div>`;
+}
+function footer(s, d) {
+  const cancel = `<button type="button" class="btn btn-secondary" data-action="cancel" ${s === 'saving' ? 'disabled' : ''}>Cancelar</button>`;
+  if (s === 'selected') return `<div class="footer"><p class="footer-note">Se guarda en el período ${PERIODO.dest} (mes anterior al seleccionado).</p>${cancel}<button type="button" class="btn btn-primary" data-action="save">${ic('save')}Guardar Información</button></div>`;
+  if (s === 'validating') return `<div class="footer"><p class="footer-note">Guardar se habilita cuando termine la validación.</p>${cancel}<button type="button" class="btn btn-primary" disabled>${ic('save')}Guardar Información</button></div>`;
+  if (s === 'error') return `<div class="footer"><p class="footer-note">Corregí el archivo para habilitar Guardar.</p>${cancel}<button type="button" class="btn btn-primary" disabled>${ic('save')}Guardar Información</button></div>`;
+  if (s === 'saving') return `<div class="footer"><p class="footer-note">Guardando en el período ${PERIODO.dest}…</p>${cancel}<button type="button" class="btn btn-primary" disabled aria-busy="true">${ic('spinner', 'spin')}Guardando…</button></div>`;
+  return '';
+}
+
+/* ---------- Live instance ---------- */
+const live = { state: 'idle', data: { ...MOCK } };
+const root = document.getElementById('live');
+const input = document.getElementById('live-input');
+const statusEl = document.getElementById('live-status');
+let timer = null;
+
+function announce(t) { statusEl.textContent = ''; setTimeout(() => { statusEl.textContent = t; }, 30); }
+function set(state, data, opts = {}) {
+  const hadFocus = root.contains(document.activeElement);
+  live.state = state; live.data = { ...live.data, ...data };
+  root.innerHTML = renderCard(state, live.data, 'live');
+  bind();
+  document.querySelectorAll('.mock-bar [data-state]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.state === state)));
+  if (hadFocus || opts.focus) { const f = root.querySelector('[data-focus]'); if (f) f.focus(); }
+  const msg = { idle: 'Sin archivo seleccionado.', validating: `Validando ${live.data.name}.`, selected: `Archivo listo: ${live.data.name}, ${meta(live.data)}.`, error: live.data.error ? 'Error: ' + live.data.error.title + '.' : '', saving: 'Guardando información.', success: 'Información guardada correctamente.' }[state];
+  if (msg && !opts.silent) announce(msg);
+}
+function bind() {
+  root.querySelectorAll('[data-action]').forEach(el => el.addEventListener('click', e => { e.preventDefault(); act(el.dataset.action); }));
+}
+function act(a) {
+  clearInterval(timer);
+  if (a === 'pick') { input.value = ''; input.click(); }
+  else if (a === 'cancel' || a === 'remove') set('idle', {}, { focus: true });
+  else if (a === 'plano') announce('Descargando sui_complemento.csv (en esta maqueta no se descarga nada).');
+  else if (a === 'save') {
+    // En la app real primero abre el ConfirmDialog: “¿Confirmás guardar 1 fila(s)…?”
+    set('saving', {}, { focus: true });
+    timer = setTimeout(() => set('success', { savedAt: new Date().toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) }, { focus: true }), REDUCED ? 300 : 1600);
+  }
+}
+input.addEventListener('change', () => handleFile(input.files[0]));
+
+function handleFile(f) {
+  if (!f) return;
+  clearInterval(timer);
+  const base = { name: f.name, size: f.size, rows: 0, cols: 0, progress: 0, error: null };
+  if (!/\.csv$/i.test(f.name)) {
+    const ext = f.name.includes('.') ? '.' + f.name.split('.').pop().toLowerCase() : 'sin extensión';
+    return set('error', { ...base, error: { title: 'El archivo no es CSV', body: `«${esc(f.name)}» es un archivo ${esc(ext)}. Guardalo como CSV (delimitado por comas) a partir del Plano Guía e intentá de nuevo.` } }, { focus: true });
+  }
+  if (f.size === 0) return set('error', { ...base, error: ERR_EMPTY }, { focus: true });
+  set('validating', base, { focus: true });
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = evaluate(String(reader.result), base);
+    let p = 0;
+    const step = () => {
+      p = Math.min(100, p + 18);
+      const bar = root.querySelector('[data-progress]'); const pct = root.querySelector('[data-pct]');
+      if (bar) { bar.style.width = p + '%'; bar.parentElement.setAttribute('aria-valuenow', p); }
+      if (pct) pct.textContent = p;
+      if (p >= 100) { clearInterval(timer); set(result.state, result.data, { focus: true }); }
+    };
+    if (REDUCED) set(result.state, result.data, { focus: true }); else timer = setInterval(step, 110);
+  };
+  reader.readAsText(f);
+}
+function evaluate(text, base) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return { state: 'error', data: { ...base, error: ERR_EMPTY } };
+  const headers = lines[0].split(/[,;]/).map(h => h.trim().replace(/^"|"$/g, '').toUpperCase());
+  const missing = EXPECTED.filter(h => !headers.includes(h));
+  if (missing.length) {
+    const list = missing.slice(0, 4).map(m => `<code>${m}</code>`).join(', ') + (missing.length > 4 ? ` y ${missing.length - 4} más` : '');
+    return { state: 'error', data: { ...base, rows: lines.length - 1, cols: headers.length, error: { title: 'Faltan columnas del Plano Guía', body: `El archivo no tiene ${missing.length === 1 ? 'la columna' : 'las columnas'} ${list}. Descargá el Plano Guía y copiá la fila de encabezados tal cual, sin cambiar nombres ni orden.` } } };
+  }
+  return { state: 'selected', data: { ...base, rows: lines.length - 1, cols: headers.length, progress: 100 } };
+}
+
+/* Drag & drop: anywhere on the card; the [data-drop] element shows the target. */
+let depth = 0;
+function hasFiles(e) { return Array.from(e.dataTransfer?.types || []).includes('Files'); }
+function overClass(on) { root.querySelectorAll('[data-drop]').forEach(el => el.classList.toggle('is-over', on)); }
+root.addEventListener('dragenter', e => { if (!hasFiles(e) || live.state === 'saving' || live.state === 'validating') return; e.preventDefault(); depth++; overClass(true); });
+root.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
+root.addEventListener('dragleave', () => { depth = Math.max(0, depth - 1); if (!depth) overClass(false); });
+root.addEventListener('drop', e => { e.preventDefault(); depth = 0; overClass(false); if (live.state === 'saving' || live.state === 'validating') return; handleFile(e.dataTransfer.files[0]); });
+
+/* Mockup state switcher */
+const bar = document.getElementById('mock-bar');
+bar.insertAdjacentHTML('beforeend', STATES.map(([k, l]) => `<button type="button" data-state="${k}" aria-pressed="false">${l}</button>`).join(''));
+bar.addEventListener('click', e => {
+  const b = e.target.closest('[data-state]'); if (!b) return;
+  clearInterval(timer);
+  const s = b.dataset.state;
+  set(s === 'dragover' ? 'idle' : s, { ...MOCK, error: ERR_COLS });
+  if (s === 'dragover') { overClass(true); b.setAttribute('aria-pressed', 'true'); }
+});
+
+/* Gallery: every state rendered by the same function, inert */
+document.getElementById('gallery').innerHTML = STATES.map(([k, l]) =>
+  `<figure class="snap"><figcaption>${l}</figcaption><div class="card-section" inert>${renderCard(k, { ...MOCK, error: ERR_COLS }, 'g-' + k)}</div></figure>`).join('');
+
+set('idle', {}, { silent: true });
+
+</script>
+</body>
+</html>

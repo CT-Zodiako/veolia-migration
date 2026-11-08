@@ -1,0 +1,9 @@
+{
+  "title": "Cargue de archivos CSV",
+  "brief": "Componente reutilizable para reemplazar el input file nativo en las 7 pantallas de cargue (.csv): Cargue Complementario SUI y Cargue Mensual/Semestral (Inf. Propia, Competidor, Usuarios). Incluye Descargar Plano Guía, Cancelar/Guardar y estados vacío, arrastrando, validando, listo, error, guardando y guardado.",
+  "artboards": [
+    { "file": "01-zona-arrastre.html", "title": "A · Zona de arrastre grande", "tradeoff": "Obvio y fácil de arrastrar; ~170 px en reposo empuja la vista previa en pantallas densas", "width": 1440, "height": 2310 },
+    { "file": "02-campo-compacto.html", "title": "B · Campo compacto en línea", "tradeoff": "Denso y consistente con los formularios; arrastrar y el Plano Guía son menos descubribles", "width": 1440, "height": 2190 },
+    { "file": "03-pasos-guiados.html", "title": "C · Pasos 1 → 2 → 3", "tradeoff": "Enseña el flujo y el período destino; la más alta, redundante para usuarios frecuentes", "width": 1440, "height": 3040 }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "chosen": "03-pasos-guiados.html",
+  "handoffs": {
+    "03-pasos-guiados.html": {
+      "status": "in_progress",
+      "queued": false,
+      "sentAt": "2026-11-08T20:12:36.659Z",
+      "startedAt": "2026-11-08T20:12:55.758Z",
+      "implementedAt": null
+    }
+  }
+}

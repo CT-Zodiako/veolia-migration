@@ -15,13 +15,15 @@ Branch: `fixes-generales` (local commits only).
 
 | ID | Specs | Task | Route | Commit |
 |---|---|---|---|---|
-| T1 | S1, S3, S4 | Shared component `frontend/src/app/components/shared/cargue-archivo-pasos.component.*` + spec | worker | |
-| T2 | S2-S5 | Adopt in sui-cargue-complementario | worker | |
-| T3 | S2-S5 | Adopt in the 3 cargue-mensual screens | worker | |
-| T4 | S2-S5 | Adopt in the 3 cargue-semestral screens | worker | |
-| T5 | S1-S5 | Verify | verify | |
+| T1 | S1, S3, S4 | Shared component `frontend/src/app/components/shared/cargue-archivo-pasos.component.*` + spec | worker | 3dc8457 |
+| T2 | S2-S5 | Adopt in sui-cargue-complementario | worker | 2f01174 |
+| T3 | S2-S5 | Adopt in the 3 cargue-mensual screens | worker | 38b989b |
+| T4 | S2-S5 | Adopt in the 3 cargue-semestral screens | worker | 5a62b28 |
+| T5 | S1-S5 | Verify | inline | L4 |
 
 ## Log
 
 - **L1** — User selected artboard design/cargue-archivos/03-pasos-guiados.html for implementation via the canvas handoff ("Implement the design artboard design/cargue-archivos/03-pasos-guiados.html").
 - **L2** — Open questions from the design report (extra validations; Empresa-first disabled state) were not answered; parent decided S4 as the conservative default. User can override.
+- **L3** — Follow-up 1e00017: a rejected replacement file emits archivoQuitado so the host clears its old preview; headers-only CSV shows "El archivo no tiene filas de datos." in all 7 screens.
+- **L4** — Verify: 131/131 specs of the shared component and the 7 screens pass; tsc OK. Full frontend run: 772/777, the 5 failures are in facturacion (concurrent agent's uncommitted work), sui-resumen-formatos and sui-reversiones, none of which import the new component. Not checked in a browser.
