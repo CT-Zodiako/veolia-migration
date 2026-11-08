@@ -16,7 +16,7 @@
     </div>
 
     <nav class="sidebar-nav">
-      <div *ngFor="let group of menuGroups" class="menu-group">
+      <div *ngFor="let group of menuGroups" class="menu-group" [class.group-active]="isGroupActive(group)">
         <!-- Ítem realmente suelto (sin agrupación real: el nodo hoja se envuelve
              como "grupo" de un solo hijo con el mismo label) -> link directo -->
         <a

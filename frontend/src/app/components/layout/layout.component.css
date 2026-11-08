@@ -189,15 +189,48 @@
   opacity: 1;
 }
 
-/* Parent of the selected option: same brand tone as the active option, lighter weight. */
+/* Parent of the selected option (design/menu-padre-activo/03-encabezado-solido): solid brand header,
+   white text, with its submenu docked below as a soft panel. Same brand gradient as the login screen. */
 .menu-parent.parent-active {
-  color: var(--color-brand-strong);
+  background: linear-gradient(135deg, #c40300, #780200);
+  color: #ffffff;
   font-weight: 700;
-  background: var(--color-bg-soft);
+  box-shadow: 0 4px 12px rgba(120, 2, 0, 0.25);
+  transform: none;
 }
 
-.menu-parent.parent-active .nav-icon {
-  background: rgba(241, 4, 0, 0.14);
+.menu-parent.parent-active:hover {
+  color: #ffffff;
+  filter: brightness(1.05);
+}
+
+.menu-parent.parent-active .nav-icon,
+.menu-parent.parent-active:hover .nav-icon {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.menu-parent.parent-active .nav-arrow,
+.menu-parent.parent-active.expanded .nav-arrow,
+.menu-parent.parent-active:hover .nav-arrow {
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+}
+
+:host-context(.app-dark) .menu-parent.parent-active {
+  background: linear-gradient(135deg, #c40300, #9c0300);
+}
+
+.group-active .submenu {
+  background: var(--color-bg-danger-soft);
+  border-left: 0;
+  border-radius: 0 0 14px 14px;
+  margin: -6px 0 10px 0;
+  padding: 12px 8px 6px 18px;
+}
+
+.group-active .submenu-item.active {
+  background: var(--color-bg-card);
+  box-shadow: inset 3px 0 0 #f10400, 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .menu-parent.expanded .nav-arrow {
