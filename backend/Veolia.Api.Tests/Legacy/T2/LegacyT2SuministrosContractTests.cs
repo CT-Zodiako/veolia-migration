@@ -129,7 +129,7 @@ public sealed class LegacyT2SuministrosContractTests
             command.CommandText.Contains("NEXTVAL FROM DUAL", StringComparison.OrdinalIgnoreCase) ? Table(("NEXTVAL", 77L)) : 1);
         var repository = new SuministrosRepository(new RecordingConnectionFactory(connection));
         var request = new CargueComercialRequest(1033, 2026, 2, new CargueComercialResumen(10m, 2m, 3m, 4.5m),
-            [new CargueComercialFila(1033, "SAN PEDRO", 2026, 2, 1, "ESTRATO 1", 1, 1, 1, "RESIDENCIAL", 10m, 4.5m)]);
+            [new CargueComercialFila(1033, "SAN PEDRO", 2026, 2, 1, "ESTRATO 1", 1, 0.79m, 1, "RESIDENCIAL", 10m, 4.5m)]);
 
         var inserted = await repository.SetCargueComercialAsync(request, TokenUser, CancellationToken.None);
 
@@ -146,7 +146,7 @@ public sealed class LegacyT2SuministrosContractTests
         var detalle = connection.Commands[4];
         Assert.Contains("INSERT INTO AUCO_CARGUECOMERCIAL", detalle.CommandText);
         Assert.Contains("SAUCO_CARGUECOMERCIAL.NEXTVAL, :rcomId, :codaps, :apsNom, :anno, :mes, :coduso, :nomuso, :codfactor, :codtipo, :tipo, :tiponom, :cantidad, :toneladas, SYSDATE, :usuario", detalle.CommandText);
-        Assert.Equal(new object?[] { 77L, 1033, "SAN PEDRO", 2026, 2, 1, "ESTRATO 1", 1, 1, 1, "RESIDENCIAL", 10m, 4.5m, TokenUser },
+        Assert.Equal(new object?[] { 77L, 1033, "SAN PEDRO", 2026, 2, 1, "ESTRATO 1", 1, 0.79m, 1, "RESIDENCIAL", 10m, 4.5m, TokenUser },
             new[] { "rcomId", "codaps", "apsNom", "anno", "mes", "coduso", "nomuso", "codfactor", "codtipo", "tipo", "tiponom", "cantidad", "toneladas", "usuario" }.Select(detalle.Value));
         Assert.True(connection.Committed);
     }

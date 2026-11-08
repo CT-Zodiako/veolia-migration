@@ -10,7 +10,8 @@ public sealed record CargueComercialFila(
     int coduso,
     string? nomuso,
     int codfactor,
-    int codtipo,
+    // Legacy controller.js:274 TO_NUMBER(:10) into CCOM_CODTIPO (NUMBER): plano_usuarios carries the factor here (0.79).
+    decimal codtipo,
     int tipo,
     string? tiponom,
     decimal cantidad,
