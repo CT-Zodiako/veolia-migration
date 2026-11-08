@@ -11,6 +11,7 @@
         public static IServiceCollection AddInfoGerencialModule(this IServiceCollection services)
         {
             services.AddScoped<IInfoGerencialRepository, InfoGerencialRepository>();
+            services.AddScoped<IInfoGerencialVariablesApsRepository, InfoGerencialVariablesApsRepository>();
             return services;
         }
     }

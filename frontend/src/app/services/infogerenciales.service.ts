@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiEnvelope } from '../models/proyecciones.models';
+import { VariablesApsResponse } from '../models/info-gerencial.model';
 
 @Injectable({ providedIn: 'root' })
 export class InfoGerencialService {
@@ -40,6 +41,11 @@ export class InfoGerencialService {
 
   infoapsrelleno(aps: number, anno: number, mes: number): Observable<ApiEnvelope<any[]>> {
     return this.envelope(this.http.post<ApiEnvelope<any[]>>(`${this.baseUrl}/infoapsrelleno`, { aps, anno, mes }, { headers: this.getHeaders() }));
+  }
+
+  // Promedio del semestre anterior (pk_ocigral720.fauco_getvariablesaps); la función decide los meses.
+  getVariablesAps(aps: number, anno: number, mes: number): Observable<ApiEnvelope<VariablesApsResponse>> {
+    return this.envelope(this.http.post<ApiEnvelope<VariablesApsResponse>>(`${this.baseUrl}/getvariablesaps`, { aps, anno, mes }, { headers: this.getHeaders() }));
   }
 
   getDashBoardGerencial(anno: number, mes: number): Observable<ApiEnvelope<any[]>> {

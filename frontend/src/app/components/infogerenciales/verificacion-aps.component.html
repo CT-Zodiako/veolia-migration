@@ -5,8 +5,56 @@
     <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
     <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
     <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
+    <p-button
+      class="btn-promedio"
+      [label]="cargandoPromedio() ? 'Consultando…' : promedio() ? 'Actualizar' : 'Consultar promedio semestre anterior'"
+      [icon]="promedio() ? 'pi pi-refresh' : 'pi pi-search'"
+      [loading]="cargandoPromedio()"
+      [outlined]="!!promedio() && !cargandoPromedio()"
+      [disabled]="!parametrosCompletos() || cargandoPromedio()"
+      [ariaLabel]="cargandoPromedio() ? 'Consultando…' : promedio() ? 'Actualizar promedio semestre anterior' : 'Consultar promedio semestre anterior'"
+      (onClick)="consultarPromedio()"
+    ></p-button>
   </div>
 </div>
+
+<section class="card-section promedio" id="promedio-semestre" aria-labelledby="promedio-semestre-titulo">
+  <div class="promedio-encabezado">
+    <h2 id="promedio-semestre-titulo" tabindex="-1" #tituloPromedio>Promedio Semestre Anterior</h2>
+    @if (subtituloPromedio()) {
+      <span class="promedio-periodo">{{ subtituloPromedio() }}</span>
+    }
+    @if (promedio()) {
+      <span class="promedio-meta"><i class="pi pi-check-circle" aria-hidden="true"></i>Consultado hace un momento</span>
+    } @else {
+      <span class="promedio-vacio">Sin consultar</span>
+    }
+  </div>
+  <p class="sr-only" aria-live="polite">{{ anuncioPromedio() }}</p>
+
+  @if (promedio()) {
+    <div class="promedio-grupos">
+      @for (grupo of gruposPromedio; track grupo.titulo) {
+        <section class="gcard" [attr.aria-label]="grupo.titulo" [class.gcard-media]="grupo.columnas === 2">
+          <div class="ghead">
+            <span class="gicon"><i [class]="grupo.icono" aria-hidden="true"></i></span>
+            <h3>{{ grupo.titulo }}</h3>
+            <span class="count-chip">{{ grupo.metricas.length }} Métricas</span>
+          </div>
+          <ul class="tiles" [style.--tiles-columnas]="grupo.columnas">
+            @for (metrica of grupo.metricas; track metrica.clave) {
+              <li class="tile" [class.tile-grande]="grupo.grande" [title]="metrica.nombre">
+                <span class="code" [class.code-marca]="metrica.marca">{{ metrica.codigo }}</span>
+                <span class="v">{{ valorPromedio(metrica.clave) }}</span>
+                <span class="n">{{ metrica.nombre }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  }
+</section>
 
 <div class="card-section">
   <p-tabs [value]="currentTab()" (valueChange)="onTabChange($event)">

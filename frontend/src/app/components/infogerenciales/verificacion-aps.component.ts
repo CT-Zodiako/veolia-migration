@@ -1,15 +1,16 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { forkJoin, of } from 'rxjs';
+import { Subscription, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { InfoGerencialService } from '../../services/infogerenciales.service';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { ApiEnvelope } from '../../models/proyecciones.models';
+import { VariableApsClave, VariablesApsResponse } from '../../models/info-gerencial.model';
 import { redondear } from '../../shared/redondeo.util';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
@@ -22,6 +23,62 @@ const NOMBRES_MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
+
+interface MetricaPromedio {
+  codigo: string;
+  clave: VariableApsClave;
+  nombre: string;
+  marca?: boolean;
+}
+
+interface GrupoPromedio {
+  titulo: string;
+  icono: string;
+  columnas: number;
+  grande?: boolean;
+  metricas: MetricaPromedio[];
+}
+
+// odd/tasks/verificacion-promedio-semestre.md S4 (artboard 05): grupos, códigos y claves de fauco_getvariablesaps.
+const GRUPOS_PROMEDIO: GrupoPromedio[] = [
+  {
+    titulo: 'Toneladas', icono: 'pi pi-truck', columnas: 5, metricas: [
+      { codigo: 'QRT', clave: 'qrt', nombre: 'Residuos recolectados y transportados' },
+      { codigo: 'QBL', clave: 'qbl', nombre: 'Barrido y limpieza' },
+      { codigo: 'QLU', clave: 'qlu', nombre: 'Limpieza urbana' },
+      { codigo: 'QR', clave: 'qr', nombre: 'Rechazos de aprovechamiento' },
+      { codigo: 'QNA', clave: 'qna', nombre: 'No aprovechables' },
+      { codigo: 'Qa', clave: 'qa', nombre: 'Aprovechables' },
+      { codigo: 'QRS', clave: 'qrs', nombre: 'Residuos sólidos dispuestos' },
+      { codigo: 'QRSmun', clave: 'qrsmunrecp', nombre: 'Dispuestos del municipio' },
+      { codigo: 'C', clave: 'c', nombre: 'Disposición (C)' },
+      { codigo: 'TAFNA', clave: 'tafna', nombre: 'TAFNA' }
+    ]
+  },
+  {
+    titulo: 'Suscriptores', icono: 'pi pi-users', columnas: 4, grande: true, metricas: [
+      { codigo: 'N', clave: 'n', nombre: 'Suscriptores' },
+      { codigo: 'Na', clave: 'na', nombre: 'Suscriptores aforados' },
+      { codigo: 'Naa', clave: 'naa', nombre: 'Aforados aprovechamiento' },
+      { codigo: 'Nd', clave: 'nd', nombre: 'Desocupados' }
+    ]
+  },
+  {
+    titulo: 'Otros', icono: 'pi pi-th-large', columnas: 2, metricas: [
+      { codigo: 'Lbl', clave: 'lbl', nombre: 'Longitud barrido (km)' },
+      { codigo: 'VL', clave: 'vl', nombre: 'Volumen lixiviados' }
+    ]
+  },
+  {
+    titulo: 'Costos', icono: 'pi pi-wallet', columnas: 2, metricas: [
+      { codigo: 'CRTcomp', clave: 'crt', nombre: 'Costo recolección y transporte', marca: true },
+      { codigo: 'CDFcomp', clave: 'cdf', nombre: 'Costo disposición final', marca: true }
+    ]
+  }
+];
+
+// Coma decimal, hasta 4 decimales y sin separador de miles, como el artboard 05.
+const FORMATO_PROMEDIO = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 4, useGrouping: false });
 
 // Legacy 307 Verificacion.vue: APS + month selector (Selector.vue, default today), one query per summary for the
 // selected month itself (Verificacion.vue:545, the "-1" shift is commented out).
@@ -116,22 +173,41 @@ export class VerificacionApsComponent {
 
   private readonly destroyRef = inject(DestroyRef);
 
+  // Promedio del semestre anterior: solo se consulta con el botón y se limpia al cambiar APS/Año/Mes (S3).
+  readonly gruposPromedio = GRUPOS_PROMEDIO;
+  readonly promedio = signal<VariablesApsResponse | null>(null);
+  readonly cargandoPromedio = signal(false);
+  readonly anuncioPromedio = signal('');
+  readonly parametrosCompletos = computed(() => !!this.aps() && !!this.anno() && !!this.mes());
+  readonly subtituloPromedio = computed(() => {
+    const mes = this.mes();
+    const anno = this.anno();
+    if (!this.parametrosCompletos() || !mes || !anno) return '';
+    return `Semestre anterior a ${NOMBRES_MESES[mes - 1]} ${anno} · APS ${this.nombreAps(this.aps()!)}`;
+  });
+  private readonly apsSelector = viewChild(ApsSelectorComponent);
+  private readonly tituloPromedio = viewChild<ElementRef<HTMLElement>>('tituloPromedio');
+  private consultaPromedio?: Subscription;
+
   constructor(
     private readonly service: InfoGerencialService,
     private readonly messages: MessageService
   ) {}
 
   onApsChange(value: number | null): void {
+    if (value !== this.aps()) this.limpiarPromedio();
     this.aps.set(value);
     this.consultar();
   }
 
   onAnnoChange(value: number | null): void {
+    if (value !== this.anno()) this.limpiarPromedio();
     this.anno.set(value);
     this.consultar();
   }
 
   onMesChange(value: number | null): void {
+    if (value !== this.mes()) this.limpiarPromedio();
     this.mes.set(value);
     this.consultar();
   }
@@ -139,6 +215,49 @@ export class VerificacionApsComponent {
   onTabChange(value: string | number | undefined): void {
     const tab = String(value ?? 'EMPRESA') as TabVerificacion;
     this.currentTab.set(['EMPRESA', 'APS', 'RELLENO'].includes(tab) ? tab : 'EMPRESA');
+  }
+
+  consultarPromedio(): void {
+    const apsId = this.aps();
+    const anno = this.anno();
+    const mes = this.mes();
+    if (!apsId || !anno || !mes || this.cargandoPromedio()) return;
+
+    this.cargandoPromedio.set(true);
+    this.anuncioPromedio.set('Consultando promedio semestre anterior…');
+    // Sin toast propio: httpErrorInterceptor ya notifica el error; solo se vuelve al estado vacío.
+    this.consultaPromedio = this.service.getVariablesAps(apsId, anno, mes)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.cargandoPromedio.set(false);
+          this.promedio.set(res.data ?? null);
+          this.anuncioPromedio.set(`Promedio semestre anterior cargado: ${this.subtituloPromedio()}.`);
+          this.tituloPromedio()?.nativeElement.focus();
+        },
+        error: () => {
+          this.cargandoPromedio.set(false);
+          this.promedio.set(null);
+          this.anuncioPromedio.set('');
+        }
+      });
+  }
+
+  valorPromedio(clave: VariableApsClave): string {
+    const valor = this.promedio()?.variables?.[clave];
+    return typeof valor === 'number' ? FORMATO_PROMEDIO.format(valor) : '—';
+  }
+
+  private limpiarPromedio(): void {
+    this.consultaPromedio?.unsubscribe();
+    this.cargandoPromedio.set(false);
+    if (this.promedio()) this.anuncioPromedio.set('Parámetros cambiados: el promedio se limpió.');
+    this.promedio.set(null);
+  }
+
+  private nombreAps(apsId: number): string {
+    const item = this.apsSelector()?.apsList.find((a) => Number(a.APSA_ID) === apsId);
+    return item?.APSA_NOMAPS ?? String(apsId);
   }
 
   private consultar(): void {

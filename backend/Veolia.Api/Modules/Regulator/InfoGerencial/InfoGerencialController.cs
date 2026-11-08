@@ -6,7 +6,9 @@
 
     [ApiController]
     [Route("api/v1/infogerencial")]
-    public sealed class InfoGerencialController(IInfoGerencialRepository repository) : ControllerBase
+    public sealed class InfoGerencialController(
+        IInfoGerencialRepository repository,
+        IInfoGerencialVariablesApsRepository variablesApsRepository) : ControllerBase
     {
         [HttpPost("detcostos")]
         public async Task<IActionResult> GetDetalleCostos([FromBody] PeriodoRequestDto request, CancellationToken cancellationToken)
@@ -58,6 +60,20 @@
 
             var rows = await repository.GetInfoEmprDiviAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
             return Ok(Envelope("success", rows, "OK"));
+        }
+
+        // Promedio del semestre anterior (pk_ocigral720.fauco_getvariablesaps); no existe en legacy.
+        [HttpPost("getvariablesaps")]
+        public async Task<IActionResult> GetVariablesAps([FromBody] ApsPeriodoRequestDto request, CancellationToken cancellationToken)
+        {
+            if (!TryReadTokenContext(out _))
+                return Unauthorized(Envelope("error", Array.Empty<object>(), "No autorizado."));
+
+            if (request.Aps <= 0 || request.Anno <= 0 || request.Mes is < 1 or > 12)
+                return BadRequest(Envelope("error", Array.Empty<object>(), "aps, anno y mes son obligatorios. mes debe estar entre 1 y 12."));
+
+            var variables = await variablesApsRepository.GetVariablesApsAsync(request.Aps, request.Anno, request.Mes, cancellationToken);
+            return Ok(Envelope("success", variables, "OK"));
         }
 
         [HttpPost("infoapsrelleno")]
