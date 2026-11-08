@@ -1,4 +1,5 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +22,7 @@ import { periodoInicial } from '../shared/periodo-inicial.util';
   templateUrl: './cargue-productividad.component.html',
   styleUrls: ['./cargue-productividad.component.css']
 })
-export class CargueProductividadComponent {
+export class CargueProductividadComponent implements OnInit {
   private readonly periodo = periodoInicial(inject(ParametrosConsultaStateService));
   anno = signal<number | null>(this.periodo.anno);
   mes = signal<number | null>(this.periodo.mes);
@@ -49,18 +50,33 @@ export class CargueProductividadComponent {
     { field: 'CTL', headerName: 'CTL', agrupable: false }
   ];
 
+  // In-flight load; replaced (and its response ignored) when the period changes before it answers.
+  private consulta?: Subscription;
+
   constructor(
     private readonly service: SuministrosService,
     private readonly messages: MessageService,
     private readonly confirmation: ConfirmationService
-  ) {}
+  ) {
+    inject(DestroyRef).onDestroy(() => this.consulta?.unsubscribe());
+  }
+
+  // Legacy loaded only on the Cargar button; the user asked to load with the preselected period
+  // and whenever the selector changes (S5).
+  ngOnInit(): void {
+    this.cargar();
+  }
 
   onAnnoChange(value: number | null): void {
+    if (value === this.anno()) return;
     this.anno.set(value);
+    this.cargar();
   }
 
   onMesChange(value: number | null): void {
+    if (value === this.mes()) return;
     this.mes.set(value);
+    this.cargar();
   }
 
   cargar(): void {
@@ -69,8 +85,9 @@ export class CargueProductividadComponent {
     if (anno === null || mes === null) return;
 
     const periodo = periodoAnterior(anno, mes);
+    this.consulta?.unsubscribe();
     this.cargando.set(true);
-    this.service.cargueProductividad(periodo.anno, periodo.mes).subscribe({
+    this.consulta = this.service.cargueProductividad(periodo.anno, periodo.mes).subscribe({
       next: (res) => {
         this.propios.set(res.data?.propios || []);
         this.terceros.set(res.data?.terceros || []);
@@ -80,8 +97,12 @@ export class CargueProductividadComponent {
         this.messages.add({ severity: 'success', summary: 'Consulta realizada correctamente', life: 3000 });
       },
       error: (err) => {
+        this.propios.set([]);
+        this.terceros.set([]);
+        this.cargado.set(false);
         this.cargando.set(false);
-        this.messages.add({ severity: 'error', summary: 'Error al consultar Cargue Productividad', detail: err?.error?.message, life: 3000 });
+        // Backend 500 body (legacy suministros/controller.js:135-143): { message, detail }.
+        this.messages.add({ severity: 'error', summary: 'Error al consultar Cargue Productividad', detail: err?.error?.detail ?? err?.error?.message, life: 5000 });
       }
     });
   }

@@ -19,6 +19,14 @@
   align-items: center;
 }
 
+.cargando {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .guardar-row {
   display: flex;
   justify-content: flex-end;

@@ -179,9 +179,10 @@ public sealed class SuministrosController(ISuministrosRepository suministrosRepo
             var (propios, terceros) = await cargueProductividadService.ConsultarAsync(request.anno, request.mes, cancellationToken);
             return Ok(new { data = new { propios, terceros } });
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { data = "Error" });
+            // Legacy suministros/controller.js:135-143 answers HTTP 500 with the failure detail.
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error al cargar la productividad", detail = ex.Message });
         }
     }
 

@@ -768,6 +768,23 @@ public sealed class LegacyT2SuministrosContractTests
         Assert.Equal(new object?[] { "T" }, terceros.Select(r => r["APS"]));
     }
 
+    // Legacy controller.js:135-143: when the spreadsheet read fails it answers HTTP 500
+    // { message: "Error al cargar la productividad", detail: error.message }.
+    [Fact]
+    public async Task CargueProductividadFailureAnswersTheLegacyErrorBody()
+    {
+        using var factory = new SuministrosApiFactory();
+        factory.Productividad.ConsultarError = new FileNotFoundException("Credentials/gsec.json not found");
+        using var client = factory.CreateAuthorizedClient(TokenUser);
+
+        var response = await client.PostAsJsonAsync("/api/v1/suministros/cargueProductividad", new { anno = 2025, mes = 12 });
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("Error al cargar la productividad", body.GetProperty("message").GetString());
+        Assert.Equal("Credentials/gsec.json not found", body.GetProperty("detail").GetString());
+    }
+
     private static DataTable Table(params (string Column, object Value)[] cells)
     {
         var table = new DataTable();
@@ -814,9 +831,12 @@ file sealed class FixedValidaciones : IValidacionesRepository
 file sealed class RecordingProductividadService : ICargueProductividadService
 {
     public List<CargueProductividadGuardarRequest> Calls { get; } = [];
+    public Exception? ConsultarError { get; set; }
 
     public Task<(IReadOnlyList<Dictionary<string, object?>> Propios, IReadOnlyList<Dictionary<string, object?>> Terceros)> ConsultarAsync(int anno, int mes, CancellationToken cancellationToken)
-        => Task.FromResult<(IReadOnlyList<Dictionary<string, object?>>, IReadOnlyList<Dictionary<string, object?>>)>(([], []));
+        => ConsultarError is not null
+            ? Task.FromException<(IReadOnlyList<Dictionary<string, object?>>, IReadOnlyList<Dictionary<string, object?>>)>(ConsultarError)
+            : Task.FromResult<(IReadOnlyList<Dictionary<string, object?>>, IReadOnlyList<Dictionary<string, object?>>)>(([], []));
 
     public Task GuardarAsync(CargueProductividadGuardarRequest request, CancellationToken cancellationToken)
     {

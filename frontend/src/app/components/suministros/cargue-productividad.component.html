@@ -6,7 +6,7 @@
       <app-anno-selector [selectedAnno]="anno()" (selectedAnnoChange)="onAnnoChange($event)" label="Año"></app-anno-selector>
       <app-mes-selector [selectedMes]="mes()" (selectedMesChange)="onMesChange($event)" label="Mes"></app-mes-selector>
     </div>
-    <p-button label="Cargar" icon="pi pi-cloud-download" [loading]="cargando()" (onClick)="cargar()"></p-button>
+    <span class="cargando" *ngIf="cargando()"><i class="pi pi-spin pi-spinner"></i> Cargando...</span>
   </div>
 </div>
 
