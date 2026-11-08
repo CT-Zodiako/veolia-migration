@@ -128,6 +128,24 @@ describe('CargueArchivoPasosComponent', () => {
     expect(el.querySelector('.drop-zone')).not.toBeNull();
   });
 
+  // Keyboard users keep their place: the removed chip's button is gone, so focus goes to the drop zone.
+  it('after Quitar or Cancelar the focus moves to the drop zone', () => {
+    const { el, fixture } = setup();
+    elegir(el, csv());
+    fixture.detectChanges();
+    (el.querySelector('button[aria-label^="Quitar"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(el.querySelector('.drop-zone'));
+
+    (document.activeElement as HTMLElement).blur();
+    elegir(el, csv());
+    fixture.componentRef.setInput('estado', 'validando');
+    fixture.detectChanges();
+    (el.querySelector('button.btn-inline') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(el.querySelector('.drop-zone'));
+  });
+
   it('reset() clears the file and the client error', () => {
     const { el, fixture, component } = setup();
     elegir(el, new File(['x'], 'a.txt'));

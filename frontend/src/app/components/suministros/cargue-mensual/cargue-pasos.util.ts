@@ -6,6 +6,9 @@ const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', '
 /** Error de un CSV con encabezados y sin filas de datos (mismo texto que los cargues semestrales). */
 export const SIN_FILAS_DE_DATOS = 'El archivo no tiene filas de datos.';
 
+/** Error cuando no se puede leer el CSV (mismo texto que el cargue complementario y los semestrales). */
+export const ERROR_LECTURA = 'No fue posible leer el archivo.';
+
 /** Período donde se guarda el cargue mensual (mes anterior al seleccionado), p. ej. "Diciembre 2025". */
 export function periodoDestinoMensual(anno: number, mes: number): string {
   if (!anno || !mes) return '';

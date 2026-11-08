@@ -226,4 +226,55 @@ describe('InfCompetidorComponent (701 Inf. Competidor) — legacy InfCompetidorM
     fixture.detectChanges();
     expect(pasos(fixture).disabled).toBe(false);
   });
+  // cargue-archivos-pasos L5: a parse that finishes after Cancelar is stale; a read failure is an error, not a hang.
+  describe('stale parses and read errors', () => {
+    function elegirPorInput(fixture: ReturnType<typeof setup>['fixture'], file: File): void {
+      fixture.detectChanges();
+      const input = fixture.debugElement.query(By.directive(CargueArchivoPasosComponent)).nativeElement
+        .querySelector('input[type="file"]') as HTMLInputElement;
+      Object.defineProperty(input, 'files', { value: [file], configurable: true });
+      input.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+    }
+
+    function preparar() {
+      const ctx = setup();
+      ctx.fixture.detectChanges();
+      return ctx;
+    }
+
+    it('ignores a parse that completes after Cancelar (no preview, no Guardar)', async () => {
+      const { fixture, component } = preparar();
+      elegirPorInput(fixture, csv(FILA));
+      expect(component.validando()).toBe(true);
+
+      pasos(fixture).onCancelar();
+      fixture.detectChanges();
+      await new Promise((r) => setTimeout(r, 300));
+      fixture.detectChanges();
+
+      expect(component.filas()).toEqual([]);
+      expect(component.validando()).toBe(false);
+      expect(pasos(fixture).estado).toBe('vacio');
+      expect((fixture.nativeElement as HTMLElement).querySelector('button.btn-guardar')).toBeNull();
+    });
+
+    it('shows "No fue posible leer el archivo." when the file cannot be read', async () => {
+      const { fixture, component } = preparar();
+      const lectura = vi.spyOn(FileReader.prototype, 'readAsText').mockImplementation(function (this: FileReader) {
+        setTimeout(() => this.onerror?.(new ProgressEvent('error') as ProgressEvent<FileReader>));
+      });
+      try {
+        elegirPorInput(fixture, csv(FILA));
+        await vi.waitFor(() => expect(component.validando()).toBe(false));
+      } finally {
+        lectura.mockRestore();
+      }
+      fixture.detectChanges();
+
+      expect(component.filas()).toEqual([]);
+      expect(pasos(fixture).estado).toBe('error');
+      expect(pasos(fixture).errores).toEqual(['No fue posible leer el archivo.']);
+    });
+  });
 });

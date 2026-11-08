@@ -289,4 +289,55 @@ describe('CargueComercialComponent (701 Inf. Usuarios) — legacy CargueComercia
     expect(component.filas()).toEqual([]);
     expect(pasos(fixture).estado).toBe('vacio');
   });
+  // cargue-archivos-pasos L5: a parse that finishes after Cancelar is stale; a read failure is an error, not a hang.
+  describe('stale parses and read errors', () => {
+    function elegirPorInput(fixture: ReturnType<typeof setup>['fixture'], file: File): void {
+      fixture.detectChanges();
+      const input = fixture.debugElement.query(By.directive(CargueArchivoPasosComponent)).nativeElement
+        .querySelector('input[type="file"]') as HTMLInputElement;
+      Object.defineProperty(input, 'files', { value: [file], configurable: true });
+      input.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+    }
+
+    function preparar() {
+      const ctx = setup(1033, 2026, 1);
+      ctx.fixture.detectChanges();
+      return ctx;
+    }
+
+    it('ignores a parse that completes after Cancelar (no preview, no Guardar)', async () => {
+      const { fixture, component } = preparar();
+      elegirPorInput(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
+      expect(component.validando()).toBe(true);
+
+      pasos(fixture).onCancelar();
+      fixture.detectChanges();
+      await new Promise((r) => setTimeout(r, 300));
+      fixture.detectChanges();
+
+      expect(component.filas()).toEqual([]);
+      expect(component.validando()).toBe(false);
+      expect(pasos(fixture).estado).toBe('vacio');
+      expect((fixture.nativeElement as HTMLElement).querySelector('button.btn-guardar')).toBeNull();
+    });
+
+    it('shows "No fue posible leer el archivo." when the file cannot be read', async () => {
+      const { fixture, component } = preparar();
+      const lectura = vi.spyOn(FileReader.prototype, 'readAsText').mockImplementation(function (this: FileReader) {
+        setTimeout(() => this.onerror?.(new ProgressEvent('error') as ProgressEvent<FileReader>));
+      });
+      try {
+        elegirPorInput(fixture, csv('1033;SAN PEDRO;2026;1;1;ESTRATO 1;1;1;1;RESIDENCIAL;10;1.5'));
+        await vi.waitFor(() => expect(component.validando()).toBe(false));
+      } finally {
+        lectura.mockRestore();
+      }
+      fixture.detectChanges();
+
+      expect(component.filas()).toEqual([]);
+      expect(pasos(fixture).estado).toBe('error');
+      expect(pasos(fixture).errores).toEqual(['No fue posible leer el archivo.']);
+    });
+  });
 });

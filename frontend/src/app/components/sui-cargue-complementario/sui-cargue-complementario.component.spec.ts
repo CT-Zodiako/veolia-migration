@@ -256,5 +256,41 @@ describe('SuiCargueComplementarioComponent (802)', () => {
       (pasos().componentInstance as CargueArchivoPasosComponent).archivoQuitado.emit();
       expect(component.filas()).toEqual([]);
     });
+
+    // cargue-archivos-pasos L5: a parse that finishes after Cancelar is stale and must not bring back Guardar.
+    it('ignores a parse that completes after Cancelar (no preview, no Guardar)', async () => {
+      const { fixture, component, pasos } = crearRenderizado();
+      elegirEnPasos(pasos().nativeElement, csvFile([filaCsv()]));
+      fixture.detectChanges();
+      expect(component.validando()).toBe(true);
+
+      (pasos().componentInstance as CargueArchivoPasosComponent).onCancelar();
+      fixture.detectChanges();
+      await new Promise((r) => setTimeout(r, 300));
+      fixture.detectChanges();
+
+      expect(component.filas()).toEqual([]);
+      expect(component.validando()).toBe(false);
+      expect((pasos().componentInstance as CargueArchivoPasosComponent).estado).toBe('vacio');
+      expect((pasos().nativeElement as HTMLElement).querySelector('button.btn-guardar')).toBeNull();
+    });
+
+    it('shows "No fue posible leer el archivo." when the file cannot be read', async () => {
+      const { fixture, component, pasos } = crearRenderizado();
+      const lectura = vi.spyOn(FileReader.prototype, 'readAsText').mockImplementation(function (this: FileReader) {
+        setTimeout(() => this.onerror?.(new ProgressEvent('error') as ProgressEvent<FileReader>));
+      });
+      try {
+        elegirEnPasos(pasos().nativeElement, csvFile([filaCsv()]));
+        await vi.waitFor(() => expect(component.validando()).toBe(false));
+      } finally {
+        lectura.mockRestore();
+      }
+      fixture.detectChanges();
+
+      const cargue = pasos().componentInstance as CargueArchivoPasosComponent;
+      expect(cargue.estado).toBe('error');
+      expect(cargue.errores).toEqual(['No fue posible leer el archivo.']);
+    });
   });
 });

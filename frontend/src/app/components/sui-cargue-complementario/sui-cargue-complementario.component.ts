@@ -121,6 +121,9 @@ export class SuiCargueComplementarioComponent {
   readonly validando = signal(false);
   readonly columnasDetectadas = signal<number | null>(null);
 
+  /** Lectura vigente: un parseo que termina después de Cancelar/Quitar o de elegir otro archivo se descarta. */
+  private lecturaActual = 0;
+
   readonly filtrosValidos = computed(() => !!this.aps() && !!this.anno() && !!this.mes());
   readonly mostrarFormulario = computed(() => this.filtrosValidos() && this.archivosExistentes() === false);
   readonly hayPreview = computed(() => this.filas().length > 0 && this.errores().length === 0);
@@ -187,16 +190,19 @@ export class SuiCargueComplementarioComponent {
     this.nombreArchivo.set(archivo.name);
     this.estado.set('');
     this.validando.set(true);
+    const lectura = ++this.lecturaActual;
 
     Papa.parse<FilaCsv>(archivo, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
+        if (lectura !== this.lecturaActual) return;
         this.columnasDetectadas.set(results.meta.fields?.length ?? null);
         this.procesarCsv(results.data);
         this.validando.set(false);
       },
       error: () => {
+        if (lectura !== this.lecturaActual) return;
         this.errores.set(['No fue posible leer el archivo.']);
         this.validando.set(false);
       }
@@ -304,6 +310,8 @@ export class SuiCargueComplementarioComponent {
   }
 
   private limpiarCargue(): void {
+    this.lecturaActual++;
+    this.validando.set(false);
     this.nombreArchivo.set('');
     this.columnasDetectadas.set(null);
     this.filas.set([]);

@@ -87,6 +87,9 @@ export class InfPropiaSemComponent implements OnChanges {
   readonly estado = signal('');
   readonly procesando = signal(false);
 
+  /** Lectura vigente: un parseo que termina después de Cancelar/Quitar o de elegir otro archivo se descarta. */
+  private lecturaActual = 0;
+
   readonly planoGuiaUrl = 'assets/layout/planos/plano_propio_semestral.csv';
 
   // Estado del cargue guiado: la pantalla sigue siendo dueña del parseo, la vista previa y el guardado.
@@ -141,18 +144,26 @@ export class InfPropiaSemComponent implements OnChanges {
       return;
     }
 
+    // La vista previa anterior se quita apenas empieza a validarse el reemplazo.
+    this.limpiarCargue();
     this.nombreArchivo.set(archivo.name);
     this.estado.set('');
     this.procesando.set(true);
+    const lectura = ++this.lecturaActual;
 
     Papa.parse<FilaCsv>(archivo, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
+        if (lectura !== this.lecturaActual) return;
         this.procesando.set(false);
         this.procesarCsv(results.data);
       },
-      error: () => this.procesando.set(false)
+      error: () => {
+        if (lectura !== this.lecturaActual) return;
+        this.procesando.set(false);
+        this.errores.set(['No fue posible leer el archivo.']);
+      }
     });
   }
 
@@ -238,6 +249,7 @@ export class InfPropiaSemComponent implements OnChanges {
   }
 
   private limpiarCargue(): void {
+    this.lecturaActual++;
     this.procesando.set(false);
     this.nombreArchivo.set('');
     this.filas.set([]);

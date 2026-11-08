@@ -11,7 +11,7 @@ import { EmpresasService, EmpresaItem } from '../../../../services/empresas.serv
 import { SuministrosService } from '../../../../services/suministros.service';
 import { CarguePropiaFila } from '../../../../models/cargue-mensual.models';
 import { periodoAnterior } from '../../../../shared/periodo-anterior.util';
-import { SIN_FILAS_DE_DATOS, estadoCargueMensual, periodoDestinoMensual } from '../cargue-pasos.util';
+import { ERROR_LECTURA, SIN_FILAS_DE_DATOS, estadoCargueMensual, periodoDestinoMensual } from '../cargue-pasos.util';
 
 interface FilaCsv {
   [key: string]: string | undefined;
@@ -75,6 +75,10 @@ export class InfPropiaComponent implements OnChanges {
   readonly guardando = signal(false);
   readonly validando = signal(false);
   readonly estado = signal('');
+
+  /** Lectura vigente: un parseo que termina después de Cancelar/Quitar o de elegir otro archivo se descarta. */
+  private lecturaActual = 0;
+
   readonly planoGuiaUrl = 'assets/layout/planos/plano_propio_mensual.csv';
 
   /** Estado del cargue guiado: validando mientras se parsea, error/listo según la validación, guardando al guardar. */
@@ -127,13 +131,20 @@ export class InfPropiaComponent implements OnChanges {
     this.filas.set([]);
     this.errores.set([]);
     this.validando.set(true);
+    const lectura = ++this.lecturaActual;
 
     Papa.parse<FilaCsv>(archivo, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
+        if (lectura !== this.lecturaActual) return;
         this.validando.set(false);
         this.procesarCsv(results.data);
+      },
+      error: () => {
+        if (lectura !== this.lecturaActual) return;
+        this.validando.set(false);
+        this.errores.set([ERROR_LECTURA]);
       }
     });
   }
@@ -227,6 +238,7 @@ export class InfPropiaComponent implements OnChanges {
   }
 
   private limpiarCargue(): void {
+    this.lecturaActual++;
     this.validando.set(false);
     this.nombreArchivo.set('');
     this.filas.set([]);

@@ -66,6 +66,15 @@ export class CargueArchivoPasosComponent implements OnChanges {
 
   @ViewChild('fileInput') private fileInput?: ElementRef<HTMLInputElement>;
 
+  /** Tras Quitar/Cancelar el botón del chip desaparece: el foco pasa a la zona de selección cuando se vuelve a mostrar. */
+  @ViewChild('dropZone') private set dropZone(zona: ElementRef<HTMLButtonElement> | undefined) {
+    if (zona && this.enfocarZona) {
+      this.enfocarZona = false;
+      zona.nativeElement.focus();
+    }
+  }
+  private enfocarZona = false;
+
   private static siguienteId = 0;
   readonly idBase = `cargue-pasos-${CargueArchivoPasosComponent.siguienteId++}`;
 
@@ -166,11 +175,13 @@ export class CargueArchivoPasosComponent implements OnChanges {
   }
 
   quitar(): void {
+    this.enfocarZona = !!this.archivo();
     this.limpiarArchivo();
     this.archivoQuitado.emit();
   }
 
   onCancelar(): void {
+    this.enfocarZona = !!this.archivo();
     this.limpiarArchivo();
     this.cancelar.emit();
   }
