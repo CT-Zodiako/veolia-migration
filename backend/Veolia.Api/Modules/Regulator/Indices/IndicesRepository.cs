@@ -1,4 +1,6 @@
 using Dapper;
+using System.Data;
+using System.Data.Common;
 using Veolia.Api.Infrastructure.Data;
 
 namespace Veolia.Api.Modules.Regulator.Indices;
@@ -114,7 +116,7 @@ WHERE INDI_ANNO = :anno
   AND INDI_MES = :mes
   AND INDI_ESTADO = 1";
 
-        using var connection = connectionFactory.CreateConnection();
+        using var connection = await OpenConnectionAsync(cancellationToken);
         using var transaction = connection.BeginTransaction();
 
         var existing = await connection.ExecuteScalarAsync<int>(new CommandDefinition(dupSql, new { anno = dto.Anno, mes = dto.Mes }, transaction, cancellationToken: cancellationToken));
@@ -153,7 +155,7 @@ WHERE PARA_INDICE20011 = :paraId
   AND INDI_ANNO = :anno
   AND INDI_MES = :mes";
 
-        using var connection = connectionFactory.CreateConnection();
+        using var connection = await OpenConnectionAsync(cancellationToken);
         using var transaction = connection.BeginTransaction();
 
         var affected = 0;
@@ -202,5 +204,20 @@ ORDER BY PARA_PARA";
         using var connection = connectionFactory.CreateConnection();
         var rows = await connection.QueryAsync<IndiceCatalogoDto>(new CommandDefinition(sql, cancellationToken: cancellationToken));
         return rows.AsList();
+    }
+
+    private async Task<IDbConnection> OpenConnectionAsync(CancellationToken cancellationToken)
+    {
+        var connection = connectionFactory.CreateConnection();
+        if (connection is DbConnection dbConnection)
+        {
+            await dbConnection.OpenAsync(cancellationToken);
+        }
+        else
+        {
+            connection.Open();
+        }
+
+        return connection;
     }
 }
