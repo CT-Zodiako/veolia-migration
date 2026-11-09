@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, inject, signal, viewChild, computed } from '@angular/core';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,9 +14,19 @@ import { redondearFilas } from '../../shared/redondeo.util';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
-import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
+import { TablaAvanzadaComponent, TablaColumn, valorMostrado } from '../shared/tabla-avanzada.component';
 import { periodoInicial } from '../shared/periodo-inicial.util';
 import { DescuentoCostosDialogComponent, PeriodoDescuento } from '../shared/descuento-costos-dialog.component';
+
+const DESCRIPCION_COSTOS: Record<string, string> = {
+  CBL: 'Barrido y limpieza',
+  CBLS: 'Barrido y limpieza',
+  CRT: 'Recolección y transporte',
+  CLUS: 'Limpieza urbana',
+  CDF: 'Disposición final',
+  CTL: 'Tratamiento de lixiviados',
+  CCS: 'Comercialización'
+};
 
 @Component({
   selector: 'app-descuentos-costos',
@@ -34,6 +44,22 @@ export class DescuentosCostosComponent {
 
   readonly loading = signal(false);
   readonly rows = signal<Record<string, unknown>[]>([]);
+
+  // design/suministros-pantallas/15: footer summary ("2 costos · todos en 0 (sin descuento aplicado)").
+  readonly resumen = computed(() => {
+    const filas = this.rows();
+    if (!filas.length) return '';
+    const conDescuento = filas.filter((f) => Number(f['DESC_VALOR'] ?? 0) !== 0).length;
+    const costos = `${filas.length} ${filas.length === 1 ? 'costo' : 'costos'}`;
+    return conDescuento === 0 ? `${costos} · todos en 0 (sin descuento aplicado)` : `${costos} · ${conDescuento} con descuento`;
+  });
+
+  readonly valorMostrado = valorMostrado;
+
+  /** CRA 720 name of the cost code shown under it (empty when unknown). */
+  descripcionCosto(codigo: unknown): string {
+    return DESCRIPCION_COSTOS[String(codigo ?? '').trim().toUpperCase()] ?? '';
+  }
 
   readonly columnas: TablaColumn[] = [
     { field: 'PARA_NOMBRE', header: 'COSTO', filtrable: true },

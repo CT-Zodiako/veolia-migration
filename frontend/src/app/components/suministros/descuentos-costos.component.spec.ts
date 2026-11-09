@@ -46,6 +46,39 @@ function botonAgregar(fixture: ReturnType<typeof setup>['fixture']): HTMLElement
   return fixture.nativeElement.querySelector('p-button[label="Agregar"]');
 }
 
+describe('DescuentosCostosComponent — design/suministros-pantallas/15 (versión actual mejorada)', () => {
+  const originalResizeObserver = globalThis.ResizeObserver;
+  beforeAll(() => {
+    globalThis.ResizeObserver ??= class { observe(): void {} unobserve(): void {} disconnect(): void {} } as unknown as typeof ResizeObserver;
+  });
+  afterAll(() => { globalThis.ResizeObserver = originalResizeObserver; });
+
+  it('titles the card, explains the value and keeps Agregar in the header', () => {
+    const { fixture } = setup();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelector('.desc-titulo')?.textContent?.trim()).toBe('Descuentos por costo');
+    expect(el.querySelector('.desc-ayuda')?.textContent).toContain('0 significa sin descuento');
+    expect(el.querySelector('.desc-header p-button[label="Agregar"]')).not.toBeNull();
+  });
+
+  it('summarises the rows in the footer', () => {
+    const vacio = setup([{ PARA_NOMBRE: 'CBLs', DESC_VALOR: 0 }, { PARA_NOMBRE: 'CRT', DESC_VALOR: 0 }]);
+    expect((vacio.fixture.nativeElement as HTMLElement).querySelector('.desc-pie')?.textContent?.trim()).toBe('2 costos · todos en 0 (sin descuento aplicado)');
+    TestBed.resetTestingModule();
+
+    const con = setup([{ PARA_NOMBRE: 'CBLs', DESC_VALOR: 0.5 }, { PARA_NOMBRE: 'CRT', DESC_VALOR: 0 }]);
+    expect((con.fixture.nativeElement as HTMLElement).querySelector('.desc-pie')?.textContent?.trim()).toBe('2 costos · 1 con descuento');
+  });
+
+  it('shows the full name under each known cost code', () => {
+    const { component } = setup();
+    expect(component.descripcionCosto('CBLs')).toBe('Barrido y limpieza');
+    expect(component.descripcionCosto('CRT')).toBe('Recolección y transporte');
+    expect(component.descripcionCosto('OTRO')).toBe('');
+  });
+});
+
 describe('DescuentosCostosComponent (304) — legacy views/suministros/DescuentosDos.vue', () => {
   const originalResizeObserver = globalThis.ResizeObserver;
   beforeAll(() => {

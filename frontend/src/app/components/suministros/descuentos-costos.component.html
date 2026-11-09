@@ -1,6 +1,6 @@
 <p-toast></p-toast>
 
-<section>
+<section class="desc-contenido">
   <div class="card-section">
     <div class="parametros-row">
       <app-aps-selector [selectedAps]="aps()" (selectedApsChange)="onApsChange($event)" label="APS"></app-aps-selector>
@@ -9,24 +9,41 @@
     </div>
   </div>
 
-  <div class="card-section">
-    <div class="mb-3 flex justify-content-end">
+  <!-- design/suministros-pantallas/15-descuentos-c-actual-mejorada.html: same table, Agregar and edit; titled card,
+       cost name under each code and a footer summary. -->
+  <div class="card-section desc-card">
+    <header class="desc-header">
+      <div>
+        <h2 class="desc-titulo">Descuentos por costo</h2>
+        <p class="desc-ayuda">Descuento aplicado a cada costo en el período. 0 significa sin descuento. Usá Agregar para un costo que aún no está en la lista.</p>
+      </div>
       <p-button label="Agregar" icon="pi pi-plus" [disabled]="aps() === null || anno() === null || mes() === null" (onClick)="abrirNuevo()"></p-button>
-    </div>
+    </header>
 
     <div class="table-wrapper table-scroll">
       <app-tabla-avanzada
         [columnas]="columnas"
         [rows]="rows()"
         [accionesTemplate]="acciones"
+        [cellTemplate]="celda"
         [loading]="loading()"
         storageKey="descuentos-costos"
         nombreExportar="DescuentosCostos"
       ></app-tabla-avanzada>
     </div>
 
+    <p class="desc-pie" *ngIf="resumen()">{{ resumen() }}</p>
+
+    <ng-template #celda let-value let-col="col">
+      <ng-container *ngIf="col.field === 'PARA_NOMBRE'; else valorCelda">
+        <span class="costo-codigo">{{ value }}</span>
+        <span class="costo-nombre" *ngIf="descripcionCosto(value) as nombre">{{ nombre }}</span>
+      </ng-container>
+      <ng-template #valorCelda>{{ valorMostrado(value, col) }}</ng-template>
+    </ng-template>
+
     <ng-template #acciones let-row>
-      <p-button icon="pi pi-pencil" severity="info" size="small" (onClick)="abrirEdicion(row)"></p-button>
+      <p-button icon="pi pi-pencil" severity="secondary" [outlined]="true" size="small" [ariaLabel]="'Editar descuento de ' + row['PARA_NOMBRE']" (onClick)="abrirEdicion(row)"></p-button>
     </ng-template>
   </div>
 </section>
