@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, computed, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { BotonDescargaComponent, TipoArchivoDescarga } from './boton-descarga.component';
 
 export type CargueArchivoEstado = 'vacio' | 'validando' | 'listo' | 'error' | 'guardando' | 'guardado';
 
@@ -33,14 +34,14 @@ export function formatearTamano(bytes: number): string {
 }
 
 /**
- * Cargue guiado en 3 pasos (design/cargue-archivos/03-pasos-guiados.html): descargar Plano Guía, seleccionar archivo,
+ * Cargue guiado en 3 pasos (design/cargue-archivos/03-pasos-guiados.html): descargar la plantilla, seleccionar archivo,
  * revisar y guardar. Solo maneja la UI y la selección del archivo (extensión y archivo vacío); el parseo, la vista
  * previa, la confirmación y el guardado quedan en cada pantalla, que informa el avance con `estado`.
  */
 @Component({
   selector: 'app-cargue-archivo-pasos',
   standalone: true,
-  imports: [CommonModule, ButtonModule],
+  imports: [CommonModule, ButtonModule, BotonDescargaComponent],
   templateUrl: './cargue-archivo-pasos.component.html',
   styleUrl: './cargue-archivo-pasos.component.css'
 })
@@ -49,6 +50,8 @@ export class CargueArchivoPasosComponent implements OnChanges {
   @Input() subtitulo = '';
   @Input({ required: true }) planoGuiaUrl!: string;
   @Input() planoGuiaDescripcion = 'Formato con las columnas esperadas.';
+  /** Línea meta del botón de descarga, con el tamaño del archivo publicado (ej. «CSV · < 1 KB · 13 columnas»). */
+  @Input() planoGuiaMeta = '';
   @Input() accept = '.csv';
   @Input() disabled = false;
   @Input() disabledMessage = 'Seleccioná una empresa primero';
@@ -122,6 +125,16 @@ export class CargueArchivoPasosComponent implements OnChanges {
         this.limpiarArchivo();
       }
     }
+  }
+
+  /** Nombre real del archivo de la plantilla (último tramo de la URL), para el atributo `download`. */
+  get planoGuiaNombre(): string {
+    return decodeURIComponent(this.planoGuiaUrl.split('/').pop() ?? '');
+  }
+
+  get planoGuiaTipo(): TipoArchivoDescarga {
+    const ext = this.planoGuiaNombre.split('.').pop()?.toLowerCase();
+    return ext === 'xlsx' || ext === 'pdf' || ext === 'docx' || ext === 'zip' ? ext : 'csv';
   }
 
   srPaso(estado: EstadoPaso): string {
@@ -216,13 +229,13 @@ export class CargueArchivoPasosComponent implements OnChanges {
       const esperado = extensiones.map((e) => e.slice(1).toUpperCase()).join(' o ');
       return {
         titulo: `El archivo no es ${esperado}`,
-        detalle: `«${file.name}» es un archivo ${ext}. Guardalo como ${esperado} a partir del Plano Guía e intentá de nuevo.`
+        detalle: `«${file.name}» es un archivo ${ext}. Guardalo como ${esperado} a partir de la plantilla e intentá de nuevo.`
       };
     }
     if (file.size === 0) {
       return {
         titulo: 'El archivo está vacío',
-        detalle: 'No tiene encabezados ni filas. Completá el Plano Guía con al menos una fila de datos debajo de los encabezados.'
+        detalle: 'No tiene encabezados ni filas. Completá la plantilla con al menos una fila de datos debajo de los encabezados.'
       };
     }
     return null;

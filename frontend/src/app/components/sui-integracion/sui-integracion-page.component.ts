@@ -8,6 +8,8 @@ import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
 import { TablaGenericaComponent } from '../shared/tabla-generica.component';
+import { BotonDescargaComponent } from '../shared/boton-descarga.component';
+import { EXPLICACION_FORMATOS_HREF, EXPLICACION_FORMATOS_META, EXPLICACION_FORMATOS_NOMBRE } from '../sui-resumen-formatos/sui-formatos-legacy';
 import { SuiFormato, SuiTab, InformeDatasetItem } from '../../models/sui-integracion.models';
 import { SuiIntegracionService } from '../../services/sui-integracion.service';
 import { InformesService } from '../../services/informes.service';
@@ -81,7 +83,7 @@ interface ResumenTabla {
 @Component({
   selector: 'app-sui-integracion-page',
   standalone: true,
-  imports: [CommonModule, MessageModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent, TablaGenericaComponent],
+  imports: [CommonModule, MessageModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent, TablaGenericaComponent, BotonDescargaComponent],
   template: `
     <section>
       <div class="card-section">
@@ -102,9 +104,14 @@ interface ResumenTabla {
       </div>
 
       <div class="card-section">
-        <div class="flex gap-2 mb-2 flex-wrap align-items-center">
+        <div class="card-actions">
           <button pButton label="Procesar" severity="success" (click)="procesar()" [disabled]="loading() || !filtrosValidos()"></button>
-          <a class="explicacion-formatos" href="assets/layout/planos/Explicación formatos y formularios.xlsx" download>⚡ Explicación formatos y formularios</a>
+          <app-boton-descarga
+            [href]="explicacionHref"
+            [nombreArchivo]="explicacionNombre"
+            etiqueta="Descargar explicación de formatos"
+            tipo="xlsx"
+            [meta]="explicacionMeta"></app-boton-descarga>
         </div>
 
         <p-message *ngIf="estado()" severity="info" [text]="estado()"></p-message>
@@ -173,8 +180,9 @@ interface ResumenTabla {
     }
     @media (max-width: 1100px) { .resumen-variables-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 700px) { .resumen-variables-grid { grid-template-columns: 1fr; } }
-    .explicacion-formatos { color: var(--color-brand-accent); font-size: 14px; text-decoration: none; }
-    .explicacion-formatos:hover { color: var(--color-brand-medium); text-decoration: underline; }
+    /* Barra de acciones: Procesar a la izquierda, la descarga a la derecha (descargas-estandar S2). */
+    .card-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .card-actions app-boton-descarga { margin-left: auto; }
   `]
 })
 export class SuiIntegracionPageComponent implements OnInit {
@@ -192,6 +200,9 @@ export class SuiIntegracionPageComponent implements OnInit {
   readonly formatos: SuiFormato[] = ['F19', 'F23', 'F24', 'F35', 'F36'];
   readonly columnas = COLUMNAS_SUI;
   readonly exportar = EXPORTAR;
+  readonly explicacionHref = EXPLICACION_FORMATOS_HREF;
+  readonly explicacionNombre = EXPLICACION_FORMATOS_NOMBRE;
+  readonly explicacionMeta = EXPLICACION_FORMATOS_META;
   readonly filtrosValidos = computed(() => !!this.aps() && !!this.mes() && !!this.anno());
 
   constructor(

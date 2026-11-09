@@ -146,6 +146,9 @@ describe('InfPropiaSemComponent (702 Inf. Propia) — legacy InfPropiaSemestral.
       expect(inputs[0].closest('app-cargue-archivo-pasos')).not.toBeNull();
       expect(el.querySelector('.descarga-plano')).toBeNull();
       expect(pasos(fixture).planoGuiaUrl).toBe('assets/layout/planos/plano_propio_semestral.csv');
+      // descargas-estandar S3: step 1 offers the same file with the standard download button and its real name.
+      expect(pasos(fixture).planoGuiaMeta).toBe('CSV · < 1 KB · 20 columnas');
+      expect((fixture.nativeElement as HTMLElement).querySelector('app-boton-descarga a')?.getAttribute('download')).toBe('plano_propio_semestral.csv');
       expect(pasos(fixture).titulo).toBe('Cargue de Información Propia Semestral');
       expect(pasos(fixture).accept).toBe('.csv');
     });

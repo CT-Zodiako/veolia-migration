@@ -6,6 +6,9 @@ type ColumnaLegacy = [field: string, header: string, decimales?: number];
 
 /** Legacy ResumenFormatos.vue:8-12 / ReversionesSui.vue:8-9: link to the format explanation workbook. */
 export const EXPLICACION_FORMATOS_HREF = 'assets/layout/planos/Explicación formatos y formularios.xlsx';
+/** Nombre real con que se guarda y tamaño del archivo publicado (229.723 bytes), para el botón estándar de descarga. */
+export const EXPLICACION_FORMATOS_NOMBRE = 'Explicación formatos y formularios.xlsx';
+export const EXPLICACION_FORMATOS_META = 'XLSX · 224 KB';
 
 /**
  * Legacy components/TableResumenAps/Formato{19,23,24,35,36}.vue (same columns in TableReversionesAps, which adds REVE ID

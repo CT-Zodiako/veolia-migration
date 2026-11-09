@@ -204,6 +204,12 @@ describe('CargueComercialComponent (701 Inf. Usuarios) — legacy CargueComercia
     const host = fixture.nativeElement as HTMLElement;
 
     expect(pasos(fixture).planoGuiaUrl).toBe('assets/layout/planos/plano_usuarios.csv');
+
+    // descargas-estandar S3: step 1 offers the same file with the standard download button and its real name.
+
+    expect(pasos(fixture).planoGuiaMeta).toBe('CSV · < 1 KB · 12 columnas');
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-boton-descarga a')?.getAttribute('download')).toBe('plano_usuarios.csv');
     expect(pasos(fixture).accept).toBe('.csv');
     const propios = Array.from(host.querySelectorAll('input[type="file"]')).filter((i) => !i.closest('app-cargue-archivo-pasos'));
     expect(propios).toEqual([]);

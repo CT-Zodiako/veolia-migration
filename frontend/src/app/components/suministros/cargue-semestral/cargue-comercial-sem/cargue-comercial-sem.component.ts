@@ -91,6 +91,8 @@ export class CargueComercialSemComponent {
   private lecturaActual = 0;
 
   readonly planoGuiaUrl = 'assets/layout/planos/plano_usuarios_semestral.csv';
+  /** Tamaño del archivo publicado y columnas de su encabezado (descargas-estandar S2). */
+  readonly planoGuiaMeta = 'CSV · < 1 KB · 22 columnas';
 
   // Estado del cargue guiado: la pantalla sigue siendo dueña del parseo, la vista previa y el guardado.
   readonly estadoCargue = computed<CargueArchivoEstado>(() => {

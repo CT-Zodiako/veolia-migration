@@ -108,9 +108,13 @@ describe('SuiIntegracionPageComponent (801)', () => {
     }
   }, RENDER_TIMEOUT_MS);
 
+  // descargas-estandar S2/S3: the "⚡ Explicación formatos y formularios" link is now the standard download button, right
+  // of Procesar in the same action bar, with the same file and its real name.
   it('shows the legacy tab labels, subtitles and the "Explicación formatos" download', () => {
     const { fixture, component } = crear();
-    const link = fixture.nativeElement.querySelector('a.explicacion-formatos') as HTMLAnchorElement;
+    const el = fixture.nativeElement as HTMLElement;
+    const links = el.querySelectorAll('app-boton-descarga a');
+    const link = links[0] as HTMLAnchorElement;
 
     expect(component.tabs.map((t) => [t.value, t.label, t.subtitulo])).toEqual([
       ['F19', 'Formato 19', 'Variable para el cálculo de la tarifa de aprovechamiento y toneladas conjuntas'],
@@ -120,8 +124,14 @@ describe('SuiIntegracionPageComponent (801)', () => {
       ['F36', 'Formato 36', 'Costo de tratamiento de lixiviados - operador sitio de disposición final'],
       ['RESUMEN', 'Resumen Variables', 'Resumen Variables']
     ]);
+    expect(links.length).toBe(1);
     expect(link.getAttribute('href')).toBe('assets/layout/planos/Explicación formatos y formularios.xlsx');
-    expect(link.textContent).toContain('Explicación formatos y formularios');
+    expect(link.getAttribute('download')).toBe('Explicación formatos y formularios.xlsx');
+    expect(link.querySelector('.lbl')!.textContent!.trim()).toBe('Descargar explicación de formatos');
+    expect(link.querySelector('.meta')!.textContent!.trim()).toBe('XLSX · 224 KB');
+    const barra = link.closest('.card-actions') as HTMLElement;
+    expect(barra.querySelector('button')!.textContent).toContain('Procesar');
+    expect(el.textContent).not.toContain('⚡');
     expect(fixture.nativeElement.textContent).toContain('Variable para el cálculo de la tarifa de aprovechamiento y toneladas conjuntas');
   }, RENDER_TIMEOUT_MS);
 

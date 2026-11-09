@@ -7,7 +7,14 @@
   </div>
 
   <div class="card-section">
-    <a class="explicacion-formatos" [href]="explicacionHref">&#9889; Explicación formatos y formularios</a>
+    <div class="card-actions">
+      <app-boton-descarga
+        [href]="explicacionHref"
+        [nombreArchivo]="explicacionNombre"
+        etiqueta="Descargar explicación de formatos"
+        tipo="xlsx"
+        [meta]="explicacionMeta"></app-boton-descarga>
+    </div>
     <p *ngIf="loading" class="loading-text">Cargando...</p>
     <p *ngIf="error" class="error-message">{{ error }}</p>
 

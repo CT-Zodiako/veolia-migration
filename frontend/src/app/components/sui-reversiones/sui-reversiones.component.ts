@@ -4,7 +4,10 @@ import { forkJoin } from 'rxjs';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.component';
-import { columnasFormatoSui, EXPLICACION_FORMATOS_HREF, FormatoSui, opcionesPaginaSui } from '../sui-resumen-formatos/sui-formatos-legacy';
+import { BotonDescargaComponent } from '../shared/boton-descarga.component';
+import {
+  columnasFormatoSui, EXPLICACION_FORMATOS_HREF, EXPLICACION_FORMATOS_META, EXPLICACION_FORMATOS_NOMBRE, FormatoSui, opcionesPaginaSui
+} from '../sui-resumen-formatos/sui-formatos-legacy';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { SuiReversionRow, SuiReversionesService } from '../../services/sui-reversiones.service';
 
@@ -28,7 +31,7 @@ interface FormatoConfig {
 @Component({
   selector: 'app-sui-reversiones',
   standalone: true,
-  imports: [CommonModule, ...CommonPrimeNgModules, ApsSelectorComponent, TablaAvanzadaComponent],
+  imports: [CommonModule, ...CommonPrimeNgModules, ApsSelectorComponent, TablaAvanzadaComponent, BotonDescargaComponent],
   templateUrl: './sui-reversiones.component.html',
   styleUrl: './sui-reversiones.component.css'
 })
@@ -76,6 +79,8 @@ export class SuiReversionesComponent implements OnInit, AfterViewInit {
   ];
 
   readonly explicacionHref = EXPLICACION_FORMATOS_HREF;
+  readonly explicacionNombre = EXPLICACION_FORMATOS_NOMBRE;
+  readonly explicacionMeta = EXPLICACION_FORMATOS_META;
 
   data: Record<string, FormatoData> = {};
 

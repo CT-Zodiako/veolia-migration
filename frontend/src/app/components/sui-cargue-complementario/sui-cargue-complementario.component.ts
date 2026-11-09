@@ -104,6 +104,8 @@ function aNumero(valor: string | undefined): number | null {
 })
 export class SuiCargueComplementarioComponent {
   readonly planoGuiaUrl = 'assets/layout/planos/sui_complemento.csv';
+  /** Tamaño del archivo publicado y columnas de su encabezado (descargas-estandar S2). */
+  readonly planoGuiaMeta = 'CSV · < 1 KB · 21 columnas';
 
   readonly aps = signal<number | null>(null);
   readonly anno = signal<number | null>(null);

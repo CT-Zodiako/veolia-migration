@@ -8,6 +8,7 @@ function setup(inputs: Record<string, unknown> = {}) {
   TestBed.configureTestingModule({ imports: [CargueArchivoPasosComponent] });
   const fixture = TestBed.createComponent(CargueArchivoPasosComponent);
   fixture.componentRef.setInput('planoGuiaUrl', 'assets/layout/planos/plano_usuarios.csv');
+  fixture.componentRef.setInput('planoGuiaMeta', 'CSV · < 1 KB · 12 columnas');
   Object.entries(inputs).forEach(([k, v]) => fixture.componentRef.setInput(k, v));
   fixture.detectChanges();
   const component = fixture.componentInstance;
@@ -45,17 +46,26 @@ function dragEvent(tipo: string, files: File[] = []): Event {
 }
 
 describe('CargueArchivoPasosComponent', () => {
-  it('renders the 3 steps and the Plano Guía link with the given URL', () => {
+  // descargas-estandar S2/S3: step 1 offers the template with the standard download button (real file name, meta line).
+  it('renders the 3 steps and the template download button with the given URL in step 1', () => {
     const { el } = setup();
     const pasos = el.querySelectorAll('ol.steps > li.step');
     expect(pasos.length).toBe(3);
-    expect(pasos[0].textContent).toContain('Descargar plano guía');
+    expect(pasos[0].textContent).toContain('Plantilla del archivo');
     expect(pasos[1].textContent).toContain('Seleccionar archivo');
     expect(pasos[2].textContent).toContain('Revisar y cargar');
-    const link = el.querySelector('a.plano-guia') as HTMLAnchorElement;
+    const links = el.querySelectorAll('app-boton-descarga a');
+    expect(links.length).toBe(1);
+    const link = links[0] as HTMLAnchorElement;
+    expect(pasos[0].contains(link)).toBe(true);
     expect(link.getAttribute('href')).toBe('assets/layout/planos/plano_usuarios.csv');
-    expect(link.textContent).toContain('Descargar Plano Guía');
-    expect(el.querySelector('.pi-download')).not.toBeNull();
+    expect(link.getAttribute('download')).toBe('plano_usuarios.csv');
+    expect(link.hasAttribute('target')).toBe(false);
+    expect(link.querySelector('.lbl')!.textContent!.trim()).toBe('Descargar plantilla');
+    expect(link.querySelector('.meta')!.textContent!.trim()).toBe('CSV · < 1 KB · 12 columnas');
+    expect(link.querySelector('svg.ficon text')!.textContent!.trim()).toBe('CSV');
+    expect(el.textContent).not.toContain('Plano Guía');
+    expect(el.querySelector('.pi-download')).toBeNull();
   });
 
   it('picking a valid .csv emits archivoSeleccionado and shows the name/size chip', () => {
@@ -69,7 +79,7 @@ describe('CargueArchivoPasosComponent', () => {
     expect(chip.textContent).toContain('7 B');
   });
 
-  it('a non-.csv file shows an error with a Plano Guía link and does not emit', () => {
+  it('a non-.csv file shows an error repeating the template download button and does not emit', () => {
     const { el, fixture, seleccionados } = setup();
     elegir(el, new File(['x'], 'datos.xlsx'));
     fixture.detectChanges();
@@ -77,8 +87,12 @@ describe('CargueArchivoPasosComponent', () => {
     const msg = el.querySelector('.msg-error') as HTMLElement;
     expect(msg.textContent).toContain('El archivo no es CSV');
     expect(msg.textContent).toContain('datos.xlsx');
-    expect((msg.querySelector('a.plano-guia') as HTMLAnchorElement).getAttribute('href'))
-      .toBe('assets/layout/planos/plano_usuarios.csv');
+    expect(msg.textContent).toContain('a partir de la plantilla');
+    const link = msg.querySelector('app-boton-descarga a') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe('assets/layout/planos/plano_usuarios.csv');
+    expect(link.getAttribute('download')).toBe('plano_usuarios.csv');
+    expect(link.querySelector('.lbl')!.textContent!.trim()).toBe('Descargar plantilla');
+    expect(msg.textContent).not.toContain('Plano Guía');
     expect(el.querySelector('li.step.is-error')).not.toBeNull();
   });
 
@@ -88,6 +102,7 @@ describe('CargueArchivoPasosComponent', () => {
     fixture.detectChanges();
     expect(seleccionados).toEqual([]);
     expect(el.querySelector('.msg-error')!.textContent).toContain('El archivo está vacío');
+    expect(el.querySelector('.msg-error')!.textContent).toContain('Completá la plantilla');
   });
 
   it('adds the drag-over class on dragenter and selects the dropped file', () => {

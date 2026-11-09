@@ -120,11 +120,21 @@ describe('SuiResumenFormatosComponent (804 Resumen formatos, legacy ResumenForma
   }, RENDER_TIMEOUT_MS);
 
   // ResumenFormatos.vue:8-12: link "Explicación formatos y formularios" to assets/layout/planos/Explicación formatos y formularios.xlsx.
-  it('legacy shows the "Explicación formatos y formularios" link to assets/layout/planos/Explicación formatos y formularios.xlsx (ResumenFormatos.vue:8-12)', async () => {
+  // descargas-estandar S2/S3: same file through the standard download button, now with its real name as download, at
+  // the right of the tabs card action bar, without the ⚡ emoji.
+  it('legacy offers assets/layout/planos/Explicación formatos y formularios.xlsx, now via the standard download button (ResumenFormatos.vue:8-12)', async () => {
     const { fixture } = await crear();
+    const el = fixture.nativeElement as HTMLElement;
 
-    const link = Array.from(fixture.nativeElement.querySelectorAll('a') as NodeListOf<HTMLAnchorElement>)
-      .find((a) => a.textContent?.includes('Explicación formatos y formularios'));
-    expect(link?.getAttribute('href')).toBe('assets/layout/planos/Explicación formatos y formularios.xlsx');
+    const links = el.querySelectorAll('app-boton-descarga a');
+    expect(links.length).toBe(1);
+    const link = links[0] as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe('assets/layout/planos/Explicación formatos y formularios.xlsx');
+    expect(link.getAttribute('download')).toBe('Explicación formatos y formularios.xlsx');
+    expect(link.querySelector('.lbl')!.textContent!.trim()).toBe('Descargar explicación de formatos');
+    expect(link.querySelector('.meta')!.textContent!.trim()).toBe('XLSX · 224 KB');
+    expect(link.closest('.card-actions')).not.toBeNull();
+    expect(el.textContent).not.toContain('⚡');
+    expect(el.querySelector('a.explicacion-formatos')).toBeNull();
   });
 });

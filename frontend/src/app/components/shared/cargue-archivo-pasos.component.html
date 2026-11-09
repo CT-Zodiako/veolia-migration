@@ -30,22 +30,12 @@
       <div class="step-head">
         <span class="step-num" aria-hidden="true">1</span>
         <div>
-          <p class="step-title"><span class="sr-only">Paso 1: </span>Descargar plano guía<span class="sr-only"> ({{ srPaso('optional') }})</span></p>
+          <p class="step-title"><span class="sr-only">Paso 1: </span>Plantilla del archivo<span class="sr-only"> ({{ srPaso('optional') }})</span></p>
           <p class="step-desc">{{ planoGuiaDescripcion }}</p>
         </div>
       </div>
       <div class="step-body">
-        <a
-          pButton
-          class="plano-guia"
-          [href]="planoGuiaUrl"
-          target="_blank"
-          rel="noopener"
-          icon="pi pi-download"
-          label="Descargar Plano Guía"
-          severity="secondary"
-          [outlined]="true"
-          size="small"></a>
+        <ng-container *ngTemplateOutlet="descargaPlantilla"></ng-container>
         <p class="step-note">Si ya usás el formato, pasá al paso 2.</p>
       </div>
     </li>
@@ -129,9 +119,7 @@
               </ul>
             </ng-template>
             <div class="msg-actions">
-              <a class="link plano-guia" [href]="planoGuiaUrl" target="_blank" rel="noopener">
-                <i class="pi pi-download" aria-hidden="true"></i>Descargar Plano Guía
-              </a>
+              <ng-container *ngTemplateOutlet="descargaPlantilla"></ng-container>
               <button pButton type="button" label="Elegir otro archivo" severity="secondary" [outlined]="true" size="small" [disabled]="disabled" (click)="abrirSelector()"></button>
             </div>
           </div>
@@ -173,4 +161,13 @@
   </ol>
 
   <p class="sr-only" role="status" aria-live="polite">{{ anuncio }}</p>
+
+  <ng-template #descargaPlantilla>
+    <app-boton-descarga
+      [href]="planoGuiaUrl"
+      [nombreArchivo]="planoGuiaNombre"
+      etiqueta="Descargar plantilla"
+      [tipo]="planoGuiaTipo"
+      [meta]="planoGuiaMeta"></app-boton-descarga>
+  </ng-template>
 </div>

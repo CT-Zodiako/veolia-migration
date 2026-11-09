@@ -180,6 +180,12 @@ describe('InfPropiaComponent (701 Inf. Propia) — legacy InfPropiaMensual.vue',
     const host = fixture.nativeElement as HTMLElement;
 
     expect(pasos(fixture).planoGuiaUrl).toBe('assets/layout/planos/plano_propio_mensual.csv');
+
+    // descargas-estandar S3: step 1 offers the same file with the standard download button and its real name.
+
+    expect(pasos(fixture).planoGuiaMeta).toBe('CSV · < 1 KB · 13 columnas');
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-boton-descarga a')?.getAttribute('download')).toBe('plano_propio_mensual.csv');
     expect(pasos(fixture).accept).toBe('.csv');
     const propios = Array.from(host.querySelectorAll('input[type="file"]')).filter((i) => !i.closest('app-cargue-archivo-pasos'));
     expect(propios).toEqual([]);

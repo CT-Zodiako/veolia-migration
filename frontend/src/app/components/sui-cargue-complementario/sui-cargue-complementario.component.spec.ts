@@ -162,6 +162,9 @@ describe('SuiCargueComplementarioComponent (802)', () => {
       expect(pasos()).not.toBeNull();
       const cargue = pasos().componentInstance as CargueArchivoPasosComponent;
       expect(cargue.planoGuiaUrl).toBe('assets/layout/planos/sui_complemento.csv');
+      // descargas-estandar S3: step 1 offers the same file with the standard download button and its real name.
+      expect(cargue.planoGuiaMeta).toBe('CSV · < 1 KB · 21 columnas');
+      expect((el as HTMLElement).querySelector('app-boton-descarga a')?.getAttribute('download')).toBe('sui_complemento.csv');
       expect(cargue.accept).toBe('.csv');
       expect(cargue.disabled).toBe(false);
       // The only file input is the shared component's hidden one.

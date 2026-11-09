@@ -14,6 +14,16 @@
   margin-bottom: 0;
 }
 
+/* Barra de acciones del card: la descarga va a la derecha (descargas-estandar S2). */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
 .loading-text {
   color: var(--color-text-secondary);
   font-size: 14px;

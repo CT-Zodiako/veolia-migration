@@ -14,22 +14,14 @@
   margin-bottom: 0;
 }
 
-.download-link {
-  margin-bottom: 16px;
-}
-
-.download-link a {
-  color: var(--color-brand-accent);
-  font-size: 14px;
-  text-decoration: none;
-  display: inline-flex;
+/* Barra de acciones del card: la descarga va a la derecha (descargas-estandar S2). */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
-  gap: 6px;
-}
-
-.download-link a:hover {
-  color: var(--color-brand-medium);
-  text-decoration: underline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
 .loading-text {
