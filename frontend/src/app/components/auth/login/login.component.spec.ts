@@ -7,7 +7,8 @@ import { AuthService } from '../../../services/auth.service';
 // Legacy: front-tarificador/src/views/Auth/Login.vue + service/AuthService.js.
 // Approved deviation (odd/tasks/login-systems-validation.md): systems are no longer
 // fetched on every email keystroke (legacy Login.vue:132-135); they are revealed only
-// after POST /auth/validate-credentials succeeds, in a dialog instead of a dropdown.
+// after POST /auth/validate-credentials succeeds, as the third step of a one-question-per-screen
+// flow (design/login-dinamico/02-conversacional.html) instead of a dropdown.
 
 const SISTEMAS = [
   { SIST_ID: 1, SIST_NOMBRE: 'VEO-Regulator' },
@@ -60,8 +61,8 @@ describe('LoginComponent (legacy views/Auth/Login.vue)', () => {
     fixture.detectChanges();
     expect(authService.validateCredentials).toHaveBeenCalledWith('ana@veolia.com', 'secreta');
     expect(component.sistemas).toEqual(SISTEMAS);
-    expect(component.showSistemaDialog).toBe(true);
-    const labels = Array.from(document.querySelectorAll('.system-options button')).map(b => b.textContent?.trim());
+    expect(component.step).toBe(3);
+    const labels = Array.from(document.querySelectorAll('.system-options .system-option-name')).map(b => b.textContent?.trim());
     expect(labels).toEqual(['VEO-Regulator', 'SUI853']);
   });
 
@@ -82,6 +83,7 @@ describe('LoginComponent (legacy views/Auth/Login.vue)', () => {
     expect(component.error).toBe('Usuario o Pass Incorrecto');
     expect(component.password).toBe('');
     expect(component.email).toBe('ana@veolia.com');
+    expect(component.step).toBe(2);
     expect(el.querySelector('.error-message')?.textContent?.trim()).toBe('Usuario o Pass Incorrecto');
     expect(router.navigate).not.toHaveBeenCalled();
     expect(localStorage.getItem('jwtOken')).toBeNull();
@@ -94,6 +96,7 @@ describe('LoginComponent (legacy views/Auth/Login.vue)', () => {
     expect(component.error).toBe('Usuario no existe o inactivo');
     expect(component.email).toBe('');
     expect(component.password).toBe('');
+    expect(component.step).toBe(1);
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
@@ -102,7 +105,7 @@ describe('LoginComponent (legacy views/Auth/Login.vue)', () => {
     const { component } = validated({ validateCredentials: vi.fn(() => throwError(() => ({ status: 401 }))) });
     expect(component.error).toBe('Usuario o Pass Incorrecto');
     expect(component.sistemas).toEqual([]);
-    expect(component.showSistemaDialog).toBe(false);
+    expect(component.step).toBe(2);
   });
 
   // Legacy Login.vue:90 + 111-112: an invalid email shows "El email no es valido" and no request is sent.
@@ -131,6 +134,86 @@ describe('LoginComponent (legacy views/Auth/Login.vue)', () => {
     component.password = 'secreta';
     component.validateCredentials();
     expect(authService.validateCredentials).not.toHaveBeenCalled();
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  // Design 02-conversacional: step 1 asks only for the email, with the legacy email messages.
+  it('step 1 checks the email with the legacy messages before asking for the password', () => {
+    const { component, authService } = setup();
+    expect(component.step).toBe(1);
+    component.nextFromEmail();
+    expect(component.error).toBe('El email es obligatorio');
+    expect(component.step).toBe(1);
+    component.email = 'ana@veolia';
+    component.nextFromEmail();
+    expect(component.error).toBe('El email no es valido');
+    expect(component.step).toBe(1);
+    component.email = 'ana@veolia.com';
+    component.nextFromEmail();
+    expect(component.error).toBe('');
+    expect(component.step).toBe(2);
+    expect(authService.validateCredentials).not.toHaveBeenCalled();
+  });
+
+  // Design 02-conversacional: going back from the password keeps the typed email.
+  it('backToEmail returns to step 1 keeping the email and dropping the password', () => {
+    const { component } = setup();
+    component.email = 'ana@veolia.com';
+    component.nextFromEmail();
+    component.password = 'secreta';
+    component.backToEmail();
+    expect(component.step).toBe(1);
+    expect(component.email).toBe('ana@veolia.com');
+    expect(component.password).toBe('');
+  });
+
+  // Design 02-conversacional: on step 3 the number keys pick the system in the listed order.
+  it('pressing a number on step 3 logs in with that system', () => {
+    const { component, authService } = validated();
+    component.onKeydown(new KeyboardEvent('keydown', { key: '2' }));
+    expect(authService.login).toHaveBeenCalledWith({ correo: 'ana@veolia.com', pass: 'secreta', idSistema: 3 });
+  });
+
+  it('number keys beyond the listed systems do nothing', () => {
+    const { component, authService } = validated();
+    component.onKeydown(new KeyboardEvent('keydown', { key: '3' }));
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  it('number keys do nothing before step 3', () => {
+    const { component, authService } = setup();
+    component.onKeydown(new KeyboardEvent('keydown', { key: '1' }));
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  it('number keys with Ctrl, Cmd or Alt do not pick a system', () => {
+    const { component, authService } = validated();
+    component.onKeydown(new KeyboardEvent('keydown', { key: '1', ctrlKey: true }));
+    component.onKeydown(new KeyboardEvent('keydown', { key: '1', metaKey: true }));
+    component.onKeydown(new KeyboardEvent('keydown', { key: '1', altKey: true }));
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  it('number keys do nothing while login is in flight', () => {
+    const { component, authService } = validated();
+    component.loading = true;
+    component.onKeydown(new KeyboardEvent('keydown', { key: '1' }));
+    expect(authService.login).not.toHaveBeenCalled();
+  });
+
+  it('editing the password after validation drops the systems and returns to step 2', () => {
+    const { component } = validated();
+    component.onPasswordChange();
+    expect(component.sistemas).toEqual([]);
+    expect(component.credentialsValidated).toBe(false);
+    expect(component.step).toBe(2);
+  });
+
+  it('backToEmail from step 3 clears the validated state', () => {
+    const { component, authService } = validated();
+    component.backToEmail();
+    component.selectSistema(1);
+    expect(component.step).toBe(1);
     expect(authService.login).not.toHaveBeenCalled();
   });
 });

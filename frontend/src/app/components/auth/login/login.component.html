@@ -1,75 +1,112 @@
 <div class="login-container">
-  <div class="login-box">
-    <div class="login-header">
-      <img src="/VeoliaLogo.png" alt="Veolia" class="login-logo" />
-    </div>
+  <div
+    class="login-progress"
+    role="progressbar"
+    aria-label="Avance del ingreso"
+    aria-valuemin="0"
+    aria-valuemax="3"
+    [attr.aria-valuenow]="step"
+    [style.width.%]="(step / 3) * 100"
+  ></div>
+  <div class="login-blob login-blob-brand" aria-hidden="true"></div>
+  <div class="login-blob login-blob-navy" aria-hidden="true"></div>
 
-    <div *ngIf="error" class="error-message">
-      {{ error }}
-    </div>
+  <header class="login-top">
+    <img src="/VeoliaLogo.png" alt="Veolia" class="login-logo" />
+    <span class="login-count" aria-live="polite">Paso {{ step }} de 3</span>
+  </header>
 
-    <form (ngSubmit)="validateCredentials()">
-      <div class="form-group">
-        <label>Correo electrónico</label>
-        <input
-          pInputText
-          type="email"
-          [(ngModel)]="email"
-          name="email"
-          placeholder="usuario@veolia.com"
-          (ngModelChange)="onCredentialsChange()"
-          [disabled]="loading"
-          required
-          style="width: 100%"
-        />
-      </div>
+  <main class="login-stage">
+    @switch (step) {
+      @case (1) {
+        <form class="login-step" (ngSubmit)="nextFromEmail()" novalidate>
+          <div class="step-num"><i>1</i> Tu cuenta</div>
+          <label class="step-question" for="login-email">Hola. <b>¿Cuál es tu correo</b> de Veolia?</label>
+          <input
+            #emailInput
+            id="login-email"
+            pInputText
+            class="step-input"
+            type="email"
+            name="email"
+            autocomplete="username"
+            [(ngModel)]="email"
+            (ngModelChange)="onCredentialsChange()"
+            [disabled]="loading"
+            placeholder="nombre.apellido@veolia.com"
+            autofocus
+          />
+          <ng-container *ngTemplateOutlet="errorTpl"></ng-container>
+          <div class="step-actions">
+            <p-button type="submit" label="Continuar" icon="pi pi-arrow-right" iconPos="right" styleClass="login-cta"></p-button>
+            <span class="step-kbd">o presioná <kbd>Enter ↵</kbd></span>
+          </div>
+        </form>
+      }
+      @case (2) {
+        <form class="login-step" (ngSubmit)="validateCredentials()" novalidate>
+          <div class="step-num"><i>2</i> Seguridad</div>
+          <label class="step-question" for="login-password">Perfecto. Ahora <b>tu contraseña</b>.</label>
+          <input
+            #passwordInput
+            id="login-password"
+            pInputText
+            class="step-input"
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            [(ngModel)]="password"
+            (ngModelChange)="onPasswordChange()"
+            [disabled]="loading"
+            placeholder="••••••••"
+          />
+          <ng-container *ngTemplateOutlet="errorTpl"></ng-container>
+          <p *ngIf="validating" class="sr-only" role="status" aria-live="polite">Validando credenciales...</p>
+          <div class="step-actions">
+            <p-button
+              type="submit"
+              [label]="validating ? 'Validando credenciales' : 'Validar'"
+              [loading]="loading || validating"
+              [disabled]="loading || validating"
+              styleClass="login-cta"
+            ></p-button>
+            <p-button type="button" label="← Cambiar correo" [link]="true" styleClass="step-link" (onClick)="backToEmail()"></p-button>
+            <span class="step-kbd"><kbd>Enter ↵</kbd> para validar</span>
+          </div>
+        </form>
+      }
+      @case (3) {
+        <section class="login-step" aria-labelledby="login-sistemas-title">
+          <div class="step-num"><i>3</i> Destino</div>
+          <h1 id="login-sistemas-title" class="step-question">Listo, <b>{{ nombre }}</b>. ¿A dónde vamos hoy?</h1>
+          <p class="step-hint">Elegí un sistema o presioná su número.</p>
+          <ng-container *ngTemplateOutlet="errorTpl"></ng-container>
+          <div #systemOptions class="system-options" role="list" aria-label="Sistemas disponibles">
+            <div *ngFor="let sistema of sistemas; let i = index" role="listitem">
+            <button
+              type="button"
+              class="system-option"
+              [disabled]="loading"
+              [attr.aria-busy]="loading && idSistema === sistema.SIST_ID"
+              (click)="selectSistema(sistema.SIST_ID)"
+            >
+              <kbd>{{ i + 1 }}</kbd>
+              <span class="system-option-name">{{ sistema.SIST_NOMBRE }}</span>
+              <span class="system-option-state">
+                {{ loading && idSistema === sistema.SIST_ID ? 'Ingresando…' : 'Entrar →' }}
+              </span>
+            </button>
+            </div>
+          </div>
+          <div class="step-actions">
+            <p-button type="button" label="← Usar otra cuenta" [link]="true" [disabled]="loading" styleClass="step-link" (onClick)="backToEmail()"></p-button>
+          </div>
+        </section>
+      }
+    }
+  </main>
 
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input
-          pInputText
-          type="password"
-          [(ngModel)]="password"
-          name="password"
-          (ngModelChange)="onPasswordChange()"
-          [disabled]="loading"
-          placeholder="••••••••"
-          required
-          style="width: 100%"
-        />
-      </div>
-
-      <p *ngIf="validating" role="status" aria-live="polite">Validando credenciales...</p>
-
-      <p-button
-        type="submit"
-        label="Ingresar"
-        [loading]="loading || validating"
-        [disabled]="loading || validating"
-        styleClass="w-full"
-      ></p-button>
-    </form>
-
-    <p-dialog
-      [(visible)]="showSistemaDialog"
-      header="Seleccioná el sistema"
-      [modal]="true"
-      [closable]="false"
-      [draggable]="false"
-      [style]="{ width: 'min(92vw, 28rem)' }"
-    >
-      <p class="dialog-description">Tus credenciales son correctas. Elegí el sistema al que querés ingresar.</p>
-      <div class="system-options" role="list" aria-label="Sistemas disponibles">
-        <p-button
-          *ngFor="let sistema of sistemas"
-          [label]="sistema.SIST_NOMBRE"
-          icon="pi pi-arrow-right"
-          [loading]="loading && idSistema === sistema.SIST_ID"
-          [disabled]="loading"
-          styleClass="system-option"
-          (onClick)="selectSistema(sistema.SIST_ID)"
-        ></p-button>
-      </div>
-    </p-dialog>
-  </div>
+  <ng-template #errorTpl>
+    <div *ngIf="error" class="error-message" role="alert">{{ error }}</div>
+  </ng-template>
 </div>
