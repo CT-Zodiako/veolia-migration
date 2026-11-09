@@ -1,0 +1,302 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estándar de descargas · 01 Botón secundario con ícono de archivo</title><style>
+:root{--bg-app:#f1f5f9;--bg-card:#fff;--bg-soft:#f8fafc;--border:#e2e8f0;--tx:#0f172a;--tx-body:#334155;--tx-2:#64748b;
+--brand-strong:#780200;--brand-medium:#c40300;--brand-accent:#f10400;--danger-soft:#fff2f2;--danger-border:#ffcdcc;--ok:#16a34a;--ok-soft:#f0fdf4;--ok-border:#bbf7d0;--sel-border:#cbd5e1;
+--sh-bg:#0b1f3a;--sh-hover:#13294a;--sh-active:#1b3459;--sh-tx:#dbe4f0;--sh-strong:#fff;--sh-muted:#8a9bb5;--sh-dot:#5f7392;--sh-accent:#f10400;
+--shadow-card:0 1px 3px rgba(0,0,0,.1);--shadow-pop:0 25px 50px -12px rgba(0,0,0,.25)}
+html.app-dark{color-scheme:dark;--bg-app:#0f172a;--bg-card:#1e293b;--bg-soft:#172033;--border:#334155;--tx:#f1f5f9;--tx-body:#cbd5e1;--tx-2:#94a3b8;
+--brand-strong:#ffa5a3;--brand-medium:#ff6966;--brand-accent:#ff2a26;--danger-soft:#3f1212;--danger-border:#5c2323;--ok:#4ade80;--ok-soft:#14291d;--ok-border:#1e4a2f;--sel-border:#52525b}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-app);color:var(--tx-body);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;background:var(--bg-soft);border:1px solid var(--border);border-radius:4px;padding:0 4px;color:var(--tx)}
+
+/* Documento */
+.doc{max-width:1440px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:28px}
+.doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:20px 24px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-card)}
+.eyebrow{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx-2)}
+.doc-head h1{margin:2px 0 0;font-size:22px;line-height:1.3;color:var(--tx)}
+.lead{max-width:780px;margin:6px 0 0}
+.doc-tools{display:flex;flex-direction:column;gap:10px;align-items:flex-end;flex-shrink:0}
+.tbtn{border:1px solid var(--sel-border);background:var(--bg-card);border-radius:10px;padding:8px 12px;cursor:pointer;font-size:13px;min-height:40px}
+.tbtn[aria-pressed=true]{background:var(--bg-soft);font-weight:600}
+.tog{display:inline-flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.tog input{width:16px;height:16px;accent-color:#c40300}
+.sec{display:flex;flex-direction:column;gap:12px}
+.sec-h h2{margin:0;font-size:17px;color:var(--tx)}
+.sec-h p{margin:2px 0 0;color:var(--tx-2);font-size:13px;max-width:900px}
+.pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tx-2);border:1px solid var(--border);border-radius:999px;padding:0 8px;margin-right:6px;vertical-align:2px}
+
+/* Marco de la app */
+.frame{border:1px solid var(--sel-border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-card);background:var(--bg-app)}
+.app{display:grid;grid-template-columns:220px minmax(0,1fr)}
+.sb{background:var(--sh-bg);color:var(--sh-tx);display:flex;flex-direction:column;padding:16px 12px}
+.sb .logo{padding:2px 8px 14px}.sb .logo b{color:#ff4b47;font-size:19px;letter-spacing:.5px}.sb .logo small{display:block;color:var(--sh-muted);font-size:11px;letter-spacing:1px}
+.sb h6{margin:12px 10px 4px;font-size:10px;letter-spacing:1.4px;color:var(--sh-muted);font-weight:700}
+.sb a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--sh-tx);text-decoration:none;font-size:13px}
+.sb a.on{background:var(--sh-active);color:var(--sh-strong);font-weight:700;box-shadow:inset 3px 0 0 var(--sh-accent)}
+.sb .sub{margin:2px 0 6px 16px}.sb .sub a{font-size:12.5px;padding:5px 10px}.sb .sub a::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--sh-dot)}
+.sb .sub a.on{background:transparent;box-shadow:none}.sb .sub a.on::before{background:var(--sh-accent)}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{min-height:64px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 24px}
+.crumb{font-size:12px;color:var(--tx-2)}.top .ttl{margin:0;font-size:18px;font-weight:600;color:var(--tx)}
+.top-r{display:flex;gap:10px;align-items:center;position:relative}
+.content{padding:20px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow-card)}
+.params{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px;flex:0 1 220px}.field.sm{flex-basis:130px}.field.lg{flex-basis:360px}
+.field label{font-size:13px;font-weight:600;color:var(--tx-body)}
+select{color:var(--tx);background:var(--bg-card);border:1px solid var(--sel-border);border-radius:8px;padding:8px 10px;min-height:40px}
+.btn{border:0;border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;min-height:40px}
+.btn-primary{background:#c40300;color:#fff}.btn-primary:hover{background:#9c0300}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.grow{flex:1}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tabs [role=tab]{background:none;border:0;padding:8px 14px;font-size:13px;color:var(--tx-2);cursor:pointer}
+.tabs [role=tab][aria-selected=true]{color:var(--brand-strong);font-weight:600;box-shadow:inset 0 -2px 0 #f10400}
+.subt{margin:14px 0 8px;font-size:15px;color:var(--brand-strong)}
+table.mini{border-collapse:collapse;width:100%;font-size:13px}
+table.mini th{font-size:12px;font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid var(--border);color:var(--tx);background:var(--bg-soft)}
+table.mini td{padding:5px 8px;border-bottom:1px solid var(--border)}
+table.mini .n{text-align:right;font-variant-numeric:tabular-nums}
+.muted{color:var(--tx-2)}
+
+/* Cargue guiado (app-cargue-archivo-pasos) */
+.up-h h4{margin:0;font-size:15px;color:var(--brand-strong)}
+.steps{list-style:none;margin:12px 0 0;padding:0}
+.step{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;padding:14px 0;border-top:1px solid var(--border)}
+.num{width:28px;height:28px;border-radius:50%;border:1px solid var(--sel-border);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--tx)}
+.step-t{margin:0;font-weight:600;color:var(--tx)}.step-d{margin:0;font-size:13px;color:var(--tx-2)}
+.step-b{margin-top:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.note{margin:0;font-size:12.5px;color:var(--tx-2)}
+.drop{width:100%;border:1.5px dashed var(--sel-border);border-radius:12px;padding:20px;background:var(--bg-soft);color:var(--tx-body);text-align:center;cursor:pointer}
+.step.pend .step-t,.step.pend .num{color:var(--tx-2)}
+
+/* Estados comunes */
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--tx-2);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.trail{display:inline-grid;place-items:center;width:20px;color:var(--tx-2);flex-shrink:0}
+.trail .t-spin,.trail .t-ok{display:none}
+[data-state=busy] .trail .t-arr,[data-state=done] .trail .t-arr{display:none}
+[data-state=busy] .trail .t-spin{display:inline-block}[data-state=done] .trail .t-ok{display:inline-block}
+[data-state=busy]{cursor:progress}
+.dl-err{display:flex;gap:8px;align-items:flex-start;padding:8px 12px;border-radius:8px;background:var(--danger-soft);border:1px solid var(--danger-border);color:var(--brand-strong);font-size:13px;max-width:460px;text-align:left}
+.dl-err[hidden]{display:none}
+.dl-err svg{flex-shrink:0;margin-top:2px}.dl-err p{margin:0}
+.lnk{background:none;border:0;padding:0;color:var(--brand-strong);font-weight:600;text-decoration:underline;cursor:pointer;min-height:24px}
+.lnk-n{background:none;border:0;padding:4px 0;color:var(--tx);font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer;min-height:32px;display:inline-flex;gap:6px;align-items:center}
+
+/* Galería de estados */
+.states{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.st{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.st h3{margin:0;font-size:13px;color:var(--tx)}.st p{margin:0;font-size:12.5px;color:var(--tx-2)}
+.st .spec{padding:14px;background:var(--bg-app);border-radius:8px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;min-height:92px;justify-content:center}
+
+/* Especificación */
+.specg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.box h3{margin:0 0 8px;font-size:14px;color:var(--tx)}
+.box ul,.box ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13px}
+.box p{margin:0 0 6px;font-size:13px}
+.box.wide{grid-column:span 2}
+.anat{padding:34px 26px 34px;background:var(--bg-app);border-radius:8px;display:flex;justify-content:center;margin-bottom:10px}
+.an{position:relative}
+.an::before{content:attr(data-n);position:absolute;top:-24px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;background:var(--tx);color:var(--bg-card);font-size:11px;font-weight:700;display:grid;place-items:center;line-height:1}
+.an.an-l::before{left:-14px;top:50%;transform:translate(-50%,-50%)}
+.an.an-b::before{top:auto;bottom:-24px}
+.an.an-r::before{left:auto;right:-26px;top:50%;transform:translateY(-50%)}
+.anat .an-r,.anat .an-b{display:inline-block}
+.types{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;text-align:center;font-size:12px}
+.types div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border:1px solid var(--border);border-radius:8px}
+.do{color:var(--tx)}.dont{color:var(--tx-2);text-decoration:line-through}
+pre{margin:6px 0 0;padding:10px 12px;background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--tx);white-space:pre-wrap}
+
+/* Inventario */
+table.inv{border-collapse:collapse;width:100%;font-size:12.5px;background:var(--bg-card)}
+table.inv th{font-size:12px;font-weight:600;text-align:left;padding:7px 10px;background:var(--bg-soft);color:var(--tx);border-bottom:1px solid var(--border);white-space:nowrap}
+table.inv td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+table.inv td.f{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:var(--tx)}
+.tblw{border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-card)}
+.find{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:900px){.app{grid-template-columns:1fr}.sb{display:none}.states,.specg,.find{grid-template-columns:1fr}.box.wide{grid-column:auto}.doc-head{flex-direction:column}}
+
+.dl{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:6px 12px 6px 10px;border:1px solid var(--sel-border);border-radius:10px;background:var(--bg-card);color:var(--tx);text-decoration:none;cursor:pointer;text-align:left;max-width:100%}
+.dl:hover,.dl.is-hover{background:var(--bg-soft);border-color:var(--tx-2)}
+.dl.is-focus{outline:2px solid var(--brand-accent);outline-offset:2px}
+.dl .txt{display:flex;flex-direction:column;min-width:0}
+.dl .lbl{font-size:13.5px;font-weight:600;line-height:1.25}
+.dl .meta{font-size:12px;color:var(--tx-2);line-height:1.3}
+.dl[data-state=busy]{background:var(--bg-soft)}
+.dl-wrap{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.step-b .dl-wrap{align-items:flex-start}</style></head><body>
+<a class="sr-only" href="#main">Ir al contenido</a>
+<div class="doc"><header class="doc-head"><div><p class="eyebrow">Estándar de descargas · Propuesta 01</p><h1>Botón secundario con ícono de archivo</h1><p class="lead">Cada archivo se ofrece con un botón contorneado: ícono del tipo de archivo, verbo «Descargar …» y una línea con tipo y tamaño. Vive en el lugar donde se usa el archivo y nunca compite con la acción principal (rojo).</p></div>
+<div class="doc-tools"><button class="tbtn" id="theme" type="button" aria-pressed="false">Modo oscuro</button>
+<label class="tog"><input type="checkbox" id="simerr"> Simular error de descarga</label></div></header>
+<main id="main" class="doc" style="padding:0"><section class="sec" aria-labelledby="s-inv"><div class="sec-h"><h2 id="s-inv">Inventario: dónde se descargan archivos hoy</h2><p>10 puntos en 6 pantallas, 3 formas de disparo distintas. Revisado en frontend/src/app (solo lectura).</p></div><div class="tblw"><table class="inv"><caption class="sr-only">Descargas de archivos existentes en frontend/src/app (sin contar Exportar de tablas)</caption>
+<thead><tr><th scope="col">#</th><th scope="col">Pantalla (ruta)</th><th scope="col">Etiqueta actual</th><th scope="col">Archivo · tipo · tamaño</th><th scope="col">Cómo se dispara</th><th scope="col">Dónde está</th></tr></thead><tbody>
+<tr><td>1</td><td>Sui › Formatos y Formularios<br><code>/sui/integracion</code></td><td>⚡ Explicación formatos y formularios</td><td class="f">Explicación formatos y formularios.xlsx<br>XLSX · 224 KB</td><td>Enlace de texto <code>&lt;a download&gt;</code>, emoji como ícono; la clase <code>.explicacion-formatos</code> no tiene CSS</td><td>Card de pestañas, a la derecha de «Procesar», sobre Formato 19 / Formulario 23…</td></tr>
+<tr><td>2</td><td>Sui › Resumen Formatos y Formularios<br><code>/sui/resumen-formatos</code></td><td>⚡ Explicación formatos y formularios</td><td class="f">mismo .xlsx</td><td>Enlace <code>&lt;a [href]&gt;</code> <b>sin</b> <code>download</code>: el navegador decide abrir o descargar</td><td>Primera línea del card de pestañas, encima de las pestañas</td></tr>
+<tr><td>3</td><td>Sui › SUI Reversiones<br><code>/sui-reversiones</code></td><td>⚡ Explicación formatos y formularios</td><td class="f">mismo .xlsx</td><td>Igual que #2</td><td>Igual que #2</td></tr>
+<tr><td>4</td><td>Sui › Cargue Complementario<br><code>/sui/cargue-complementario</code></td><td>Descargar Plano Guía</td><td class="f">sui_complemento.csv<br>CSV · &lt; 1 KB · 21 columnas</td><td rowspan="7">Componente compartido <code>app-cargue-archivo-pasos</code>: botón PrimeNG <code>outlined</code> secundario <code>small</code>, ícono genérico <code>pi-download</code>, <code>target="_blank"</code> sin <code>download</code>. Se repite como enlace dentro del error del paso 2</td><td rowspan="7">Paso 1 «Descargar plano guía» del cargue guiado; segunda copia en el mensaje de error</td></tr>
+<tr><td>5</td><td>Suministros › Cargue Mensual · Inf. Propia</td><td>Descargar Plano Guía</td><td class="f">plano_propio_mensual.csv<br>CSV · &lt; 1 KB · 13 columnas</td></tr>
+<tr><td>6</td><td>Suministros › Cargue Mensual · Inf. Competidor</td><td>Descargar Plano Guía</td><td class="f">plano_competidor_mensual.csv<br>CSV · &lt; 1 KB · 12 columnas</td></tr>
+<tr><td>7</td><td>Suministros › Cargue Mensual · Inf. Usuarios</td><td>Descargar Plano Guía</td><td class="f">plano_usuarios.csv<br>CSV · &lt; 1 KB · 12 columnas</td></tr>
+<tr><td>8</td><td>Suministros › Cargue Semestral · Inf. Propia</td><td>Descargar Plano Guía</td><td class="f">plano_propio_semestral.csv<br>CSV · &lt; 1 KB · 20 columnas</td></tr>
+<tr><td>9</td><td>Suministros › Cargue Semestral · Inf. Competidor</td><td>Descargar Plano Guía</td><td class="f">plano_competidor_semestral.csv<br>CSV · &lt; 1 KB · 16 columnas</td></tr>
+<tr><td>10</td><td>Suministros › Cargue Semestral · Inf. Usuarios</td><td>Descargar Plano Guía</td><td class="f">plano_usuarios_semestral.csv<br>CSV · &lt; 1 KB · 22 columnas</td></tr>
+</tbody></table></div>
+<div class="find">
+<div class="box"><h3>Qué no es coherente hoy</h3><ul><li>3 formas de disparo: enlace con <code>download</code>, enlace sin <code>download</code> y botón con <code>target="_blank"</code> (algunos navegadores abren el CSV en otra pestaña).</li><li>2 vocabularios: «Explicación…» y «Plano Guía».</li><li>Ninguna muestra tipo ni tamaño; el emoji ⚡ no dice «archivo».</li></ul></div>
+<div class="box"><h3>Fuera de alcance</h3><ul><li>«Exportar» de <code>app-tabla-avanzada</code> (pedido explícito).</li><li>Exportes generados: «Exportar todo» (Costos › resumen variables), diálogo CSV de SUI853, JSON de residuos generados, barra de descarga de gráficos en Costo CLUS.</li></ul></div>
+<div class="box"><h3>Quién gana con un estándar</h3><ul><li>1 componente compartido + 1 propiedad en el cargue guiado cubren las 10 filas.</li><li>Las 7 plantillas CSV ya pasan por <code>app-cargue-archivo-pasos</code>: cambiarlo ahí cambia 7 pantallas.</li></ul></div></div></section><section class="sec" aria-labelledby="s-c1"><div class="sec-h"><h2 id="s-c1">Contexto 1 · Sui › Formatos y Formularios</h2><p>El botón reemplaza al enlace «⚡ Explicación formatos y formularios»: queda en la barra de acciones del card, a la derecha y separado de «Procesar».</p></div><div class="frame" role="group" aria-label="Contexto 1: SUI, Formatos y Formularios"><div class="app"><nav class="sb" aria-label="Menú principal (maqueta)"><div class="logo"><b>VEOLIA</b><small>VEO-REGULATOR</small></div>
+<a href="#">⌂ Inicio</a><h6>OPERACIÓN</h6><a href="#">▣ Suministros</a>
+<a href="#">⚙ Procesos</a><h6>INFORMES</h6><a href="#">▤ Informes Gerenciales</a><a href="#" class="on">◎ Sui</a><div class="sub"><a href="#" class="on" aria-current="page">Formatos y Formularios</a><a href="#">Resumen Formatos</a><a href="#">Cargue Complementario</a></div>
+<h6>SISTEMA</h6><a href="#">⚒ Configuración</a></nav><div class="main">
+<header class="top"><div><div class="crumb">Sui</div><h3 class="ttl">Formatos y Formularios</h3></div><div class="top-r"></div></header>
+<div class="content"><div class="card"><div class="params">
+<div class="field"><label for="p-aps-c1">APS</label><select id="p-aps-c1"><option>Bucaramanga</option><option>Floridablanca</option><option>Girón</option></select></div>
+<div class="field sm"><label for="p-an-c1">Año</label><select id="p-an-c1"><option>2025</option><option>2024</option></select></div>
+<div class="field sm"><label for="p-me-c1">Mes</label><select id="p-me-c1"><option>Septiembre</option><option>Agosto</option></select></div>
+</div></div>
+<div class="card"><div class="toolbar"><button class="btn btn-primary" type="button">Procesar</button><span class="grow"></span><div class="dl-wrap"><a class="dl" id="c1-dl" href="assets/layout/planos/Explicación formatos y formularios.xlsx" download="Explicación formatos y formularios.xlsx" data-dl data-file="Explicación formatos y formularios.xlsx" data-label="Descargar explicación de formatos" data-err="c1-dl-err" aria-describedby="c1-dl-m"><svg class="ficon" width="24" height="28" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 5.5h10v7.5H7z M7 8h10 M7 10.5h10 M11 5.5v7.5" style="fill:none;stroke:var(--ok);stroke-width:1"/>
+<rect x="1" y="16" width="19" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="10.5" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">XLSX</text></svg><span class="txt"><span class="lbl" data-lbl>Descargar explicación de formatos</span><span class="meta" id="c1-dl-m">XLSX · 224 KB</span></span><span class="trail" aria-hidden="true"><svg class="t-arr" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v8.5M4.5 7.2 8 10.7l3.5-3.5M3 13.5h10" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"/></svg><span class="t-spin spin"></span><svg class="t-ok" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3 8.5 3.2 3L13 4.5" style="fill:none;stroke:var(--ok);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></span></a><div class="dl-err" id="c1-dl-err" role="alert" hidden></div></div></div>
+
+<div class="tabs" role="tablist" aria-label="Formatos SUI" style="margin-top:14px"><button role="tab" type="button" aria-selected="true" tabindex="0">Formato 19</button><button role="tab" type="button" aria-selected="false" tabindex="-1">Formulario 23</button><button role="tab" type="button" aria-selected="false" tabindex="-1">Formato 24</button><button role="tab" type="button" aria-selected="false" tabindex="-1">Formato 35</button><button role="tab" type="button" aria-selected="false" tabindex="-1">Formato 36</button><button role="tab" type="button" aria-selected="false" tabindex="-1">Resumen Variables</button></div>
+<h4 class="subt">Variable para el cálculo de la tarifa de aprovechamiento y toneladas conjuntas</h4>
+<table class="mini"><thead><tr><th scope="col">Mes</th><th scope="col" class="n">QA aprovechadas (t)</th><th scope="col" class="n">Toneladas conjuntas (t)</th></tr></thead>
+<tbody><tr><td>Julio</td><td class="n">1.212,40</td><td class="n">19.604,77</td></tr><tr><td>Agosto</td><td class="n">1.198,05</td><td class="n">19.881,12</td></tr><tr><td>Septiembre</td><td class="n">1.245,30</td><td class="n">20.012,58</td></tr></tbody></table></div></div></div></div></div></section><section class="sec" aria-labelledby="s-c2"><div class="sec-h"><h2 id="s-c2">Contexto 2 · Suministros › Cargue Mensual · Inf. Propia</h2><p>En el paso 1 del cargue guiado. El mensaje de error del paso 2 reutiliza el mismo botón en lugar de un enlace distinto.</p></div><div class="frame" role="group" aria-label="Contexto 2: Suministros, Cargue Mensual, Inf. Propia"><div class="app"><nav class="sb" aria-label="Menú principal (maqueta)"><div class="logo"><b>VEOLIA</b><small>VEO-REGULATOR</small></div>
+<a href="#">⌂ Inicio</a><h6>OPERACIÓN</h6><a href="#" class="on">▣ Suministros</a><div class="sub"><a href="#" class="on" aria-current="page">Cargue Mensual</a><a href="#">Cargue Semestral</a><a href="#">Reversión</a></div>
+<a href="#">⚙ Procesos</a><h6>INFORMES</h6><a href="#">▤ Informes Gerenciales</a><a href="#">◎ Sui</a>
+<h6>SISTEMA</h6><a href="#">⚒ Configuración</a></nav><div class="main">
+<header class="top"><div><div class="crumb">Suministros</div><h3 class="ttl">Cargue Mensual</h3></div><div class="top-r"></div></header>
+<div class="content"><div class="card"><div class="params">
+<div class="field"><label for="p-aps-c2">APS</label><select id="p-aps-c2"><option>Bucaramanga</option><option>Floridablanca</option><option>Girón</option></select></div>
+<div class="field sm"><label for="p-an-c2">Año</label><select id="p-an-c2"><option>2025</option><option>2024</option></select></div>
+<div class="field sm"><label for="p-me-c2">Mes</label><select id="p-me-c2"><option>Septiembre</option><option>Agosto</option></select></div>
+<span class="grow"></span><button class="btn btn-primary" type="button">CERTIFICAR</button></div></div>
+<div class="tabs" role="tablist" aria-label="Tipo de información"><button role="tab" type="button" aria-selected="true" tabindex="0">Inf. Propia</button><button role="tab" type="button" aria-selected="false" tabindex="-1">Inf. Competidor</button><button role="tab" type="button" aria-selected="false" tabindex="-1">Inf. Usuarios</button><button role="tab" type="button" aria-selected="false" tabindex="-1">Inf. Terceros</button></div>
+
+<div class="card"><div class="field lg"><label for="c2-emp">Empresa</label><select id="c2-emp"><option>Veolia Aseo Bucaramanga S.A. E.S.P.</option></select></div>
+<div class="up-h" style="margin-top:18px"><h4>Cargue de Información Propia</h4></div>
+<ol class="steps" aria-label="Pasos del cargue">
+<li class="step"><span class="num" aria-hidden="true">1</span><div><p class="step-t"><span class="sr-only">Paso 1: </span>Plantilla del archivo <span class="muted" style="font-weight:400">(opcional)</span></p><p class="step-d">Plano guía con las columnas del Inf. Propia, de CODAPS a QA, separadas por punto y coma.</p><div class="step-b"><div class="dl-wrap"><a class="dl" id="c2-dl" href="assets/layout/planos/plano_propio_mensual.csv" download="plano_propio_mensual.csv" data-dl data-file="plano_propio_mensual.csv" data-label="Descargar plantilla" data-err="c2-dl-err" aria-describedby="c2-dl-m"><svg class="ficon" width="24" height="28" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 6.5h3.5 M12.5 6.5h4.5 M7 9.5h4.5 M13.5 9.5h3.5 M7 12.5h2.5 M11.5 12.5h5.5" style="fill:none;stroke:var(--ok);stroke-width:1.2;stroke-linecap:round"/>
+<rect x="1" y="16" width="16" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="9" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">CSV</text></svg><span class="txt"><span class="lbl" data-lbl>Descargar plantilla</span><span class="meta" id="c2-dl-m">CSV · < 1 KB · 13 columnas</span></span><span class="trail" aria-hidden="true"><svg class="t-arr" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v8.5M4.5 7.2 8 10.7l3.5-3.5M3 13.5h10" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"/></svg><span class="t-spin spin"></span><svg class="t-ok" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3 8.5 3.2 3L13 4.5" style="fill:none;stroke:var(--ok);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></span></a><div class="dl-err" id="c2-dl-err" role="alert" hidden></div></div></div></div></li>
+<li class="step"><span class="num" aria-hidden="true">2</span><div><p class="step-t"><span class="sr-only">Paso 2: </span>Seleccionar archivo</p><p class="step-d">Se valida la estructura al instante.</p><div class="step-b"><button type="button" class="drop"><strong>Seleccioná el archivo</strong> o arrastralo aquí</button><p class="note">Solo .csv · un archivo por cargue</p></div></div></li>
+<li class="step pend"><span class="num" aria-hidden="true">3</span><div><p class="step-t"><span class="sr-only">Paso 3: </span>Revisar y cargar</p><p class="step-d">Disponible cuando el archivo pase la validación.</p></div></li>
+</ol></div></div></div></div></div></section><section class="sec" aria-labelledby="s-st"><div class="sec-h"><h2 id="s-st">Estados</h2><p>Probalo arriba: hacé clic en cualquier botón; con «Simular error de descarga» activo se ve el error.</p></div><div class="states"><div class="st"><h3>Reposo</h3><div class="spec" inert><span class="dl"><svg class="ficon" width="24" height="28" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 5.5h10v7.5H7z M7 8h10 M7 10.5h10 M11 5.5v7.5" style="fill:none;stroke:var(--ok);stroke-width:1"/>
+<rect x="1" y="16" width="19" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="10.5" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">XLSX</text></svg><span class="txt"><span class="lbl" data-lbl>Descargar explicación de formatos</span><span class="meta">XLSX · 224 KB</span></span><span class="trail" aria-hidden="true"><svg class="t-arr" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v8.5M4.5 7.2 8 10.7l3.5-3.5M3 13.5h10" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"/></svg><span class="t-spin spin"></span><svg class="t-ok" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3 8.5 3.2 3L13 4.5" style="fill:none;stroke:var(--ok);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></span></span></div><p>Borde neutro, texto principal. Nunca rojo de marca.</p></div>
+<div class="st"><h3>Hover / foco</h3><div class="spec" inert><span class="dl is-hover is-focus"><svg class="ficon" width="24" height="28" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 5.5h10v7.5H7z M7 8h10 M7 10.5h10 M11 5.5v7.5" style="fill:none;stroke:var(--ok);stroke-width:1"/>
+<rect x="1" y="16" width="19" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="10.5" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">XLSX</text></svg><span class="txt"><span class="lbl" data-lbl>Descargar explicación de formatos</span><span class="meta">XLSX · 224 KB</span></span><span class="trail" aria-hidden="true"><svg class="t-arr" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v8.5M4.5 7.2 8 10.7l3.5-3.5M3 13.5h10" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"/></svg><span class="t-spin spin"></span><svg class="t-ok" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3 8.5 3.2 3L13 4.5" style="fill:none;stroke:var(--ok);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></span></span></div><p>Hover: fondo suave y borde más oscuro. Foco de teclado: anillo de 2 px (convención de la app), distinto del hover.</p></div>
+<div class="st"><h3>Descargando (breve)</h3><div class="spec" inert><span class="dl" data-state="busy"><svg class="ficon" width="24" height="28" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 5.5h10v7.5H7z M7 8h10 M7 10.5h10 M11 5.5v7.5" style="fill:none;stroke:var(--ok);stroke-width:1"/>
+<rect x="1" y="16" width="19" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="10.5" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">XLSX</text></svg><span class="txt"><span class="lbl" data-lbl>Descargando…</span><span class="meta">XLSX · 224 KB</span></span><span class="trail" aria-hidden="true"><svg class="t-arr" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v8.5M4.5 7.2 8 10.7l3.5-3.5M3 13.5h10" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"/></svg><span class="t-spin spin"></span><svg class="t-ok" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3 8.5 3.2 3L13 4.5" style="fill:none;stroke:var(--ok);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></span></span></div><p>Solo para descargas pedidas al API que tardan &gt; 300 ms. La flecha pasa a indicador; luego «Descargado» 2 s.</p></div>
+<div class="st"><h3>Error «No se pudo descargar»</h3><div class="spec" inert><span class="dl"><svg class="ficon" width="24" height="28" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 5.5h10v7.5H7z M7 8h10 M7 10.5h10 M11 5.5v7.5" style="fill:none;stroke:var(--ok);stroke-width:1"/>
+<rect x="1" y="16" width="19" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="10.5" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">XLSX</text></svg><span class="txt"><span class="lbl" data-lbl>Descargar explicación de formatos</span><span class="meta">XLSX · 224 KB</span></span><span class="trail" aria-hidden="true"><svg class="t-arr" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v8.5M4.5 7.2 8 10.7l3.5-3.5M3 13.5h10" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"/></svg><span class="t-spin spin"></span><svg class="t-ok" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3 8.5 3.2 3L13 4.5" style="fill:none;stroke:var(--ok);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></span></span><div class="dl-err"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" style="fill:none;stroke:var(--brand-accent);stroke-width:1.5"/><path d="M8 4.5v4.2M8 10.8v.4" style="stroke:var(--brand-accent);stroke-width:1.6;stroke-linecap:round"/></svg><div><p><b>No se pudo descargar «Explicación formatos y formularios.xlsx».</b></p><p>Revisá la conexión y reintentá. Si sigue fallando, avisá a soporte.</p><span class="lnk">Reintentar</span></div></div></div><p>Mensaje pegado al botón, con el nombre del archivo y «Reintentar». El botón vuelve a reposo.</p></div></div></section><section class="sec" aria-labelledby="s-spec"><div class="sec-h"><h2 id="s-spec">Especificación</h2></div><div class="specg"><div class="box wide"><h3>Anatomía</h3><div class="anat"><span class="dl an an-l" data-n="5"><span class="an" data-n="1"><svg class="ficon" width="24" height="28" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 6.5h3.5 M12.5 6.5h4.5 M7 9.5h4.5 M13.5 9.5h3.5 M7 12.5h2.5 M11.5 12.5h5.5" style="fill:none;stroke:var(--ok);stroke-width:1.2;stroke-linecap:round"/>
+<rect x="1" y="16" width="16" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="9" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">CSV</text></svg></span><span class="txt"><span class="lbl an" data-n="2">Descargar plantilla</span><span class="meta an an-b" data-n="3">CSV · &lt; 1 KB · 13 columnas</span></span><span class="an" data-n="4"><span class="trail" aria-hidden="true"><svg class="t-arr" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v8.5M4.5 7.2 8 10.7l3.5-3.5M3 13.5h10" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"/></svg><span class="t-spin spin"></span><svg class="t-ok" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3 8.5 3.2 3L13 4.5" style="fill:none;stroke:var(--ok);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></span></span></span></div>
+<ol><li><b>Ícono de tipo</b> 24×28, decorativo.</li><li><b>Etiqueta</b> 13,5 px / 600, verbo + objeto.</li><li><b>Línea meta</b> 12 px, <code>--color-text-secondary</code>; es la descripción accesible.</li><li><b>Indicador</b> flecha → indicador de progreso → check.</li><li><b>Contenedor</b> contorneado: borde <code>--sel-border</code>, radio 10 px, alto mínimo 44 px, sin relleno de marca.</li></ol></div>
+<div class="box"><h3>Ubicación</h3><ul><li>En la barra de acciones del card al que pertenece el archivo, alineado a la derecha, <b>después</b> de la acción principal.</li><li>En el cargue guiado: cuerpo del paso 1; el error del paso 2 repite el mismo botón.</li><li>Nunca en la barra superior ni dentro de un título.</li><li>Máximo 2 botones de descarga juntos; con 3 o más, agrupar (ver propuestas 02 y 03).</li></ul></div>
+<div class="box"><h3>Reglas de texto</h3><ul>
+<li>Verbo + objeto, en mayúscula inicial: <span class="do">«Descargar plantilla»</span>, <span class="do">«Descargar explicación de formatos»</span>.</li>
+<li>Sin emoji ni mayúsculas sostenidas: <span class="dont">«⚡ Explicación formatos…»</span>, <span class="dont">«Descargar Plano Guía»</span>.</li>
+<li>La extensión y el peso nunca van en la etiqueta; van en la línea meta.</li>
+<li>El archivo se guarda con su nombre real: <code>download="plano_propio_mensual.csv"</code>.</li>
+<li>Una sola palabra para el mismo concepto en toda la app: <b>plantilla</b> (el plano guía) y <b>guía</b> (documentos explicativos).</li></ul></div><div class="box"><h3>Tipo y tamaño (línea meta)</h3><ul>
+<li>Formato: <code>EXTENSIÓN · tamaño</code>, separador « · ».</li>
+<li>KB enteros (<span class="do">224 KB</span>); MB con un decimal y coma (<span class="do">1,4 MB</span>); menos de 1 KB → <span class="do">&lt; 1 KB</span>.</li>
+<li>Un tercer dato solo si ayuda a decidir: <span class="do">13 columnas</span>.</li>
+<li>El tamaño sale del archivo publicado (se define junto con la URL), no se calcula en el navegador.</li></ul></div><div class="box"><h3>Ícono por tipo de archivo</h3><div class="types">
+<div><svg class="ficon" width="27" height="32" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 5.5h10v7.5H7z M7 8h10 M7 10.5h10 M11 5.5v7.5" style="fill:none;stroke:var(--ok);stroke-width:1"/>
+<rect x="1" y="16" width="19" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="10.5" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">XLSX</text></svg><span>Excel</span></div><div><svg class="ficon" width="27" height="32" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 6.5h3.5 M12.5 6.5h4.5 M7 9.5h4.5 M13.5 9.5h3.5 M7 12.5h2.5 M11.5 12.5h5.5" style="fill:none;stroke:var(--ok);stroke-width:1.2;stroke-linecap:round"/>
+<rect x="1" y="16" width="16" height="8" rx="1.5" style="fill:var(--ok)"/>
+<text x="9" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">CSV</text></svg><span>Plantilla CSV</span></div><div><svg class="ficon" width="27" height="32" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 6h10 M7 8.5h10 M7 11h7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2;stroke-linecap:round"/>
+<rect x="1" y="16" width="16" height="8" rx="1.5" style="fill:var(--tx-2)"/>
+<text x="9" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">PDF</text></svg><span>PDF</span></div><div><svg class="ficon" width="27" height="32" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M7 6h10 M7 8.5h10 M7 11h10 M7 13.5h5" style="fill:none;stroke:var(--tx-2);stroke-width:1;stroke-linecap:round"/>
+<rect x="1" y="16" width="19" height="8" rx="1.5" style="fill:var(--tx-2)"/>
+<text x="10.5" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">DOCX</text></svg><span>Word</span></div><div><svg class="ficon" width="27" height="32" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+<path d="M4.5 1h10.8L21 6.7v18.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 25.5v-23A1.5 1.5 0 0 1 4.5 1z" style="fill:var(--bg-card);stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M15.2 1.2v4.6c0 .5.4.9.9.9h4.7" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/>
+<path d="M11 2v1.5h2V5h-2v1.5h2V8h-2v1.5h2V11h-2" style="fill:none;stroke:var(--tx-2);stroke-width:1.2"/><rect x="10.5" y="11.5" width="3" height="2.5" rx=".6" style="fill:none;stroke:var(--tx-2);stroke-width:1"/>
+<rect x="1" y="16" width="16" height="8" rx="1.5" style="fill:var(--tx-2)"/>
+<text x="9" y="22.1" text-anchor="middle" style="fill:var(--bg-card);font:700 6.2px 'Segoe UI',system-ui,sans-serif;letter-spacing:.2px">ZIP</text></svg><span>ZIP</span></div></div>
+<p style="margin-top:10px">La banda siempre lleva la extensión escrita: el color (verde para hojas de cálculo, gris para el resto) refuerza, no informa. El ícono es decorativo (<code>aria-hidden</code>). Reservar el ícono de «descargar» solo para descargas: hoy «Cargar datos» y «Cargar Información desde Drive» usan <code>pi-cloud-download</code>.</p></div><div class="box"><h3>Estados</h3><ul>
+<li><b>Archivo estático</b> (<code>assets/layout/planos</code>): <code>&lt;a href download&gt;</code>; el navegador muestra la descarga, no hay progreso falso.</li>
+<li><b>Descargando</b>: solo si la app pide el archivo al API (blob) y tarda más de 300&nbsp;ms. Etiqueta «Descargando…», <code>aria-disabled="true"</code>, sin doble clic.</li>
+<li><b>Descargado</b>: confirmación 2&nbsp;s y vuelve al reposo.</li>
+<li><b>Error</b>: mensaje junto al control, <code>role="alert"</code>, nombra el archivo y ofrece «Reintentar». No usar toast que desaparece.</li></ul></div>
+<div class="box"><h3>Teclado y ARIA</h3><pre>&lt;a class="dl" href="assets/layout/planos/plano_propio_mensual.csv"
+   download="plano_propio_mensual.csv"
+   aria-describedby="plantilla-meta"&gt;
+  &lt;svg aria-hidden="true"&gt;…&lt;/svg&gt;
+  Descargar plantilla
+  &lt;span id="plantilla-meta"&gt;CSV · &lt; 1 KB · 13 columnas&lt;/span&gt;
+&lt;/a&gt;</pre><ul style="margin-top:8px"><li>Se lee: «Descargar plantilla, enlace, CSV menos de 1 KB, 13 columnas».</li><li>Enter descarga. Si el archivo se pide al API (blob), usar <code>&lt;button&gt;</code>: Enter y Espacio.</li><li>Progreso y resultado en una región <code>aria-live="polite"</code>.</li></ul></div></div></section></main></div>
+<div id="live" class="sr-only" aria-live="polite"></div>
+<script>
+const live=document.getElementById('live');
+function say(t){live.textContent='';setTimeout(()=>{live.textContent=t},60)}
+document.getElementById('theme').addEventListener('click',e=>{const on=document.documentElement.classList.toggle('app-dark');e.currentTarget.setAttribute('aria-pressed',String(on))});
+document.addEventListener('click',e=>{if(e.target.closest('a[href="#"]'))e.preventDefault()});
+const simErr=document.getElementById('simerr');
+function setState(el,st){el.dataset.state=st;const l=el.querySelector('[data-lbl]');
+ if(l)l.textContent=st==='busy'?'Descargando…':st==='done'?'Descargado':el.dataset.label;
+ if(st==='busy')el.setAttribute('aria-disabled','true');else el.removeAttribute('aria-disabled');
+ if(typeof onDlState==='function')onDlState(el,st)}
+function errHtml(file,id){return '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" style="fill:none;stroke:var(--brand-accent);stroke-width:1.5"/><path d="M8 4.5v4.2M8 10.8v.4" style="stroke:var(--brand-accent);stroke-width:1.6;stroke-linecap:round"/></svg><div><p><b>No se pudo descargar «'+file+'».</b></p><p>Revisá la conexión y reintentá. Si sigue fallando, avisá a soporte.</p><button type="button" class="lnk" data-retry="'+id+'">Reintentar</button></div>'}
+document.addEventListener('click',e=>{
+ const r=e.target.closest('[data-retry]');
+ if(r){const t=document.getElementById(r.dataset.retry);r.closest('.dl-err').hidden=true;t.focus();t.click();return}
+ const el=e.target.closest('[data-dl]');if(!el)return;e.preventDefault();
+ if(el.dataset.state==='busy')return;
+ const err=document.getElementById(el.dataset.err);if(err){err.hidden=true;err.innerHTML=''}
+ setState(el,'busy');say('Descargando '+el.dataset.file);
+ setTimeout(()=>{
+  if(simErr.checked){setState(el,'idle');if(err){err.innerHTML=errHtml(el.dataset.file,el.id);err.hidden=false}}
+  else{setState(el,'done');say('Descarga lista: '+el.dataset.file);setTimeout(()=>{if(el.dataset.state==='done')setState(el,'idle')},2000)}
+ },1200)});
+document.addEventListener('keydown',e=>{const el=e.target.closest&&e.target.closest('a[data-dl]');if(el&&e.key===' '){e.preventDefault();el.click()}});
+</script></body></html>

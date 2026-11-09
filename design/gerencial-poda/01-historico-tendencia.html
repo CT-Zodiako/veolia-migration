@@ -1,0 +1,284 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=1440"><title>Costo de Poda · Histórico con tendencia</title>
+<style>
+:root{--bg-app:#f1f5f9;--bg-card:#fff;--bg-soft:#f8fafc;--border:#e2e8f0;--border-soft:#f1f5f9;--tx:#0f172a;--tx-body:#334155;--tx-2:#64748b;
+--brand-strong:#780200;--brand-medium:#c40300;--brand-accent:#f10400;--danger-soft:#fff2f2;--danger-border:#ffcdcc;--ok:#15803d;--ok-soft:#f0fdf4;--ok-border:#bbf7d0;
+--warn:#8a5200;--warn-soft:#fff1d6;--sel-border:#cbd5e1;--s1:#0b1f3a;--s2:#c40300;--grid:#e2e8f0;
+--sh-bg:#0b1f3a;--sh-hover:#13294a;--sh-active:#1b3459;--sh-border:rgba(255,255,255,.08);--sh-tx:#dbe4f0;--sh-strong:#fff;--sh-muted:#8a9bb5;--sh-dot:#5f7392;--sh-accent:#f10400}
+html.app-dark{--bg-app:#0f172a;--bg-card:#1e293b;--bg-soft:#172033;--border:#334155;--border-soft:#1e293b;--tx:#f1f5f9;--tx-body:#cbd5e1;--tx-2:#94a3b8;
+--brand-strong:#ffa5a3;--brand-medium:#ff6966;--brand-accent:#ff2a26;--danger-soft:#3f1212;--danger-border:#5c2323;--ok:#4ade80;--ok-soft:#14291d;--ok-border:#1e4a2f;--warn:#fbbf24;--warn-soft:#3a2a0b;--sel-border:#52525b;--s1:#dbe4f0;--s2:#ff6966;--grid:#334155;--sh-border:rgba(255,255,255,.1)}
+*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-app);color:var(--tx-body);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sb{background:var(--sh-bg);color:var(--sh-tx);display:flex;flex-direction:column;padding:18px 12px}
+.sb .logo{display:flex;align-items:center;gap:8px;padding:4px 8px 18px}.sb .logo b{color:#ff4b47;font-size:20px;letter-spacing:.5px}.sb .logo small{display:block;color:var(--sh-muted);font-size:11px;letter-spacing:1px}
+.sb h6{margin:14px 10px 6px;font-size:10px;letter-spacing:1.4px;color:var(--sh-muted);font-weight:700}
+.sb a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--sh-tx);text-decoration:none;font-size:13.5px}
+.sb a:hover{background:var(--sh-hover)}
+.sb a.on{background:var(--sh-active);color:var(--sh-strong);font-weight:700;box-shadow:inset 3px 0 0 var(--sh-accent)}
+.sb a.open{color:var(--sh-strong);font-weight:600}
+.sb .sub{margin:2px 0 6px 18px}.sb .sub a{font-size:12.5px;padding:6px 10px}.sb .sub a::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--sh-dot)}
+.sb .sub a.on::before{background:var(--sh-accent)}
+.sb .me{margin-top:auto;display:flex;gap:10px;align-items:center;background:var(--sh-hover);border-radius:12px;padding:10px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--sh-active);color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.sb .me small{display:block;color:var(--sh-muted);font-size:11px}
+main{display:flex;flex-direction:column;min-width:0}
+.top{height:64px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.crumb{font-size:12px;color:var(--tx-2)}.top h1{margin:0;font-size:18px;font-weight:700;color:var(--tx)}
+.topr{display:flex;gap:8px;align-items:center}
+.tbtn{border:1px solid var(--border);background:var(--bg-card);border-radius:10px;padding:7px 12px;cursor:pointer;font-size:13px}
+.sys{font-weight:700;font-size:12.5px;letter-spacing:.3px;color:var(--tx)}
+.content{padding:20px 24px 32px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.muted{color:var(--tx-2)}
+.btn{border:0;border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#f10400;color:#fff}.btn-primary:hover{background:#c40300}
+.btn-ghost{background:transparent;border:1px solid var(--sel-border)}.btn-ghost:hover{background:var(--bg-soft)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* parámetros */
+.params{display:flex;align-items:flex-end;gap:16px;padding:16px 20px}
+.fg{display:flex;flex-direction:column;gap:4px}.fg label{font-size:13px;font-weight:600;color:var(--tx-body)}
+.sel{appearance:none;border:1px solid var(--sel-border);border-radius:10px;background:var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center;padding:8px 34px 8px 12px;min-width:220px;cursor:pointer}
+.params .meta{margin-left:auto;font-size:12.5px;text-align:right}
+.params .meta b{color:var(--tx);font-weight:600}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:1.15fr 1.25fr 1fr 1fr;gap:16px}
+.kpi{padding:14px 18px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi h2{margin:0;font-size:12.5px;font-weight:600;color:var(--tx-2)}
+.kpi .v{font-size:22px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+.kpi .s{font-size:12.5px}
+.kpi ul{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+.kpi li{display:flex;justify-content:space-between;gap:8px;font-size:12.5px}
+.kpi li b{font-variant-numeric:tabular-nums;color:var(--tx);white-space:nowrap}
+.kpi li small{display:block;font-size:11.5px;color:var(--tx-2);font-weight:400}.kpi li>b{text-align:right}
+.nw{white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.pill-warn{color:var(--warn);background:var(--warn-soft)}
+.pill-n{color:var(--tx-body);background:var(--bg-soft);border:1px solid var(--border)}
+
+/* gráfico */
+.ch-h{display:flex;align-items:center;gap:16px;padding:14px 20px 4px}
+.ch-h h2,.tb-h h2{margin:0;font-size:15px;font-weight:700;color:var(--tx)}
+.ch-h .sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--sel-border);border-radius:10px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:4px 10px;font-size:12.5px;cursor:pointer;color:var(--tx-2)}
+.seg button[aria-pressed=true]{background:var(--sh-bg);color:#fff;font-weight:600}
+html.app-dark .seg button[aria-pressed=true]{background:#dbe4f0;color:#0b1f3a}
+.lg{display:flex;gap:6px}
+.lg label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:999px;padding:3px 10px 3px 8px;font-size:12px;cursor:pointer}
+.lg input{accent-color:#c40300;margin:0}
+.lg svg{flex-shrink:0}
+.chart{position:relative;padding:0 12px 12px}
+.chart svg{display:block;width:100%;height:auto}
+.chart .gl{stroke:var(--grid);stroke-width:1}
+.chart text{fill:var(--tx-2);font-size:11px;font-family:inherit}
+.chart .ln{fill:none;stroke-width:2.2}
+.pt{cursor:pointer;outline:none}
+.pt:focus-visible .hit{stroke:var(--brand-accent);stroke-width:2;stroke-dasharray:3 2}
+.pt .hit{fill:transparent}
+.tip{position:absolute;pointer-events:none;background:var(--bg-card);border:1px solid var(--sel-border);border-radius:10px;padding:8px 12px;font-size:12px;box-shadow:0 10px 25px -8px rgba(0,0,0,.25);min-width:230px;z-index:2}
+.tip b{color:var(--tx)}.tip dl{display:grid;grid-template-columns:auto auto;gap:0 12px;margin:4px 0 0}.tip dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;color:var(--tx)}
+.ch-note{display:flex;gap:16px;padding:0 20px 14px;font-size:12px}
+.ch-note span{display:inline-flex;align-items:center;gap:6px}
+
+/* tabla */
+.tb-h{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tb-h .sp{flex:1}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--sel-border);border-radius:10px;padding:6px 10px;background:var(--bg-card);width:220px}
+.search input{border:0;outline:0;background:transparent;width:100%;font-size:13px}
+.search:focus-within{outline:2px solid var(--brand-accent);outline-offset:1px}
+.tb-h .sel{min-width:0;padding:6px 30px 6px 10px;font-size:13px}
+details.cols{position:relative}
+details.cols summary{list-style:none}details.cols summary::-webkit-details-marker{display:none}
+.menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--bg-card);border:1px solid var(--sel-border);border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);padding:8px;z-index:3;width:220px}
+.menu label{display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:8px;font-size:13px;cursor:pointer}.menu label:hover{background:var(--bg-soft)}
+.menu input{accent-color:#c40300}
+.tw{overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:12px;font-weight:600;text-align:left;color:var(--tx-2);background:var(--bg-soft);border-bottom:1px solid var(--border);white-space:nowrap;padding:0}
+th button{border:0;background:transparent;padding:8px 10px;width:100%;text-align:inherit;cursor:pointer;font-weight:600;color:inherit;display:flex;gap:4px;align-items:center}
+th.n button{justify-content:flex-end}
+th[aria-sort=ascending] button,th[aria-sort=descending] button{color:var(--tx)}
+td{padding:8px 10px;border-bottom:1px solid var(--border-soft);vertical-align:middle;color:var(--tx-body)}
+html.app-dark td{border-bottom-color:#273449}
+.compact td{padding:3px 8px;font-size:12px}.compact th button{padding:5px 8px}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.per{font-weight:600;color:var(--tx);white-space:nowrap}
+td.per small{display:block;font-weight:400;color:var(--tx-2);font-size:11px}
+tr.dif td{background:var(--warn-soft)}
+.dv{color:var(--warn);font-weight:600}
+td.zero{color:var(--tx-2)}
+.foot{display:flex;align-items:center;gap:12px;padding:10px 20px;font-size:12.5px}
+.foot .sp{flex:1}
+.pg{display:flex;gap:4px}.pg button{min-width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;font-size:12.5px}
+.pg button[aria-current=page]{background:var(--danger-soft);border-color:var(--danger-border);color:var(--brand-strong);font-weight:700}
+.pg button:disabled{opacity:.4;cursor:not-allowed}
+.empty{padding:40px 20px;text-align:center}
+.empty b{display:block;color:var(--tx);font-size:15px;margin-bottom:4px}
+.toast{position:fixed;right:24px;bottom:24px;background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-border);border-radius:10px;padding:8px 14px;font-weight:600;font-size:13px}
+</style></head><body><div class="app">
+<nav class="sb" aria-label="Menú principal"><div class="logo"><div><b>VEOLIA</b><small>VEO-REGULATOR</small></div></div>
+<a href="#">⌂ Inicio</a><h6>OPERACIÓN</h6><a href="#">▣ Suministros</a><a href="#">⚙ Procesos</a>
+<h6>INFORMES</h6><a href="#" class="open" aria-expanded="true">▤ Informes Gerenciales</a>
+<div class="sub"><a href="#">Dashboard</a><a href="#">Detallado de Costos</a><a href="#">Detallado Sub y Aportes</a><a href="#" class="on" aria-current="page">Costo de Poda</a><a href="#">Act. Descuento Costos</a></div>
+<a href="#">◎ Sui</a><h6>SISTEMA</h6><a href="#">⚒ Configuración</a>
+<div class="me"><span class="av">S</span><div>soporte<small>Sesión activa</small></div></div></nav>
+<main><header class="top"><div><div class="crumb">Informes Gerenciales</div><h1>Costo de Poda</h1></div>
+<div class="topr"><span class="tbtn sys">▦ RELIQUIDACIONES</span><button class="tbtn" type="button" id="tema" aria-pressed="false">☾ Modo oscuro</button></div></header>
+<div class="content">
+
+<section class="card params" aria-label="Parámetros del informe">
+ <div class="fg"><label for="aps">APS</label><select id="aps" class="sel"><option>Barrancabermeja</option><option>Bucaramanga</option><option selected>Cartagena</option><option>Cucuta Unificado</option><option>Floridablanca</option><option>Palmira</option></select></div>
+ <p class="meta muted" id="meta" aria-live="polite"></p>
+</section>
+
+<div id="conDatos">
+<section class="kpis" aria-label="Indicadores del costo de poda">
+ <article class="card kpi"><h2 id="k1t"></h2><div class="v" id="k1v"></div><div class="s" id="k1s"></div></article>
+ <article class="card kpi"><h2>Variación vs. período anterior · facturación</h2><ul id="k2"></ul></article>
+ <article class="card kpi"><h2 id="k3t"></h2><div class="v" id="k3v"></div><div class="s muted" id="k3s"></div></article>
+ <article class="card kpi"><h2>Facturación distinta del techo</h2><div class="v" id="k4v"></div><div class="s" id="k4s"></div></article>
+</section>
+
+<section class="card" aria-labelledby="chT" style="margin-top:16px">
+ <div class="ch-h"><h2 id="chT">Evolución por empresa</h2><span class="muted" style="font-size:12.5px" id="chSub"></span><span class="sp"></span>
+  <div class="lg" role="group" aria-label="Empresas en el gráfico" id="lg"></div>
+  <div class="seg" role="group" aria-label="Valor a graficar"><button type="button" data-serie="fact" aria-pressed="true">Facturación</button><button type="button" data-serie="techo" aria-pressed="false">Techo</button></div>
+ </div>
+ <div class="chart" id="chart"><svg id="svg" viewBox="0 0 1120 270" role="group" aria-labelledby="chT" aria-describedby="chHelp"></svg><div class="tip" id="tip" hidden></div></div>
+ <div class="ch-note muted"><span id="chHelp">Pase el cursor o use Tab sobre cada punto para ver techo, facturación y diferencia. Meses sin punto no tienen registro.</span><span><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="none" stroke="var(--warn)" stroke-width="2"/></svg>Facturación ≠ techo</span></div>
+</section>
+
+<section class="card" aria-labelledby="tbT" style="margin-top:16px">
+ <div class="tb-h"><h2 id="tbT">Registros</h2><span class="pill pill-n" id="cnt"></span><span class="sp"></span>
+  <label class="search"><span aria-hidden="true">🔍</span><span class="sr">Buscar en empresa o usuario</span><input id="q" type="search" placeholder="Buscar empresa o usuario"></label>
+  <label class="sr" for="fEmp">Filtrar por empresa</label><select id="fEmp" class="sel"><option value="">Todas las empresas</option></select>
+  <details class="cols"><summary class="btn btn-ghost" role="button">▥ Columnas</summary><div class="menu" id="colMenu" role="group" aria-label="Columnas visibles"></div></details>
+  <div class="seg" role="group" aria-label="Densidad de la tabla"><button type="button" data-dens="n" aria-pressed="true">Normal</button><button type="button" data-dens="c" aria-pressed="false">Compacta</button></div>
+  <button class="btn btn-primary" type="button" id="exp">⤓ Exportar</button>
+ </div>
+ <div class="tw"><table id="tbl"><caption class="sr">Registros de costo de poda por período y empresa, APS Cartagena. Cifras en pesos colombianos. Diferencia = costo facturación menos costo techo.</caption><thead><tr id="thr"></tr></thead><tbody id="tb"></tbody></table></div>
+ <div class="foot"><span class="muted" id="rango"></span><span class="sp"></span><nav class="pg" aria-label="Paginación" id="pg"></nav></div>
+</section>
+</div>
+
+<section class="card empty" id="sinDatos" hidden aria-live="polite"><b>Sin registros de costo de poda</b><span class="muted" id="sinTxt"></span></section>
+</div></main></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+const EMP={P:'PACARIBE S.A E.S.P',V:'VEOLIA ASEO CARTAGENA S.A. E.S.P.'};
+const CORTO={P:'Pacaribe',V:'Veolia Aseo Cartagena'};
+// [período, empresa, techo, facturación, tipo, fecha creación, usuario]
+const D=[
+[202606,'P',1384514187.2,1384514187.2,'MANUAL','16/06/2026','analista.costos@veolia.com'],
+[202603,'P',1380783988,1380783988,'MANUAL','16/03/2026','coord.regulatorio@veolia.com'],
+[202603,'V',2138607784.15,2138607784.14,'MANUAL','16/03/2026','coord.regulatorio@veolia.com'],
+[202601,'P',1569056734,1569056729.96,'MANUAL','21/01/2026','coord.regulatorio@veolia.com'],
+[202601,'V',2384770623,2384770623,'MANUAL','21/01/2026','coord.regulatorio@veolia.com'],
+[202512,'V',1951818405,1951818405,'MANUAL','15/12/2025','coord.regulatorio@veolia.com'],
+[202512,'P',1035210275,1035210275,'MANUAL','15/12/2025','coord.regulatorio@veolia.com'],
+[202511,'V',1966153328.5,1966153328.5,'MANUAL','18/11/2025','coord.regulatorio@veolia.com'],
+[202511,'P',1067122231.22,1067122231.22,'MANUAL','18/11/2025','coord.regulatorio@veolia.com'],
+[202509,'P',1038867942.67,1038867942.67,'MANUAL','22/09/2025','coord.regulatorio@veolia.com'],
+[202509,'V',1912405870.4,1912405870.4,'MANUAL','22/09/2025','coord.regulatorio@veolia.com'],
+[202507,'P',1021334518,1021334518,'MANUAL','17/07/2025','analista.costos@veolia.com'],
+[202507,'V',1889120454.75,1889120454.75,'MANUAL','17/07/2025','analista.costos@veolia.com'],
+[202505,'P',998452310.5,998452310.5,'MANUAL','20/05/2025','analista.costos@veolia.com'],
+[202505,'V',1874002318,1874002318,'MANUAL','20/05/2025','analista.costos@veolia.com'],
+[202503,'P',985120774,985120774,'MANUAL','18/03/2025','analista.costos@veolia.com'],
+[202503,'V',1850336902.3,1850336902.3,'MANUAL','18/03/2025','analista.costos@veolia.com']
+].map(r=>({per:r[0],emp:r[1],techo:r[2],fact:r[3],dif:Math.round((r[3]-r[2])*100)/100,tipo:r[4],fecha:r[5],usr:r[6]}));
+const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const lp=p=>MES[p%100-1]+' '+Math.floor(p/100);
+const ls=p=>MES[p%100-1]+' '+String(Math.floor(p/100)).slice(2);
+const nf=new Intl.NumberFormat('es-CO',{minimumFractionDigits:2,maximumFractionDigits:2});
+const n0=new Intl.NumberFormat('es-CO',{maximumFractionDigits:0});
+const cop=v=>'$ '+nf.format(v);
+const cop0=v=>'$ '+n0.format(v);
+const sgn=v=>(v>0?'+':v<0?'−':'')+'$ '+nf.format(Math.abs(v));
+const pct=v=>(v>0?'+':v<0?'−':'')+new Intl.NumberFormat('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1}).format(Math.abs(v))+' %';
+const $=s=>document.querySelector(s);
+
+/* tema */
+$('#tema').addEventListener('click',e=>{const d=document.documentElement.classList.toggle('app-dark');e.currentTarget.setAttribute('aria-pressed',d);e.currentTarget.textContent=d?'☀ Modo claro':'☾ Modo oscuro'});
+
+/* APS */
+$('#aps').addEventListener('change',e=>{const ok=e.target.value==='Cartagena';$('#conDatos').hidden=!ok;$('#sinDatos').hidden=ok;
+ $('#sinTxt').textContent='No hay costos de poda cargados para la APS '+e.target.value+'. Seleccione otra APS o registre el costo desde Procesos › Costo de poda.';
+ $('#meta').innerHTML=ok?meta():'<b>'+e.target.value+'</b> · 0 registros'});
+function meta(){return 'Último registro <b>16/06/2026</b> por analista.costos@veolia.com<br>'+D.length+' registros · '+lp(Math.min(...D.map(r=>r.per)))+' – '+lp(Math.max(...D.map(r=>r.per)))+' · cifras en pesos (COP)'}
+$('#meta').innerHTML=meta();
+
+/* KPIs */
+(function(){const ult=Math.max(...D.map(r=>r.per));const enUlt=D.filter(r=>r.per===ult);
+ $('#k1t').textContent='Último período · '+lp(ult);
+ $('#k1v').textContent=cop0(enUlt.reduce((a,r)=>a+r.fact,0));
+ const falt=Object.keys(EMP).filter(k=>!enUlt.some(r=>r.emp===k));
+ $('#k1s').innerHTML=falt.length?'<span class="pill pill-warn">⚠ '+enUlt.length+' de '+Object.keys(EMP).length+' empresas</span> <span class="muted">Sin registro: '+falt.map(k=>CORTO[k]).join(', ')+'</span>':'<span class="muted">Todas las empresas reportadas</span>';
+ $('#k2').innerHTML=Object.keys(EMP).map(k=>{const rs=D.filter(r=>r.emp===k).sort((a,b)=>b.per-a.per);const a=rs[0],b=rs[1];const d=a.fact-b.fact,p=d/b.fact*100;
+  return '<li><span>'+CORTO[k]+'<small>'+lp(a.per)+' vs '+lp(b.per)+'</small></span><b>'+(d>=0?'▲ ':'▼ ')+pct(p)+'<small>'+sgn(d).replace(/,\d\d$/,'')+'</small></b></li>'}).join('');
+ const an=Math.floor(ult/100);const rsA=D.filter(r=>Math.floor(r.per/100)===an);const ps=[...new Set(rsA.map(r=>r.per))].sort();
+ $('#k3t').textContent='Acumulado '+an+' · facturación';$('#k3v').textContent=cop0(rsA.reduce((a,r)=>a+r.fact,0));
+ $('#k3s').textContent=ps.length+' períodos con registro ('+ps.map(p=>MES[p%100-1]).join(', ')+')';
+ const dif=D.filter(r=>r.dif!==0);$('#k4v').textContent=dif.length+(dif.length===1?' registro':' registros');
+ $('#k4s').innerHTML=dif.length?dif.map(r=>'<span class="dv">'+ls(r.per)+' · '+CORTO[r.emp]+': <span class="nw">'+sgn(r.dif)+'</span></span>').join('<br>'):'<span class="muted">Todo coincide</span>';
+})();
+
+/* gráfico */
+let serie='fact';const vis={P:true,V:true};
+const MK={P:(x,y,c)=>'<circle cx="'+x+'" cy="'+y+'" r="4.5" fill="var(--bg-card)" stroke="'+c+'" stroke-width="2.2"/>',V:(x,y,c)=>'<rect x="'+(x-4.2)+'" y="'+(y-4.2)+'" width="8.4" height="8.4" fill="var(--bg-card)" stroke="'+c+'" stroke-width="2.2"/>'};
+const COL={P:'var(--s1)',V:'var(--s2)'};
+$('#lg').innerHTML=Object.keys(EMP).map(k=>'<label><input type="checkbox" data-emp="'+k+'" checked><svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" stroke="'+COL[k]+'" stroke-width="2.2"/>'+MK[k](11,5,COL[k]).replace(/r="4.5"/,'r="3.5"').replace(/8\.4/g,'7')+'</svg>'+CORTO[k]+'</label>').join('');
+$('#lg').addEventListener('change',e=>{vis[e.target.dataset.emp]=e.target.checked;dibujar()});
+document.querySelectorAll('[data-serie]').forEach(b=>b.addEventListener('click',()=>{serie=b.dataset.serie;document.querySelectorAll('[data-serie]').forEach(x=>x.setAttribute('aria-pressed',x===b));dibujar()}));
+function meses(){const a=Math.min(...D.map(r=>r.per)),b=Math.max(...D.map(r=>r.per));const out=[];let p=a;while(p<=b){out.push(p);p=p%100===12?p+89:p+1}return out}
+function dibujar(){const W=1120,H=270,L=78,R=28,T=14,B=30,M=meses(),MAX=2.5e9;
+ const x=p=>L+M.indexOf(p)*(W-L-R)/(M.length-1),y=v=>T+(1-v/MAX)*(H-T-B);
+ let s='';for(let v=0;v<=MAX;v+=5e8){s+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="'+(L-8)+'" y="'+(y(v)+4)+'" text-anchor="end">'+(v?'$ '+n0.format(v/1e6)+' M':'$ 0')+'</text>'}
+ M.forEach(p=>{s+='<text x="'+x(p)+'" y="'+(H-10)+'" text-anchor="middle"'+(p%100===1?' font-weight="700"':'')+'>'+ls(p)+'</text>'});
+ Object.keys(EMP).forEach(k=>{if(!vis[k])return;const rs=D.filter(r=>r.emp===k).sort((a,b)=>a.per-b.per);
+  s+='<path class="ln" stroke="'+COL[k]+'" d="'+rs.map((r,i)=>(i?'L':'M')+x(r.per)+' '+y(r[serie])).join(' ')+'"/>';
+  rs.forEach((r,i)=>{const px=x(r.per),py=y(r[serie]);const prev=rs[i-1];
+   const lab=CORTO[k]+', '+lp(r.per)+'. '+(serie==='fact'?'Facturación ':'Techo ')+cop(r[serie])+(r.dif?'. Diferencia '+sgn(r.dif):'. Facturación igual al techo');
+   s+='<g class="pt" tabindex="0" role="img" aria-label="'+lab+'" data-i="'+D.indexOf(r)+'" data-x="'+px+'" data-y="'+py+'"><circle class="hit" cx="'+px+'" cy="'+py+'" r="11"/>'+(r.dif?'<circle cx="'+px+'" cy="'+py+'" r="9" fill="none" stroke="var(--warn)" stroke-width="2"/>':'')+MK[k](px,py,COL[k])+'</g>'})});
+ $('#svg').innerHTML=s;
+ $('#chSub').textContent=(serie==='fact'?'Costo facturación':'Costo techo')+' por período · '+lp(M[0])+' – '+lp(M[M.length-1]);
+ document.querySelectorAll('.pt').forEach(g=>{const show=()=>tip(g);g.addEventListener('mouseenter',show);g.addEventListener('focus',show);g.addEventListener('mouseleave',()=>$('#tip').hidden=true);g.addEventListener('blur',()=>$('#tip').hidden=true)})}
+function tip(g){const r=D[g.dataset.i],t=$('#tip'),box=$('#svg').getBoundingClientRect(),k=box.width/1120;
+ t.innerHTML='<b>'+CORTO[r.emp]+' · '+lp(r.per)+'</b><dl><dt>Costo techo</dt><dd>'+cop(r.techo)+'</dd><dt>Costo facturación</dt><dd>'+cop(r.fact)+'</dd><dt>Diferencia</dt><dd'+(r.dif?' class="dv"':'')+'>'+(r.dif?sgn(r.dif):'Sin diferencia')+'</dd><dt>Ingreso</dt><dd>Manual · '+r.fecha+'</dd></dl>';
+ t.hidden=false;let lx=g.dataset.x*k+12+14,ly=g.dataset.y*k-10;if(lx+250>box.width)lx-=270;t.style.left=lx+'px';t.style.top=Math.max(0,ly-40)+'px'}
+dibujar();
+
+/* tabla */
+const COLS=[{f:'per',h:'Período'},{f:'emp',h:'Empresa'},{f:'techo',h:'Costo techo',n:1},{f:'fact',h:'Costo facturación',n:1},{f:'dif',h:'Diferencia',n:1,t:'Costo facturación menos costo techo'},{f:'tipo',h:'Tipo ingreso'},{f:'fecha',h:'Fecha creación'},{f:'usr',h:'Usuario'}];
+const oculta=new Set();let orden={f:'per',d:-1},pag=1;const TAM=8;
+$('#fEmp').innerHTML+=Object.keys(EMP).map(k=>'<option value="'+k+'">'+CORTO[k]+'</option>').join('');
+$('#colMenu').innerHTML=COLS.map(c=>'<label><input type="checkbox" data-col="'+c.f+'" checked'+(c.f==='per'?' disabled':'')+'>'+c.h+'</label>').join('')+'<p class="muted" style="font-size:11.5px;margin:6px 8px 2px">Período siempre visible.</p>';
+$('#colMenu').addEventListener('change',e=>{e.target.checked?oculta.delete(e.target.dataset.col):oculta.add(e.target.dataset.col);tabla()});
+['#q','#fEmp'].forEach(s=>$(s).addEventListener('input',()=>{pag=1;tabla()}));
+document.querySelectorAll('[data-dens]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-dens]').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#tbl').classList.toggle('compact',b.dataset.dens==='c')}));
+$('#exp').addEventListener('click',()=>{const t=$('#toast');t.textContent='✓ CostoPoda_Cartagena.xlsx generado ('+filtrar().length+' registros, cifras completas)';t.hidden=false;setTimeout(()=>t.hidden=true,2600)});
+function filtrar(){const q=$('#q').value.trim().toLowerCase(),e=$('#fEmp').value;
+ return D.filter(r=>(!e||r.emp===e)&&(!q||(EMP[r.emp]+' '+r.usr).toLowerCase().includes(q))).sort((a,b)=>{const va=a[orden.f],vb=b[orden.f];const c=typeof va==='number'?va-vb:String(va).localeCompare(String(vb));return (c||(b.per-a.per))*orden.d})}
+function tabla(){const cs=COLS.filter(c=>!oculta.has(c.f));const rs=filtrar();const np=Math.max(1,Math.ceil(rs.length/TAM));pag=Math.min(pag,np);
+ $('#thr').innerHTML=cs.map(c=>'<th scope="col" class="'+(c.n?'n':'')+'"'+(c.t?' title="'+c.t+'"':'')+(orden.f===c.f?' aria-sort="'+(orden.d>0?'ascending':'descending')+'"':'')+'><button type="button" data-ord="'+c.f+'">'+c.h+' <span aria-hidden="true">'+(orden.f===c.f?(orden.d>0?'↑':'↓'):'↕')+'</span></button></th>').join('');
+ const vis=rs.slice((pag-1)*TAM,pag*TAM);
+ $('#tb').innerHTML=vis.length?vis.map(r=>'<tr'+(r.dif?' class="dif"':'')+'>'+cs.map(c=>{const v=r[c.f];switch(c.f){
+  case 'per':return '<td class="per">'+lp(v)+'<small>'+v+'</small></td>';
+  case 'emp':return '<td>'+EMP[v]+'</td>';
+  case 'dif':return v?'<td class="n"><span class="dv">⚠ '+sgn(v)+'</span></td>':'<td class="n zero">$ 0,00</td>';
+  case 'tipo':return '<td><span class="pill pill-n">Manual</span></td>';
+  case 'techo':case 'fact':return '<td class="n">'+cop(v)+'</td>';
+  default:return '<td>'+v+'</td>'}}).join('')+'</tr>').join(''):'<tr><td colspan="'+cs.length+'" class="empty"><b>Sin resultados</b><span class="muted">Ningún registro coincide con la búsqueda. </span><button class="btn btn-ghost" type="button" id="limpiar">Limpiar búsqueda y filtro</button></td></tr>';
+ const l=$('#limpiar');if(l)l.addEventListener('click',()=>{$('#q').value='';$('#fEmp').value='';tabla()});
+ $('#cnt').textContent=rs.length+' de '+D.length+' registros';
+ $('#rango').textContent=rs.length?'Mostrando '+((pag-1)*TAM+1)+'–'+Math.min(pag*TAM,rs.length)+' de '+rs.length+' · ordenado por '+COLS.find(c=>c.f===orden.f).h.toLowerCase()+(orden.d>0?' ascendente':' descendente'):'';
+ let p='<button type="button" aria-label="Página anterior" '+(pag===1?'disabled':'')+' data-pg="'+(pag-1)+'">‹</button>';for(let i=1;i<=np;i++)p+='<button type="button" data-pg="'+i+'"'+(i===pag?' aria-current="page"':'')+' aria-label="Página '+i+'">'+i+'</button>';
+ p+='<button type="button" aria-label="Página siguiente" '+(pag===np?'disabled':'')+' data-pg="'+(pag+1)+'">›</button>';$('#pg').innerHTML=p}
+$('#thr').addEventListener('click',e=>{const b=e.target.closest('[data-ord]');if(!b)return;const f=b.dataset.ord;orden=orden.f===f?{f,d:-orden.d}:{f,d:f==='per'?-1:1};tabla();$('[data-ord="'+f+'"]').focus()});
+$('#pg').addEventListener('click',e=>{const b=e.target.closest('[data-pg]');if(!b||b.disabled)return;pag=+b.dataset.pg;tabla();$('#pg [aria-current]').focus()});
+tabla();
+</script></body></html>

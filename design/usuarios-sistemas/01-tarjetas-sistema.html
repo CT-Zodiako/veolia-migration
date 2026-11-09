@@ -1,0 +1,101 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=1440"><title>Permisos del usuario · Sistemas · tarjetas</title>
+<style>
+:root{--bg-app:#f1f5f9;--bg-card:#fff;--bg-soft:#f8fafc;--border:#e2e8f0;--border-soft:#f1f5f9;--tx:#0f172a;--tx-body:#334155;--tx-2:#64748b;
+--brand-strong:#780200;--brand-accent:#f10400;--danger-soft:#fff2f2;--danger-border:#ffcdcc;--ok:#16a34a;--ok-soft:#f0fdf4;--ok-border:#bbf7d0;
+--warn:#8a5200;--warn-soft:#fff1d6;--sel-border:#cbd5e1;
+--sh-bg:#0b1f3a;--sh-hover:#13294a;--sh-active:#1b3459;--sh-border:rgba(255,255,255,.08);--sh-tx:#dbe4f0;--sh-strong:#fff;--sh-muted:#8a9bb5;--sh-dot:#5f7392;--sh-accent:#f10400}
+html.app-dark{--bg-app:#0f172a;--bg-card:#1e293b;--bg-soft:#172033;--border:#334155;--border-soft:#1e293b;--tx:#f1f5f9;--tx-body:#cbd5e1;--tx-2:#94a3b8;
+--brand-strong:#ffa5a3;--brand-accent:#ff2a26;--danger-soft:#3f1212;--danger-border:#5c2323;--ok:#4ade80;--ok-soft:#14291d;--ok-border:#1e4a2f;--warn:#fbbf24;--warn-soft:#3a2a0b;--sel-border:#52525b;--sh-border:rgba(255,255,255,.1)}
+*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-app);color:var(--tx-body);font-size:14px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sb{background:var(--sh-bg);color:var(--sh-tx);display:flex;flex-direction:column;padding:18px 12px}
+.sb .logo{display:flex;align-items:center;gap:8px;padding:4px 8px 18px}.sb .logo b{color:#ff4b47;font-size:20px;letter-spacing:.5px}.sb .logo small{display:block;color:var(--sh-muted);font-size:11px;letter-spacing:1px}
+.sb h6{margin:14px 10px 6px;font-size:10px;letter-spacing:1.4px;color:var(--sh-muted);font-weight:700}
+.sb a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--sh-tx);text-decoration:none;font-size:13.5px}
+.sb a.on{background:var(--sh-active);color:var(--sh-strong);font-weight:700;box-shadow:inset 3px 0 0 var(--sh-accent)}
+.sb .sub{margin:2px 0 6px 18px}.sb .sub a{font-size:12.5px;padding:6px 10px}.sb .sub a::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--sh-dot)}
+.sb .sub a.on::before{background:var(--sh-accent)}
+.sb .me{margin-top:auto;display:flex;gap:10px;align-items:center;background:var(--sh-hover);border-radius:12px;padding:10px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--sh-active);color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.sb .me small{display:block;color:var(--sh-muted);font-size:11px}
+main{display:flex;flex-direction:column;min-width:0}
+.top{height:64px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.crumb{font-size:12px;color:var(--tx-2)}.top h1{margin:0;font-size:18px;font-weight:700;color:var(--tx)}
+.tbtn{border:1px solid var(--border);background:var(--bg-card);border-radius:10px;padding:7px 12px;cursor:pointer;font-size:13px}
+.content{padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border)}
+.tabs span{padding:8px 14px;font-size:13px;color:var(--tx-2)}.tabs span.on{color:var(--brand-strong);font-weight:600;box-shadow:inset 0 -2px 0 #f10400}
+.card{background:var(--bg-card);border:1px solid var(--sel-border);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:12px;background:var(--bg-card);cursor:pointer}
+.chip.on{background:var(--sh-bg);border-color:var(--sh-bg);color:#fff}
+.pill-ok{color:var(--ok);background:var(--ok-soft);border:1px solid var(--ok-border);border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:600}
+.pill-warn{color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:600}
+.muted{color:var(--tx-2)}
+.btn{border:0;border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer}
+.btn-primary{background:#f10400;color:#fff}.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--sel-border)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--sel-border);border-radius:10px;padding:8px 12px;background:var(--bg-card)}
+.search input{border:0;outline:0;background:transparent;width:100%}
+input[type=checkbox]{width:16px;height:16px;accent-color:#c40300;cursor:pointer}
+.sw{position:relative;width:34px;height:20px;flex-shrink:0}.sw input{opacity:0;position:absolute;inset:0;margin:0;cursor:pointer;width:100%;height:100%;z-index:1}
+.sw span{position:absolute;inset:0;border-radius:999px;background:var(--sel-border);transition:background .15s}
+.sw span::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw input:checked+span{background:#c40300}.sw input:checked+span::after{transform:translateX(14px)}
+.sw input:focus-visible+span{outline:2px solid var(--brand-accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.two{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+.users{padding:14px;display:flex;flex-direction:column;gap:10px;position:sticky;top:16px}
+.ulist{display:flex;flex-direction:column;gap:4px}
+.u{display:flex;gap:10px;align-items:center;text-align:left;border:0;background:transparent;border-radius:10px;padding:8px;cursor:pointer}
+.u:hover{background:var(--bg-soft)}.u.on{background:var(--danger-soft);box-shadow:inset 3px 0 0 #f10400}
+.u .av{background:var(--sh-bg)}.ut b{display:block;color:var(--tx);font-size:13.5px}.ut small{color:var(--tx-2);font-size:12px}
+.panel{display:flex;flex-direction:column;position:relative}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.who{display:flex;gap:12px;align-items:center}.who h2{margin:0;font-size:17px;color:var(--tx)}.av.big{width:42px;height:42px;font-size:14px;background:var(--sh-bg)}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 20px;border-top:1px solid var(--border);background:var(--bg-card);border-radius:0 0 12px 12px;position:sticky;bottom:0}.sp{flex:1}
+.toast{position:absolute;right:20px;bottom:70px;background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-border);border-radius:10px;padding:8px 14px;font-weight:600}
+.foot{margin:4px 0 0;font-size:12px}
+
+.pb{padding:18px 20px}.lead{margin:0 0 14px;font-size:13px}
+.scs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.sc{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:12px;border:1px solid var(--sel-border);border-radius:14px;padding:16px;background:var(--bg-soft);cursor:pointer;position:relative}
+.sc:has(input:checked){background:var(--bg-card);border-color:#c40300;box-shadow:inset 0 0 0 1px #c40300}
+.sc .sw{position:absolute;top:16px;right:16px}.si{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--sh-bg);color:#fff;font-weight:800;font-size:18px;grid-row:1/3}
+.st{display:flex;flex-direction:column;gap:4px;padding-right:56px;min-width:0}.st b{overflow-wrap:anywhere}.st b{color:var(--tx);font-size:15px}.st span{font-size:12.5px}
+.meta{margin-top:6px;font-weight:600;color:var(--ok)}.sc:not(:has(input:checked)) .meta{color:var(--tx-2);font-weight:500}
+.warn{margin-top:14px;background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600}
+</style></head><body><div class="app">
+<nav class="sb" aria-label="Menú principal"><div class="logo"><div><b>VEOLIA</b><small>VEO-REGULATOR</small></div></div>
+<a href="#">⌂ Inicio</a><h6>OPERACIÓN</h6><a href="#">▣ Suministros</a><a href="#">⚙ Procesos</a><h6>INFORMES</h6><a href="#">▤ Informes Gerenciales</a><a href="#">◎ Sui</a>
+<h6>SISTEMA</h6><a href="#" class="on">⚒ Configuración</a><div class="sub"><a href="#">APS</a><a href="#">Empresas</a><a href="#" class="on" aria-current="page">Usuarios</a></div>
+<div class="me"><span class="av">S</span><div>soporte<small>Sesión activa</small></div></div></nav>
+<main><header class="top"><div><div class="crumb">Configuración</div><h1>Usuarios</h1></div>
+<button class="tbtn" type="button" onclick="document.documentElement.classList.toggle('app-dark')">Modo claro / oscuro</button></header>
+<div class="content"><div class="tabs" role="tablist"><span>Usuarios</span><span class="on" aria-selected="true">Sistemas</span><span>APS</span><span>Permisos</span></div>
+<div class="two"><aside class="card users" aria-label="Usuarios"><div class="search">🔍<input placeholder="Buscar usuario o correo" aria-label="Buscar usuario"></div><div class="ulist"><button class="u on" type="button"><span class="av">AR</span><span class="ut"><b>Ana María Ríos</b><small>ana.rios@veolia.com</small></span></button><button class="u" type="button"><span class="av">CM</span><span class="ut"><b>Carlos Méndez</b><small>carlos.mendez@veolia.com</small></span></button><button class="u" type="button"><span class="av">LG</span><span class="ut"><b>Laura Gómez</b><small>laura.gomez@veolia.com</small></span></button><button class="u" type="button"><span class="av">JP</span><span class="ut"><b>Jorge Patiño</b><small>jorge.patino@veolia.com</small></span></button><button class="u" type="button"><span class="av">DC</span><span class="ut"><b>Diana Castro</b><small>diana.castro@veolia.com</small></span></button></div><p class="muted foot">5 usuarios · Veolia</p></aside><section class="card panel" aria-label="Sistemas de Ana María Ríos"><header class="ph"><div class="who"><span class="av big">AR</span><div><h2>Ana María Ríos</h2><span class="muted">ana.rios@veolia.com</span></div></div><span class="pill-ok" data-resumen></span></header>
+<div class="pb"><p class="muted lead">Encendé los sistemas a los que puede entrar el usuario. Los permisos de cada sistema se configuran en la pestaña <b>Permisos</b>.</p><div class="scs"><label class="sc"><span class="sw big"><input type="checkbox" data-opt checked aria-label="Acceso a VEO-REGULATOR"><span></span></span>
+<span class="si">V</span><span class="st"><b>VEO-REGULATOR</b><span class="muted">Sistema para el cálculo de tarifas de CRA 720</span><span class="meta" data-meta="1">✓ 28 opciones con permiso</span></span></label><label class="sc"><span class="sw big"><input type="checkbox" data-opt checked aria-label="Acceso a RELIQUIDACIONES"><span></span></span>
+<span class="si">R</span><span class="st"><b>RELIQUIDACIONES</b><span class="muted">Sistema de reliquidaciones de tarifas CRA 720</span><span class="meta" data-meta="2">✓ 2 opciones con permiso</span></span></label><label class="sc"><span class="sw big"><input type="checkbox" data-opt  aria-label="Acceso a SUI 853"><span></span></span>
+<span class="si">S</span><span class="st"><b>SUI 853</b><span class="muted">Sistema SUI: cargues e informes de la resolución 853</span><span class="meta" data-meta="3">Sin acceso</span></span></label></div>
+<div class="warn" data-warn hidden role="status">⚠ Al quitar un sistema, el usuario deja de verlo en el selector de sistema y pierde sus permisos de ese sistema al guardar.</div></div><footer class="bar"><span data-cambios class="muted"></span><span class="sp"></span><button class="btn btn-ghost" data-descartar type="button">Descartar</button><button class="btn btn-primary" data-guardar type="button">Guardar</button></footer><div class="toast" data-toast hidden role="status">✓ Asignación guardada</div></section></div></div></main></div><script>
+const base=new Map();document.querySelectorAll('input[data-opt]').forEach(i=>base.set(i,i.checked));
+function cambios(){let n=0;base.forEach((v,i)=>{if(i.checked!==v)n++});return n}
+function grupo(g){const ops=[...g.querySelectorAll('input[data-opt]')];const on=ops.filter(i=>i.checked).length;
+ const all=g.querySelector('input[data-all]');if(all){all.checked=on===ops.length;all.indeterminate=on>0&&on<ops.length}
+ const c=g.querySelector('[data-count]');if(c)c.textContent=on+' de '+ops.length;return [on,ops.length]}
+function refrescar(){document.querySelectorAll('[data-grupo]').forEach(grupo);
+ document.querySelectorAll('[data-sistema]').forEach(s=>{const ops=[...s.querySelectorAll('input[data-opt]')];const c=document.querySelector('[data-sis-count="'+s.dataset.sistema+'"]');if(c)c.textContent=ops.filter(i=>i.checked).length+' / '+ops.length});
+ const n=cambios();document.querySelectorAll('[data-cambios]').forEach(e=>e.textContent=n?n+(n===1?' cambio sin guardar':' cambios sin guardar'):'Sin cambios');
+ document.querySelectorAll('[data-guardar]').forEach(b=>b.disabled=!n);document.querySelectorAll('[data-descartar]').forEach(b=>b.disabled=!n);
+ if(typeof extra==='function')extra()}
+document.addEventListener('change',e=>{const t=e.target;if(t.matches('input[data-all]')){t.closest('[data-grupo]').querySelectorAll('input[data-opt]').forEach(i=>i.checked=t.checked)}refrescar()});
+document.querySelectorAll('[data-descartar]').forEach(b=>b.addEventListener('click',()=>{base.forEach((v,i)=>i.checked=v);refrescar()}));
+document.querySelectorAll('[data-guardar]').forEach(b=>b.addEventListener('click',()=>{base.forEach((v,i)=>base.set(i,i.checked));const m=document.querySelector('[data-toast]');if(m){m.hidden=false;setTimeout(()=>m.hidden=true,2200)}refrescar()}));
+
+function extra(){const on=[...document.querySelectorAll('input[data-opt]')].filter(i=>i.checked).length;document.querySelector('[data-resumen]').textContent=on+' de 3 sistemas';
+let quita=false;base.forEach((v,i)=>{if(v&&!i.checked)quita=true});document.querySelector('[data-warn]').hidden=!quita}
+document.querySelectorAll('.u').forEach(b=>b.addEventListener('click',()=>document.querySelectorAll('.u').forEach(x=>x.classList.toggle('on',x===b))));
+refrescar();</script></body></html>

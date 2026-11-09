@@ -1,0 +1,20 @@
+{
+  "title": "Informes Gerenciales · Costo de Poda",
+  "brief": "Rediseño de /gerencial/poda: histórico del costo de poda (techo SUI vs. facturación) por empresa y período para un APS, útil para gerencia.",
+  "artboards": [
+    {
+      "file": "01-historico-tendencia.html",
+      "title": "Histórico con tendencia",
+      "tradeoff": "KPIs y gráfico por período muestran la evolución de un vistazo, con la tabla detallada debajo; ocupa más alto y el gráfico pierde precisión frente a la cifra exacta",
+      "width": 1440,
+      "height": 1351
+    },
+    {
+      "file": "02-matriz-comparativa.html",
+      "title": "Matriz períodos × empresas",
+      "tradeoff": "Compara techo, facturación y diferencia de todas las empresas por período en una sola grilla y resalta descuadres; más densa y con muchos períodos exige scroll horizontal",
+      "width": 1440,
+      "height": 1135
+    }
+  ]
+}

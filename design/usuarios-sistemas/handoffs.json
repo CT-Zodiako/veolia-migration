@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "01-tarjetas-sistema.html",
+  "handoffs": {
+    "01-tarjetas-sistema.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-08T23:11:40.369Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-08T23:20:19.184Z",
+      "note": "Sistemas tab: user list + one card per system (switch, permissions count, removal warning), cards wrap to panel width; checked light/dark with real data (64 users).",
+      "previewUrl": "http://localhost:4200/usuarios"
+    }
+  }
+}

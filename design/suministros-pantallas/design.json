@@ -1,0 +1,132 @@
+{
+  "title": "Suministros · pantallas con pocos datos",
+  "brief": "Dos direcciones por pantalla para Costo de Poda, Activar Aprovechamiento, Descuentos en Costos, Ajuste Productividad, Subsidios y Contribuciones e Índices CRA: aprovechar el espacio cuando hay muy pocos datos (Cartagena, Septiembre 2026), manteniendo los parámetros APS/Año/Mes.",
+  "artboards": [
+    {
+      "file": "01-costo-poda-a-fichas-empresa.html",
+      "title": "Costo de Poda · A · Fichas por empresa con totales",
+      "tradeoff": "Cada empresa se lee de un vistazo (techo vs. facturación, % y diferencia) y se edita en su ficha; con más de 4–6 empresas las fichas ocupan demasiado y conviene la tabla",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "02-costo-poda-b-tabla-detalle.html",
+      "title": "Costo de Poda · B · Tabla + panel de detalle",
+      "tradeoff": "Tabla compacta con total y % del techo que escala a muchas empresas, más panel de edición siempre visible; con 2 filas la tabla sigue viéndose corta",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "03-aprovechamiento-a-ajuste-explicado.html",
+      "title": "Activar Aprovechamiento · A · Ajuste con explicación y alcance",
+      "tradeoff": "Interruptor con cambio pendiente, comparación de consecuencias y alcance; la lista de meses anteriores requiere un servicio que hoy no existe",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "04-aprovechamiento-b-dos-opciones.html",
+      "title": "Activar Aprovechamiento · B · Dos opciones + confirmación",
+      "tradeoff": "Decisión muy clara (dos tarjetas grandes y confirmación antes de aplicar), sin servicios nuevos; un clic más que el interruptor para un cambio frecuente",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "05-descuentos-a-tarjetas-inline.html",
+      "title": "Descuentos en Costos · A · Tarjeta por costo",
+      "tradeoff": "Valor grande y nombre completo de cada costo, edición y alta en la propia tarjeta sin modal; con muchos costos la grilla crece hacia abajo",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "06-descuentos-b-lista-formulario.html",
+      "title": "Descuentos en Costos · B · Lista + formulario lateral",
+      "tradeoff": "Agregar/editar siempre a la vista con glosario de costos; deja espacio libre si solo hay 2 filas y el panel fijo duplica información",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "07-productividad-a-estado-vacio.html",
+      "title": "Ajuste Productividad · A · Estado vacío que invita a agregar",
+      "tradeoff": "Explica que falta el valor y permite agregarlo en el mismo sitio, con meses anteriores de referencia; la referencia necesita consultar otros meses",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "08-productividad-b-vista-anual.html",
+      "title": "Ajuste Productividad · B · Año completo en fichas",
+      "tradeoff": "Muestra qué meses faltan y se navega por mes con un clic; exige consultar los 12 meses y duplica el selector de Mes",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "09-subcon-a-barras-divergentes.html",
+      "title": "Subsidios y Contribuciones · A · Barras divergentes",
+      "tradeoff": "Se ve de inmediato quién recibe subsidio y quién aporta y cuánto, con edición en la misma fila y barra en vivo; el gráfico pierde precisión frente a la cifra exacta",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "10-subcon-b-fichas-formulario.html",
+      "title": "Subsidios y Contribuciones · B · Fichas agrupadas + formulario lateral",
+      "tradeoff": "Agrupa residencial / no residencial con cifras grandes y edita en un panel fijo (etiqueta delante del valor); muestra cada valor dos veces",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "11-indices-cra-a-tarjetas.html",
+      "title": "Índices CRA · A · Tarjetas 2×2",
+      "tradeoff": "Cada índice con su nombre y valor completo bien grande, alta de los 4 en un paso cuando el mes está vacío; los valores de 15 decimales son difíciles de comparar en tarjetas",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "12-indices-cra-b-tabla-precision.html",
+      "title": "Índices CRA · B · Tabla alineada por la coma + panel de alta",
+      "tradeoff": "Precisión contable: decimales alineados y conteo, alta bloqueada con motivo cuando ya existen; visualmente más sobria y deja el panel vacío la mayor parte del tiempo",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "13-costo-poda-c-actual-mejorada.html",
+      "title": "Costo de Poda · c · Versión actual mejorada",
+      "tradeoff": "Misma tabla y modal de hoy, con cifras en formato colombiano, fila total y conteo en lugar del paginador; mínimo cambio y cero curva de aprendizaje, pero no compara techo vs. facturación como a/b",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "14-aprovechamiento-c-actual-mejorada.html",
+      "title": "Activar Aprovechamiento · c · Versión actual mejorada",
+      "tradeoff": "Mismo interruptor + Aceptar, ahora con título, explicación del estado y aviso de cambio sin aplicar; mínimo cambio, pero la pantalla sigue siendo corta y no muestra el alcance como a/b",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "15-descuentos-c-actual-mejorada.html",
+      "title": "Descuentos en Costos · c · Versión actual mejorada",
+      "tradeoff": "Conserva tabla avanzada, Agregar, editar y herramientas (columnas, densidad, vista, exportar) en una sola barra ordenada; cero curva de aprendizaje, pero mantiene herramientas que con 2 filas casi no se usan",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "16-productividad-c-actual-mejorada.html",
+      "title": "Ajuste Productividad · c · Versión actual mejorada",
+      "tradeoff": "Misma fila Valor/Acciones con período visible, “Sin valor · Pendiente” en vez de “-” y modal de agregar/editar; mínimo cambio, pero no ofrece referencia de meses anteriores como a/b",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "17-subcon-c-actual-mejorada.html",
+      "title": "Subsidios y Contribuciones · c · Versión actual mejorada",
+      "tradeoff": "Misma tabla Clase de Uso/Valor con porcentajes reales (-70,00 %), etiqueta Subsidio/Contribución y grupos, y el mismo Editar con etiqueta delante de cada valor; mínimo cambio, aprovecha menos el espacio que a/b",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "18-indices-cra-c-actual-mejorada.html",
+      "title": "Índices CRA · c · Versión actual mejorada",
+      "tradeoff": "Misma tabla Tipo Índice/Valor/Acciones con nombre del índice, valores completos en formato colombiano y modales de agregar/editar; cero curva de aprendizaje, pero los decimales no quedan alineados por la coma como en b",
+      "width": 1440,
+      "height": 900
+    }
+  ]
+}

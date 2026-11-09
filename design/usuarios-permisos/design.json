@@ -1,0 +1,27 @@
+{
+  "title": "Usuarios · Permisos del usuario",
+  "brief": "Rediseño de la pestaña Permisos de /usuarios: asignar por usuario las opciones del menú de cada sistema (VEO-Regulator, RELIQUIDACIONES, SUI853), con marcar/desmarcar por grupo, contador y guardar.",
+  "artboards": [
+    {
+      "file": "01-lista-y-tarjetas.html",
+      "title": "Lista de usuarios + tarjetas por grupo",
+      "tradeoff": "Rápido para recorrer muchos usuarios y ver cada grupo de un vistazo; más alto cuando un sistema tiene muchas opciones",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "02-rol-ajuste-revision.html",
+      "title": "Rol como punto de partida + revisión de cambios",
+      "tradeoff": "Menos clics y menos errores al dar de alta (plantilla por rol) y muestra qué se agrega/quita antes de guardar; requiere definir y mantener los roles",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "03-matriz-comparar.html",
+      "title": "Matriz con búsqueda y comparación",
+      "tradeoff": "Ideal para auditar: buscar una opción, filtrar con/sin acceso y comparar o copiar de otro usuario; más denso visualmente",
+      "width": 1440,
+      "height": 1000
+    }
+  ]
+}

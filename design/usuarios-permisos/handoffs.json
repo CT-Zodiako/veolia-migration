@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "01-lista-y-tarjetas.html",
+  "handoffs": {
+    "01-lista-y-tarjetas.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-08T22:44:45.921Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-08T22:53:40.733Z",
+      "note": "Implemented in permisos.component (20/20 tests, suite 817/817). Visual check pending: the ego-lite test browser cannot reach localhost:5000 after the backend restart (127.0.0.1 works), so the user list could not be rendered there.",
+      "previewUrl": "http://localhost:4200/usuarios"
+    }
+  }
+}

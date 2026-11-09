@@ -1,0 +1,159 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ajuste Productividad · Suministros</title>
+<style>
+:root{--bg-app:#f1f5f9;--bg-card:#fff;--bg-soft:#f8fafc;--border:#e2e8f0;--border-soft:#f1f5f9;--tx:#0f172a;--tx-body:#334155;--tx-2:#64748b;
+--brand-strong:#780200;--brand-accent:#f10400;--danger-soft:#fff2f2;--danger-border:#ffcdcc;--ok:#15803d;--ok-soft:#f0fdf4;--ok-border:#bbf7d0;
+--warn:#8a5200;--warn-soft:#fff1d6;--sel-border:#cbd5e1;
+--sub-tx:#1d4ed8;--sub-soft:#edf5ff;--con-tx:#8a5200;--con-soft:#fff1d6;
+--sh-bg:#0b1f3a;--sh-hover:#13294a;--sh-active:#1b3459;--sh-border:rgba(255,255,255,.08);--sh-tx:#dbe4f0;--sh-strong:#fff;--sh-muted:#8a9bb5;--sh-dot:#5f7392;--sh-accent:#f10400}
+html.app-dark{--bg-app:#0f172a;--bg-card:#1e293b;--bg-soft:#172033;--border:#334155;--border-soft:#263449;--tx:#f1f5f9;--tx-body:#cbd5e1;--tx-2:#94a3b8;
+--brand-strong:#ffa5a3;--brand-accent:#ff2a26;--danger-soft:#3f1212;--danger-border:#5c2323;--ok:#4ade80;--ok-soft:#14291d;--ok-border:#1e4a2f;--warn:#fbbf24;--warn-soft:#3a2a0b;--sel-border:#52525b;
+--sub-tx:#93c5fd;--sub-soft:#172a46;--con-tx:#fbbf24;--con-soft:#3a2a0b;--sh-border:rgba(255,255,255,.1)}
+[hidden]{display:none!important}
+*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-app);color:var(--tx-body);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+h2,h3{color:var(--tx);margin:0}
+svg{flex-shrink:0}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sb{background:var(--sh-bg);color:var(--sh-tx);display:flex;flex-direction:column;padding:18px 12px}
+.sb .logo{padding:4px 8px 18px}.sb .logo b{color:#ff4b47;font-size:20px;letter-spacing:.5px}.sb .logo small{display:block;color:var(--sh-muted);font-size:11px;letter-spacing:1px}
+.sb h6{margin:14px 10px 6px;font-size:10px;letter-spacing:1.4px;color:var(--sh-muted);font-weight:700}
+.sb a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--sh-tx);text-decoration:none;font-size:13.5px}
+.sb a:hover{background:var(--sh-hover)}
+.sb a.open{color:var(--sh-strong);font-weight:600}.sb a.open::after{content:"▾";margin-left:auto;color:var(--sh-muted)}
+.sb a.on{background:var(--sh-active);color:var(--sh-strong);font-weight:700;box-shadow:inset 3px 0 0 var(--sh-accent)}
+.sb .sub{margin:2px 0 6px 14px;border-left:1px solid var(--sh-border);padding-left:4px}.sb .sub a{font-size:12.5px;padding:5px 10px}.sb .sub a::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--sh-dot);flex-shrink:0}
+.sb .sub a.on::before{background:var(--sh-accent)}
+.sb .me{margin-top:auto;display:flex;gap:10px;align-items:center;background:var(--sh-hover);border-radius:12px;padding:10px}
+.av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--sh-bg);color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.sb .me .av{background:var(--sh-active)}.sb .me small{display:block;color:var(--sh-muted);font-size:11px}
+main{display:flex;flex-direction:column;min-width:0}
+.top{height:64px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 24px}
+.top h1{margin:0;font-size:18px;font-weight:600;color:var(--tx)}
+.top-r{display:flex;align-items:center;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:12px;padding:0 12px;height:40px;font-size:13px;font-weight:700;color:var(--tx);background:var(--bg-card)}
+.pill .av{width:26px;height:26px;font-size:11px}
+html.app-dark .pill .av{background:#f1f5f9;color:#0f172a}
+.content{padding:24px}
+.page{max-width:var(--page-max,880px);margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.params{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding:16px 20px}
+.period{display:flex;gap:16px;flex-wrap:wrap;margin:0}
+.f-aps .sel{width:200px}.f-anno .sel{width:110px}.f-mes .sel{width:150px}
+.ctx{margin:0;font-size:13px;color:var(--tx-2);display:flex;align-items:center;gap:8px;min-height:40px}
+.ctx b{color:var(--tx);font-weight:600}
+.ctx .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}.ctx.busy .dot{background:var(--tx-2)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--tx-body)}
+.inp,.sel{border:1px solid var(--sel-border);border-radius:10px;padding:8px 12px;background:var(--bg-card);min-height:40px;width:100%}
+.inp:focus,.sel:focus{outline:2px solid var(--brand-accent);outline-offset:0;border-color:transparent}
+.inp:disabled,.sel:disabled{background:var(--bg-soft);color:var(--tx-2);cursor:not-allowed}
+.inp.num{text-align:right}
+.inp[aria-invalid=true]{border-color:var(--brand-accent);background:var(--danger-soft)}
+.sel{appearance:none;padding-right:34px;background-image:linear-gradient(45deg,transparent 50%,var(--tx-2) 50%),linear-gradient(135deg,var(--tx-2) 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;cursor:pointer}
+.hint{font-size:12px;color:var(--tx-2)}.err{font-size:12px;color:var(--brand-accent);font-weight:600}
+.btn{border:1px solid transparent;border-radius:10px;padding:8px 16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;font-size:14px;white-space:nowrap}
+.btn-primary{background:#c40300;color:#fff}.btn-primary:hover{background:#9c0300}
+.btn-ghost{background:var(--bg-card);border-color:var(--sel-border);color:var(--tx-body)}.btn-ghost:hover{background:var(--bg-soft)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{padding:5px 12px;min-height:34px;font-size:13px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--sel-border);background:var(--bg-card);color:var(--tx-body);cursor:pointer;display:inline-grid;place-items:center}
+.icon-btn:hover{background:var(--bg-soft);color:var(--tx)}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:18px 20px 16px}
+.ch h2{font-size:16px;font-weight:700}
+.help{margin:4px 0 0;font-size:13px;color:var(--tx-2);max-width:64ch}
+.ch .acts{display:flex;gap:8px;align-items:center;flex-shrink:0}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--tx-2);text-align:left;padding:10px 20px;background:var(--bg-soft);border-top:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 20px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
+tbody tr:hover td{background:var(--bg-soft)}
+.r{text-align:right}.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+td.num{color:var(--tx)}
+th.act,td.act{width:1%;white-space:nowrap;text-align:center}
+tfoot th,tfoot td{background:var(--bg-soft);font-weight:700;color:var(--tx);border-bottom:0;text-transform:none;letter-spacing:0;font-size:14px}
+.cf{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 20px;font-size:13px;color:var(--tx-2);border-top:1px solid var(--border)}
+table+.cf{border-top:0}
+.code{font-weight:700;color:var(--tx)}.d{display:block;font-size:12.5px;color:var(--tx-2)}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg-soft);color:var(--tx-body);white-space:nowrap}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge.ok{color:var(--ok);background:var(--ok-soft);border-color:var(--ok-border)}
+.badge.warn{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.empty{padding:40px 20px 44px;text-align:center;border-top:1px solid var(--border)}
+.empty svg{color:var(--tx-2)}
+.empty h3{font-size:15px;margin-top:10px}.empty p{margin:4px auto 16px;max-width:52ch;color:var(--tx-2)}
+.loading{padding:28px 20px;color:var(--tx-2);border-top:1px solid var(--border);text-align:center}
+dialog.modal{border:1px solid var(--border);border-radius:12px;padding:0;width:min(var(--dlg-w,500px),calc(100vw - 32px));max-height:calc(100vh - 32px);background:var(--bg-card);color:var(--tx-body);box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
+dialog.modal::backdrop{background:rgba(15,23,42,.55)}
+dialog form{margin:0}
+.mh{padding:18px 20px 14px;border-bottom:1px solid var(--border)}.mh h2{font-size:17px;font-weight:700}.mh p{margin:2px 0 0;font-size:13px;color:var(--tx-2)}
+.mb{padding:18px 20px;display:grid;gap:16px}
+.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border);background:var(--bg-soft);border-radius:0 0 12px 12px}
+.ro{display:grid;grid-template-columns:1fr auto;gap:6px 16px;margin:0;padding:12px 14px;border-radius:10px;background:var(--bg-soft);border:1px solid var(--border);font-size:13.5px}
+.ro dt{color:var(--tx-2)}.ro dd{margin:0;text-align:right;color:var(--tx);font-weight:600}
+.toast{position:fixed;right:24px;bottom:24px;background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-border);border-radius:10px;padding:10px 16px;font-weight:600;box-shadow:0 10px 25px -10px rgba(0,0,0,.3);z-index:50}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sp{flex:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1100px){.app{grid-template-columns:1fr}.sb{display:none}.top .pill.sys{display:none}}
+@media (max-width:640px){.content{padding:16px}.ch{flex-direction:column}.f-aps .sel,.f-anno .sel,.f-mes .sel{width:100%}.period .field{flex:1 1 120px}}
+
+.page{--page-max:880px}
+td.per{font-weight:600;color:var(--tx)}td.val{width:240px}
+.nv{color:var(--tx-2);font-style:italic;margin-right:10px}
+.icon-btn.add{background:#c40300;border-color:#c40300;color:#fff}.icon-btn.add:hover{background:#9c0300;color:#fff}
+</style></head><body><div class="app">
+<nav class="sb" aria-label="Menú principal"><div class="logo"><b>VEOLIA</b><small>VEO-REGULATOR</small></div><a href="#">⌂ Inicio</a><h6>OPERACIÓN</h6><a href="#" class="open" aria-expanded="true">▣ Suministros</a><div class="sub"><a href="#">Índices CRA</a><a href="#">Subsidios y Contribuciones</a><a href="#" class="on" aria-current="page">Ajuste Productividad</a><a href="#">Descuentos en Costos</a><a href="#">Verificación</a><a href="#">Activar Aprovechamiento</a><a href="#">Costo de Poda</a><a href="#">Cargue Productividad</a></div><a href="#">⚙ Procesos</a><h6>INFORMES</h6><a href="#">▤ Informes Gerenciales</a><a href="#">◎ Sui</a><h6>SISTEMA</h6><a href="#">⚒ Configuración</a><div class="me"><span class="av">S</span><div>soporte<small>Sesión activa</small></div></div></nav>
+<main><header class="top"><h1>Ajuste Productividad</h1><div class="top-r"><button class="icon-btn" type="button" data-tema aria-pressed="false" aria-label="Modo oscuro" title="Modo oscuro"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><span class="pill sys"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg> RELIQUIDACIONES</span><span class="pill"><span class="av" aria-hidden="true">S</span>soporte</span></div></header>
+<div class="content"><div class="page">
+<section class="card params" aria-labelledby="pt"><h2 id="pt" class="sr">Parámetros de consulta</h2><form class="period" onsubmit="return false"><div class="field f-aps"><label for="p-aps">APS</label><select id="p-aps" class="sel" data-p="aps"><option>Barrancabermeja</option><option>Bucaramanga</option><option selected>Cartagena</option><option>Cucuta Unificado</option><option>Floridablanca</option><option>Girón</option><option>Palmira</option><option>Piedecuesta</option></select></div><div class="field f-anno"><label for="p-anno">Año</label><select id="p-anno" class="sel" data-p="anno"><option>2024</option><option>2025</option><option selected>2026</option><option>2027</option></select></div><div class="field f-mes"><label for="p-mes">Mes</label><select id="p-mes" class="sel" data-p="mes"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option selected>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select></div></form><p class="ctx" data-ctx role="status"><span class="dot" aria-hidden="true"></span><span data-ctx-t></span></p></section>
+<section class="card" aria-labelledby="tt">
+<header class="ch"><div><h2 id="tt">Ajuste de productividad del período</h2><p class="help">Un único valor por APS y mes. Si aparece “Sin valor”, agrégalo con el botón de la fila; si ya existe, edítalo.</p></div></header>
+<div data-zona aria-live="polite"></div>
+</section>
+</div></div></main></div>
+<dialog class="modal" id="dlg" aria-labelledby="dt" aria-describedby="ds" style="--dlg-w:440px">
+<form novalidate data-f><header class="mh"><h2 id="dt" data-dtit></h2><p id="ds" data-periodo></p></header>
+<div class="mb"><div class="field"><label for="v">Valor</label><input id="v" class="inp num" inputmode="decimal" placeholder="0,000000" aria-describedby="vh ve"><span class="hint" id="vh" data-vh></span><span class="err" id="ve" hidden></span></div></div>
+<footer class="mf"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button type="submit" class="btn btn-primary" data-sub></button></footer></form></dialog>
+<div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const tema=$('[data-tema]');tema.addEventListener('click',()=>{const d=document.documentElement.classList.toggle('app-dark');tema.setAttribute('aria-pressed',d)});
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function periodoTxt(conAps){const a=$('[data-p=aps]'),m=$('[data-p=mes]').value,y=$('[data-p=anno]').value;return (a&&conAps!==false?a.value+' · ':'')+m+' '+y}
+function claveP(){return periodoTxt()}
+// En la maqueta solo hay datos para Cartagena hasta Septiembre 2026; el resto muestra el estado vacío.
+function hayDatos(){const a=$('[data-p=aps]'),y=+$('[data-p=anno]').value,m=MESES.indexOf($('[data-p=mes]').value);if(a&&a.value!=='Cartagena')return false;return y<2026||(y===2026&&m<=8)}
+function pintarCtx(busy){const c=$('[data-ctx]');c.classList.toggle('busy',!!busy);$('[data-ctx-t]',c).innerHTML=busy?'Consultando <b>'+periodoTxt()+'</b>…':'Mostrando <b>'+periodoTxt()+'</b>';$$('[data-periodo]').forEach(e=>e.textContent=periodoTxt())}
+let tq;$$('[data-p]').forEach(s=>s.addEventListener('change',()=>{pintarCtx(true);if(typeof cargando==='function')cargando();clearTimeout(tq);tq=setTimeout(()=>{pintarCtx(false);render()},450)}));
+let tt;function toast(msg){const t=$('[data-toast]');t.hidden=false;t.textContent='✓ '+msg;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2800)}
+const nf=(a,b)=>new Intl.NumberFormat('es-CO',{minimumFractionDigits:a,maximumFractionDigits:b??a,useGrouping:true});
+function fmt(n,d=2,max){return nf(d,max).format(n)}
+// Acepta "1.234,56" o "1234,56"; devuelve null si no es un número válido.
+function parseCO(s){s=String(s).trim().replace(/\s/g,'');if(!s)return null;if(!/^[-+]?[\d.]*,?\d*$/.test(s)||!/\d/.test(s))return null;const n=Number(s.replace(/\./g,'').replace(',','.'));return isNaN(n)?null:n}
+function decs(s){const p=String(s).split(',');return p[1]?p[1].length:0}
+function fallo(inp,err,msg){inp.setAttribute('aria-invalid','true');err.hidden=false;err.textContent=msg;inp.focus()}
+function limpiar(dlg){$$('[aria-invalid]',dlg).forEach(i=>i.removeAttribute('aria-invalid'));$$('.err',dlg).forEach(e=>e.hidden=true)}
+// Abre un diálogo modal y, al cerrarlo, devuelve el foco al control que lo abrió (aunque la fila se haya repintado).
+function abrir(dlg,volver){limpiar(dlg);dlg._volver=volver;dlg.showModal();const f=$('input:not([disabled]),select:not([disabled])',dlg);if(f){f.focus();if(f.select)f.select()}}
+$$('dialog').forEach(d=>{d.addEventListener('close',()=>{const v=d._volver&&d._volver();if(v)v.focus()});$$('[data-close]',d).forEach(b=>b.addEventListener('click',()=>d.close()))});
+const EMPTY_ICON='<svg width="44" height="44" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="10" width="32" height="28" rx="4"/><path d="M8 18h32M16 26h16M16 31h10" stroke-linecap="round"/></svg>';
+function vacio(titulo,texto,boton){return '<div class="empty">'+EMPTY_ICON+'<h3>'+titulo+'</h3><p>'+texto+'</p>'+(boton||'')+'</div>'}
+
+const VAL={};const v6=n=>fmt(n,6);
+function cargando(){$('[data-zona]').innerHTML='<p class="loading">Consultando ajuste de productividad…</p>'}
+function render(){const v=VAL[claveP()],tiene=v!==undefined;
+$('[data-zona]').innerHTML='<table><caption class="sr">Ajuste de productividad · '+periodoTxt()+'</caption><thead><tr><th scope="col">APS · Período</th><th scope="col" class="r">Valor</th><th scope="col" class="act">Acciones</th></tr></thead><tbody><tr><td class="per">'+periodoTxt()+'</td>'+
+(tiene?'<td class="r num val">'+v6(v)+'</td><td class="act"><button class="icon-btn" type="button" data-accion aria-label="Editar valor de ajuste" title="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></td>'
+:'<td class="r val"><span class="nv">Sin valor</span><span class="badge warn">Pendiente</span></td><td class="act"><button class="icon-btn add" type="button" data-accion aria-label="Agregar valor de ajuste" title="Agregar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></td>')+
+'</tr></tbody></table><div class="cf"><span>'+(tiene?'Valor registrado para el período.':'Este período aún no tiene ajuste de productividad.')+'</span><span>Hasta 6 decimales</span></div>'}
+document.addEventListener('click',e=>{if(!e.target.closest('[data-accion]'))return;const v=VAL[claveP()],tiene=v!==undefined;
+$('[data-dtit]').textContent=tiene?'Editar ajuste de productividad':'Agregar ajuste de productividad';$('[data-sub]').textContent=tiene?'Guardar':'Agregar';
+$('#v').value=tiene?v6(v):'';$('[data-vh]').textContent='Número con coma decimal, hasta 6 decimales. Ej.: 0,982410'+(tiene?' · Valor actual: '+v6(v):'');
+abrir($('#dlg'),()=>$('[data-accion]'))});
+$('[data-f]').addEventListener('submit',e=>{e.preventDefault();const raw=$('#v').value,n=parseCO(raw);
+if(n===null||decs(raw)>6){fallo($('#v'),$('#ve'),n===null?'Escribe un número, p. ej. 0,982410':'Máximo 6 decimales');return}
+const nuevo=VAL[claveP()]===undefined;VAL[claveP()]=n;$('#dlg').close();render();$('[data-accion]').focus();toast(nuevo?'Ajuste agregado para '+periodoTxt():'Ajuste actualizado: '+v6(n))});
+
+pintarCtx(false);render();
+</script></body></html>

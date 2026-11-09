@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "01-boton-secundario.html",
+  "handoffs": {
+    "01-boton-secundario.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T01:02:37.367Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-09T01:16:20.752Z",
+      "note": "Shared <app-boton-descarga> applied to the 10 download points; suite 854/854. Visually checked on SUI Formatos y Formularios (light/dark). Cargue screens pending visual check: Oracle unreachable at the time.",
+      "previewUrl": "http://localhost:4200/sui/integracion"
+    }
+  }
+}

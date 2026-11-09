@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "chosen": "16-productividad-c-actual-mejorada.html",
+  "handoffs": {
+    "14-aprovechamiento-c-actual-mejorada.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-08T23:59:15.257Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-09T00:02:04.820Z",
+      "note": "Same switch + Aceptar with title, helper, applied-state pill and pending-change notice; Aceptar disabled without a change. Checked light/dark with real data.",
+      "previewUrl": "http://localhost:4200/suministros/aprovechamiento"
+    },
+    "15-descuentos-c-actual-mejorada.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T00:05:34.869Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-09T00:08:05.791Z",
+      "note": "Same advanced table + Agregar/edit; titled card with helper and Agregar in header, cost names under codes, footer summary, centered 1120px column (fits the shared toolbar). Shared toolbar/paginator kept as is.",
+      "previewUrl": "http://localhost:4200/suministros/descuento-costos"
+    },
+    "17-subcon-c-actual-mejorada.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T00:10:23.074Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-09T00:12:12.059Z",
+      "note": "Same table + Agregar/Editar dialog; titled card, real percentages (−70,00 %), Subsidio/Contribución/Sin ajuste labels, Residencial/No residencial groups, footer summary. Checked light/dark with real data.",
+      "previewUrl": "http://localhost:4200/subcon"
+    },
+    "13-costo-poda-c-actual-mejorada.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T00:13:46.614Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-09T00:15:46.027Z",
+      "note": "Same table, inline edit and Nuevo modal; titled card, es-CO pesos with 2 decimals on both costs, Total row, count footer, paginator only above 15 empresas. Checked light/dark with real data.",
+      "previewUrl": "http://localhost:4200/suministros/costo-poda"
+    },
+    "18-indices-cra-c-actual-mejorada.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T00:17:27.868Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-09T00:19:44.591Z",
+      "note": "Same table, inline edit and Agregar modal; titled card, Agregar in header (disabled when the period has índices), unrounded es-CO values, IPC/SMLV names, count footer. IPCC/IOEXP names left out pending confirmation.",
+      "previewUrl": "http://localhost:4200/cra"
+    },
+    "16-productividad-c-actual-mejorada.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T00:21:15.732Z",
+      "startedAt": null,
+      "implementedAt": "2026-11-09T00:23:36.869Z",
+      "note": "Same Valor/Acciones row and inline edit; titled card, Período column, \"Sin valor · Pendiente\" instead of \"-\", es-CO value (≤6 decimals), footer, primary Agregar. Checked light/dark with real data.",
+      "previewUrl": "http://localhost:4200/productividad"
+    }
+  }
+}

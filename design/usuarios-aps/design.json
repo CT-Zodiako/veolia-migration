@@ -1,0 +1,27 @@
+{
+  "title": "Usuarios · APS",
+  "brief": "Rediseño de la pestaña APS de /usuarios: qué APS (35) puede ver cada usuario.",
+  "artboards": [
+    {
+      "file": "01-grilla-aps.html",
+      "title": "Lista de usuarios + grilla de APS",
+      "tradeoff": "Todos los APS a la vista como fichas marcables, con buscador, \"seleccionar todos\" y \"solo asignados\"; coherente con Permisos 01",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "02-dos-columnas.html",
+      "title": "Dos columnas (picklist mejorado)",
+      "tradeoff": "Familiar para los usuarios actuales; con filtro por columna, mover todos y marcas nuevo/se quita; listas largas exigen más scroll",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "03-por-aps.html",
+      "title": "Vista por APS: quién tiene acceso",
+      "tradeoff": "Responde \"¿quién ve Cartagena?\" y permite agregar/quitar usuarios por APS; ideal para auditar, menos práctico para dar de alta a un usuario nuevo",
+      "width": 1440,
+      "height": 1000
+    }
+  ]
+}

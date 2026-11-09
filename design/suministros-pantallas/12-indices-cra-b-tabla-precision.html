@@ -1,0 +1,141 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Índices CRA · Suministros</title>
+<style>
+:root{--bg-app:#f1f5f9;--bg-card:#fff;--bg-soft:#f8fafc;--border:#e2e8f0;--border-soft:#f1f5f9;--tx:#0f172a;--tx-body:#334155;--tx-2:#64748b;
+--brand-strong:#780200;--brand-accent:#f10400;--danger-soft:#fff2f2;--danger-border:#ffcdcc;--ok:#15803d;--ok-soft:#f0fdf4;--ok-border:#bbf7d0;
+--warn:#8a5200;--warn-soft:#fff1d6;--sel-border:#cbd5e1;
+--sub-tx:#1d4ed8;--sub-bg:rgb(152,190,243);--sub-soft:#edf5ff;--con-tx:#8a5200;--con-bg:rgb(236,167,16);--con-soft:#fff1d6;
+--sh-bg:#0b1f3a;--sh-hover:#13294a;--sh-active:#1b3459;--sh-border:rgba(255,255,255,.08);--sh-tx:#dbe4f0;--sh-strong:#fff;--sh-muted:#8a9bb5;--sh-dot:#5f7392;--sh-accent:#f10400}
+html.app-dark{--bg-app:#0f172a;--bg-card:#1e293b;--bg-soft:#172033;--border:#334155;--border-soft:#1e293b;--tx:#f1f5f9;--tx-body:#cbd5e1;--tx-2:#94a3b8;
+--brand-strong:#ffa5a3;--brand-accent:#ff2a26;--danger-soft:#3f1212;--danger-border:#5c2323;--ok:#4ade80;--ok-soft:#14291d;--ok-border:#1e4a2f;--warn:#fbbf24;--warn-soft:#3a2a0b;--sel-border:#52525b;
+--sub-tx:#93c5fd;--sub-bg:rgb(96,140,210);--sub-soft:#172a46;--con-tx:#fbbf24;--con-bg:rgb(200,140,14);--con-soft:#3a2a0b;--sh-border:rgba(255,255,255,.1)}
+[hidden]{display:none!important}
+*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-app);color:var(--tx-body);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+h2,h3,h4{color:var(--tx);margin:0}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sb{background:var(--sh-bg);color:var(--sh-tx);display:flex;flex-direction:column;padding:18px 12px}
+.sb .logo{padding:4px 8px 18px}.sb .logo b{color:#ff4b47;font-size:20px;letter-spacing:.5px}.sb .logo small{display:block;color:var(--sh-muted);font-size:11px;letter-spacing:1px}
+.sb h6{margin:14px 10px 6px;font-size:10px;letter-spacing:1.4px;color:var(--sh-muted);font-weight:700}
+.sb a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--sh-tx);text-decoration:none;font-size:13.5px}
+.sb a:hover{background:var(--sh-hover)}
+.sb a.open{color:var(--sh-strong);font-weight:600}.sb a.open::after{content:"▾";margin-left:auto;color:var(--sh-muted)}
+.sb a.on{background:var(--sh-active);color:var(--sh-strong);font-weight:700;box-shadow:inset 3px 0 0 var(--sh-accent)}
+.sb .sub{margin:2px 0 6px 14px;border-left:1px solid var(--sh-border);padding-left:4px}.sb .sub a{font-size:12.5px;padding:5px 10px}.sb .sub a::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--sh-dot);flex-shrink:0}
+.sb .sub a.on::before{background:var(--sh-accent)}
+.sb .me{margin-top:auto;display:flex;gap:10px;align-items:center;background:var(--sh-hover);border-radius:12px;padding:10px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--sh-active);color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.sb .me small{display:block;color:var(--sh-muted);font-size:11px}
+main{display:flex;flex-direction:column;min-width:0}
+.top{min-height:64px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 24px}
+.crumb{font-size:12px;color:var(--tx-2)}.top h1{margin:0;font-size:18px;font-weight:600;color:var(--tx)}
+.top-r{display:flex;align-items:center;gap:12px}
+.tbtn{border:1px solid var(--border);background:var(--bg-card);border-radius:10px;padding:7px 12px;cursor:pointer;font-size:13px}
+.tbtn:hover{background:var(--bg-soft)}
+.content{padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.muted{color:var(--tx-2)}.num{font-variant-numeric:tabular-nums}
+.btn{border:0;border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:40px;text-decoration:none}
+.btn-primary{background:#c40300;color:#fff}.btn-primary:hover{background:#9c0300}.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:var(--bg-card);border:1px solid var(--sel-border)}.btn-ghost:hover{background:var(--bg-soft)}.btn-ghost:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{padding:6px 12px;min-height:34px;font-size:13px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--sel-border);background:var(--bg-card);cursor:pointer;display:inline-grid;place-items:center}
+.icon-btn:hover{background:var(--bg-soft)}
+.link{color:var(--brand-accent);font-weight:600;text-decoration:none}.link:hover{text-decoration:underline}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg-soft);color:var(--tx-body);white-space:nowrap}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge.ok{color:var(--ok);background:var(--ok-soft);border-color:var(--ok-border)}
+.badge.warn{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.badge.sub{color:var(--sub-tx);background:var(--sub-soft);border-color:transparent}
+.badge.con{color:var(--con-tx);background:var(--con-soft);border-color:transparent}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--tx-body)}
+.inp,.sel{border:1px solid var(--sel-border);border-radius:10px;padding:8px 12px;background:var(--bg-card);min-height:40px}
+.inp:focus,.sel:focus{outline:2px solid var(--brand-accent);outline-offset:0;border-color:transparent}
+.inp[aria-invalid=true]{border-color:var(--brand-accent);background:var(--danger-soft)}
+.hint{font-size:12px;color:var(--tx-2)}.err{font-size:12px;color:var(--brand-accent);font-weight:600}
+.sel{appearance:none;padding-right:34px;background-image:linear-gradient(45deg,transparent 50%,var(--tx-2) 50%),linear-gradient(135deg,var(--tx-2) 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;cursor:pointer}
+.period{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.period .f-aps .sel{width:190px}.period .f-anno .sel{width:100px}.period .f-mes .sel{width:150px}
+.period.compact .field label{font-size:11px;letter-spacing:.3px}.period.compact .sel{min-height:34px;padding-top:5px;padding-bottom:5px}
+.band{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:16px 20px}
+.band .ctx small{display:block;font-size:12px;color:var(--tx-2);font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+.band .ctx h2{font-size:22px;font-weight:700}
+.toast{position:fixed;right:24px;bottom:24px;background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-border);border-radius:10px;padding:10px 16px;font-weight:600;box-shadow:0 10px 25px -10px rgba(0,0,0,.3);z-index:50}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sp{flex:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1100px){.app{grid-template-columns:1fr}.sb{display:none}}
+
+.split{display:grid;grid-template-columns:1fr 400px;gap:16px;align-items:start}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.ch h2{font-size:16px}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;font-weight:600;color:var(--tx-2);text-align:left;padding:10px 20px;border-bottom:1px solid var(--border)}
+td{padding:16px 20px;border-bottom:1px solid var(--border-soft);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+.code{font-weight:700;color:var(--tx);font-size:15px;display:block}.d{font-size:12.5px;color:var(--tx-2)}
+.val{font-size:17px;font-weight:600;color:var(--tx);white-space:nowrap}
+.val{display:inline-grid;grid-template-columns:120px 170px}.val .ip{text-align:right}.val .dp{text-align:left;color:var(--tx-body)}
+th:first-child{width:36%}
+.r{text-align:right}.c{text-align:center}
+.dec{font-size:12.5px;color:var(--tx-2)}
+.ed{display:flex;gap:8px;align-items:flex-start}.ed .field{flex:1}.ed .inp{width:100%}
+.emp{padding:40px 20px;text-align:center}.emp h3{font-size:16px}.emp p{margin:4px 0 0}
+.side{display:flex;flex-direction:column;gap:16px;position:sticky;top:16px}
+.fp>header{padding:16px 20px;border-bottom:1px solid var(--border)}.fp h3{font-size:15px}
+.fp form{padding:14px 20px 18px;display:grid;gap:12px}
+.fp fieldset{border:0;padding:0;margin:0;display:grid;gap:12px}.fp fieldset:disabled{opacity:.55}
+.lock{margin:14px 20px 0;padding:10px 12px;border-radius:8px;background:var(--bg-soft);border:1px solid var(--border);font-size:13px}
+.help{padding:16px 20px}.help h3{font-size:14px;margin-bottom:8px}.help ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px}
+</style></head><body><div class="app">
+<nav class="sb" aria-label="Menú principal"><div class="logo"><b>VEOLIA</b><small>VEO-REGULATOR</small></div>
+<a href="#">⌂ Inicio</a><h6>OPERACIÓN</h6><a href="#" class="open" aria-expanded="true">▣ Suministros</a><div class="sub"><a href="#" class="on" aria-current="page">Índices CRA</a><a href="#">Subsidios y Contribuciones</a><a href="#">Ajuste Productividad</a><a href="#">Descuentos en Costos</a><a href="#">Verificación</a><a href="#">Activar Aprovechamiento</a><a href="#">Costo de Poda</a><a href="#">Cargue Productividad</a></div><a href="#">⚙ Procesos</a>
+<h6>INFORMES</h6><a href="#">▤ Informes Gerenciales</a><a href="#">◎ Sui</a><h6>SISTEMA</h6><a href="#">⚒ Configuración</a>
+<div class="me"><span class="av">S</span><div>soporte<small>Sesión activa</small></div></div></nav>
+<main><header class="top"><div><div class="crumb">Suministros</div><h1>Índices CRA</h1></div><div class="top-r"><form class="period compact" aria-label="Período de consulta" onsubmit="return false">
+
+<div class="field f-anno"><label for="p-anno">Año</label><select id="p-anno" class="sel" data-p="anno"><option>2024</option><option>2025</option><option selected>2026</option><option>2027</option></select></div>
+<div class="field f-mes"><label for="p-mes">Mes</label><select id="p-mes" class="sel" data-p="mes"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option selected>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select></div></form><button class="tbtn" type="button" data-tema aria-pressed="false">Modo claro / oscuro</button></div></header>
+<div class="content"><div class="split"><section class="card" aria-labelledby="tt"><div class="ch"><div><h2 id="tt">Índices del período</h2><span class="muted" data-periodo="sin-aps"></span></div><span class="badge" data-count></span></div><div data-tb aria-live="polite"></div></section>
+<div class="side"><section class="card fp" aria-labelledby="ft"><header><h3 id="ft">Agregar índices del período</h3><span class="muted" data-periodo="sin-aps"></span></header><p class="lock" data-lock></p>
+<form novalidate data-addf><fieldset data-fs><div class="field"><label for="n-IPC">IPC</label><input id="n-IPC" class="inp num" inputmode="decimal" aria-describedby="ne-IPC"><span class="err" id="ne-IPC" hidden></span></div><div class="field"><label for="n-SMLV">SMLV</label><input id="n-SMLV" class="inp num" inputmode="decimal" aria-describedby="ne-SMLV"><span class="err" id="ne-SMLV" hidden></span></div><div class="field"><label for="n-IPCC">IPCC</label><input id="n-IPCC" class="inp num" inputmode="decimal" aria-describedby="ne-IPCC"><span class="err" id="ne-IPCC" hidden></span></div><div class="field"><label for="n-IOEXP">IOEXP</label><input id="n-IOEXP" class="inp num" inputmode="decimal" aria-describedby="ne-IOEXP"><span class="err" id="ne-IOEXP" hidden></span></div>
+<button class="btn btn-primary" type="submit">Guardar índices</button></fieldset></form></section>
+<section class="card help" aria-labelledby="ht"><h3 id="ht">Formato de los valores</h3><ul><li>Coma decimal y punto de miles: 1.750.905 · 160,42</li><li>Hasta 15 decimales; se guardan tal como se escriben.</li><li>No se redondea al mostrar: la tabla alinea los valores por la coma.</li></ul></section></div></div></div></main></div>
+<div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const tema=$('[data-tema]');tema.addEventListener('click',()=>{const d=document.documentElement.classList.toggle('app-dark');tema.setAttribute('aria-pressed',d)});
+function periodoTxt(conAps){const a=$('[data-p=aps]'),m=$('[data-p=mes]').value,y=$('[data-p=anno]').value;return (a&&conAps!==false?a.value+' · ':'')+m+' '+y}
+function pintarPeriodo(){$$('[data-periodo]').forEach(e=>e.textContent=periodoTxt(e.dataset.periodo!=='sin-aps'))}
+$$('[data-p]').forEach(s=>s.addEventListener('change',()=>{pintarPeriodo();if(typeof alCambiarPeriodo==='function')alCambiarPeriodo()}));
+let tt;function toast(msg){const t=$('[data-toast]');t.hidden=false;t.textContent='✓ '+msg;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+const nf=d=>new Intl.NumberFormat('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+function fmt(n,d=2){return nf(d).format(n)}
+// Acepta "1.234,56" o "1234,56"; devuelve null si no es número válido.
+function parseCO(s){s=String(s).trim().replace(/\s/g,'');if(!s)return null;if(!/^[-+]?[\d.]*,?\d*$/.test(s))return null;const n=Number(s.replace(/\./g,'').replace(',','.'));return isNaN(n)?null:n}
+function decs(s){const p=String(s).split(',');return p[1]?p[1].length:0}
+const IX=[{c:'IPC',d:'Índice de precios al consumidor',v:'160,42'},{c:'SMLV',d:'Salario mínimo legal vigente (pesos)',v:'1.750.905'},
+{c:'IPCC',d:'Índice de costos de la construcción',v:'297,796882338083'},{c:'IOEXP',d:'Índice de obras de explanación',v:'226,682345685847'}];
+const VACIOS=['Octubre','Noviembre','Diciembre'];let lleno=true;
+function norm(s){s=String(s).trim().replace(/\s/g,'');if(!/^(\d{1,3}(\.\d{3})+|\d+)(,\d{1,15})?$/.test(s))return null;const [i,d]=s.split(',');const g=i.replace(/\./g,'').replace(/^0+(?=\d)/,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.');return d?g+','+d:g}
+const nDec=s=>(s.split(',')[1]||'').length;
+const ERR='Número positivo con coma decimal y hasta 15 decimales. Ej.: 297,796882338083';
+function alCambiarPeriodo(){lleno=!VACIOS.includes($('[data-p=mes]').value);if(typeof pintar==='function')pintar()}
+let ed=null;
+function celda(v){const [i,d]=v.split(',');return '<span class="val num"><span class="ip">'+i+'</span><span class="dp">'+(d?','+d:'')+'</span></span>'}
+function pintar(foco){const tb=$('[data-tb]');$('[data-count]').textContent=lleno?'4 de 4 registrados':'0 de 4 registrados';
+if(!lleno){tb.innerHTML='<div class="emp"><h3>Sin índices para '+periodoTxt(false)+'</h3><p class="muted">Agrégalos con el formulario de la derecha.</p></div>'}
+else{tb.innerHTML='<table><thead><tr><th scope="col">Índice</th><th scope="col">Valor</th><th scope="col" class="c">Decimales</th><th scope="col" class="r"><span class="sr">Acciones</span></th></tr></thead><tbody>'+IX.map(x=>ed===x.c?
+'<tr><td><span class="code">'+x.c+'</span><span class="d">'+x.d+'</span></td><td colspan="3"><form class="ed" data-ed="'+x.c+'" novalidate><div class="field"><label class="sr" for="i-'+x.c+'">Nuevo valor de '+x.c+'</label><input id="i-'+x.c+'" class="inp num" inputmode="decimal" value="'+x.v+'" aria-describedby="e-'+x.c+'"><span class="err" id="e-'+x.c+'" hidden></span></div><button class="btn btn-ghost btn-sm" type="button" data-cancel>Cancelar</button><button class="btn btn-primary btn-sm" type="submit">Guardar</button></form></td></tr>'
+:'<tr><td><span class="code">'+x.c+'</span><span class="d">'+x.d+'</span></td><td>'+celda(x.v)+'</td><td class="c dec">'+nDec(x.v)+'</td><td class="r"><button class="icon-btn" type="button" data-edit="'+x.c+'" aria-label="Editar '+x.c+'" title="Editar">✎</button></td></tr>').join('')+'</tbody></table>'}
+$('[data-fs]').disabled=lleno;$('[data-lock]').hidden=!lleno;$('[data-lock]').textContent='Este período ya tiene los 4 índices. Para corregir uno, usa ✎ en la tabla.';pintarPeriodo();
+if(foco){const f=$(foco);if(f)f.focus()}}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.edit){ed=b.dataset.edit;pintar('#i-'+ed)}else if(b.matches('[data-cancel]')){const p=ed;ed=null;pintar('[data-edit="'+p+'"]')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ed){const p=ed;ed=null;pintar('[data-edit="'+p+'"]')}});
+document.addEventListener('submit',e=>{e.preventDefault();const f=e.target;
+if(f.dataset.ed){const i=$('.inp',f),er=$('.err',f),v=norm(i.value);if(!v){i.setAttribute('aria-invalid','true');er.hidden=false;er.textContent=ERR;i.focus();return}const x=IX.find(k=>k.c===f.dataset.ed);x.v=v;ed=null;pintar('[data-edit="'+x.c+'"]');toast(x.c+' actualizado: '+v)}
+else{let ok=true;IX.forEach(x=>{const i=$('#n-'+x.c),er=$('#ne-'+x.c),v=norm(i.value);i.setAttribute('aria-invalid',!v);er.hidden=!!v;er.textContent=v?'':(i.value.trim()?ERR:'Escribe el valor de '+x.c);if(!v&&ok){ok=false;i.focus()}});if(!ok)return;
+IX.forEach(x=>{x.v=norm($('#n-'+x.c).value);$('#n-'+x.c).value=''});lleno=true;pintar('[data-edit="IPC"]');toast('Índices de '+periodoTxt(false)+' guardados')}});
+pintar();
+pintarPeriodo();</script></body></html>

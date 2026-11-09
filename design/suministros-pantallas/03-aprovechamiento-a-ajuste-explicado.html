@@ -1,0 +1,135 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Activar Aprovechamiento · Suministros</title>
+<style>
+:root{--bg-app:#f1f5f9;--bg-card:#fff;--bg-soft:#f8fafc;--border:#e2e8f0;--border-soft:#f1f5f9;--tx:#0f172a;--tx-body:#334155;--tx-2:#64748b;
+--brand-strong:#780200;--brand-accent:#f10400;--danger-soft:#fff2f2;--danger-border:#ffcdcc;--ok:#15803d;--ok-soft:#f0fdf4;--ok-border:#bbf7d0;
+--warn:#8a5200;--warn-soft:#fff1d6;--sel-border:#cbd5e1;
+--sub-tx:#1d4ed8;--sub-bg:rgb(152,190,243);--sub-soft:#edf5ff;--con-tx:#8a5200;--con-bg:rgb(236,167,16);--con-soft:#fff1d6;
+--sh-bg:#0b1f3a;--sh-hover:#13294a;--sh-active:#1b3459;--sh-border:rgba(255,255,255,.08);--sh-tx:#dbe4f0;--sh-strong:#fff;--sh-muted:#8a9bb5;--sh-dot:#5f7392;--sh-accent:#f10400}
+html.app-dark{--bg-app:#0f172a;--bg-card:#1e293b;--bg-soft:#172033;--border:#334155;--border-soft:#1e293b;--tx:#f1f5f9;--tx-body:#cbd5e1;--tx-2:#94a3b8;
+--brand-strong:#ffa5a3;--brand-accent:#ff2a26;--danger-soft:#3f1212;--danger-border:#5c2323;--ok:#4ade80;--ok-soft:#14291d;--ok-border:#1e4a2f;--warn:#fbbf24;--warn-soft:#3a2a0b;--sel-border:#52525b;
+--sub-tx:#93c5fd;--sub-bg:rgb(96,140,210);--sub-soft:#172a46;--con-tx:#fbbf24;--con-bg:rgb(200,140,14);--con-soft:#3a2a0b;--sh-border:rgba(255,255,255,.1)}
+[hidden]{display:none!important}
+*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-app);color:var(--tx-body);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+h2,h3,h4{color:var(--tx);margin:0}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sb{background:var(--sh-bg);color:var(--sh-tx);display:flex;flex-direction:column;padding:18px 12px}
+.sb .logo{padding:4px 8px 18px}.sb .logo b{color:#ff4b47;font-size:20px;letter-spacing:.5px}.sb .logo small{display:block;color:var(--sh-muted);font-size:11px;letter-spacing:1px}
+.sb h6{margin:14px 10px 6px;font-size:10px;letter-spacing:1.4px;color:var(--sh-muted);font-weight:700}
+.sb a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--sh-tx);text-decoration:none;font-size:13.5px}
+.sb a:hover{background:var(--sh-hover)}
+.sb a.open{color:var(--sh-strong);font-weight:600}.sb a.open::after{content:"▾";margin-left:auto;color:var(--sh-muted)}
+.sb a.on{background:var(--sh-active);color:var(--sh-strong);font-weight:700;box-shadow:inset 3px 0 0 var(--sh-accent)}
+.sb .sub{margin:2px 0 6px 14px;border-left:1px solid var(--sh-border);padding-left:4px}.sb .sub a{font-size:12.5px;padding:5px 10px}.sb .sub a::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--sh-dot);flex-shrink:0}
+.sb .sub a.on::before{background:var(--sh-accent)}
+.sb .me{margin-top:auto;display:flex;gap:10px;align-items:center;background:var(--sh-hover);border-radius:12px;padding:10px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--sh-active);color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.sb .me small{display:block;color:var(--sh-muted);font-size:11px}
+main{display:flex;flex-direction:column;min-width:0}
+.top{min-height:64px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 24px}
+.crumb{font-size:12px;color:var(--tx-2)}.top h1{margin:0;font-size:18px;font-weight:600;color:var(--tx)}
+.top-r{display:flex;align-items:center;gap:12px}
+.tbtn{border:1px solid var(--border);background:var(--bg-card);border-radius:10px;padding:7px 12px;cursor:pointer;font-size:13px}
+.tbtn:hover{background:var(--bg-soft)}
+.content{padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.muted{color:var(--tx-2)}.num{font-variant-numeric:tabular-nums}
+.btn{border:0;border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:40px;text-decoration:none}
+.btn-primary{background:#c40300;color:#fff}.btn-primary:hover{background:#9c0300}.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:var(--bg-card);border:1px solid var(--sel-border)}.btn-ghost:hover{background:var(--bg-soft)}.btn-ghost:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{padding:6px 12px;min-height:34px;font-size:13px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--sel-border);background:var(--bg-card);cursor:pointer;display:inline-grid;place-items:center}
+.icon-btn:hover{background:var(--bg-soft)}
+.link{color:var(--brand-accent);font-weight:600;text-decoration:none}.link:hover{text-decoration:underline}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg-soft);color:var(--tx-body);white-space:nowrap}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge.ok{color:var(--ok);background:var(--ok-soft);border-color:var(--ok-border)}
+.badge.warn{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.badge.sub{color:var(--sub-tx);background:var(--sub-soft);border-color:transparent}
+.badge.con{color:var(--con-tx);background:var(--con-soft);border-color:transparent}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--tx-body)}
+.inp,.sel{border:1px solid var(--sel-border);border-radius:10px;padding:8px 12px;background:var(--bg-card);min-height:40px}
+.inp:focus,.sel:focus{outline:2px solid var(--brand-accent);outline-offset:0;border-color:transparent}
+.inp[aria-invalid=true]{border-color:var(--brand-accent);background:var(--danger-soft)}
+.hint{font-size:12px;color:var(--tx-2)}.err{font-size:12px;color:var(--brand-accent);font-weight:600}
+.sel{appearance:none;padding-right:34px;background-image:linear-gradient(45deg,transparent 50%,var(--tx-2) 50%),linear-gradient(135deg,var(--tx-2) 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;cursor:pointer}
+.period{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.period .f-aps .sel{width:190px}.period .f-anno .sel{width:100px}.period .f-mes .sel{width:150px}
+.period.compact .field label{font-size:11px;letter-spacing:.3px}.period.compact .sel{min-height:34px;padding-top:5px;padding-bottom:5px}
+.band{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:16px 20px}
+.band .ctx small{display:block;font-size:12px;color:var(--tx-2);font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+.band .ctx h2{font-size:22px;font-weight:700}
+.toast{position:fixed;right:24px;bottom:24px;background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-border);border-radius:10px;padding:10px 16px;font-weight:600;box-shadow:0 10px 25px -10px rgba(0,0,0,.3);z-index:50}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sp{flex:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1100px){.app{grid-template-columns:1fr}.sb{display:none}}
+
+.split{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+.set>header{padding:20px 24px;border-bottom:1px solid var(--border)}
+.set h2{font-size:18px}.set header p{margin:6px 0 0;max-width:70ch}
+.state{display:flex;align-items:center;gap:18px;padding:22px 24px;border-bottom:1px solid var(--border)}
+.sw{width:64px;height:36px;border-radius:999px;border:0;background:var(--sel-border);position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
+.sw::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.sw[aria-checked=true]{background:#c40300}.sw[aria-checked=true]::after{transform:translateX(28px)}
+.state b{display:block;font-size:20px;color:var(--tx)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:20px 24px}
+.cmp>div{border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative}
+.cmp>div.cur{border-color:#c40300;box-shadow:inset 0 0 0 1px #c40300}
+.cmp h3{font-size:14px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.cmp ul{margin:8px 0 0;padding-left:18px;display:grid;gap:4px}
+.bar{display:flex;align-items:center;gap:10px;padding:14px 24px;border-top:1px solid var(--border);background:var(--bg-soft);border-radius:0 0 12px 12px}
+.bar .pend{color:var(--warn);font-weight:600}
+.side{display:flex;flex-direction:column;gap:16px}
+.side section{padding:16px 18px}.side h3{font-size:14px;margin-bottom:10px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font-size:13.5px}.kv dt{color:var(--tx-2)}.kv dd{margin:0;color:var(--tx);font-weight:600;text-align:right}
+.hist{list-style:none;margin:0;padding:0}.hist li{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border-soft);font-size:13.5px}
+.hist li:first-child{border-top:0}
+</style></head><body><div class="app">
+<nav class="sb" aria-label="Menú principal"><div class="logo"><b>VEOLIA</b><small>VEO-REGULATOR</small></div>
+<a href="#">⌂ Inicio</a><h6>OPERACIÓN</h6><a href="#" class="open" aria-expanded="true">▣ Suministros</a><div class="sub"><a href="#">Índices CRA</a><a href="#">Subsidios y Contribuciones</a><a href="#">Ajuste Productividad</a><a href="#">Descuentos en Costos</a><a href="#">Verificación</a><a href="#" class="on" aria-current="page">Activar Aprovechamiento</a><a href="#">Costo de Poda</a><a href="#">Cargue Productividad</a></div><a href="#">⚙ Procesos</a>
+<h6>INFORMES</h6><a href="#">▤ Informes Gerenciales</a><a href="#">◎ Sui</a><h6>SISTEMA</h6><a href="#">⚒ Configuración</a>
+<div class="me"><span class="av">S</span><div>soporte<small>Sesión activa</small></div></div></nav>
+<main><header class="top"><div><div class="crumb">Suministros</div><h1>Activar Aprovechamiento</h1></div><div class="top-r"><button class="tbtn" type="button" data-tema aria-pressed="false">Modo claro / oscuro</button></div></header>
+<div class="content"><section class="card band" aria-label="Período"><div class="ctx"><small>Período consultado</small><h2 data-periodo>Cartagena · Septiembre 2026</h2></div><form class="period" aria-label="Período de consulta" onsubmit="return false">
+<div class="field f-aps"><label for="p-aps">APS</label><select id="p-aps" class="sel" data-p="aps"><option>Barrancabermeja</option><option>Bucaramanga</option><option selected>Cartagena</option><option>Cucuta Unificado</option><option>Floridablanca</option><option>Girón</option><option>Palmira</option><option>Piedecuesta</option></select></div>
+<div class="field f-anno"><label for="p-anno">Año</label><select id="p-anno" class="sel" data-p="anno"><option>2024</option><option>2025</option><option selected>2026</option><option>2027</option></select></div>
+<div class="field f-mes"><label for="p-mes">Mes</label><select id="p-mes" class="sel" data-p="mes"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option selected>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select></div></form></section>
+<div class="split"><section class="card set" aria-labelledby="h">
+<header><h2 id="h">Cobro de aprovechamiento sin tener QA</h2><p>Define si la tarifa cobra el componente de aprovechamiento aunque no haya toneladas aprovechadas (QA) reportadas en el período.</p></header>
+<div class="state"><button class="sw" type="button" role="switch" aria-checked="false" aria-labelledby="h" aria-describedby="st" data-sw></button>
+<div id="st"><b data-estado>Desactivado</b><span class="muted" data-sub>Vigente para <span data-periodo></span></span></div></div>
+<div class="cmp"><div data-op="off"><h3>Desactivado <span class="badge" data-tag="off">Vigente</span></h3><ul><li>Solo se cobra aprovechamiento cuando el período tiene toneladas aprovechadas (QA) reportadas.</li><li>Si no hay QA reportado, la tarifa no incluye cobro de aprovechamiento.</li></ul></div>
+<div data-op="on"><h3>Activado <span class="badge warn" data-tag="on" hidden>Vigente</span></h3><ul><li>Se cobra aprovechamiento aunque el período no tenga QA reportado.</li><li>Afecta la tarifa facturada de este APS y mes: confirma el soporte antes de activarlo.</li></ul></div></div>
+<div class="bar"><span data-msg aria-live="polite" class="muted">Sin cambios</span><span class="sp"></span><button class="btn btn-ghost" type="button" data-desc disabled>Descartar</button><button class="btn btn-primary" type="button" data-ok disabled>✓ Aceptar</button></div></section>
+<div class="side"><section class="card" aria-labelledby="al"><h3 id="al">Alcance del cambio</h3><dl class="kv"><dt>APS</dt><dd data-k-aps>Cartagena</dd><dt>Período</dt><dd data-k-per>Septiembre 2026</dd><dt>Otros meses</dt><dd>No se modifican</dd></dl></section>
+<section class="card" aria-labelledby="hm"><h3 id="hm">Meses anteriores · 2026</h3><ul class="hist">
+<li>Agosto<span class="badge">Desactivado</span></li><li>Julio<span class="badge">Desactivado</span></li><li>Junio<span class="badge warn">Activado</span></li><li>Mayo<span class="badge">Desactivado</span></li></ul>
+<p class="muted" style="margin:8px 0 0;font-size:12.5px">Sirve para verificar si el cambio es coherente con meses anteriores.</p></section></div></div></div></main></div>
+<div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const tema=$('[data-tema]');tema.addEventListener('click',()=>{const d=document.documentElement.classList.toggle('app-dark');tema.setAttribute('aria-pressed',d)});
+function periodoTxt(conAps){const a=$('[data-p=aps]'),m=$('[data-p=mes]').value,y=$('[data-p=anno]').value;return (a&&conAps!==false?a.value+' · ':'')+m+' '+y}
+function pintarPeriodo(){$$('[data-periodo]').forEach(e=>e.textContent=periodoTxt(e.dataset.periodo!=='sin-aps'))}
+$$('[data-p]').forEach(s=>s.addEventListener('change',()=>{pintarPeriodo();if(typeof alCambiarPeriodo==='function')alCambiarPeriodo()}));
+let tt;function toast(msg){const t=$('[data-toast]');t.hidden=false;t.textContent='✓ '+msg;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+const nf=d=>new Intl.NumberFormat('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+function fmt(n,d=2){return nf(d).format(n)}
+// Acepta "1.234,56" o "1234,56"; devuelve null si no es número válido.
+function parseCO(s){s=String(s).trim().replace(/\s/g,'');if(!s)return null;if(!/^[-+]?[\d.]*,?\d*$/.test(s))return null;const n=Number(s.replace(/\./g,'').replace(',','.'));return isNaN(n)?null:n}
+function decs(s){const p=String(s).split(',');return p[1]?p[1].length:0}
+let vig=false,sel=false;
+function pintar(){const sw=$('[data-sw]');sw.setAttribute('aria-checked',sel);$('[data-estado]').textContent=sel?'Activado':'Desactivado';
+$('[data-sub]').innerHTML=sel===vig?'Vigente para <span data-periodo></span>':'Sin aplicar · hoy está '+(vig?'activado':'desactivado');pintarPeriodo();
+$$('[data-op]').forEach(d=>d.classList.toggle('cur',(d.dataset.op==='on')===sel));$('[data-tag=off]').hidden=vig;$('[data-tag=on]').hidden=!vig;
+const c=sel!==vig;const m=$('[data-msg]');m.className=c?'pend':'muted';m.textContent=c?'Cambio pendiente: '+(vig?'Activado':'Desactivado')+' → '+(sel?'Activado':'Desactivado'):'Sin cambios';
+$('[data-ok]').disabled=!c;$('[data-desc]').disabled=!c}
+$('[data-sw]').addEventListener('click',()=>{sel=!sel;pintar()});
+$('[data-desc]').addEventListener('click',()=>{sel=vig;pintar();$('[data-sw]').focus()});
+$('[data-ok]').addEventListener('click',()=>{vig=sel;pintar();toast('Cobro sin QA '+(vig?'activado':'desactivado')+' para '+periodoTxt());$('[data-sw]').focus()});
+function alCambiarPeriodo(){$('[data-k-aps]').textContent=$('[data-p=aps]').value;$('[data-k-per]').textContent=$('[data-p=mes]').value+' '+$('[data-p=anno]').value}
+pintar();
+pintarPeriodo();</script></body></html>

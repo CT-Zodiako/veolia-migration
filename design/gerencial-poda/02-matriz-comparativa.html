@@ -1,0 +1,245 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=1440"><title>Costo de Poda · Matriz comparativa</title>
+<style>
+:root{--bg-app:#f1f5f9;--bg-card:#fff;--bg-soft:#f8fafc;--border:#e2e8f0;--border-soft:#f1f5f9;--tx:#0f172a;--tx-body:#334155;--tx-2:#64748b;
+--brand-strong:#780200;--brand-medium:#c40300;--brand-accent:#f10400;--danger-soft:#fff2f2;--danger-border:#ffcdcc;--ok:#15803d;--ok-soft:#f0fdf4;--ok-border:#bbf7d0;
+--warn:#8a5200;--warn-soft:#fff1d6;--warn-border:#f2c879;--sel-border:#cbd5e1;--row-line:#eef2f6;
+--sh-bg:#0b1f3a;--sh-hover:#13294a;--sh-active:#1b3459;--sh-border:rgba(255,255,255,.08);--sh-tx:#dbe4f0;--sh-strong:#fff;--sh-muted:#8a9bb5;--sh-dot:#5f7392;--sh-accent:#f10400}
+html.app-dark{--bg-app:#0f172a;--bg-card:#1e293b;--bg-soft:#172033;--border:#334155;--border-soft:#1e293b;--tx:#f1f5f9;--tx-body:#cbd5e1;--tx-2:#94a3b8;
+--brand-strong:#ffa5a3;--brand-medium:#ff6966;--brand-accent:#ff2a26;--danger-soft:#3f1212;--danger-border:#5c2323;--ok:#4ade80;--ok-soft:#14291d;--ok-border:#1e4a2f;--warn:#fbbf24;--warn-soft:#3a2a0b;--warn-border:#6b4e12;--sel-border:#52525b;--row-line:#273449;--sh-border:rgba(255,255,255,.1)}
+*{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-app);color:var(--tx-body);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sb{background:var(--sh-bg);color:var(--sh-tx);display:flex;flex-direction:column;padding:18px 12px}
+.sb .logo{display:flex;align-items:center;gap:8px;padding:4px 8px 18px}.sb .logo b{color:#ff4b47;font-size:20px;letter-spacing:.5px}.sb .logo small{display:block;color:var(--sh-muted);font-size:11px;letter-spacing:1px}
+.sb h6{margin:14px 10px 6px;font-size:10px;letter-spacing:1.4px;color:var(--sh-muted);font-weight:700}
+.sb a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--sh-tx);text-decoration:none;font-size:13.5px}
+.sb a:hover{background:var(--sh-hover)}
+.sb a.on{background:var(--sh-active);color:var(--sh-strong);font-weight:700;box-shadow:inset 3px 0 0 var(--sh-accent)}
+.sb a.open{color:var(--sh-strong);font-weight:600}
+.sb .sub{margin:2px 0 6px 18px}.sb .sub a{font-size:12.5px;padding:6px 10px}.sb .sub a::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--sh-dot)}
+.sb .sub a.on::before{background:var(--sh-accent)}
+.sb .me{margin-top:auto;display:flex;gap:10px;align-items:center;background:var(--sh-hover);border-radius:12px;padding:10px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--sh-active);color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.sb .me small{display:block;color:var(--sh-muted);font-size:11px}
+main{display:flex;flex-direction:column;min-width:0}
+.top{height:64px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.crumb{font-size:12px;color:var(--tx-2)}.top h1{margin:0;font-size:18px;font-weight:700;color:var(--tx)}
+.topr{display:flex;gap:8px;align-items:center}
+.tbtn{border:1px solid var(--border);background:var(--bg-card);border-radius:10px;padding:7px 12px;cursor:pointer;font-size:13px}
+.sys{font-weight:700;font-size:12.5px;letter-spacing:.3px;color:var(--tx)}
+.content{padding:20px 24px 32px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.muted{color:var(--tx-2)}
+.btn{border:0;border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#f10400;color:#fff}.btn-primary:hover{background:#c40300}
+.btn-ghost{background:transparent;border:1px solid var(--sel-border)}.btn-ghost:hover{background:var(--bg-soft)}
+.btn-link{background:transparent;border:0;color:var(--brand-strong);font-weight:600;cursor:pointer;padding:6px 8px;border-radius:8px;font-size:13px}
+.btn-link:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* parámetros */
+.params{display:flex;align-items:flex-end;gap:16px;padding:16px 20px;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:4px;border:0;margin:0;padding:0;min-width:0}
+.fg>label,.fg .lbl{font-size:13px;font-weight:600;color:var(--tx-body)}
+.sel{appearance:none;border:1px solid var(--sel-border);border-radius:10px;background:var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center;padding:8px 34px 8px 12px;cursor:pointer}
+#aps{min-width:200px}.rng .sel{min-width:130px}
+.sel[aria-invalid=true]{border-color:var(--brand-accent)}
+.rng{display:flex;align-items:center;gap:8px}
+.chips{display:flex;gap:6px}
+.chk{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--sel-border);border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer;background:var(--bg-card)}
+.chk:has(input:checked){background:var(--danger-soft);border-color:#c40300;color:var(--tx);font-weight:600}
+.chk input{accent-color:#c40300;margin:0}
+.chk:has(input:focus-visible){outline:2px solid var(--brand-accent);outline-offset:2px}
+.params .sp{flex:1}
+.err{color:var(--brand-accent);font-size:12.5px;margin:0;width:100%}
+
+/* matriz */
+.mh{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.mh h2{margin:0;font-size:15px;font-weight:700;color:var(--tx)}
+.mh .sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill-n{color:var(--tx-body);background:var(--bg-soft);border:1px solid var(--border)}
+.pill-warn{color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-border)}
+.seg{display:inline-flex;border:1px solid var(--sel-border);border-radius:10px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:4px 10px;font-size:12.5px;cursor:pointer;color:var(--tx-2)}
+.seg button[aria-pressed=true]{background:var(--sh-bg);color:#fff;font-weight:600}
+html.app-dark .seg button[aria-pressed=true]{background:#dbe4f0;color:#0b1f3a}
+.swl{display:inline-flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.sw{position:relative;width:34px;height:20px;flex-shrink:0}.sw input{opacity:0;position:absolute;inset:0;margin:0;cursor:pointer;width:100%;height:100%;z-index:1}
+.sw span{position:absolute;inset:0;border-radius:999px;background:var(--sel-border);transition:background .15s}
+.sw span::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw input:checked+span{background:#c40300}.sw input:checked+span::after{transform:translateX(14px)}
+.sw input:focus-visible+span{outline:2px solid var(--brand-accent);outline-offset:2px}
+.unit{padding:8px 20px 0;font-size:12px}
+.mw{overflow-x:auto;margin:8px 0 0;scroll-behavior:smooth}
+table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%}
+th,td{white-space:nowrap}
+thead th{position:sticky;top:0;background:var(--bg-soft);font-size:12px;font-weight:600;color:var(--tx-2);padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);border-top:1px solid var(--border)}
+thead th .y{display:block;font-weight:400;font-size:11px}
+thead th.hd{color:var(--warn)}
+.c0{position:sticky;left:0;z-index:1;text-align:left!important;background:var(--bg-card);min-width:230px;border-right:1px solid var(--border)}
+thead .c0{background:var(--bg-soft);z-index:2}
+.cz{position:sticky;right:0;z-index:1;background:var(--bg-soft);min-width:170px;border-left:1px solid var(--border);font-weight:600}
+thead .cz{z-index:2}
+tbody td,tbody th{padding:6px 12px;border-bottom:1px solid var(--row-line);text-align:right;font-variant-numeric:tabular-nums}
+tbody th.c0{font-weight:400;color:var(--tx-body);padding-left:28px}
+tr.grp th,tr.grp td{background:var(--bg-soft);border-bottom:1px solid var(--border)}
+tr.grp th{text-align:left;padding:8px 12px 6px 14px;font-size:13px;color:var(--tx);font-weight:700;white-space:normal;line-height:1.3;max-width:230px}
+tr.grp th small{display:block;font-weight:400;color:var(--tx-2);font-size:12px;margin:2px 0 0 16px}
+thead th.c0 .y{color:var(--tx-2)}
+tr.grp th .mk{display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--sh-bg);margin-right:8px;vertical-align:1px}
+html.app-dark tr.grp th .mk{background:#dbe4f0}
+tr.grp.v th .mk{background:#c40300;border-radius:50%}
+tr.fact td{color:var(--tx);font-weight:600}
+tr.tot td,tr.tot th{background:var(--bg-soft)}
+tr.tot.fact td,tr.tot.fact th{border-bottom:1px solid var(--border)}
+td.na{color:var(--tx-2);background-image:repeating-linear-gradient(135deg,transparent 0 6px,var(--row-line) 6px 7px)}
+td.dif{background:var(--warn-soft);color:var(--warn);font-weight:700;box-shadow:inset 0 0 0 1px var(--warn-border)}
+td.z{color:var(--tx-2)}
+td .cell{border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;padding:2px 6px;margin:-2px -6px;border-radius:6px;font-variant-numeric:tabular-nums}
+td .cell:hover{background:var(--bg-soft);text-decoration:underline}
+td .cell[aria-pressed=true]{background:var(--danger-soft);box-shadow:inset 0 0 0 1.5px #c40300;color:var(--tx)}
+.var{font-size:12px;color:var(--tx-2)}
+.legend{display:flex;gap:18px;padding:10px 20px 14px;font-size:12px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw-na{width:18px;height:12px;border:1px solid var(--border);background-image:repeating-linear-gradient(135deg,transparent 0 3px,var(--sel-border) 3px 4px)}
+.sw-dif{width:18px;height:12px;background:var(--warn-soft);box-shadow:inset 0 0 0 1px var(--warn-border)}
+.sw-sel{width:18px;height:12px;background:var(--danger-soft);box-shadow:inset 0 0 0 1.5px #c40300;border-radius:3px}
+.vacia{padding:36px 20px;text-align:center}
+.vacia b{display:block;color:var(--tx);font-size:15px}
+
+/* detalle */
+.det{display:grid;grid-template-columns:260px 1fr;gap:0}
+.det .dh{padding:16px 20px;border-right:1px solid var(--border)}
+.det .dh h2{margin:0 0 2px;font-size:12.5px;color:var(--tx-2);font-weight:600}
+.det .dh p{margin:0;color:var(--tx);font-weight:700;font-size:16px}
+.det .dh small{display:block;color:var(--tx-2);font-size:12.5px}
+.det dl{display:grid;grid-template-rows:auto auto;grid-auto-flow:column;justify-content:start;gap:4px 28px;margin:0;padding:16px 20px;align-content:center}
+.det dt{font-size:12px;color:var(--tx-2);font-weight:600}
+.det dd{margin:0;color:var(--tx);font-variant-numeric:tabular-nums;font-size:13.5px}
+.det dd.w{color:var(--warn);font-weight:700}
+.toast{position:fixed;right:24px;bottom:24px;background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-border);border-radius:10px;padding:8px 14px;font-weight:600;font-size:13px}
+</style></head><body><div class="app">
+<nav class="sb" aria-label="Menú principal"><div class="logo"><div><b>VEOLIA</b><small>VEO-REGULATOR</small></div></div>
+<a href="#">⌂ Inicio</a><h6>OPERACIÓN</h6><a href="#">▣ Suministros</a><a href="#">⚙ Procesos</a>
+<h6>INFORMES</h6><a href="#" class="open" aria-expanded="true">▤ Informes Gerenciales</a>
+<div class="sub"><a href="#">Dashboard</a><a href="#">Detallado de Costos</a><a href="#">Detallado Sub y Aportes</a><a href="#" class="on" aria-current="page">Costo de Poda</a><a href="#">Act. Descuento Costos</a></div>
+<a href="#">◎ Sui</a><h6>SISTEMA</h6><a href="#">⚒ Configuración</a>
+<div class="me"><span class="av">S</span><div>soporte<small>Sesión activa</small></div></div></nav>
+<main><header class="top"><div><div class="crumb">Informes Gerenciales</div><h1>Costo de Poda</h1></div>
+<div class="topr"><span class="tbtn sys">▦ RELIQUIDACIONES</span><button class="tbtn" type="button" id="tema" aria-pressed="false">☾ Modo oscuro</button></div></header>
+<div class="content">
+
+<section class="card params" aria-label="Parámetros del informe">
+ <div class="fg"><label for="aps">APS</label><select id="aps" class="sel"><option>Barrancabermeja</option><option>Bucaramanga</option><option selected>Cartagena</option><option>Cucuta Unificado</option><option>Floridablanca</option><option>Palmira</option></select></div>
+ <div class="fg" role="group" aria-labelledby="lgR"><span class="lbl" id="lgR">Rango de períodos</span><div class="rng"><label class="sr" for="desde">Desde</label><select id="desde" class="sel" aria-describedby="err"></select><span class="muted" aria-hidden="true">a</span><label class="sr" for="hasta">Hasta</label><select id="hasta" class="sel" aria-describedby="err"></select></div></div>
+ <div class="fg" role="group" aria-labelledby="lgE"><span class="lbl" id="lgE">Empresas</span><div class="chips" id="emps"></div></div>
+ <span class="sp"></span>
+ <button class="btn-link" type="button" id="reset">Restablecer filtros</button>
+ <p class="err" id="err" role="alert" hidden></p>
+</section>
+
+<section class="card" aria-labelledby="mT" id="matriz">
+ <div class="mh"><h2 id="mT">Techo vs. facturación por período</h2><span class="pill pill-n" id="cnt"></span><span class="pill pill-warn" id="cntDif"></span><span class="sp"></span>
+  <label class="swl"><span class="sw"><input type="checkbox" id="soloDif"><span></span></span>Solo períodos con diferencia</label>
+  <div class="seg" role="group" aria-label="Unidades de techo y facturación"><button type="button" data-u="m" aria-pressed="true">Millones</button><button type="button" data-u="p" aria-pressed="false">Pesos</button></div>
+  <button class="btn btn-primary" type="button" id="exp">⤓ Exportar</button>
+ </div>
+  <div class="mw" id="mw" tabindex="0" role="region" aria-labelledby="mT"><table id="tbl"><caption class="sr">Matriz de costo de poda, APS Cartagena: empresas y conceptos en filas, períodos en columnas.</caption><thead><tr id="thr"></tr></thead><tbody id="tb"></tbody></table></div>
+ <div class="legend muted"><span>Exportar entrega las cifras completas en pesos</span><span><i class="sw-dif" aria-hidden="true"></i>⚠ Facturación distinta del techo</span><span><i class="sw-na" aria-hidden="true"></i>— Sin registro en el período</span><span><i class="sw-sel" aria-hidden="true"></i>Registro seleccionado (clic en un valor de facturación)</span><span>Diferencia = facturación − techo, siempre en pesos</span></div>
+</section>
+
+<section class="card det" aria-labelledby="dT" aria-live="polite" id="det"></section>
+</div></main></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+const EMP={P:'PACARIBE S.A E.S.P',V:'VEOLIA ASEO CARTAGENA S.A. E.S.P.'};
+// [período, empresa, techo, facturación, tipo, fecha creación, usuario]
+const D=[
+[202606,'P',1384514187.2,1384514187.2,'MANUAL','16/06/2026','analista.costos@veolia.com'],
+[202603,'P',1380783988,1380783988,'MANUAL','16/03/2026','coord.regulatorio@veolia.com'],
+[202603,'V',2138607784.15,2138607784.14,'MANUAL','16/03/2026','coord.regulatorio@veolia.com'],
+[202601,'P',1569056734,1569056729.96,'MANUAL','21/01/2026','coord.regulatorio@veolia.com'],
+[202601,'V',2384770623,2384770623,'MANUAL','21/01/2026','coord.regulatorio@veolia.com'],
+[202512,'V',1951818405,1951818405,'MANUAL','15/12/2025','coord.regulatorio@veolia.com'],
+[202512,'P',1035210275,1035210275,'MANUAL','15/12/2025','coord.regulatorio@veolia.com'],
+[202511,'V',1966153328.5,1966153328.5,'MANUAL','18/11/2025','coord.regulatorio@veolia.com'],
+[202511,'P',1067122231.22,1067122231.22,'MANUAL','18/11/2025','coord.regulatorio@veolia.com'],
+[202509,'P',1038867942.67,1038867942.67,'MANUAL','22/09/2025','coord.regulatorio@veolia.com'],
+[202509,'V',1912405870.4,1912405870.4,'MANUAL','22/09/2025','coord.regulatorio@veolia.com'],
+[202507,'P',1021334518,1021334518,'MANUAL','17/07/2025','analista.costos@veolia.com'],
+[202507,'V',1889120454.75,1889120454.75,'MANUAL','17/07/2025','analista.costos@veolia.com'],
+[202505,'P',998452310.5,998452310.5,'MANUAL','20/05/2025','analista.costos@veolia.com'],
+[202505,'V',1874002318,1874002318,'MANUAL','20/05/2025','analista.costos@veolia.com'],
+[202503,'P',985120774,985120774,'MANUAL','18/03/2025','analista.costos@veolia.com'],
+[202503,'V',1850336902.3,1850336902.3,'MANUAL','18/03/2025','analista.costos@veolia.com']
+].map(r=>({per:r[0],emp:r[1],techo:r[2],fact:r[3],dif:Math.round((r[3]-r[2])*100)/100,tipo:r[4],fecha:r[5],usr:r[6]}));
+const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const lp=p=>MES[p%100-1]+' '+Math.floor(p/100);
+const nf2=new Intl.NumberFormat('es-CO',{minimumFractionDigits:2,maximumFractionDigits:2});
+const cop=v=>'$ '+nf2.format(v);
+const sgn=v=>(v>0?'+':v<0?'−':'')+'$ '+nf2.format(Math.abs(v));
+const pct=v=>(v>0?'▲ +':v<0?'▼ −':'')+new Intl.NumberFormat('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1}).format(Math.abs(v))+' %';
+const $=s=>document.querySelector(s);
+const PER=[...new Set(D.map(r=>r.per))].sort();
+const get=(p,e)=>D.find(r=>r.per===p&&r.emp===e);
+let unidad='m',sel={per:202603,emp:'V'};
+const fmt=v=>unidad==='m'?nf2.format(v/1e6):nf2.format(v);
+
+$('#tema').addEventListener('click',e=>{const d=document.documentElement.classList.toggle('app-dark');e.currentTarget.setAttribute('aria-pressed',d);e.currentTarget.textContent=d?'☀ Modo claro':'☾ Modo oscuro'});
+
+const opts=PER.map(p=>'<option value="'+p+'">'+lp(p)+'</option>').join('');
+$('#desde').innerHTML=opts;$('#hasta').innerHTML=opts;
+$('#emps').innerHTML=Object.keys(EMP).map(k=>'<label class="chk"><input type="checkbox" data-e="'+k+'" checked>'+EMP[k]+'</label>').join('');
+function reset(){$('#desde').value=PER[0];$('#hasta').value=PER[PER.length-1];document.querySelectorAll('[data-e]').forEach(i=>i.checked=true);$('#soloDif').checked=false;$('#aps').value='Cartagena';render(true)}
+['#desde','#hasta','#soloDif','#aps'].forEach(s=>$(s).addEventListener('change',()=>render(true)));
+$('#emps').addEventListener('change',()=>render(false));
+$('#reset').addEventListener('click',reset);
+document.querySelectorAll('[data-u]').forEach(b=>b.addEventListener('click',()=>{unidad=b.dataset.u;document.querySelectorAll('[data-u]').forEach(x=>x.setAttribute('aria-pressed',x===b));render(false)}));
+$('#exp').addEventListener('click',()=>{const t=$('#toast');t.textContent='✓ CostoPoda_Cartagena_matriz.xlsx generado (cifras completas en pesos)';t.hidden=false;setTimeout(()=>t.hidden=true,2600)});
+
+function render(scroll){
+ const d=+$('#desde').value,h=+$('#hasta').value,err=$('#err');
+ const bad=d>h;err.hidden=!bad;err.textContent=bad?'El período inicial ('+lp(d)+') es posterior al final ('+lp(h)+'). Ajuste el rango para ver la matriz.':'';
+ $('#desde').setAttribute('aria-invalid',bad);$('#hasta').setAttribute('aria-invalid',bad);
+ const es=[...document.querySelectorAll('[data-e]:checked')].map(i=>i.dataset.e);
+ const cart=$('#aps').value==='Cartagena';
+ let ps=bad||!cart?[]:PER.filter(p=>p>=d&&p<=h);
+ if($('#soloDif').checked)ps=ps.filter(p=>es.some(e=>{const r=get(p,e);return r&&r.dif}));
+ const difs=D.filter(r=>ps.includes(r.per)&&es.includes(r.emp)&&r.dif);
+ $('#cnt').textContent=ps.length+(ps.length===1?' período':' períodos')+' × '+es.length+(es.length===1?' empresa':' empresas');
+ $('#cntDif').hidden=!difs.length;$('#cntDif').textContent='⚠ '+difs.length+(difs.length===1?' diferencia':' diferencias');
+  if(!ps.length||!es.length){
+  const why=!cart?'No hay costos de poda cargados para la APS '+$('#aps').value+'.':bad?'El rango de períodos no es válido.':!es.length?'Seleccione al menos una empresa.':'Ningún período del rango tiene diferencias entre techo y facturación.';
+  $('#thr').innerHTML='';$('#tb').innerHTML='<tr><td class="vacia"><b>Sin datos para mostrar</b><span class="muted">'+why+' </span><button class="btn-link" type="button" onclick="document.getElementById(\'reset\').click()">Restablecer filtros</button></td></tr>';
+  $('#det').hidden=true;return}
+ $('#det').hidden=false;
+ $('#thr').innerHTML='<th scope="col" class="c0">Empresa / concepto<span class="y">'+(unidad==='m'?'Cifras en millones de pesos':'Cifras en pesos')+'</span></th>'+ps.map(p=>{const hd=es.some(e=>{const r=get(p,e);return r&&r.dif});return '<th scope="col"'+(hd?' class="hd" title="Hay diferencia en este período"':'')+'>'+(hd?'⚠ ':'')+MES[p%100-1]+'<span class="y">'+Math.floor(p/100)+'</span></th>'}).join('')+'<th scope="col" class="cz">Total del rango<span class="y">'+lp(ps[0])+' – '+lp(ps[ps.length-1])+'</span></th>';
+ let b='';
+ es.forEach(e=>{const rs=ps.map(p=>get(p,e));const n=rs.filter(Boolean).length;
+  b+='<tr class="grp'+(e==='V'?' v':'')+'"><th scope="rowgroup" class="c0"><span class="mk" aria-hidden="true"></span>'+EMP[e]+'<small>'+n+' de '+ps.length+' períodos con registro</small></th><td colspan="'+(ps.length+1)+'"></td></tr>';
+  const sum=k=>rs.reduce((a,r)=>a+(r?r[k]:0),0);
+  b+='<tr><th scope="row" class="c0">Costo techo</th>'+rs.map((r,i)=>r?'<td>'+fmt(r.techo)+'</td>':na(ps[i])).join('')+'<td class="cz">'+fmt(sum('techo'))+'</td></tr>';
+  b+='<tr class="fact"><th scope="row" class="c0">Costo facturación</th>'+rs.map((r,i)=>r?'<td><button type="button" class="cell" data-p="'+r.per+'" data-e="'+e+'" aria-pressed="'+(sel.per===r.per&&sel.emp===e)+'" aria-label="Ver detalle '+EMP[e]+' '+lp(r.per)+': facturación '+cop(r.fact)+'">'+fmt(r.fact)+'</button></td>':na(ps[i])).join('')+'<td class="cz">'+fmt(sum('fact'))+'</td></tr>';
+  const sd=Math.round(sum('dif')*100)/100;
+  b+='<tr><th scope="row" class="c0">Diferencia ($)</th>'+rs.map((r,i)=>!r?na(ps[i]):r.dif?'<td class="dif"><span aria-hidden="true">⚠ </span>'+sgn(r.dif)+'</td>':'<td class="z">0</td>').join('')+'<td class="cz'+(sd?'" style="color:var(--warn)':'')+'">'+(sd?sgn(sd):'0')+'</td></tr>';
+  b+='<tr><th scope="row" class="c0">Var. facturación vs. anterior</th>'+rs.map((r,i)=>{if(!r)return na(ps[i]);const prev=D.filter(x=>x.emp===e&&x.per<r.per).sort((a,c)=>c.per-a.per)[0];return prev?'<td class="var" title="vs. '+lp(prev.per)+'">'+pct((r.fact-prev.fact)/prev.fact*100)+'</td>':'<td class="var">Primer registro</td>'}).join('')+'<td class="cz var">—</td></tr>'});
+ if(es.length>1){const tot=k=>ps.map(p=>es.reduce((a,e)=>{const r=get(p,e);return a+(r?r[k]:0)},0));const inc=ps.map(p=>es.filter(e=>!get(p,e)).length);
+  const T=tot('techo'),F=tot('fact');
+  b+='<tr class="grp"><th scope="rowgroup" class="c0">Total APS Cartagena<small style="margin-left:0">suma de las empresas seleccionadas</small></th><td colspan="'+(ps.length+1)+'"></td></tr>';
+  b+='<tr class="tot"><th scope="row" class="c0">Costo techo</th>'+T.map((v,i)=>'<td'+(inc[i]?' title="Incompleto: falta una empresa"':'')+'>'+fmt(v)+(inc[i]?' <span class="pill pill-warn" style="padding:0 6px">parcial</span>':'')+'</td>').join('')+'<td class="cz">'+fmt(T.reduce((a,v)=>a+v,0))+'</td></tr>';
+  b+='<tr class="tot fact"><th scope="row" class="c0">Costo facturación</th>'+F.map((v,i)=>'<td>'+fmt(v)+(inc[i]?' <span class="pill pill-warn" style="padding:0 6px">parcial</span>':'')+'</td>').join('')+'<td class="cz">'+fmt(F.reduce((a,v)=>a+v,0))+'</td></tr>'}
+ $('#tb').innerHTML=b;
+ if(!ps.includes(sel.per)||!es.includes(sel.emp)||!get(sel.per,sel.emp)){const f=difs[0]||get(ps[ps.length-1],es.find(e=>get(ps[ps.length-1],e)))||D.find(r=>ps.includes(r.per)&&es.includes(r.emp));sel={per:f.per,emp:f.emp}}
+ document.querySelectorAll('.cell').forEach(c=>c.setAttribute('aria-pressed',+c.dataset.p===sel.per&&c.dataset.e===sel.emp));
+ detalle();
+ if(scroll){const mw=$('#mw');mw.scrollTo({left:mw.scrollWidth,behavior:'instant'})}}
+function na(p){return '<td class="na"><span aria-hidden="true">—</span><span class="sr">Sin registro en '+lp(p)+'</span></td>'}
+function detalle(){const r=get(sel.per,sel.emp);
+ $('#det').innerHTML='<div class="dh"><h2 id="dT">Registro seleccionado</h2><p>'+lp(r.per)+' <span class="muted" style="font-weight:400;font-size:13px">('+r.per+')</span></p><small>'+EMP[r.emp]+'</small></div><dl>'+
+ '<dt>Costo techo</dt><dd>'+cop(r.techo)+'</dd><dt>Costo facturación</dt><dd>'+cop(r.fact)+'</dd><dt>Diferencia</dt><dd'+(r.dif?' class="w">⚠ '+sgn(r.dif):'>Sin diferencia')+'</dd><dt>Tipo ingreso</dt><dd>Manual</dd><dt>Fecha creación</dt><dd>'+r.fecha+'</dd><dt>Usuario</dt><dd>'+r.usr+'</dd></dl>'}
+$('#tb').addEventListener('click',e=>{const c=e.target.closest('.cell');if(!c)return;sel={per:+c.dataset.p,emp:c.dataset.e};document.querySelectorAll('.cell').forEach(x=>x.setAttribute('aria-pressed',x===c));detalle()});
+reset();
+</script></body></html>

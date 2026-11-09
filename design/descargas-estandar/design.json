@@ -1,0 +1,27 @@
+{
+  "title": "Estándar de descargas de archivos",
+  "brief": "Un solo patrón para todo lo que permite descargar un archivo (sin contar «Exportar» de tablas): la guía «Explicación formatos y formularios» (.xlsx) de las pantallas SUI y las 7 plantillas CSV del cargue guiado (Cargue Mensual, Semestral y Complementario). Cada dirección se aplica a Sui › Formatos y Formularios y a Cargue Mensual · Inf. Propia, con estados reposo, hover/foco, descargando y error, más una especificación. El inventario está en 01.",
+  "artboards": [
+    {
+      "file": "01-boton-secundario.html",
+      "title": "01 · Botón secundario con ícono de archivo",
+      "tradeoff": "Visible justo donde se usa y fácil de implementar en un componente; ocupa la barra de acciones y no escala más allá de 2 archivos juntos",
+      "width": 1440,
+      "height": 4058
+    },
+    {
+      "file": "02-tarjeta-recurso.html",
+      "title": "02 · Tarjeta de recurso descargable",
+      "tradeoff": "Explica qué trae cada archivo y escala bien a varios; pesada para el caso real de hoy, que es un solo archivo por pantalla",
+      "width": 1440,
+      "height": 3880
+    },
+    {
+      "file": "03-menu-descargas.html",
+      "title": "03 · Menú de descargas en el encabezado",
+      "tradeoff": "Huella mínima y un único lugar para todo; esconde la plantilla justo donde el cargue la necesita y suma un clic",
+      "width": 1440,
+      "height": 3146
+    }
+  ]
+}

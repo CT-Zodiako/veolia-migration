@@ -1,0 +1,27 @@
+{
+  "title": "Usuarios · Sistemas",
+  "brief": "Rediseño de la pestaña Sistemas de /usuarios: qué sistemas (VEO-REGULATOR, RELIQUIDACIONES, SUI 853) puede usar cada usuario.",
+  "artboards": [
+    {
+      "file": "01-tarjetas-sistema.html",
+      "title": "Lista de usuarios + tarjeta por sistema",
+      "tradeoff": "Muy claro con solo 3 sistemas (nombre, descripción y cuántos permisos tiene) y avisa qué se pierde al quitar uno; se edita un usuario a la vez",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "02-matriz-usuarios.html",
+      "title": "Matriz usuarios × sistemas",
+      "tradeoff": "Se ven y editan todos los usuarios de una vez, con conteo por sistema y filtro \"sin ningún sistema\"; menos contexto por sistema",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "03-dos-columnas.html",
+      "title": "Dos columnas (picklist mejorado)",
+      "tradeoff": "Lo más parecido a la pantalla actual (menos curva de aprendizaje) con filtros, contadores y marcas de cambio; poco aprovechado con solo 3 sistemas",
+      "width": 1440,
+      "height": 1000
+    }
+  ]
+}
