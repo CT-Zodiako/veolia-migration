@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentación · B · Centro de documentación (página)</title>
+<style>
+:root{
+  --color-bg-page:#f1f5f9;--color-bg-card:#fff;--color-bg-soft:#f8fafc;--color-border:#e2e8f0;
+  --color-text-primary:#0f172a;--color-text-body:#334155;--color-text-secondary:#64748b;--color-text-muted:#94a3b8;
+  --shell-sidebar-bg:#0b1f3a;--shell-sidebar-bg-hover:#13294a;--shell-sidebar-bg-active:#1b3459;
+  --shell-sidebar-border:rgba(255,255,255,.08);--shell-sidebar-text:#dbe4f0;--shell-sidebar-text-muted:#8a9bb5;--shell-accent:#f10400;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--color-text-body);background:var(--color-bg-page)}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.side{background:var(--shell-sidebar-bg);color:var(--shell-sidebar-text);padding:18px 12px}
+.brand{color:#fff;font-weight:700;font-size:18px;padding:4px 10px 18px}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--shell-sidebar-text-muted);letter-spacing:.8px;text-transform:uppercase}
+.grp{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--shell-sidebar-text-muted);padding:14px 10px 6px}
+.it{padding:9px 12px;border-radius:8px;font-size:14px}
+.it.on{background:var(--shell-sidebar-bg-active);color:#fff;box-shadow:inset 3px 0 0 var(--shell-accent)}
+.main{min-width:0}
+.top{height:60px;background:var(--color-bg-card);border-bottom:1px solid var(--color-border);display:flex;align-items:center;padding:0 24px}
+.top h1{font-size:18px;margin:0;color:var(--color-text-primary)}
+/* hero navy */
+.hero{background:var(--shell-sidebar-bg);color:var(--shell-sidebar-text);padding:36px 40px 72px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-80px;top:-80px;width:320px;height:320px;border-radius:50%;border:48px solid var(--shell-sidebar-bg-hover)}
+.hero .eyebrow{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--shell-sidebar-text-muted);font-weight:600}
+.hero h2{color:#fff;font-size:30px;margin:8px 0 6px;position:relative;z-index:1}
+.hero p{margin:0;font-size:15px;max-width:560px;position:relative;z-index:1}
+.bar{position:relative;z-index:1;margin-top:22px;max-width:680px;display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.bar input{border:0;font:inherit;font-size:15px;flex:1;outline:none;color:var(--color-text-primary)}
+.bar .k{font-size:12px;color:var(--color-text-secondary);border:1px solid var(--color-border);border-radius:6px;padding:2px 7px}
+.pop{position:relative;z-index:1;display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;font-size:13px}
+.pop span{color:var(--shell-sidebar-text-muted)}
+.pop button{background:var(--shell-sidebar-bg-hover);border:1px solid var(--shell-sidebar-border);color:#fff;border-radius:999px;padding:4px 12px;font-size:12.5px}
+.pop button:hover{background:var(--shell-sidebar-bg-active)}
+.wrap{padding:0 40px 40px;margin-top:-44px;position:relative;z-index:2}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mod{background:var(--color-bg-card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);padding:18px 20px;border-top:3px solid var(--shell-sidebar-bg);display:flex;flex-direction:column}
+.mod-h{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.ic{width:38px;height:38px;border-radius:10px;background:var(--shell-sidebar-bg);color:#fff;display:grid;place-items:center;flex:none}
+.mod h3{margin:0;font-size:16px;color:var(--color-text-primary)}
+.mod .n{font-size:12px;color:var(--color-text-secondary)}
+.mod ul{list-style:none;margin:0;padding:0;flex:1}
+.mod li a{display:block;text-decoration:none;font-size:13.5px;padding:7px 0;border-top:1px solid var(--color-border);color:var(--color-text-body)}
+.mod li a:hover{color:var(--shell-sidebar-bg);text-decoration:underline}
+.more{margin-top:10px;font-size:13px;font-weight:600;color:var(--shell-sidebar-bg);text-decoration:none}
+.row2{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px}
+.card{background:var(--color-bg-card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);padding:18px 20px}
+.card h3{margin:0 0 10px;font-size:15px;color:var(--color-text-primary)}
+details{border-top:1px solid var(--color-border);padding:10px 0}
+summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--color-text-primary)}
+details p{margin:8px 0 0;font-size:13.5px;line-height:1.55}
+.support{background:var(--shell-sidebar-bg);color:var(--shell-sidebar-text)}
+.support h3{color:#fff}
+.support p{font-size:13.5px;line-height:1.55;margin:0 0 14px}
+.btn{display:inline-block;border-radius:8px;padding:9px 14px;font-size:13.5px;font-weight:600;border:0;background:#f10400;color:#fff}
+.btn:hover{background:#c40300}
+.ch{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ch span{font-size:12.5px;border:1px solid var(--shell-sidebar-border);border-radius:8px;padding:5px 10px;background:var(--shell-sidebar-bg-hover)}
+@media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.side{display:none}.grid{grid-template-columns:1fr}.hero,.wrap{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="side" aria-label="Menú principal">
+    <div class="brand">VEO-Regulator<small>Veolia · Aseo</small></div>
+    <div class="grp">General</div>
+    <div class="it">Inicio</div>
+    <div class="it on">Documentación</div>
+    <div class="grp">Suministros</div>
+    <div class="it">Cargue Mensual</div>
+    <div class="it">Ejecutar Reversión</div>
+    <div class="grp">PGIRS</div>
+    <div class="it">Variables PGIRS</div>
+  </nav>
+  <main class="main">
+    <header class="top"><h1>Documentación</h1></header>
+    <section class="hero" aria-labelledby="h">
+      <div class="eyebrow">Centro de documentación</div>
+      <h2 id="h">¿En qué te podemos ayudar?</h2>
+      <p>Guías paso a paso de cada módulo de VEO-Regulator, Reliquidaciones y SUI 853.</p>
+      <label class="bar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" aria-label="Buscar en la documentación" placeholder="Buscá por pantalla, proceso o error… ej. “reversión”"><span class="k">Ctrl K</span></label>
+      <div class="pop"><span>Más buscado:</span><button>Cargue con error</button><button>Comparar costo</button><button>Modo oscuro</button><button>Formatos SUI</button></div>
+    </section>
+    <div class="wrap">
+      <div class="grid">
+        <article class="mod"><div class="mod-h"><span class="ic" aria-hidden="true">▶</span><div><h3>Primeros pasos</h3><span class="n">3 artículos</span></div></div>
+          <ul><li><a href="#">Cómo navegar el menú y personalizar tu Inicio</a></li><li><a href="#">Cambiar entre modo claro y oscuro</a></li><li><a href="#">Cambiar de sistema (VEO-Regulator, Reliquidaciones, SUI 853)</a></li></ul></article>
+        <article class="mod"><div class="mod-h"><span class="ic" aria-hidden="true">$</span><div><h3>Cálculo de Tarifas</h3><span class="n">2 artículos</span></div></div>
+          <ul><li><a href="#">Ejecutar y verificar un cálculo de tarifas</a></li><li><a href="#">Entender el detallado de tarifas por APS</a></li></ul><a class="more" href="#">Ver todo →</a></article>
+        <article class="mod"><div class="mod-h"><span class="ic" aria-hidden="true">↺</span><div><h3>Reliquidaciones</h3><span class="n">2 artículos</span></div></div>
+          <ul><li><a href="#">Crear una reliquidación y comparar costos</a></li><li><a href="#">Verificar cambios antes de aplicar en tarifas</a></li></ul><a class="more" href="#">Ver todo →</a></article>
+        <article class="mod"><div class="mod-h"><span class="ic" aria-hidden="true">⇪</span><div><h3>SUI 853</h3><span class="n">2 artículos</span></div></div>
+          <ul><li><a href="#">Cargue de formatos e integración con el SUI</a></li><li><a href="#">Revisar CFT, CVA y demás formatos técnicos</a></li></ul><a class="more" href="#">Ver todo →</a></article>
+        <article class="mod"><div class="mod-h"><span class="ic" aria-hidden="true">▤</span><div><h3>Suministros</h3><span class="n">2 artículos</span></div></div>
+          <ul><li><a href="#">Cargue mensual y semestral de información</a></li><li><a href="#">Ejecutar y autorizar una reversión</a></li></ul><a class="more" href="#">Ver todo →</a></article>
+        <article class="mod"><div class="mod-h"><span class="ic" aria-hidden="true">◎</span><div><h3>PGIRS y Proyecciones</h3><span class="n">2 artículos</span></div></div>
+          <ul><li><a href="#">Cargar variables e informes PGIRS</a></li><li><a href="#">Crear una proyección y líneas de tiempo</a></li></ul><a class="more" href="#">Ver todo →</a></article>
+      </div>
+      <div class="row2">
+        <section class="card" aria-labelledby="faq"><h3 id="faq">Preguntas frecuentes</h3>
+          <details open><summary>¿Qué hago si un cargue queda con error?</summary><p>Si sos usuario de soporte, el panel de logs (ícono de base de datos, abajo a la derecha) muestra el detalle técnico del error real devuelto por la base de datos.</p></details>
+          <details><summary>¿Cómo recupero mi contraseña?</summary><p>Por ahora el cambio de contraseña lo gestiona un administrador desde Configuración &gt; Usuarios.</p></details>
+        </section>
+        <section class="card support" aria-labelledby="sp"><h3 id="sp">Soporte Directo</h3>
+          <p>¿No encontraste la respuesta? El equipo de soporte te ayuda con cargues, cálculos y permisos.</p>
+          <button class="btn">Contactar soporte</button>
+          <div class="ch"><span>Correo</span><span>Teléfono</span><span>Chat en vivo</span></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

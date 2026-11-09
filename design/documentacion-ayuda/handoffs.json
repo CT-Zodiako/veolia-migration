@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "02-centro-pagina.html",
+  "handoffs": {
+    "02-centro-pagina.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T03:33:52.003Z",
+      "startedAt": "2026-11-09T03:33:58.756Z",
+      "implementedAt": "2026-11-09T03:37:08.671Z",
+      "note": "Ruta /documentacion (lazy). \"Ver Documentación\" del botón flotante e Inicio navegan acá; se retiró el diálogo \"libro\".",
+      "previewUrl": "http://localhost:4200/documentacion"
+    }
+  }
+}

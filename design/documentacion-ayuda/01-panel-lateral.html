@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentación · A · Panel lateral contextual</title>
+<style>
+:root{
+  --color-bg-page:#f1f5f9;--color-bg-card:#fff;--color-bg-soft:#f8fafc;--color-border:#e2e8f0;
+  --color-text-primary:#0f172a;--color-text-body:#334155;--color-text-secondary:#64748b;--color-text-muted:#94a3b8;
+  --color-brand-strong:#780200;--color-brand-accent:#f10400;
+  --shell-sidebar-bg:#0b1f3a;--shell-sidebar-bg-hover:#13294a;--shell-sidebar-bg-active:#1b3459;
+  --shell-sidebar-border:rgba(255,255,255,.08);--shell-sidebar-text:#dbe4f0;--shell-sidebar-text-strong:#fff;
+  --shell-sidebar-text-muted:#8a9bb5;--shell-sidebar-dot:#5f7392;--shell-accent:#f10400;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--color-text-body);background:var(--color-bg-page);height:100vh;overflow:hidden}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.app{display:grid;grid-template-columns:260px 1fr;height:100vh}
+/* sidebar real */
+.side{background:var(--shell-sidebar-bg);color:var(--shell-sidebar-text);padding:18px 12px;display:flex;flex-direction:column;gap:4px}
+.brand{color:#fff;font-weight:700;font-size:18px;padding:4px 10px 18px;letter-spacing:.3px}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--shell-sidebar-text-muted);letter-spacing:.8px;text-transform:uppercase}
+.grp{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--shell-sidebar-text-muted);padding:14px 10px 6px}
+.it{padding:9px 12px;border-radius:8px;font-size:14px}
+.it.on{background:var(--shell-sidebar-bg-active);color:#fff;box-shadow:inset 3px 0 0 var(--shell-accent)}
+/* main */
+.main{display:flex;flex-direction:column;min-width:0}
+.top{height:60px;background:var(--color-bg-card);border-bottom:1px solid var(--color-border);display:flex;align-items:center;padding:0 24px;gap:12px}
+.top h1{font-size:18px;margin:0;color:var(--color-text-primary)}
+.top .sp{flex:1}
+.chip{border:1px solid var(--color-border);border-radius:8px;padding:7px 12px;font-size:13px;background:var(--color-bg-card);color:var(--color-text-body)}
+.chip.help{background:var(--shell-sidebar-bg);color:#fff;border-color:var(--shell-sidebar-bg)}
+.content{padding:24px;opacity:.55}
+.card{background:var(--color-bg-card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);padding:20px;margin-bottom:20px}
+.ph{height:12px;background:var(--color-border);border-radius:6px;margin:10px 0}
+.scrim{position:fixed;inset:0;left:260px;background:rgba(11,31,58,.18)}
+/* drawer */
+.drawer{position:fixed;top:0;right:0;width:480px;height:100vh;background:var(--color-bg-card);box-shadow:-12px 0 32px rgba(11,31,58,.25);display:flex;flex-direction:column}
+.dh{background:var(--shell-sidebar-bg);color:var(--shell-sidebar-text);padding:18px 20px 16px}
+.dh-row{display:flex;align-items:center;gap:10px}
+.dh-title{color:#fff;font-weight:700;font-size:16px;flex:1;display:flex;align-items:center;gap:10px}
+.dh-title svg{color:var(--shell-accent)}
+.icon-btn{background:transparent;border:0;color:var(--shell-sidebar-text);width:32px;height:32px;border-radius:8px;display:grid;place-items:center}
+.icon-btn:hover{background:var(--shell-sidebar-bg-hover);color:#fff}
+.search{margin-top:14px;display:flex;align-items:center;gap:8px;background:var(--shell-sidebar-bg-hover);border:1px solid var(--shell-sidebar-border);border-radius:10px;padding:9px 12px}
+.search input{background:transparent;border:0;color:#fff;font:inherit;font-size:14px;flex:1;outline:none}
+.search input::placeholder{color:var(--shell-sidebar-text-muted)}
+.kbd{font-size:11px;color:var(--shell-sidebar-text-muted);border:1px solid var(--shell-sidebar-border);border-radius:5px;padding:1px 6px}
+.tabs{display:flex;gap:4px;margin-top:14px}
+.tab{background:transparent;border:0;color:var(--shell-sidebar-text-muted);padding:7px 12px;border-radius:8px;font-size:13px}
+.tab[aria-selected=true]{background:var(--shell-sidebar-bg-active);color:#fff;box-shadow:inset 0 -2px 0 var(--shell-accent)}
+.db{flex:1;overflow:auto;padding:18px 20px}
+.ctx{border:1px solid var(--color-border);border-left:3px solid var(--shell-sidebar-bg);border-radius:10px;padding:14px 16px;background:var(--color-bg-soft);margin-bottom:20px}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--color-text-secondary);font-weight:600}
+.ctx h3{margin:6px 0 6px;font-size:15px;color:var(--color-text-primary)}
+.ctx p{margin:0;font-size:13.5px;line-height:1.55}
+.ctx ol{margin:10px 0 0;padding-left:20px;font-size:13.5px;line-height:1.7}
+.sec{margin:6px 0 8px}
+.art{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-radius:10px;padding:11px 10px;color:var(--color-text-body)}
+.art:hover{background:var(--color-bg-soft)}
+.art .b{width:30px;height:30px;border-radius:8px;background:#e8eef7;color:var(--shell-sidebar-bg);display:grid;place-items:center;flex:none}
+.art strong{display:block;font-size:14px;color:var(--color-text-primary);font-weight:600}
+.art span{font-size:12.5px;color:var(--color-text-secondary)}
+.df{border-top:1px solid var(--color-border);padding:14px 20px;display:flex;gap:10px;align-items:center}
+.df p{margin:0;font-size:13px;color:var(--color-text-secondary);flex:1}
+.btn{border-radius:8px;padding:9px 14px;font-size:13.5px;font-weight:600;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-primary)}
+.btn.pri{background:#f10400;border-color:#f10400;color:#fff}
+.btn.pri:hover{background:#c40300}
+@media (prefers-reduced-motion:no-preference){.drawer{animation:in .22s ease-out}@keyframes in{from{transform:translateX(24px);opacity:.4}}}
+@media (max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.scrim{left:0}.drawer{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="side" aria-label="Menú principal">
+    <div class="brand">VEO-Regulator<small>Veolia · Aseo</small></div>
+    <div class="grp">Suministros</div>
+    <div class="it">Cargue Mensual</div>
+    <div class="it">Cargue Semestral</div>
+    <div class="it on">Ejecutar Reversión</div>
+    <div class="it">Autorización Reversiones</div>
+    <div class="it">Histórico Reversión</div>
+    <div class="grp">PGIRS</div>
+    <div class="it">Variables PGIRS</div>
+    <div class="it">PGIRS - Resumen</div>
+  </nav>
+  <div class="main">
+    <header class="top"><h1>Ejecutar Reversión</h1><span class="sp"></span><span class="chip">APS 1501 · 2026 · Octubre</span><span class="chip help" aria-pressed="true">? Ayuda</span></header>
+    <div class="content" aria-hidden="true">
+      <div class="card"><div class="ph" style="width:30%"></div><div class="ph" style="width:60%"></div><div class="ph" style="width:45%"></div></div>
+      <div class="card"><div class="ph" style="width:20%"></div><div class="ph"></div><div class="ph" style="width:80%"></div></div>
+    </div>
+  </div>
+</div>
+<div class="scrim" aria-hidden="true"></div>
+
+<aside class="drawer" role="dialog" aria-modal="false" aria-labelledby="dt">
+  <div class="dh">
+    <div class="dh-row">
+      <div class="dh-title" id="dt">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>
+        Documentación
+      </div>
+      <button class="icon-btn" aria-label="Abrir en pantalla completa"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+      <button class="icon-btn" aria-label="Cerrar documentación"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a9bb5" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="Buscar en la documentación…" aria-label="Buscar en la documentación"><span class="kbd">/</span></label>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true">Esta pantalla</button>
+      <button class="tab" role="tab" aria-selected="false">Todos los temas</button>
+      <button class="tab" role="tab" aria-selected="false">Preguntas frecuentes</button>
+    </div>
+  </div>
+  <div class="db">
+    <section class="ctx" aria-labelledby="c1">
+      <div class="eyebrow">Estás en · Suministros</div>
+      <h3 id="c1">Ejecutar y autorizar una reversión</h3>
+      <p>Ejecutar Reversión dispara el proceso; Autorización Reversiones es el paso donde un segundo usuario aprueba antes de que el cambio impacte en Histórico Reversión.</p>
+      <ol>
+        <li>Elegí APS, año y mes del período a revertir.</li>
+        <li>Escribí el motivo de la reversión.</li>
+        <li>Tocá <strong>Ejecutar</strong>; queda pendiente de autorización.</li>
+      </ol>
+    </section>
+    <div class="eyebrow sec">Relacionado</div>
+    <button class="art"><span class="b">S</span><span><strong>Cargue mensual y semestral de información</strong><span>Suministros · 2 min de lectura</span></span></button>
+    <button class="art"><span class="b">?</span><span><strong>¿Qué hago si un cargue queda con error?</strong><span>Preguntas frecuentes · 1 min</span></span></button>
+    <button class="art"><span class="b">P</span><span><strong>Cómo navegar el menú y personalizar tu Inicio</strong><span>Primeros pasos · 1 min</span></span></button>
+    <button class="art"><span class="b">T</span><span><strong>Ejecutar y verificar un cálculo de tarifas</strong><span>Cálculo de Tarifas · 3 min</span></span></button>
+  </div>
+  <div class="df">
+    <p>¿No encontraste lo que buscabas?</p>
+    <button class="btn pri">Soporte Directo</button>
+  </div>
+</aside>
+</body>
+</html>

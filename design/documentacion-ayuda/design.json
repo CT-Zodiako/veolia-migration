@@ -1,0 +1,9 @@
+{
+  "title": "Ver Documentación",
+  "brief": "Propuestas para ver la documentación de ayuda usando el azul marino del menú lateral (--shell-sidebar-bg #0b1f3a) como color protagonista",
+  "artboards": [
+    { "file": "01-panel-lateral.html", "title": "A · Panel lateral contextual", "tradeoff": "No sacás al usuario de la pantalla y abre con la ayuda de donde está; poco espacio para artículos largos", "width": 1440, "height": 900 },
+    { "file": "02-centro-pagina.html", "title": "B · Centro de documentación (página propia)", "tradeoff": "Buscador grande y vista completa por módulo, escala bien con mucho contenido; obliga a salir de la pantalla de trabajo", "width": 1440, "height": 1000 },
+    { "file": "03-modal-indice-navy.html", "title": "C · Modal con índice azul (evolución del libro actual)", "tradeoff": "Cambio mínimo sobre lo que ya existe y el índice se lee igual que el menú; sigue tapando la pantalla mientras leés", "width": 1440, "height": 900 }
+  ]
+}
