@@ -190,7 +190,7 @@ export class LayoutComponent implements OnInit {
     const url = this.router.url.split('?')[0];
     switch (url) {
       case '/residuosGenerados': return 'Residuos Generados';
-      case '/': return 'Dashboard';
+      case '/': return 'Inicio';
       case '/usuarios': return 'Gestión de Usuarios';
       case '/formularios': return 'Formularios';
       case '/cargaGenerica': return 'SUI 853 - Carga genérica desde Google Drive';
@@ -199,6 +199,7 @@ export class LayoutComponent implements OnInit {
       case '/asignacion-sistema': return 'Asignación de Sistemas';
       case '/menu-usuario': return 'Asignación de Menú';
       case '/cambiar-clave': return 'Cambiar Contraseña';
+      case '/documentacion': return 'Documentación';
       case '/sui-reversiones': return 'SUI Reversiones';
       case '/sui/dashboard': return 'Dashboard';
       case '/sui/resumen-formatos': return 'Resumen Formatos y Formularios';

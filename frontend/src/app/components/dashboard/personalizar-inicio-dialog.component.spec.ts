@@ -6,9 +6,9 @@ import { PersonalizarInicioDialogComponent } from './personalizar-inicio-dialog.
 // (legacy permission rule, front-tarificador/src/service/MenuService.js:655-671, applied by DashboardComponent).
 
 const disponibles = [
-  { label: 'Usuarios', path: '/usuarios', icon: 'users' },
-  { label: 'Detallado Tarifas', path: '/tarifas', icon: 'file-text' },
-  { label: 'Verificación', path: '/suministros/verificacion', icon: 'search-check' }
+  { label: 'Usuarios', path: '/usuarios', icon: 'users', grupo: 'Configuración' },
+  { label: 'Detallado Tarifas', path: '/tarifas', icon: 'file-text', grupo: 'Informes Comerciales' },
+  { label: 'Verificación', path: '/suministros/verificacion', icon: 'search-check', grupo: 'Suministros' }
 ];
 
 function abrir(seleccionadosIniciales: string[]) {
@@ -16,20 +16,39 @@ function abrir(seleccionadosIniciales: string[]) {
   const fixture = TestBed.createComponent(PersonalizarInicioDialogComponent);
   fixture.componentRef.setInput('disponibles', disponibles);
   fixture.componentRef.setInput('seleccionadosIniciales', seleccionadosIniciales);
-  fixture.componentRef.setInput('columnas', 4);
   fixture.componentRef.setInput('visible', true);
   fixture.detectChanges();
   return { fixture, component: fixture.componentInstance };
 }
 
 describe('PersonalizarInicioDialogComponent (new, no legacy counterpart)', () => {
-  it('lists only the received options and preselects the current shortcuts when opened', () => {
+  it('lists only the received options with their menu group and preselects the current shortcuts when opened', () => {
     const { fixture, component } = abrir(['/tarifas', '/no-permitida']);
 
     expect(component.seleccionados.map((s) => s.path)).toEqual(['/tarifas']);
-    const texto = document.body.textContent as string;
-    expect(texto).toContain('Accesos disponibles (1 de 3)');
-    for (const item of disponibles) expect(texto).toContain(item.label);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Personalizar accesos');
+    const filas = Array.from(el.querySelectorAll('.opcion-check') as NodeListOf<HTMLElement>);
+    expect(filas.map((f) => [f.querySelector('.opcion-titulo')?.textContent?.trim(), f.querySelector('.opcion-grupo')?.textContent?.trim()]))
+      .toEqual(disponibles.map((d) => [d.label, d.grupo]));
+    const marcados = filas.map((f) => (f.querySelector('input[type=checkbox]') as HTMLInputElement).checked);
+    expect(marcados).toEqual([false, true, false]);
+    fixture.destroy();
+  });
+
+  it('closes without emitting on Cancelar', () => {
+    const { fixture, component } = abrir(['/tarifas']);
+    const guardar = vi.fn();
+    const visible = vi.fn();
+    component.guardar.subscribe(guardar);
+    component.visibleChange.subscribe(visible);
+
+    const cancelar = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find((b) => b.textContent?.trim() === 'Cancelar')!;
+    cancelar.click();
+
+    expect(guardar).not.toHaveBeenCalled();
+    expect(visible).toHaveBeenCalledWith(false);
     fixture.destroy();
   });
 
@@ -49,20 +68,13 @@ describe('PersonalizarInicioDialogComponent (new, no legacy counterpart)', () =>
     fixture.destroy();
   });
 
-  it('selects all / none and offers 3 to 6 grid columns', () => {
+  it('selects all / none', () => {
     const { fixture, component } = abrir([]);
-    const columnas = vi.fn();
-    component.columnasChange.subscribe(columnas);
 
     component.seleccionarTodas();
     expect(component.seleccionados.map((s) => s.path)).toEqual(disponibles.map((d) => d.path));
     component.seleccionarNinguna();
     expect(component.seleccionados).toEqual([]);
-
-    expect(component.columnasOpciones).toEqual([3, 4, 5, 6]);
-    component.onColumnasChange(5);
-    expect(columnas).toHaveBeenCalledWith(5);
-    expect(component.columnas).toBe(5);
     fixture.destroy();
   });
 });

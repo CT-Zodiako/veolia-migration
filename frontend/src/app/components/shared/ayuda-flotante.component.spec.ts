@@ -28,34 +28,19 @@ function setup() {
   return { fixture, component, ayudaService, toggle, el: fixture.nativeElement as HTMLElement };
 }
 
+// The floating help button was removed at the user's request (Inicio redesign); only the support popup menu
+// stays, opened from screens through AyudaService (e.g. the documentation page).
 describe('AyudaFlotanteComponent (no legacy equivalent — pinned)', () => {
-  it('shows the "Ver Documentación" and "Soporte Directo" actions and toggles the flyout', () => {
-    const { fixture, component, el } = setup();
-    const acciones = Array.from(el.querySelectorAll('.ayuda-flotante-accion')).map(b => b.textContent?.trim());
-    expect(acciones).toEqual(['Ver Documentación', 'Soporte Directo']);
-    (el.querySelector('button.ayuda-flotante') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    expect(component.mostrarFlyoutForzado()).toBe(true);
-    expect(el.querySelector('.ayuda-flotante-wrapper')?.classList.contains('abierto')).toBe(true);
+  it('renders no floating help button', () => {
+    const { el } = setup();
+    expect(el.querySelector('.ayuda-flotante')).toBeNull();
+    expect(el.querySelectorAll('button').length).toBe(0);
   });
 
-  it('opens the documentation through the service and closes the flyout', () => {
-    const { component, ayudaService } = setup();
-    component.toggleFlyout();
-    component.abrirDocumentacion();
-    expect(ayudaService.abrirDocumentacion).toHaveBeenCalledTimes(1);
-    expect(component.mostrarFlyoutForzado()).toBe(false);
-  });
-
-  it('opens the support menu from the button and from service requests', () => {
-    const { component, ayudaService, toggle } = setup();
-    const click = new Event('click');
-    component.toggleFlyout();
-    component.abrirMenuSoporte(click);
-    expect(toggle).toHaveBeenCalledWith(click);
-    expect(component.mostrarFlyoutForzado()).toBe(false);
+  it('opens the support menu when a screen requests it through the service', () => {
+    const { ayudaService, toggle } = setup();
     const solicitado = new Event('click');
     ayudaService.solicitudMenuSoporte$.next(solicitado);
-    expect(toggle).toHaveBeenLastCalledWith(solicitado);
+    expect(toggle).toHaveBeenCalledWith(solicitado);
   });
 });

@@ -1,178 +1,199 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { DialogModule } from 'primeng/dialog';
-import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { SidebarMenuItem } from '../../services/sidebar-menu.service';
-import { IconComponent } from '../shared/icon.component';
 
+/** Permitted menu option offered on Inicio, with the menu group it belongs to. */
+export interface AccesoInicio extends SidebarMenuItem {
+  grupo: string;
+}
+
+/** Side panel next to the Inicio shortcuts where the user picks which pages appear there. */
 @Component({
   selector: 'app-personalizar-inicio-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ...CommonPrimeNgModules, IconComponent],
+  imports: [CommonModule],
   template: `
-    <p-dialog
-      header="Personalizar accesos de Inicio"
-      [modal]="true"
-      [visible]="visible"
-      (visibleChange)="onVisibleChange($event)"
-      [style]="{ width: '30rem' }"
-    >
-      <div class="campo">
-        <label>Columnas de la grilla ({{ columnas }})</label>
-        <div class="columnas-selector">
-          <button
-            type="button"
-            *ngFor="let n of columnasOpciones"
-            class="columna-opcion"
-            [class.activa]="columnas === n"
-            (click)="onColumnasChange(n)"
-          >{{ n }}</button>
+    <aside class="panel" aria-labelledby="personalizar-titulo">
+      <header class="panel-header">
+        <h3 id="personalizar-titulo">Personalizar accesos</h3>
+        <p>Marque las páginas que quiere ver en Inicio.</p>
+        <div class="opciones-acciones">
+          <span>{{ seleccionados.length }} de {{ disponibles.length }}</span>
+          <a (click)="seleccionarTodas()">Todas</a>
+          <a (click)="seleccionarNinguna()">Ninguna</a>
         </div>
+      </header>
+
+      <div class="opciones">
+        <label class="opcion-check" *ngFor="let item of disponibles">
+          <input type="checkbox" [checked]="estaSeleccionado(item)" (change)="toggle(item)" />
+          <span class="opcion-texto">
+            <span class="opcion-titulo">{{ item.label }}</span>
+            <span class="opcion-grupo">{{ item.grupo }}</span>
+          </span>
+        </label>
       </div>
 
-      <div class="campo">
-        <div class="opciones-header">
-          <label>Accesos disponibles ({{ seleccionados.length }} de {{ disponibles.length }})</label>
-          <div class="opciones-acciones">
-            <a (click)="seleccionarTodas()">Todas</a>
-            <a (click)="seleccionarNinguna()">Ninguna</a>
-          </div>
-        </div>
-        <div class="opciones-grid">
-          <div class="opcion-check" *ngFor="let item of disponibles">
-            <p-checkbox
-              [binary]="true"
-              [ngModel]="estaSeleccionado(item)"
-              (onChange)="toggle(item)"
-              [inputId]="'acceso-' + item.path"
-            ></p-checkbox>
-            <label [for]="'acceso-' + item.path">
-              <app-icon [name]="item.icon" [size]="14"></app-icon>
-              {{ item.label }}
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <ng-template pTemplate="footer">
-        <p-button label="Cancelar" severity="secondary" [text]="true" (click)="cerrar()"></p-button>
-        <p-button label="Guardar" icon="pi pi-check" (click)="confirmar()"></p-button>
-      </ng-template>
-    </p-dialog>
+      <footer class="panel-footer">
+        <button type="button" class="btn-outline" (click)="cerrar()">Cancelar</button>
+        <button type="button" class="btn-primario" (click)="confirmar()">Guardar</button>
+      </footer>
+    </aside>
   `,
   styles: [`
-    .campo { margin-bottom: 8px; }
-    .opciones-header label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--color-text-body); }
+    :host { display: block; }
 
-    .opciones-header {
+    .panel {
+      background: var(--color-bg-card);
+      border: 1px solid #e1e6ee;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(11, 31, 58, 0.08);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      max-height: calc(100vh - 200px);
+    }
+
+    :host-context(.app-dark) .panel { border-color: var(--color-border); box-shadow: none; }
+
+    .panel-header {
+      padding: 20px 20px 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .panel-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .panel-header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--color-text-secondary);
     }
 
     .opciones-acciones {
       display: flex;
       gap: 12px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--color-text-secondary);
     }
 
+    .opciones-acciones span { margin-right: auto; }
+
     .opciones-acciones a {
-      font-size: 12px;
       font-weight: 600;
-      color: var(--color-brand-accent);
+      color: #16335a;
       cursor: pointer;
     }
 
-    .opciones-acciones a:hover {
-      text-decoration: underline;
-    }
+    :host-context(.app-dark) .opciones-acciones a { color: #9fb6d9; }
 
-    .opciones-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
-      max-height: 320px;
+    .opciones-acciones a:hover { text-decoration: underline; }
+
+    .opciones {
       overflow-y: auto;
-      margin-top: 10px;
-      padding: 12px;
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
+      padding: 8px 12px;
     }
 
     .opcion-check {
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .opcion-check label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin: 0;
-      font-size: 13px;
-      font-weight: 400;
-      color: var(--color-text-body);
-      cursor: pointer;
-    }
-
-    .columnas-selector {
-      display: flex;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .columna-opcion {
-      width: 36px;
-      height: 36px;
+      gap: 12px;
+      padding: 8px;
       border-radius: 8px;
-      border: 1px solid var(--color-border);
-      background: var(--color-bg-card);
-      color: var(--color-text-body);
-      font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
     }
 
-    .columna-opcion:hover {
-      border-color: var(--color-brand-accent);
+    .opcion-check:hover { background: var(--color-bg-soft); }
+
+    .opcion-check input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: #16335a;
+      flex-shrink: 0;
+      cursor: pointer;
     }
 
-    .columna-opcion.activa {
-      background: var(--color-brand-strong);
-      border-color: var(--color-brand-strong);
+    :host-context(.app-dark) .opcion-check input { accent-color: #9fb6d9; }
+
+    .opcion-texto {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .opcion-titulo {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    .opcion-grupo {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+
+    .panel-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .btn-outline,
+    .btn-primario {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-outline {
+      background: var(--color-bg-card);
+      border: 1px solid #c5cedb;
+      color: var(--color-text-primary);
+    }
+
+    :host-context(.app-dark) .btn-outline { border-color: var(--color-border); }
+
+    .btn-primario {
+      background: #c4262e;
+      border: 1px solid #c4262e;
       color: #fff;
     }
+
+    .btn-primario:hover { background: #a81f26; }
   `]
 })
 export class PersonalizarInicioDialogComponent implements OnChanges {
   @Input() visible = false;
   @Output() visibleChange = new EventEmitter<boolean>();
 
-  @Input() disponibles: SidebarMenuItem[] = [];
+  @Input() disponibles: AccesoInicio[] = [];
   @Input() seleccionadosIniciales: string[] = [];
-  @Input() columnas = 6;
 
   @Output() guardar = new EventEmitter<string[]>();
-  @Output() columnasChange = new EventEmitter<number>();
 
-  seleccionados: SidebarMenuItem[] = [];
-  readonly columnasOpciones = [3, 4, 5, 6];
+  seleccionados: AccesoInicio[] = [];
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['visible'] && this.visible) {
+    if ((changes['visible'] || changes['disponibles'] || changes['seleccionadosIniciales']) && this.visible) {
       const iniciales = new Set(this.seleccionadosIniciales);
       this.seleccionados = this.disponibles.filter(item => iniciales.has(item.path));
     }
   }
 
-  onVisibleChange(visible: boolean): void {
-    this.visible = visible;
-    this.visibleChange.emit(visible);
-  }
-
   cerrar(): void {
-    this.onVisibleChange(false);
+    this.visible = false;
+    this.visibleChange.emit(false);
   }
 
   confirmar(): void {
@@ -180,11 +201,11 @@ export class PersonalizarInicioDialogComponent implements OnChanges {
     this.cerrar();
   }
 
-  estaSeleccionado(item: SidebarMenuItem): boolean {
+  estaSeleccionado(item: AccesoInicio): boolean {
     return this.seleccionados.some(s => s.path === item.path);
   }
 
-  toggle(item: SidebarMenuItem): void {
+  toggle(item: AccesoInicio): void {
     this.seleccionados = this.estaSeleccionado(item)
       ? this.seleccionados.filter(s => s.path !== item.path)
       : [...this.seleccionados, item];
@@ -196,10 +217,5 @@ export class PersonalizarInicioDialogComponent implements OnChanges {
 
   seleccionarNinguna(): void {
     this.seleccionados = [];
-  }
-
-  onColumnasChange(n: number): void {
-    this.columnas = n;
-    this.columnasChange.emit(n);
   }
 }

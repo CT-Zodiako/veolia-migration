@@ -6,71 +6,40 @@ import { forkJoin } from 'rxjs';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { AuthService, MenuPermission } from '../../services/auth.service';
 import { AuthState } from '../../state/auth.state';
-import { SidebarMenuService, SidebarMenuItem } from '../../services/sidebar-menu.service';
+import { SidebarMenuService } from '../../services/sidebar-menu.service';
 import { AyudaService } from '../../services/ayuda.service';
-import { PersonalizarInicioDialogComponent } from './personalizar-inicio-dialog.component';
-import { IconComponent } from '../shared/icon.component';
+import { AccesoInicio, PersonalizarInicioDialogComponent } from './personalizar-inicio-dialog.component';
 
 interface DashboardCard {
   title: string;
+  grupo: string;
   route: string;
-  icon: string;
-  iconoCustomUrl: string | null;
+  lineIcon: string;
 }
 
 const ACCESOS_POR_DEFECTO = ['/usuarios', '/aps-usuario', '/asignacion-sistema', '/menu-usuario'];
-const COLUMNAS_DEFECTO = 6;
 
-/** Set de íconos 3D subido por el usuario (frontend/public/iconos/), solo para
- *  las tarjetas de Inicio -- el sidebar sigue usando los Twemoji de siempre.
- *  Si una ruta no está acá, la tarjeta cae al ícono Twemoji normal. */
-const ICONOS_CUSTOM_POR_RUTA: Record<string, string> = {
-  '/aps': 'aps.png',
-  '/empresas': 'empresas.png',
-  '/usuarios': 'usuarios.png',
-  '/calculo': 'Copia de calculo tarifas.png',
-  '/cft': 'calculo tarifas.png',
-  '/tarifas': 'detallado tarifas.png',
-  '/informesGenerados': 'infomre.png',
-  '/reversion_auth': 'aurotizar reversiones.png',
-  '/suministros/reversion': 'Reversion.png',
-  '/suministros/historico': 'historico.png',
-  '/suministros/cargue-mensual': 'cargue mensual.png',
-  '/suministros/cargue-semestral': 'cargue semestra.png',
-  '/sui/integracion': 'formato.png',
-  '/sui/cargue-complementario': 'cargue complemntario.png',
-  '/sui/dashboard': 'dashbaord 2.png',
-  '/sui/resumen-formatos': 'resumen fomratos y formulario.png',
-  '/sui-reversiones': 'sui reversiones.png',
-  '/histProductividad': 'historial de porductividad.png',
-  '/subcon': 'subisdios contribuciones.png',
-  '/proyecciones': 'proyecciones.png',
-  '/proyecciones/linea-tiempo': 'linea de tiempo.png',
-  '/proyecciones/crecimiento': 'crecimiento.png',
-  '/proyecciones/ejecutar': 'proyectar.png',
-  '/proyecciones/subcont': 'subicidos contirbuciones.png',
-  '/reliquidacion/cargue': 'cargue.png',
-  '/cra': 'indices cra.png',
-  '/productividad': 'ajuste productividad.png',
-  '/suministros/descuento-costos': 'Copia de desceunto.png',
-  '/suministros/aprovechamiento': 'activar aprovechamiento.png',
-  '/suministros/costo-poda': 'costo poda.png',
-  '/suministros/cargue-productividad': 'cargue productividad.png',
-  '/generales': 'infomracion general.png',
-  '/gerencial/costos': 'detallado de costo.png',
-  '/gerencial/sub-aporte': 'detallado y aporte.png',
-  '/gerencial/dashboard': 'dashboard.png',
-  '/gerencial/poda': 'poda.png',
-  '/gerencial/descuento-costos': 'desceunto.png',
-  '/suministros/verificacion': 'verificacion.png',
-  '/pgirs/resumen': 'PGIRS RESMEUN.png',
-  '/pgirs/informe-variables': 'pgir infomre variables.png'
+/** Same line style as the navy sidebar: PrimeIcons equivalent of each menu option's icon name
+ *  (sidebar-menu.service.ts routeCatalog[].icon). Unknown names fall back to the option's group icon. */
+const LINE_ICON_POR_NOMBRE: Record<string, string> = {
+  'home': 'pi-home', 'settings': 'pi-cog', 'building-2': 'pi-building', 'users': 'pi-users',
+  'calculator': 'pi-calculator', 'file-text': 'pi-file', 'folder-open': 'pi-folder-open', 'recycle': 'pi-refresh',
+  'newspaper': 'pi-book', 'calendar-days': 'pi-calendar', 'refresh-cw': 'pi-refresh', 'notepad-text': 'pi-file-edit',
+  'repeat': 'pi-replay', 'clock': 'pi-clock', 'inbox': 'pi-inbox', 'archive': 'pi-box', 'puzzle': 'pi-th-large',
+  'mailbox': 'pi-envelope', 'monitor': 'pi-desktop', 'library': 'pi-book', 'globe': 'pi-globe',
+  'receipt': 'pi-receipt', 'award': 'pi-verified', 'construction': 'pi-wrench', 'trash-2': 'pi-trash',
+  'circle-check': 'pi-check-circle', 'wallet': 'pi-wallet', 'telescope': 'pi-eye', 'hourglass': 'pi-hourglass',
+  'sprout': 'pi-sun', 'target': 'pi-bullseye', 'handshake': 'pi-thumbs-up', 'pen-line': 'pi-pencil',
+  'truck': 'pi-truck', 'scale': 'pi-sliders-v', 'chart-line': 'pi-chart-line', 'search': 'pi-search',
+  'file-pen-line': 'pi-file-edit', 'map-pin': 'pi-map-marker', 'sliders-horizontal': 'pi-sliders-h',
+  'percent': 'pi-percentage', 'shuffle': 'pi-arrow-right-arrow-left', 'tree-pine': 'pi-sun', 'upload': 'pi-upload',
+  'map': 'pi-map', 'banknote': 'pi-money-bill', 'gift': 'pi-gift', 'compass': 'pi-compass', 'trees': 'pi-sun',
+  'wrench': 'pi-wrench', 'search-check': 'pi-check-square', 'flask-conical': 'pi-filter',
+  'microscope': 'pi-search-plus', 'file': 'pi-file', 'drafting-compass': 'pi-pencil', 'ruler': 'pi-arrows-h',
+  'trending-down': 'pi-arrow-down-right', 'trending-up': 'pi-arrow-up-right', 'hash': 'pi-hashtag',
+  'signal-high': 'pi-chart-bar', 'package': 'pi-box', 'zap': 'pi-bolt', 'store': 'pi-shop',
+  'factory': 'pi-building', 'file-stack': 'pi-copy', 'clipboard-list': 'pi-list', 'folder': 'pi-folder'
 };
-
-function iconoCustomUrl(path: string): string | null {
-  const archivo = ICONOS_CUSTOM_POR_RUTA[path];
-  return archivo ? 'iconos/' + encodeURIComponent(archivo) : null;
-}
 
 @Component({
   selector: 'app-dashboard',
@@ -80,8 +49,7 @@ function iconoCustomUrl(path: string): string | null {
     RouterModule,
     DragDropModule,
     ...CommonPrimeNgModules,
-    PersonalizarInicioDialogComponent,
-    IconComponent
+    PersonalizarInicioDialogComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
@@ -89,9 +57,8 @@ function iconoCustomUrl(path: string): string | null {
 export class DashboardComponent {
   cards: DashboardCard[] = [];
   cardPaths: string[] = [];
-  disponibles: SidebarMenuItem[] = [];
+  disponibles: AccesoInicio[] = [];
   mostrarPersonalizar = false;
-  columnas = COLUMNAS_DEFECTO;
 
   constructor(
     private readonly authService: AuthService,
@@ -100,7 +67,6 @@ export class DashboardComponent {
     readonly ayudaService: AyudaService,
     private readonly cdr: ChangeDetectorRef
   ) {
-    this.columnas = this.cargarColumnasGuardadas();
     effect(() => {
       this.cargarMenu(this.authState.sistemaId());
     });
@@ -120,9 +86,7 @@ export class DashboardComponent {
     }).subscribe({
       next: ({ permissions, menuTree }: { permissions: MenuPermission[]; menuTree: any[] }) => {
         const permittedMenuIds = new Set((permissions || []).map(item => item.MENU_ID));
-        this.disponibles = this.sidebarMenuService
-          .getFlatPermittedItems(menuTree, permittedMenuIds)
-          .filter(item => item.path !== '/');
+        this.disponibles = this.accesosConGrupo(menuTree, permittedMenuIds);
         this.aplicarSeleccion(this.cargarSeleccionGuardada());
         this.cdr.detectChanges();
       },
@@ -139,9 +103,19 @@ export class DashboardComponent {
     this.cdr.detectChanges();
   }
 
-  guardarColumnas(n: number): void {
-    this.columnas = n;
-    localStorage.setItem(this.columnasStorageKey(), String(n));
+  /** Same permitted, de-duplicated options as the sidebar, keeping the menu group each one comes from
+   *  (shown as the card subtitle). */
+  private accesosConGrupo(menuTree: any[], permittedMenuIds: Set<number>): AccesoInicio[] {
+    const vistos = new Set<string>();
+    const accesos: AccesoInicio[] = [];
+    for (const group of this.sidebarMenuService.buildMenuGroups(menuTree, permittedMenuIds)) {
+      for (const item of group.children) {
+        if (item.path === '/' || vistos.has(item.path)) continue;
+        vistos.add(item.path);
+        accesos.push({ ...item, grupo: group.label });
+      }
+    }
+    return accesos;
   }
 
   trackByRoute(_index: number, card: DashboardCard): string {
@@ -170,16 +144,6 @@ export class DashboardComponent {
     return `dashboard:accesos:${sisuId}:${idSistema}`;
   }
 
-  private columnasStorageKey(): string {
-    const sisuId = this.authState.user()?.SISU_ID ?? 'anonimo';
-    return `dashboard:columnas:${sisuId}`;
-  }
-
-  private cargarColumnasGuardadas(): number {
-    const raw = Number(localStorage.getItem(this.columnasStorageKey()));
-    return raw >= 3 && raw <= 6 ? raw : COLUMNAS_DEFECTO;
-  }
-
   private cargarSeleccionGuardada(): string[] {
     try {
       const raw = localStorage.getItem(this.storageKey());
@@ -200,12 +164,12 @@ export class DashboardComponent {
 
     return paths
       .map(path => porPath.get(path))
-      .filter((item): item is SidebarMenuItem => !!item)
+      .filter((item): item is AccesoInicio => !!item)
       .map((item) => ({
         title: item.label,
+        grupo: item.grupo,
         route: item.path,
-        icon: item.icon,
-        iconoCustomUrl: iconoCustomUrl(item.path)
+        lineIcon: 'pi ' + (LINE_ICON_POR_NOMBRE[item.icon] ?? this.sidebarMenuService.lineIcon(item.grupo))
       }));
   }
 }

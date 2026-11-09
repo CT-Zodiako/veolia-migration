@@ -79,12 +79,54 @@ describe('DashboardComponent (100 Inicio)', () => {
   // Legacy views/Home.vue:1-12 renders an empty card (no shortcuts, no help block).
   // Accepted deviation: legacy-characterization-tests S8/S9 (group D, "the new Inicio dashboard"): Inicio shows the
   // permitted shortcut cards, the help block and "Personalizar".
-  it('shows the new Inicio: shortcut cards, the help block and "Personalizar"', () => {
+  it('shows the new Inicio: "Mis accesos", shortcut cards, the help block and "Personalizar"', () => {
     const { fixture } = crear();
 
     expect(fixture.nativeElement.querySelectorAll('a.card').length).toBe(1);
     const texto = fixture.nativeElement.textContent as string;
+    expect(texto).toContain('Mis accesos');
+    expect(texto).toContain('Las páginas que más usa, a un clic');
     expect(texto).toContain('Personalizar');
     expect(texto).toContain('¿Necesitas ayuda con algo más?');
+    expect(texto).toContain('Ver Documentación');
+    expect(texto).not.toContain('Soporte Directo');
+  });
+
+  it('labels each shortcut card with the menu group it belongs to', () => {
+    localStorage.setItem('dashboard:accesos:77:1', JSON.stringify(['/usuarios', '/tarifas']));
+    const { fixture } = crear();
+
+    const subtitulos = Array.from(fixture.nativeElement.querySelectorAll('a.card .card-grupo') as NodeListOf<HTMLElement>)
+      .map((el) => el.textContent?.trim());
+    expect(subtitulos).toEqual(['Configuración', 'Informes']);
+  });
+
+  it('draws each shortcut with a line icon like the sidebar, never an image', () => {
+    localStorage.setItem('dashboard:accesos:77:1', JSON.stringify(['/usuarios', '/tarifas']));
+    const { fixture } = crear();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelectorAll('a.card img').length).toBe(0);
+    const iconos = Array.from(el.querySelectorAll('a.card .card-icon i') as NodeListOf<HTMLElement>).map((i) => i.className);
+    expect(iconos).toEqual(['pi pi-users', 'pi pi-file']);
+    expect(el.querySelector('.help-cta-icon i')?.className).toBe('pi pi-question-circle');
+  });
+
+  it('opens the customize panel from "Agregar acceso" and closes it after saving', () => {
+    const { fixture, component } = crear();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelector('.personalizar-panel')).toBeNull();
+    (el.querySelector('button.card-agregar') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(component.mostrarPersonalizar).toBe(true);
+    expect(el.querySelector('.personalizar-panel')?.textContent).toContain('Personalizar accesos');
+
+    component.guardarSeleccion(['/tarifas']);
+    component.mostrarPersonalizar = false;
+    fixture.detectChanges();
+    expect(el.querySelector('.personalizar-panel')).toBeNull();
+    expect(enlaces(el).map(([href]) => href)).toEqual(['/tarifas']);
   });
 });

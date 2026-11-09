@@ -90,6 +90,7 @@ describe('LayoutComponent (legacy App.vue + MenuService.js)', () => {
 
   // Approved deviation parity-review-all L20: page titles live in the top bar.
   it.each([
+    ['/', 'Inicio'],
     ['/usuarios', 'Gestión de Usuarios'],
     ['/cambiar-clave', 'Cambiar Contraseña'],
     ['/cssaprovechamiento', 'SUI 853 - Estimación CSS'],
@@ -234,6 +235,11 @@ describe('LayoutComponent shell (rendered)', () => {
   it('shows no breadcrumb for a route outside the menu', async () => {
     const { el } = await render('/ruta-fuera-del-menu');
     expect(el.querySelector('.top-bar-breadcrumb')).toBeNull();
+  });
+
+  it('has no floating help button', async () => {
+    const { el } = await render('/');
+    expect(el.querySelector('.ayuda-flotante')).toBeNull();
   });
 
   it('shows the user card with initial, name and "Sesión activa"', async () => {
