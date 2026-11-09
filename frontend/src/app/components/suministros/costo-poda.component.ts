@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +21,8 @@ interface ModalItem {
   EMPR_NOMBRE: string;
   valor: number | null;
 }
+
+const FORMATO_PESOS = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 @Component({
   selector: 'app-costo-poda',
@@ -103,13 +105,32 @@ export class CostoPodaComponent {
       });
   }
 
-  // Legacy Poda.vue:243-249 (formateoMiles): integer part grouped with Intl es-MX, decimals kept as written.
-  formateoMiles(valor: number | string | null | undefined): string {
-    if (valor === null || valor === undefined) return '';
-    const [entero, decimales] = valor.toString().replace(',', '.').split('.');
-    const enteroFormateado = new Intl.NumberFormat('es-MX').format(Number(entero));
-    return decimales ? `${enteroFormateado}.${decimales}` : enteroFormateado;
+  // design/suministros-pantallas/13: both costs in Colombian pesos with 2 decimals (legacy showed the SUI value raw and
+  // the facturación with es-MX thousands).
+  formatoPesos(valor: number | string | null | undefined): string {
+    if (valor === null || valor === undefined || valor === '') return '—';
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? FORMATO_PESOS.format(numero) : String(valor);
   }
+
+  readonly totales = computed(() => {
+    const suma = (campo: 'CPTE_VALORSUI' | 'CPTE_VALORFACT') =>
+      this.items().reduce((acc, item) => acc + (Number(item[campo]) || 0), 0);
+    return { techo: suma('CPTE_VALORSUI'), facturacion: suma('CPTE_VALORFACT') };
+  });
+
+  // Legacy paginated 15 rows; the page only needs the paginator when there are more empresas than that.
+  readonly paginar = computed(() => this.items().length > 15);
+
+  readonly resumenPie = computed(() => {
+    const items = this.items();
+    if (!items.length) return '';
+    const manuales = items.filter((item) => item.CPTE_TIPINGRESO === 1).length;
+    const empresas = `${items.length} ${items.length === 1 ? 'empresa' : 'empresas'}`;
+    if (manuales === 0) return `${empresas} · ${items.length === 1 ? 'con' : 'todas con'} ingreso automático`;
+    if (manuales === items.length) return `${empresas} · ${items.length === 1 ? 'con' : 'todas con'} ingreso manual`;
+    return `${empresas} · ${manuales} con ingreso manual`;
+  });
 
   onApsChange(value: number | null): void {
     this.aps.set(value);

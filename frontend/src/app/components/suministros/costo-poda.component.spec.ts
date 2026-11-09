@@ -101,17 +101,29 @@ describe('CostoPodaComponent (309) — legacy views/suministros/Poda.vue', () =>
     expect(Array.from(el.querySelectorAll('thead th')).map((th) => th.textContent?.trim())).toEqual(['EMPRESA', 'COSTO TECHO SUI', 'COSTO FACTURACION', 'TIPO INGRESO', 'Opciones']);
   });
 
-  // Legacy Poda.vue:35-38 + formateoMiles (:180-187): thousands with Intl es-MX, decimals kept.
-  it('formats COSTO FACTURACION with thousands separators like legacy formateoMiles', () => {
+  // design/suministros-pantallas/13-costo-poda-c-actual-mejorada.html: Colombian format with 2 decimals on both costs.
+  it('formats both costs in Colombian format with 2 decimals', () => {
     const { el } = setup();
 
     const fila = Array.from(el.querySelectorAll('tbody tr td')).map((td) => td.textContent?.trim());
-    expect(fila[2]).toBe('1,234,567.5');
+    expect([fila[1], fila[2]]).toEqual(['1.000,00', '1.234.567,50']);
   });
 
-  // Legacy Poda.vue:12-15 paginates 15 rows with [15, 30, 50, 100].
-  it('paginates 15 rows with options 15/30/50/100 like legacy', () => {
-    const { el } = setup();
+  it('titles the card and closes the table with a Total row and a count instead of the paginator', () => {
+    const otra = { ...PODA, EMPR_NOMBRE: 'PACARIBE', EMPR_EMPR: 1003, CPTE_VALORSUI: 500, CPTE_VALORFACT: 500, CPTE_TIPINGRESO: 0 };
+    const { el } = setup([PODA, otra]);
+
+    expect(el.querySelector('.poda-titulo')?.textContent?.trim()).toBe('Costos de poda por empresa');
+    expect(el.querySelector('.poda-ayuda')?.textContent).toContain('Costo techo reportado al SUI');
+    const total = Array.from(el.querySelectorAll('tfoot tr td, .p-datatable-tfoot tr td')).map((td) => td.textContent?.trim());
+    expect(total.slice(0, 3)).toEqual(['Total', '1.500,00', '1.235.067,50']);
+    expect(el.querySelector('.poda-pie')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('2 empresas · 1 con ingreso manual');
+    expect(el.querySelector('.p-paginator')).toBeNull();
+  });
+
+  it('keeps the paginator only when there are more than 15 empresas', () => {
+    const muchas = Array.from({ length: 16 }, (_, k) => ({ ...PODA, EMPR_EMPR: 2000 + k, EMPR_NOMBRE: `EMPRESA ${k}` }));
+    const { el } = setup(muchas);
 
     expect(el.querySelector('.p-paginator')).not.toBeNull();
   });

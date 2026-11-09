@@ -18,9 +18,15 @@
   margin-bottom: 1rem;
 }
 
-.actions {
-  display: flex;
-  gap: 0.4rem;
+/* Keep the actions cell a real table cell (display:flex on a <td> made it shorter than two-line rows, so its
+   bottom border jumped); space the buttons with a margin instead of flex gap. */
+td.actions {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+td.actions p-button + p-button {
+  margin-left: 0.4rem;
 }
 
 .text-right {
@@ -51,4 +57,40 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 16px;
+}
+
+/* design/suministros-pantallas/13: titled card, Total row and count footer. */
+.poda-header {
+  margin-bottom: 12px;
+}
+
+.poda-titulo {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.poda-ayuda {
+  margin: 0;
+  max-width: 640px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.poda-card .fila-total td {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background: var(--color-bg-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.poda-card td.text-right {
+  font-variant-numeric: tabular-nums;
+}
+
+.poda-pie {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
 }
