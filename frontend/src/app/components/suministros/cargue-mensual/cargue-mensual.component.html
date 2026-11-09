@@ -30,6 +30,7 @@
 
   <p-message *ngIf="estado()" severity="info" [text]="estado()" styleClass="w-full mb-3"></p-message>
   <p-message *ngIf="error()" severity="error" [text]="error()" styleClass="w-full mb-3"></p-message>
+  <p-message *ngIf="advertencia()" severity="warn" class="aviso-certificar" [text]="advertencia()" styleClass="w-full mb-3"></p-message>
 
   <div class="card-section" *ngIf="verificando()">
     <p class="loading-text">Verificando tarifas existentes...</p>

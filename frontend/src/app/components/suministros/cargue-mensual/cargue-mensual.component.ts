@@ -16,6 +16,11 @@ import { periodoAnterior } from '../../../shared/periodo-anterior.util';
 type TabCargueMensual = 'PROPIA' | 'COMPETIDOR' | 'USUARIOS' | 'TERCEROS';
 const TABS_VALIDOS: TabCargueMensual[] = ['PROPIA', 'COMPETIDOR', 'USUARIOS', 'TERCEROS'];
 
+/** fauco_certificar returned other than 1 (e.g. relleno no propio without Inf. Terceros): a warning, not an error. */
+export const ADVERTENCIA_CERTIFICAR =
+  'No se completó la certificación. Revisá si para este APS aplica el informe de Terceros (Inf. Terceros): si aplica, '
+  + 'cargalo y volvé a certificar; si no aplica, revisá que los demás informes del período estén completos.';
+
 @Component({
   selector: 'app-cargue-mensual',
   standalone: true,
@@ -44,6 +49,7 @@ export class CargueMensualComponent {
   readonly certificando = signal(false);
   readonly estado = signal('');
   readonly error = signal('');
+  readonly advertencia = signal('');
 
   readonly mostrarModal = signal(false);
   readonly datosModal = signal<CertificarMensualItem[]>([]);
@@ -60,6 +66,7 @@ export class CargueMensualComponent {
     if (!this.filtrosValidos()) return;
     this.estado.set('');
     this.error.set('');
+    this.advertencia.set('');
     this.verificarTarifas();
   }
 
@@ -67,6 +74,7 @@ export class CargueMensualComponent {
     this.tarifasExistentes.set(null);
     this.estado.set('');
     this.error.set('');
+    this.advertencia.set('');
   }
 
   private verificarTarifas(): void {
@@ -110,15 +118,17 @@ export class CargueMensualComponent {
   private ejecutarCertificar(): void {
     this.certificando.set(true);
     this.error.set('');
+    this.advertencia.set('');
     this.estado.set('');
     const periodo = periodoAnterior(this.anno()!, this.mes()!);
     const payload = { aps: this.aps()!, anno: periodo.anno, mes: periodo.mes };
 
     this.service.certificar(payload).subscribe({
       next: (res) => {
-        // Legacy Cargue.vue:158: fauco_certificar returns an integer and only 1 means certified.
+        // Legacy Cargue.vue:158: fauco_certificar returns an integer and only 1 means certified. Anything else is shown
+        // as a warning (user request): often the APS needs Inf. Terceros, which only some APS load.
         if (res.data !== 1) {
-          this.error.set('Error al certificar tarifas.');
+          this.advertencia.set(ADVERTENCIA_CERTIFICAR);
         } else {
           this.estado.set('Certificado correctamente.');
         }

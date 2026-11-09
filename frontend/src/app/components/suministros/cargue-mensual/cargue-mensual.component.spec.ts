@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ConfirmationService } from 'primeng/api';
-import { CargueMensualComponent } from './cargue-mensual.component';
+import { ADVERTENCIA_CERTIFICAR, CargueMensualComponent } from './cargue-mensual.component';
 import { SuministrosService } from '../../../services/suministros.service';
 
 function setup(certificarData: number | null) {
@@ -20,12 +20,13 @@ function setup(certificarData: number | null) {
     ]
   });
 
-  const component = TestBed.createComponent(CargueMensualComponent).componentInstance;
+  const fixture = TestBed.createComponent(CargueMensualComponent);
+  const component = fixture.componentInstance;
   component.aps.set(5);
   component.anno.set(2026);
   component.mes.set(1);
   component.tarifasExistentes.set(false);
-  return { component, service };
+  return { component, service, fixture };
 }
 
 describe('CargueMensualComponent certificar (701)', () => {
@@ -41,13 +42,22 @@ describe('CargueMensualComponent certificar (701)', () => {
     expect(service.certificarMensual).toHaveBeenCalledWith({ aps: 5, anno: 2025, mes: 12 });
   });
 
-  it('reports an error for any other integer result', () => {
-    const { component, service } = setup(0);
+  // User: "no es un error si no una advertencia ya que el informe de terceros algunos lo suben otros no entonces dar la
+  // alerta de que revise si aplica o no". fauco_certificar returns 0 e.g. when an APS with relleno no propio has no
+  // Inf. Terceros for the period: warn instead of error, and keep the CLUS certification flow as before.
+  it('warns to check whether Inf. Terceros applies for any other integer result', () => {
+    // jsdom has no ResizeObserver (PrimeNG tabs need it once the template renders).
+    globalThis.ResizeObserver ??= class { observe(): void {} unobserve(): void {} disconnect(): void {} } as unknown as typeof ResizeObserver;
+    const { component, service, fixture } = setup(0);
 
     component.certificar();
+    fixture.detectChanges();
 
     expect(component.estado()).toBe('');
-    expect(component.error()).toBe('Error al certificar tarifas.');
+    expect(component.error()).toBe('');
+    expect(component.advertencia()).toBe(ADVERTENCIA_CERTIFICAR);
+    const aviso = (fixture.nativeElement as HTMLElement).querySelector('p-message[severity="warn"].aviso-certificar');
+    expect(aviso).not.toBeNull();
     expect(service.certificarMensual).toHaveBeenCalledTimes(1);
   });
 });
