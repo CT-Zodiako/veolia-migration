@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ingresar · Veolia · Red de servicio</title>
+<style>
+  :root{
+    --color-bg-page:#f1f5f9;--color-bg-card:#ffffff;--color-border:#e2e8f0;
+    --color-text-primary:#0f172a;--color-text-body:#334155;--color-text-secondary:#64748b;
+    --color-bg-danger-soft:#fff2f2;--color-border-danger-soft:#ffcdcc;--color-brand-accent:#f10400;
+    --color-brand-strong:#780200;--shell-sidebar-bg:#0b1f3a;--shell-sidebar-bg-active:#1b3459;
+    --shell-sidebar-text:#dbe4f0;--shell-sidebar-text-muted:#8a9bb5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;color:var(--color-text-body);background:var(--color-bg-page)}
+  .shell{display:grid;grid-template-columns:1.25fr 1fr;min-height:100vh}
+  .net{position:relative;background:var(--shell-sidebar-bg);color:var(--shell-sidebar-text);overflow:hidden}
+  canvas{position:absolute;inset:0;width:100%;height:100%}
+  .net-copy{position:absolute;left:56px;bottom:56px;right:56px;max-width:520px;pointer-events:none}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--shell-sidebar-text-muted);margin:0 0 12px}
+  .net-copy h1{font-size:40px;line-height:1.15;margin:0 0 16px;color:#fff;font-weight:700}
+  .net-copy h1 em{font-style:normal;color:#ff6966}
+  .net-copy p{margin:0;font-size:16px;color:var(--shell-sidebar-text)}
+  .stats{display:flex;gap:32px;margin-top:28px}
+  .stats b{display:block;font-size:28px;color:#fff;font-variant-numeric:tabular-nums}
+  .stats span{font-size:13px;color:var(--shell-sidebar-text-muted)}
+  .brand-top{position:absolute;top:40px;left:56px;display:flex;align-items:center;gap:12px}
+  .brand-top svg{display:block}
+  .side{display:flex;align-items:center;justify-content:center;padding:48px}
+  .panel{width:100%;max-width:400px}
+  .panel h2{font-size:28px;color:var(--color-text-primary);margin:0 0 4px}
+  .panel .sub{margin:0 0 32px;color:var(--color-text-secondary);font-size:15px}
+  .field{margin-bottom:20px;position:relative}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--color-text-body)}
+  .field input{width:100%;padding:13px 44px 13px 14px;font:inherit;font-size:15px;color:var(--color-text-primary);background:var(--color-bg-card);border:1.5px solid var(--color-border);border-radius:10px;transition:border-color .2s,box-shadow .2s}
+  .field input:focus{outline:none;border-color:var(--color-brand-accent);box-shadow:0 0 0 4px rgba(241,4,0,.12)}
+  .field .toggle{position:absolute;right:6px;bottom:6px;border:0;background:transparent;border-radius:8px;padding:6px 8px;cursor:pointer;color:var(--color-text-secondary);font:inherit;font-size:13px}
+  .field .toggle:focus-visible{outline:2px solid var(--color-brand-accent)}
+  .btn{width:100%;border:0;border-radius:10px;padding:14px;font:inherit;font-weight:600;font-size:15px;color:#fff;background:#c40300;cursor:pointer;position:relative;overflow:hidden;transition:background .2s,transform .1s}
+  .btn:hover{background:#9c0300}.btn:active{transform:scale(.99)}
+  .btn:focus-visible{outline:3px solid #0b1f3a;outline-offset:2px}
+  .btn[aria-busy=true]{pointer-events:none}
+  .btn[aria-busy=true]::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:40%;background:#fff;animation:bar 1s infinite ease-in-out}
+  @keyframes bar{0%{left:-40%}100%{left:100%}}
+  .msg{border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:16px;background:var(--color-bg-danger-soft);border:1px solid var(--color-border-danger-soft);color:var(--color-brand-strong);white-space:pre-line}
+  .msg[hidden]{display:none}
+  .hint{font-size:12px;color:var(--color-text-secondary);margin-top:20px;text-align:center}
+  .step{transition:opacity .35s,transform .35s}
+  .step.out{opacity:0;transform:translateX(-24px);pointer-events:none}
+  .systems{display:grid;gap:12px;margin-top:8px}
+  .sys{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px;border:1.5px solid var(--color-border);border-radius:12px;background:var(--color-bg-card);font:inherit;cursor:pointer;opacity:0;transform:translateY(10px);animation:in .4s forwards;transition:border-color .2s,box-shadow .2s}
+  .sys:hover,.sys:focus-visible{border-color:#c40300;box-shadow:0 8px 24px -12px rgba(120,2,0,.4);outline:none}
+  .sys .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff;background:var(--shell-sidebar-bg)}
+  .sys b{display:block;color:var(--color-text-primary)}
+  .sys small{color:var(--color-text-secondary)}
+  .sys .go{margin-left:auto;color:#c40300;font-size:20px}
+  @keyframes in{to{opacity:1;transform:none}}
+  .back{border:0;background:none;color:var(--color-brand-strong);font:inherit;font-size:14px;cursor:pointer;padding:0;margin-bottom:16px;font-weight:600}
+  .back:focus-visible{outline:2px solid var(--color-brand-accent);border-radius:4px}
+  .ok{display:flex;align-items:center;gap:8px;font-size:14px;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;margin-bottom:16px}
+  @media (max-width:900px){.shell{grid-template-columns:1fr}.net{min-height:280px}.net-copy{bottom:24px;left:24px}.net-copy h1{font-size:26px}.stats{display:none}.brand-top{left:24px;top:24px}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.sys{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <section class="net" aria-label="Red de operaciones Veolia en Colombia">
+    <canvas id="c" aria-hidden="true"></canvas>
+    <div class="brand-top">
+      <svg width="132" height="28" viewBox="0 0 132 28" role="img" aria-label="Veolia"><text x="0" y="22" font-family="Segoe UI,system-ui,sans-serif" font-size="24" font-weight="800" fill="#ff2a26" letter-spacing="1">VEOLIA</text></svg>
+    </div>
+    <div class="net-copy">
+      <p class="eyebrow">Plataforma regulatoria · Aseo</p>
+      <h1>Cada punto es una operación. <em>Todas</em> conectadas en un solo lugar.</h1>
+      <p>Costos, facturación, SUI y reliquidaciones de todas las APS, con la misma información para todos.</p>
+      <div class="stats"><div><b data-count="38">0</b><span>APS activas</span></div><div><b data-count="3">0</b><span>sistemas</span></div><div><b data-count="12">0</b><span>meses al día</span></div></div>
+    </div>
+  </section>
+
+  <section class="side">
+    <div class="panel">
+      <div class="step" id="s1">
+        <h2>Ingresá</h2>
+        <p class="sub">Usá tu correo corporativo de Veolia.</p>
+        <div class="msg" id="err" role="alert" hidden></div>
+        <form id="f" novalidate>
+          <div class="field"><label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="usuario@veolia.com"></div>
+          <div class="field"><label for="pass">Contraseña</label><input id="pass" type="password" autocomplete="current-password" placeholder="••••••••"><button type="button" class="toggle" id="tg" aria-pressed="false">Mostrar</button></div>
+          <button class="btn" id="go" type="submit">Ingresar</button>
+        </form>
+        <p class="hint">Prototipo: cualquier correo válido · contraseña <b>veolia</b></p>
+      </div>
+      <div class="step out" id="s2" hidden>
+        <button class="back" id="bk" type="button">← Cambiar cuenta</button>
+        <div class="ok" role="status"><span aria-hidden="true">✓</span> Credenciales correctas</div>
+        <h2>¿A qué sistema entrás?</h2>
+        <p class="sub" id="who"></p>
+        <div class="systems" id="list" role="list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Red animada: nodos que representan operaciones
+const c=document.getElementById('c'),x=c.getContext('2d');let W,H,nodes=[],mouse={x:-999,y:-999};
+const cities=['Bogotá','Tunja','Montería','Cartagena','Cali','Medellín','Sogamoso','Duitama','Yopal','Neiva'];
+function size(){const r=c.getBoundingClientRect();W=c.width=r.width*devicePixelRatio;H=c.height=r.height*devicePixelRatio;
+  nodes=Array.from({length:70},(_,i)=>({x:Math.random()*W,y:Math.random()*H*.72,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:i<10?4:1.8,label:i<10?cities[i]:null,p:Math.random()*6}));}
+function draw(t){x.clearRect(0,0,W,H);const d=150*devicePixelRatio;
+  for(const n of nodes){if(!reduce){n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H*.72)n.vy*=-1;}}
+  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const a=nodes[i],b=nodes[j],dx=a.x-b.x,dy=a.y-b.y,dd=Math.hypot(dx,dy);if(dd<d){x.strokeStyle=`rgba(138,155,181,${.35*(1-dd/d)})`;x.lineWidth=devicePixelRatio;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();}}
+  for(const n of nodes){const md=Math.hypot(n.x-mouse.x,n.y-mouse.y);if(md<d*1.3){x.strokeStyle=`rgba(255,105,102,${.8*(1-md/(d*1.3))})`;x.beginPath();x.moveTo(n.x,n.y);x.lineTo(mouse.x,mouse.y);x.stroke();}
+    const pulse=n.label&&!reduce?Math.sin(t/600+n.p)*2+3:0;
+    if(n.label){x.fillStyle='rgba(241,4,0,.25)';x.beginPath();x.arc(n.x,n.y,(n.r+pulse+4)*devicePixelRatio,0,7);x.fill();}
+    x.fillStyle=n.label?'#ff2a26':'#5f7392';x.beginPath();x.arc(n.x,n.y,n.r*devicePixelRatio,0,7);x.fill();
+    if(n.label){x.fillStyle='#dbe4f0';x.font=`${12*devicePixelRatio}px Segoe UI,system-ui,sans-serif`;x.fillText(n.label,n.x+8*devicePixelRatio,n.y+4*devicePixelRatio);}}
+  if(!reduce)requestAnimationFrame(draw);}
+c.parentElement.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();mouse.x=(e.clientX-r.left)*devicePixelRatio;mouse.y=(e.clientY-r.top)*devicePixelRatio;});
+c.parentElement.addEventListener('pointerleave',()=>{mouse.x=mouse.y=-999});
+addEventListener('resize',()=>{size();if(reduce)draw(0)});size();requestAnimationFrame(draw);
+document.querySelectorAll('[data-count]').forEach(el=>{const n=+el.dataset.count;if(reduce){el.textContent=n;return;}let i=0;const s=setInterval(()=>{el.textContent=++i;if(i>=n)clearInterval(s)},900/n)});
+
+// Flujo: credenciales -> sistema
+const SISTEMAS=[{n:'VEO-Regulator',d:'Costos, tarifas e informes gerenciales'},{n:'SUI853',d:'Reportes al Sistema Único de Información'},{n:'Reliquidaciones',d:'Comparación y ajuste de costos'}];
+const $=id=>document.getElementById(id),err=$('err');
+$('tg').onclick=()=>{const p=$('pass'),s=p.type==='password';p.type=s?'text':'password';$('tg').textContent=s?'Ocultar':'Mostrar';$('tg').setAttribute('aria-pressed',s)};
+$('f').onsubmit=e=>{e.preventDefault();const em=$('email').value.trim(),pw=$('pass').value,es=[];
+  if(!em)es.push('El email es obligatorio');if(!pw)es.push('El pass es obligatorio');
+  if(!es.length&&!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(em))es.push('El email no es valido');
+  if(es.length){err.textContent=es.join('\n');err.hidden=false;return;}
+  err.hidden=true;$('go').setAttribute('aria-busy','true');$('go').textContent='Validando credenciales…';
+  setTimeout(()=>{$('go').removeAttribute('aria-busy');$('go').textContent='Ingresar';
+    if(pw!=='veolia'){err.textContent='Usuario o Pass Incorrecto';err.hidden=false;$('pass').focus();return;}
+    $('who').textContent=em;$('list').innerHTML=SISTEMAS.map((s,i)=>`<button class="sys" role="listitem" style="animation-delay:${i*90}ms"><span class="ic">${s.n[0]}</span><span><b>${s.n}</b><small>${s.d}</small></span><span class="go" aria-hidden="true">→</span></button>`).join('');
+    $('s1').classList.add('out');setTimeout(()=>{$('s1').hidden=true;$('s2').hidden=false;requestAnimationFrame(()=>$('s2').classList.remove('out'));$('list').querySelector('button').focus();},reduce?0:300);
+  },1100);};
+$('bk').onclick=()=>{$('s2').hidden=true;$('s2').classList.add('out');$('s1').hidden=false;$('s1').classList.remove('out');$('email').focus();};
+$('list').onclick=e=>{const b=e.target.closest('.sys');if(b){b.querySelector('.go').textContent='…';b.setAttribute('aria-busy','true');}};
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "title": "Login dinámico · 5 versiones",
+  "brief": "Cinco versiones del login, más dinámicas, novedosas e innovadoras, todas diferentes. Mantienen el flujo actual: correo + contraseña → validación → elegir sistema (VEO-Regulator, SUI853, Reliquidaciones) y los mensajes de error del legacy.",
+  "artboards": [
+    { "file": "01-red-de-servicio.html", "title": "01 · Red de servicio (split + red interactiva)", "tradeoff": "Cuenta la historia de la operación con una red animada que reacciona al mouse; el lienzo cuesta CPU y en móvil queda como franja corta", "width": 1440, "height": 900 },
+    { "file": "02-conversacional.html", "title": "02 · Conversacional (una pregunta por pantalla)", "tradeoff": "Muy enfocado y amable, todo con teclado (Enter, números 1-3); más pasos para usuarios expertos y sin autocompletar correo+clave en un solo gesto", "width": 1440, "height": 900 },
+    { "file": "03-tarjeta-giratoria.html", "title": "03 · Tarjeta giratoria sobre olas", "tradeoff": "Evoluciona el login actual (gradiente rojo + tarjeta) con olas y giro 3D a la selección de sistema; el efecto 3D es más llamativo que funcional", "width": 1440, "height": 900 },
+    { "file": "04-paleta-comandos.html", "title": "04 · Paleta de comandos (oscuro, teclado primero)", "tradeoff": "Novedosa y rápida para usuarios técnicos (filtro, ↑↓, Esc); menos familiar para usuarios ocasionales", "width": 1440, "height": 900 },
+    { "file": "05-tablero-bloqueado.html", "title": "05 · Tablero bloqueado que se desbloquea", "tradeoff": "Muestra el valor del sistema detrás del login y lo revela al ingresar; los datos de la vista previa son ilustrativos y nunca deben ser reales antes de autenticar", "width": 1440, "height": 900 }
+  ]
+}

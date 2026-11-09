@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "02-conversacional.html",
+  "handoffs": {
+    "02-conversacional.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-09T03:50:47.938Z",
+      "startedAt": "2026-11-09T03:51:14.308Z",
+      "implementedAt": "2026-11-09T04:12:58.025Z",
+      "note": "Login en 3 pasos (correo, contraseña, sistema con teclas 1-9) en login.component.*. La vista previa en :4301 sale de una copia aislada, porque el árbol real no compila por documentacion/ (sin trackear, ajeno).",
+      "previewUrl": "http://localhost:4301/login"
+    }
+  }
+}

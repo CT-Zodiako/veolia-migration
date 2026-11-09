@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ingresar · Veolia · Tarjeta giratoria</title>
+<style>
+  :root{--color-bg-card:#ffffff;--color-border:#e2e8f0;--color-text-primary:#0f172a;--color-text-body:#334155;--color-text-secondary:#64748b;--color-bg-danger-soft:#fff2f2;--color-border-danger-soft:#ffcdcc;--color-brand-strong:#780200;--color-brand-accent:#f10400;--color-bg-card-glass:rgba(255,255,255,.95);--shell-sidebar-bg:#0b1f3a}
+  *{box-sizing:border-box}html,body{margin:0;height:100%}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;color:var(--color-text-body);min-height:100vh;background:linear-gradient(135deg,#780200 0%,#9c0300 50%,#c40300 100%);overflow:hidden;display:grid;place-items:center;perspective:1600px}
+  .waves{position:fixed;left:0;right:0;bottom:0;height:42vh;pointer-events:none}
+  .waves svg{position:absolute;bottom:0;width:200%;height:100%}
+  .w1{animation:wave 16s linear infinite;opacity:.18}.w2{animation:wave 11s linear infinite reverse;opacity:.12}.w3{animation:wave 22s linear infinite;opacity:.1}
+  @keyframes wave{to{transform:translateX(-50%)}}
+  .spot{position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 65%);pointer-events:none;transform:translate(-50%,-50%);left:50%;top:40%;transition:left .3s ease-out,top .3s ease-out}
+  .tag{position:fixed;top:32px;left:40px;color:#fff;display:flex;align-items:center;gap:14px}
+  .tag small{opacity:.85;font-size:13px;border-left:1px solid rgba(255,255,255,.4);padding-left:14px}
+  .scene{width:min(92vw,440px);height:560px;position:relative;z-index:1}
+  .card{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.3,1.4,.4,1)}
+  .card.flip{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;background:var(--color-bg-card-glass);backdrop-filter:blur(12px);border-radius:20px;padding:44px 40px;box-shadow:0 25px 50px -12px rgba(0,0,0,.45);display:flex;flex-direction:column}
+  .back{transform:rotateY(180deg)}
+  .logo{display:flex;justify-content:center;margin-bottom:8px}
+  h1{font-size:22px;text-align:center;color:var(--color-text-primary);margin:8px 0 4px}
+  .sub{text-align:center;font-size:14px;color:var(--color-text-secondary);margin:0 0 28px}
+  .fl{position:relative;margin-bottom:18px}
+  .fl input{width:100%;padding:22px 14px 8px;font:inherit;font-size:15px;border:1.5px solid var(--color-border);border-radius:12px;background:var(--color-bg-card);color:var(--color-text-primary);transition:border-color .2s,box-shadow .2s}
+  .fl label{position:absolute;left:15px;top:15px;font-size:15px;color:var(--color-text-secondary);pointer-events:none;transition:all .18s}
+  .fl input:focus{outline:none;border-color:var(--color-brand-accent);box-shadow:0 0 0 4px rgba(241,4,0,.12)}
+  .fl input:focus+label,.fl input:not(:placeholder-shown)+label{top:6px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--color-brand-strong)}
+  .caps{font-size:12px;color:var(--color-brand-strong);margin:-10px 0 14px}
+  .caps[hidden]{display:none}
+  .btn{margin-top:auto;width:100%;border:0;border-radius:12px;padding:15px;font:inherit;font-weight:600;font-size:15px;color:#fff;background:#c40300;cursor:pointer;transition:background .2s,box-shadow .2s;box-shadow:0 10px 24px -10px rgba(196,3,0,.7)}
+  .btn:hover{background:#9c0300}.btn:focus-visible{outline:3px solid var(--shell-sidebar-bg);outline-offset:2px}
+  .btn .dots{display:none}.btn[aria-busy=true] .lbl{display:none}.btn[aria-busy=true] .dots{display:inline-flex;gap:5px}
+  .dots i{width:6px;height:6px;border-radius:50%;background:#fff;animation:b 1s infinite}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+  @keyframes b{50%{transform:translateY(-5px);opacity:.5}}
+  .msg{border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:16px;background:var(--color-bg-danger-soft);border:1px solid var(--color-border-danger-soft);color:var(--color-brand-strong);white-space:pre-line}
+  .msg[hidden]{display:none}
+  .card.shake{animation:sh .45s}
+  @keyframes sh{20%{transform:rotateY(-8deg)}60%{transform:rotateY(6deg)}}
+  .avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 4px;display:grid;place-items:center;background:var(--shell-sidebar-bg);color:#fff;font-weight:700;font-size:22px;box-shadow:0 0 0 6px rgba(11,31,58,.08)}
+  .sys{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--color-border);border-radius:12px;background:var(--color-bg-card);font:inherit;text-align:left;cursor:pointer;margin-bottom:10px;width:100%;transition:border-color .2s,transform .2s}
+  .sys:hover,.sys:focus-visible{border-color:#c40300;transform:translateX(4px);outline:none}
+  .sys svg{flex:none}
+  .sys b{display:block;color:var(--color-text-primary);font-size:15px}.sys small{color:var(--color-text-secondary);font-size:13px}
+  .link{border:0;background:none;font:inherit;font-size:14px;font-weight:600;color:var(--color-brand-strong);cursor:pointer;margin-top:auto;padding:6px}
+  .link:focus-visible{outline:2px solid var(--color-brand-accent);border-radius:4px}
+  .foot{position:fixed;bottom:20px;width:100%;text-align:center;color:#fff;font-size:12px;opacity:.9}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="spot" id="spot" aria-hidden="true"></div>
+<div class="waves" aria-hidden="true">
+  <svg class="w3" viewBox="0 0 2880 320" preserveAspectRatio="none"><path fill="#fff" d="M0 160c240 60 480 60 720 0s480-60 720 0 480 60 720 0 480-60 720 0v160H0z"/></svg>
+  <svg class="w1" viewBox="0 0 2880 320" preserveAspectRatio="none"><path fill="#fff" d="M0 210c180-50 540-50 720 0s540 50 720 0 540-50 720 0 540 50 720 0v110H0z"/></svg>
+  <svg class="w2" viewBox="0 0 2880 320" preserveAspectRatio="none"><path fill="#fff" d="M0 250c360 40 360-40 720 0s360 40 720 0 360-40 720 0 360 40 720 0v70H0z"/></svg>
+</div>
+<div class="tag"><svg width="110" height="24" viewBox="0 0 110 24" role="img" aria-label="Veolia"><text x="0" y="20" font-family="Segoe UI,system-ui,sans-serif" font-size="20" font-weight="800" fill="#fff" letter-spacing="1">VEOLIA</text></svg><small>Plataforma regulatoria de aseo</small></div>
+<main class="scene">
+  <div class="card" id="card">
+    <section class="face front" aria-labelledby="t1" id="front">
+      <div class="logo"><svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="26" fill="#fff2f2"/><path d="M28 12c6 9 10 14 10 20a10 10 0 0 1-20 0c0-6 4-11 10-20z" fill="#c40300"/></svg></div>
+      <h1 id="t1">Bienvenido de nuevo</h1>
+      <p class="sub">Ingresá con tu cuenta corporativa</p>
+      <div class="msg" id="err" role="alert" hidden></div>
+      <form id="f" novalidate style="display:contents">
+        <div class="fl"><input id="email" type="email" placeholder=" " autocomplete="username"><label for="email">Correo electrónico</label></div>
+        <div class="fl"><input id="pass" type="password" placeholder=" " autocomplete="current-password"><label for="pass">Contraseña</label></div>
+        <p class="caps" id="caps" hidden>Bloq Mayús está activado</p>
+        <button class="btn" id="go" type="submit"><span class="lbl">Ingresar</span><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr" id="busy" style="position:absolute;left:-9999px"></span></button>
+      </form>
+    </section>
+    <section class="face back" aria-labelledby="t2" id="backf" inert>
+      <div class="avatar" id="av" aria-hidden="true">AR</div>
+      <h1 id="t2">Elegí tu sistema</h1>
+      <p class="sub" id="who"></p>
+      <div id="list"></div>
+      <button class="link" id="bk" type="button">← Volver a mis credenciales</button>
+    </section>
+  </div>
+</main>
+<p class="foot">Prototipo: cualquier correo válido · contraseña <b>veolia</b></p>
+<script>
+const $=id=>document.getElementById(id);const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ICON={'VEO-Regulator':'<path d="M6 26V14m7 12V8m7 18V17m7 9V11" stroke="#c40300" stroke-width="3" stroke-linecap="round"/>','SUI853':'<rect x="6" y="6" width="22" height="22" rx="4" fill="none" stroke="#c40300" stroke-width="3"/><path d="M11 17l4 4 8-8" stroke="#c40300" stroke-width="3" fill="none"/>','Reliquidaciones':'<path d="M8 13h18l-5-5M26 21H8l5 5" stroke="#c40300" stroke-width="3" fill="none" stroke-linecap="round"/>'};
+const SIS=[['VEO-Regulator','Costos, tarifas e informes gerenciales'],['SUI853','Reportes al Sistema Único de Información'],['Reliquidaciones','Comparación y ajuste de costos']];
+addEventListener('pointermove',e=>{if(reduce)return;$('spot').style.left=e.clientX+'px';$('spot').style.top=e.clientY+'px';});
+$('pass').addEventListener('keyup',e=>{$('caps').hidden=!e.getModifierState||!e.getModifierState('CapsLock')});
+function fail(t){$('err').textContent=t;$('err').hidden=false;const c=$('card');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');}
+$('f').onsubmit=e=>{e.preventDefault();const em=$('email').value.trim(),pw=$('pass').value,es=[];
+  if(!em)es.push('El email es obligatorio');if(!pw)es.push('El pass es obligatorio');
+  if(!es.length&&!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(em))es.push('El email no es valido');
+  if(es.length)return fail(es.join('\n'));
+  $('err').hidden=true;$('go').setAttribute('aria-busy','true');$('busy').textContent='Validando credenciales';
+  setTimeout(()=>{$('go').removeAttribute('aria-busy');$('busy').textContent='';
+    if(pw!=='veolia')return fail('Usuario o Pass Incorrecto');
+    const parts=em.split('@')[0].split(/[._]/);$('av').textContent=parts.map(p=>p[0]).join('').slice(0,2).toUpperCase();$('who').textContent=em;
+    $('list').innerHTML=SIS.map(([n,d])=>`<button class="sys" type="button"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">${ICON[n]}</svg><span><b>${n}</b><small>${d}</small></span></button>`).join('');
+    $('card').classList.add('flip');$('front').inert=true;$('backf').inert=false;setTimeout(()=>$('list').querySelector('button').focus(),reduce?0:500);
+  },1000);};
+$('bk').onclick=()=>{$('card').classList.remove('flip');$('front').inert=false;$('backf').inert=true;setTimeout(()=>$('pass').focus(),reduce?0:500);};
+$('list').onclick=e=>{const b=e.target.closest('.sys');if(b)b.querySelector('small').textContent='Ingresando…';};
+</script>
+</body>
+</html>
