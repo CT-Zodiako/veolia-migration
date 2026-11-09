@@ -78,12 +78,23 @@ describe('SubContPageComponent (302) — legacy views/suministros/SubCon.vue', (
     expect(service.crear).not.toHaveBeenCalled();
   });
 
-  // Legacy SubCon.vue:15-28: only the stored rows are listed, header "Valor", value "%{SUCO_VALOR.toFixed(4)}".
-  it('lists only the stored rows with header "Valor" and value "%-50.0000"', () => {
-    const { el } = setup();
+  // design/suministros-pantallas/17-subcon-c-actual-mejorada.html: stored rows only (legacy SubCon.vue:15-28), shown as
+  // real percentages (fraction x 100, 2 decimals, es-CO) with a Subsidio / Contribución / Sin ajuste label, grouped
+  // Residencial / No residencial, and a footer summary.
+  it('lists the stored rows as grouped percentages with their label and a summary', () => {
+    const fila = (clasClase: number, sucoValor: number) => ({ ...EXISTENTE, sucoId: clasClase, clasClase, sucoValor });
+    const { el } = setup([fila(1, -0.7), fila(2, 0), fila(7, 1)]);
 
+    // User asked to remove the card title and helper text ("quieta esto"): no heading or helper above the table.
+    expect(el.querySelector('.subcon-titulo, .subcon-ayuda')).toBeNull();
+    expect(el.querySelector('section.subcon-card')?.getAttribute('aria-label')).toBe('Porcentajes por clase de uso');
     expect(Array.from(el.querySelectorAll('thead th')).slice(0, 2).map((th) => th.textContent?.trim())).toEqual(['Clase de Uso', 'Valor']);
-    expect(filas(el)).toEqual([['ESTRATO 1', '%-50.0000']]);
+    const texto = (sel: string) => Array.from(el.querySelectorAll(sel)).map((e) => e.textContent?.replace(/\s+/g, ' ').trim());
+    expect(texto('tbody tr.grupo')).toEqual(['Residencial', 'No residencial']);
+    expect(texto('tbody tr.clase td:first-child')).toEqual(['ESTRATO 1', 'ESTRATO 2', 'COMERCIAL']);
+    expect(texto('tbody tr.clase .valor-pct')).toEqual(['−70,00 %', '0,00 %', '+100,00 %']);
+    expect(texto('tbody tr.clase .tipo')).toEqual(['Subsidio', 'Sin ajuste', 'Contribución']);
+    expect(el.querySelector('.subcon-pie')?.textContent?.trim()).toBe('3 clases de uso · 1 con subsidio · 1 con contribución · 1 sin ajuste');
   });
 
   // Legacy SubCon.vue:291-302 (makeOperation): Agregar/Editar send the nine clases (est1..est6, com, indu, ofi) in one request.

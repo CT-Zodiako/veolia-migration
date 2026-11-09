@@ -22,12 +22,6 @@
   text-align: right;
 }
 
-.subcon-layout {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
 /* Each clase on one row: label in front of its value. */
 .valor-editor {
   display: grid;
@@ -45,4 +39,70 @@
 .valor-editor input {
   width: 100%;
   text-align: right;
+}
+
+/* design/suministros-pantallas/17: centered column, titled card, grouped rows, tone labels, footer summary. */
+:host {
+  display: block;
+  max-width: 880px;
+  margin: 0 auto;
+  --subcon-subsidio: #1d4ed8;
+  --subcon-contribucion: #b45309;
+}
+
+:host-context(.app-dark) {
+  --subcon-subsidio: #93c5fd;
+  --subcon-contribucion: #fbbf24;
+}
+
+.subcon-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.subcon-card tr.grupo td {
+  padding-top: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-soft);
+}
+
+.subcon-card tr.clase td:first-child {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tipo {
+  margin-right: 14px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.valor-pct {
+  display: inline-block;
+  min-width: 92px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.tono-subsidio.valor-pct { color: var(--subcon-subsidio); }
+.tono-contribucion.valor-pct { color: var(--subcon-contribucion); }
+
+.subcon-vacio {
+  padding: 20px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.subcon-pie {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
 }

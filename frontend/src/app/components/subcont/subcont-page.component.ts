@@ -38,6 +38,25 @@ interface ClaseItem {
   existe: boolean;
 }
 
+type TonoSubcon = 'subsidio' | 'contribucion' | 'neutro';
+interface FilaClase { tipo: 'clase'; nombre: string; valorTexto: string; etiqueta: string; tono: TonoSubcon }
+type FilaVista = FilaClase | { tipo: 'grupo'; grupo: string };
+
+const FORMATO_PCT = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** Stored fraction (-0.7) -> "−70,00 %" with its tone and label; null -> "—". */
+function presentarValor(valor: number | null): Pick<FilaClase, 'valorTexto' | 'etiqueta' | 'tono'> {
+  if (valor === null) return { valorTexto: '—', etiqueta: '', tono: 'neutro' };
+  const pct = Math.round(valor * 10000) / 100;
+  const signo = pct < 0 ? '−' : pct > 0 ? '+' : '';
+  const tono: TonoSubcon = pct < 0 ? 'subsidio' : pct > 0 ? 'contribucion' : 'neutro';
+  return {
+    valorTexto: `${signo}${FORMATO_PCT.format(Math.abs(pct))} %`,
+    etiqueta: tono === 'subsidio' ? 'Subsidio' : tono === 'contribucion' ? 'Contribución' : 'Sin ajuste',
+    tono
+  };
+}
+
 @Component({
   selector: 'app-subcont-page',
   standalone: true,
@@ -71,12 +90,29 @@ export class SubContPageComponent implements OnInit {
   dialogVisible = signal(false);
   valoresDialogo = signal<Map<number, number | null>>(new Map());
 
-  // Legacy SubCon.vue:15-28: the grid lists only the stored rows; value "%" + SUCO_VALOR.toFixed(4).
-  readonly registros = computed(() =>
-    this.clases()
-      .filter((c) => c.existe)
-      .map((c) => ({ nombre: c.nombre, valor: c.valor === null ? '' : `%${c.valor.toFixed(4)}` }))
-  );
+  // Legacy SubCon.vue:15-28 lists only the stored rows. design/suministros-pantallas/17 shows them as real percentages
+  // (stored fraction x 100, 2 decimals, es-CO), with a Subsidio / Contribución / Sin ajuste label, grouped
+  // Residencial (estratos) / No residencial.
+  readonly filasVista = computed<FilaVista[]>(() => {
+    const guardadas = this.clases().filter((c) => c.existe);
+    const filas: FilaVista[] = [];
+    for (const [grupo, residencial] of [['Residencial', true], ['No residencial', false]] as const) {
+      const delGrupo = guardadas.filter((c) => (c.clase <= 6) === residencial);
+      if (!delGrupo.length) continue;
+      filas.push({ grupo, tipo: 'grupo' });
+      for (const c of delGrupo) filas.push({ tipo: 'clase', nombre: c.nombre, ...presentarValor(c.valor) });
+    }
+    return filas;
+  });
+
+  readonly resumen = computed(() => {
+    const clases = this.filasVista().filter((f): f is FilaClase => f.tipo === 'clase');
+    if (!clases.length) return '';
+    const contar = (tono: TonoSubcon) => clases.filter((c) => c.tono === tono).length;
+    return `${clases.length} ${clases.length === 1 ? 'clase de uso' : 'clases de uso'} · ${contar('subsidio')} con subsidio · `
+      + `${contar('contribucion')} con contribución · ${contar('neutro')} sin ajuste`;
+  });
+
   // Legacy SubCon.vue:35-52,364-370: "Agregar" when the period has no rows, "Editar" otherwise.
   readonly esNuevo = computed(() => !this.clases().some((c) => c.existe));
   readonly tituloDialogo = computed(() => (this.esNuevo() ? 'Registrar Nuevo Sub&Con' : 'Modificar Sub&Con'));

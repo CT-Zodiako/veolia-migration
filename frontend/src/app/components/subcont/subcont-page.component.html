@@ -8,30 +8,46 @@
   </div>
 </div>
 
-<!-- Legacy SubCon.vue:14-54: stored rows only, with Agregar (no rows) or Editar (rows) next to the grid. -->
-<div class="card-section subcon-layout">
-  <p-table [value]="registros()" [loading]="loading()" [tableStyle]="{ 'min-width': '30rem' }">
+<!-- Legacy SubCon.vue:14-54 (stored rows, Agregar or Editar). design/suministros-pantallas/17-subcon-c-actual-mejorada.html:
+     action in the card header, real percentages with their label, groups and a footer summary. -->
+<section class="card-section subcon-card" aria-label="Porcentajes por clase de uso">
+  <header class="subcon-header">
+    <div class="actions" *ngIf="aps() && anno() && mes()">
+      <p-button *ngIf="esNuevo(); else botonEditar" label="Agregar" icon="pi pi-plus" (click)="abrirDialogo()"></p-button>
+      <ng-template #botonEditar>
+        <p-button label="Editar" icon="pi pi-pencil" (click)="abrirDialogo()"></p-button>
+      </ng-template>
+    </div>
+  </header>
+
+  <p-table [value]="filasVista()" [loading]="loading()" styleClass="subcon-tabla">
     <ng-template pTemplate="header">
       <tr>
         <th>Clase de Uso</th>
         <th class="text-right">Valor</th>
       </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-item>
-      <tr>
-        <td>{{ item.nombre }}</td>
-        <td class="text-right">{{ item.valor }}</td>
+    <ng-template pTemplate="body" let-fila>
+      <tr *ngIf="fila.tipo === 'grupo'; else filaClase" class="grupo">
+        <td colspan="2">{{ fila.grupo }}</td>
       </tr>
+      <ng-template #filaClase>
+        <tr class="clase">
+          <td>{{ fila.nombre }}</td>
+          <td class="text-right">
+            <span class="tipo" [class]="'tipo tono-' + fila.tono">{{ fila.etiqueta }}</span>
+            <span class="valor-pct" [class]="'valor-pct tono-' + fila.tono">{{ fila.valorTexto }}</span>
+          </td>
+        </tr>
+      </ng-template>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="2" class="subcon-vacio">Este período no tiene porcentajes registrados. Usá Agregar para cargarlos.</td></tr>
     </ng-template>
   </p-table>
 
-  <div class="actions" *ngIf="aps() && anno() && mes()">
-    <p-button *ngIf="esNuevo(); else botonEditar" label="Agregar" icon="pi pi-plus" severity="success" (click)="abrirDialogo()"></p-button>
-    <ng-template #botonEditar>
-      <p-button label="Editar" icon="pi pi-pencil" severity="warn" (click)="abrirDialogo()"></p-button>
-    </ng-template>
-  </div>
-</div>
+  <p class="subcon-pie" *ngIf="resumen()">{{ resumen() }}</p>
+</section>
 
 <!-- Legacy SubCon.vue:61-212: one dialog with the nine clases; Guardar saves all of them in one request. -->
 <p-dialog [header]="tituloDialogo()" [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)" [modal]="true" [style]="{ width: '24rem' }">
