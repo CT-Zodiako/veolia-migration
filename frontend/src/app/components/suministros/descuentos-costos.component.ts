@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal, viewChild, computed } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed } from '@angular/core';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,6 @@ import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { TablaAvanzadaComponent, TablaColumn, valorMostrado } from '../shared/tabla-avanzada.component';
 import { periodoInicial } from '../shared/periodo-inicial.util';
-import { DescuentoCostosDialogComponent, PeriodoDescuento } from '../shared/descuento-costos-dialog.component';
 
 const DESCRIPCION_COSTOS: Record<string, string> = {
   CBL: 'Barrido y limpieza',
@@ -31,7 +30,7 @@ const DESCRIPCION_COSTOS: Record<string, string> = {
 @Component({
   selector: 'app-descuentos-costos',
   standalone: true,
-  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ApsSelectorComponent, AnnoSelectorComponent, MesSelectorComponent, TablaAvanzadaComponent, ToastModule, DescuentoCostosDialogComponent],
+  imports: [CommonModule, FormsModule, ...CommonPrimeNgModules, ApsSelectorComponent, AnnoSelectorComponent, MesSelectorComponent, TablaAvanzadaComponent, ToastModule],
   providers: [MessageService],
   templateUrl: './descuentos-costos.component.html',
   styleUrl: './descuentos-costos.component.css'
@@ -66,9 +65,7 @@ export class DescuentosCostosComponent {
     { field: 'DESC_VALOR', header: 'DESCUENTO', numero: true }
   ];
 
-  // S4: unlike legacy DescuentosDos.vue (display-only), 304 also adds/edits discounts with the 605 dialog,
-  // regardless of whether tarifas were calculated.
-  private readonly dialog = viewChild.required(DescuentoCostosDialogComponent);
+  // Read-only like legacy DescuentosDos.vue (menu 304): the user chose to keep add/edit only in the Descuentos screen (605).
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly consultarTrigger$ = new Subject<void>();
@@ -116,27 +113,6 @@ export class DescuentosCostosComponent {
   onMesChange(value: number | null): void {
     this.mes.set(value);
     this.consultarSiCompleto();
-  }
-
-  abrirNuevo(): void {
-    const periodo = this.periodoSeleccionado();
-    if (periodo) this.dialog().abrirNuevo(periodo);
-  }
-
-  abrirEdicion(row: Record<string, unknown>): void {
-    const periodo = this.periodoSeleccionado();
-    if (periodo) this.dialog().abrirEdicion(periodo, row);
-  }
-
-  recargar(): void {
-    this.consultarSiCompleto();
-  }
-
-  private periodoSeleccionado(): PeriodoDescuento | null {
-    const aps = this.aps();
-    const anno = this.anno();
-    const mes = this.mes();
-    return aps === null || anno === null || mes === null ? null : { aps, anno, mes };
   }
 
   private consultarSiCompleto(): void {

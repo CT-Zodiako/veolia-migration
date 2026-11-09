@@ -9,22 +9,20 @@
     </div>
   </div>
 
-  <!-- design/suministros-pantallas/15-descuentos-c-actual-mejorada.html: same table, Agregar and edit; titled card,
-       cost name under each code and a footer summary. -->
+  <!-- design/suministros-pantallas/15-descuentos-c-actual-mejorada.html: titled card, cost name under each code and a footer
+       summary. Read-only like legacy DescuentosDos.vue (user choice): no Agregar, no edit actions. -->
   <div class="card-section desc-card">
     <header class="desc-header">
       <div>
         <h2 class="desc-titulo">Descuentos por costo</h2>
-        <p class="desc-ayuda">Descuento aplicado a cada costo en el período. 0 significa sin descuento. Usá Agregar para un costo que aún no está en la lista.</p>
+        <p class="desc-ayuda">Descuento aplicado a cada costo en el período. 0 significa sin descuento.</p>
       </div>
-      <p-button label="Agregar" icon="pi pi-plus" [disabled]="aps() === null || anno() === null || mes() === null" (onClick)="abrirNuevo()"></p-button>
     </header>
 
     <div class="table-wrapper table-scroll">
       <app-tabla-avanzada
         [columnas]="columnas"
         [rows]="rows()"
-        [accionesTemplate]="acciones"
         [cellTemplate]="celda"
         [loading]="loading()"
         storageKey="descuentos-costos"
@@ -42,10 +40,6 @@
       <ng-template #valorCelda>{{ valorMostrado(value, col) }}</ng-template>
     </ng-template>
 
-    <ng-template #acciones let-row>
-      <p-button icon="pi pi-pencil" severity="secondary" [outlined]="true" size="small" [ariaLabel]="'Editar descuento de ' + row['PARA_NOMBRE']" (onClick)="abrirEdicion(row)"></p-button>
-    </ng-template>
   </div>
 </section>
 
-<app-descuento-costos-dialog (guardado)="recargar()"></app-descuento-costos-dialog>
