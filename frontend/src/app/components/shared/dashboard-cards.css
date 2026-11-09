@@ -1,0 +1,277 @@
+/* Tarjetas de dashboard compartidas (Dashboard SUI, Resumen de formatos SUI), con el mismo lenguaje visual
+   que el Dashboard Gerencial (dashboard-gerencial.component.css): navy de marca y ámbar de "pendiente"
+   sin token global. Se incluye con styleUrls, así que cada :host es el del componente que lo usa. */
+:host {
+  display: block;
+  --dc-navy: #0b1f3a;
+  --dc-on-navy: #ffffff;
+  --dc-pista: var(--color-border-soft);
+  --dc-calculado-texto: #0e7a4f;
+  --dc-pendiente-texto: #8a5200;
+  --dc-pendiente-fondo: #fff1d6;
+  --dc-pendiente-barra: #c98a1b;
+  --dc-pendiente-fila: #fffaf0;
+}
+
+:host-context(.app-dark) {
+  --dc-navy: #93c5fd;
+  --dc-on-navy: #0f172a;
+  --dc-pista: var(--color-border);
+  --dc-calculado-texto: var(--color-text-success);
+  --dc-pendiente-texto: #fbbf24;
+  --dc-pendiente-fondo: #3d2a0a;
+  --dc-pendiente-barra: #d69e2e;
+  --dc-pendiente-fila: #241c10;
+}
+
+.card-section {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+/* KPIs a la izquierda (2 + 1), "Cálculos por fecha" a la derecha ocupando las dos filas. */
+.resumen-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.resumen-grid .card-section {
+  margin-bottom: 0;
+}
+
+.barras-card {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
+@media (max-width: 1100px) {
+  .resumen-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .barras-card {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+}
+
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpi-titulo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.kpi-linea {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.kpi-valor {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+
+.kpi-total {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+}
+
+.kpi-pendientes .kpi-valor {
+  color: var(--dc-pendiente-texto);
+}
+
+.kpi-pie {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.progreso {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--dc-pista);
+  overflow: hidden;
+}
+
+.progreso-relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-text-success);
+}
+
+.chips-pendientes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-pendiente {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dc-pendiente-texto);
+  background: var(--dc-pendiente-fondo);
+}
+
+.card-titulo {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.card-subtitulo {
+  margin: 2px 0 14px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.barra-fila {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--color-text-body);
+}
+
+.barra-pista {
+  height: 12px;
+  border-radius: 4px;
+  background: var(--dc-pista);
+  overflow: hidden;
+}
+
+.barra-relleno {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--dc-navy);
+}
+
+.barra-incompleta .barra-relleno {
+  background: var(--dc-pendiente-barra);
+}
+
+.barra-cantidad {
+  text-align: right;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.barras-vacio {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.tabla-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.estado-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.estado-chip {
+  padding: 4px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg-card);
+  color: var(--color-text-body);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.estado-chip:hover {
+  background: var(--color-bg-soft);
+}
+
+.estado-chip.activo {
+  border-color: var(--dc-navy);
+  background: var(--dc-navy);
+  color: var(--dc-on-navy);
+}
+
+.estado-chip:focus-visible {
+  outline: 2px solid var(--color-brand-accent);
+  outline-offset: 2px;
+}
+
+.estado-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.estado-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.estado-procesado {
+  color: var(--dc-calculado-texto);
+  background: var(--color-bg-success-soft);
+}
+
+.estado-no-aplica {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-soft);
+}
+
+.estado-pendiente {
+  color: var(--dc-pendiente-texto);
+  background: var(--dc-pendiente-fondo);
+}
+
+.error-message {
+  background: var(--color-bg-danger-soft);
+  border: 1px solid var(--color-border-danger-soft);
+  color: var(--color-brand-accent);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+/* Las celdas las renderiza app-tabla-avanzada (otro componente): la clase de cellClass solo
+   llega con ::ng-deep, acotado a este host para no teñir otras tablas. */
+:host ::ng-deep td.fila-pendiente {
+  background: var(--dc-pendiente-fila);
+}

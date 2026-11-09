@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, computed, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CommonPrimeNgModules } from '../../shared/primeng-imports';
 import { ParametrosConsultaComponent } from '../shared/parametros-consulta.component';
@@ -6,15 +6,24 @@ import { TablaAvanzadaComponent, TablaColumn } from '../shared/tabla-avanzada.co
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { SuiDashboardRow, SuiDashboardService } from '../../services/sui-dashboard.service';
 import { periodoAnterior } from '../../shared/periodo-anterior.util';
-
-const COLUMNAS_ESTADO = ['F19', 'F23', 'F24', 'F35', 'F36'];
+import {
+  EstadoFormato,
+  FORMATOS_SUI,
+  FiltroEstadoSui,
+  calcularBarrasFormatos,
+  calcularKpisSui,
+  contarPorEstadoSui,
+  estadoFormato,
+  filtrarPorEstadoSui,
+  tienePendientes
+} from './sui-dashboard.util';
 
 @Component({
   selector: 'app-sui-dashboard',
   standalone: true,
   imports: [CommonModule, ...CommonPrimeNgModules, ParametrosConsultaComponent, TablaAvanzadaComponent],
   templateUrl: './sui-dashboard.component.html',
-  styleUrl: './sui-dashboard.component.css'
+  styleUrls: ['../shared/dashboard-cards.css']
 })
 export class SuiDashboardComponent implements OnInit {
   readonly anno = signal<number | null>(null);
@@ -34,6 +43,25 @@ export class SuiDashboardComponent implements OnInit {
     { field: 'F36', header: 'F36' },
     { field: 'USUARIO', header: 'Usuario' },
   ];
+
+  /** Chips de APS pendientes en la tarjeta antes de resumir el resto como "+N". */
+  readonly maxChipsPendientes = 3;
+
+  readonly filtro = signal<FiltroEstadoSui>('todos');
+  readonly filtros: { valor: FiltroEstadoSui; etiqueta: string }[] = [
+    { valor: 'todos', etiqueta: 'Todos' },
+    { valor: 'alDia', etiqueta: 'Al día' },
+    { valor: 'pendientes', etiqueta: 'Con pendientes' }
+  ];
+
+  // Las cifras salen de TODAS las filas del período, no solo de las filtradas en la tabla.
+  readonly kpis = computed(() => calcularKpisSui(this.rows()));
+  readonly barras = computed(() => calcularBarrasFormatos(this.rows()));
+  readonly conteos = computed(() => contarPorEstadoSui(this.rows()));
+  readonly filasFiltradas = computed(() => filtrarPorEstadoSui(this.rows(), this.filtro()));
+
+  readonly formatos: readonly string[] = FORMATOS_SUI;
+  readonly estadoFormato = estadoFormato;
 
   constructor(
     private readonly service: SuiDashboardService,
@@ -89,18 +117,15 @@ export class SuiDashboardComponent implements OnInit {
     this.rows.set([]);
   }
 
-  cellClass(row: Record<string, unknown>, col: TablaColumn): string {
-    if (!COLUMNAS_ESTADO.includes(col.field)) {
-      return '';
-    }
+  setFiltro(valor: FiltroEstadoSui): void {
+    this.filtro.set(valor);
+  }
 
-    const valor = String(row[col.field] ?? '').toUpperCase().trim();
-    if (valor === 'PENDIENTE') {
-      return 'color-red';
-    }
-    if (valor === 'NO APLICA') {
-      return 'color-gray';
-    }
-    return 'color-green';
+  // Legacy DashBoard.vue:52-99 coloreaba cada celda de formato; ahora cada estado es una píldora
+  // (ver la plantilla) y se tiñe toda la fila con algún formato pendiente.
+  readonly cellClass = (row: Record<string, unknown>): string => (tienePendientes(row) ? 'fila-pendiente' : '');
+
+  estadoDeCelda(row: Record<string, unknown>, field: string): EstadoFormato | null {
+    return this.formatos.includes(field) ? estadoFormato(row[field]) : null;
   }
 }

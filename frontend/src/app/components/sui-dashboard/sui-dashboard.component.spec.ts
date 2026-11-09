@@ -69,14 +69,36 @@ describe('SuiDashboardComponent (803, legacy DashBoard.vue)', () => {
     expect(sortables).toEqual(['APSID', 'APSNOM', 'F19', 'F23', 'F24', 'F35', 'F36', 'USUARIO']);
   });
 
-  // DashBoard.vue:157-163 definirColor (case-insensitive): PENDIENTE red, NO APLICA grey, anything else green; only the
-  // format columns are coloured (:52-99).
-  it('colours the format states like legacy', () => {
-    const { component } = crear();
-    const clase = (field: string) => component.cellClass(FILAS[0], { field, header: field });
+  // DashBoard.vue:157-163 definirColor (case-insensitive): PENDIENTE, NO APLICA, anything else processed; only the
+  // format columns carry a state (:52-99), now as pills, and a row with any pending format is tinted.
+  it('marks the format states like legacy', () => {
+    const { fixture, component } = crear();
+    component.consultar();
+    fixture.detectChanges();
 
-    expect(['F19', 'F23', 'F24', 'F35', 'F36'].map(clase)).toEqual(['color-green', 'color-red', 'color-gray', 'color-green', 'color-green']);
-    expect(['APSID', 'APSNOM', 'USUARIO'].map(clase)).toEqual(['', '', '']);
+    const pills = Array.from(fixture.nativeElement.querySelectorAll('tbody .estado-pill') as NodeListOf<HTMLElement>).map((p) => p.className);
+    expect(pills.map((c) => c.split(' ').find((x) => x !== 'estado-pill'))).toEqual([
+      'estado-procesado', 'estado-pendiente', 'estado-no-aplica', 'estado-procesado', 'estado-procesado'
+    ]);
+    expect(component.cellClass(FILAS[0])).toBe('fila-pendiente');
+    expect(component.cellClass({ ...FILAS[0], F23: 'PROCESADO' })).toBe('');
+  });
+
+  it('summarises the period in KPI cards and filters the table by state', () => {
+    const { fixture, component } = crear();
+    component.consultar();
+    fixture.detectChanges();
+
+    const texto = (sel: string) => (fixture.nativeElement.querySelector(sel) as HTMLElement).textContent?.replace(/\s+/g, ' ').trim();
+    expect(texto('.kpi-aldia .kpi-valor')).toBe('0');
+    expect(texto('.kpi-aldia .kpi-total')).toBe('de 1');
+    expect(texto('.kpi-pendientes .kpi-valor')).toBe('1');
+    expect(texto('.kpi-formatos .kpi-valor')).toBe('3');
+    expect(texto('.kpi-formatos .kpi-total')).toBe('de 4');
+
+    component.setFiltro('alDia');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('tbody .estado-pill').length).toBe(0);
   });
 
   // DashBoard.vue:14-22: 15 rows per page, [15, 30, 50, 100]; the legacy grid has no column filters.

@@ -1,5 +1,5 @@
-<section>
-  <div class="card-section">
+<section class="dashboard">
+  <div class="card-section filtros-card">
     <app-parametros-consulta
       [wrapInCard]="false"
       [mostrarAps]="false"
@@ -14,14 +14,79 @@
     </app-parametros-consulta>
   </div>
 
-  <div class="card-section">
-    <p *ngIf="loading()" class="loading-text">Cargando...</p>
-    <p *ngIf="error()" class="error-message">{{ error() }}</p>
+  <p *ngIf="error()" class="error-message">{{ error() }}</p>
+
+  <div class="resumen-grid">
+    <div class="card-section kpi-card kpi-aldia">
+      <span class="kpi-titulo">APS al día</span>
+      <div class="kpi-linea">
+        <span class="kpi-valor">{{ kpis().alDia }}</span>
+        <span class="kpi-total">de {{ kpis().total }}</span>
+      </div>
+      <div class="progreso" role="progressbar" [attr.aria-valuenow]="kpis().porcentaje" aria-valuemin="0" aria-valuemax="100">
+        <div class="progreso-relleno" [style.width.%]="kpis().porcentaje"></div>
+      </div>
+      <span class="kpi-pie">{{ kpis().porcentaje }} % sin formatos pendientes</span>
+    </div>
+
+    <div class="card-section kpi-card kpi-pendientes">
+      <span class="kpi-titulo">Con pendientes</span>
+      <span class="kpi-valor">{{ kpis().conPendientes }}</span>
+      <div class="chips-pendientes" *ngIf="kpis().conPendientes > 0">
+        <span class="chip-pendiente" *ngFor="let nombre of kpis().nombresPendientes.slice(0, maxChipsPendientes)">{{ nombre }}</span>
+        <span class="chip-pendiente" *ngIf="kpis().conPendientes > maxChipsPendientes"
+          >+{{ kpis().conPendientes - maxChipsPendientes }}</span
+        >
+      </div>
+    </div>
+
+    <div class="card-section kpi-card kpi-formatos">
+      <span class="kpi-titulo">Formatos procesados</span>
+      <div class="kpi-linea">
+        <span class="kpi-valor">{{ kpis().formatosProcesados }}</span>
+        <span class="kpi-total">de {{ kpis().formatosAplicables }}</span>
+      </div>
+      <span class="kpi-pie">{{ kpis().porcentajeFormatos }} % de los que aplican</span>
+    </div>
+
+    <div class="card-section barras-card">
+      <h3 class="card-titulo">Avance por formato</h3>
+      <p class="card-subtitulo">APS con el formato procesado sobre las que les aplica</p>
+      <div class="barras">
+        <div class="barra-fila" *ngFor="let barra of barras()" [class.barra-incompleta]="barra.pendientes > 0">
+          <span class="barra-etiqueta">{{ barra.formato }}</span>
+          <div class="barra-pista">
+            <div class="barra-relleno" [style.width.%]="barra.ancho"></div>
+          </div>
+          <span class="barra-cantidad">{{ barra.procesados }}/{{ barra.aplicables }}</span>
+        </div>
+        <p class="barras-vacio" *ngIf="barras().length === 0">No hay datos para mostrar.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-section tabla-card">
+    <div class="tabla-encabezado">
+      <h3 class="card-titulo">Estado de formatos por APS</h3>
+      <div class="estado-chips" role="group" aria-label="Filtrar por estado">
+        <button
+          type="button"
+          class="estado-chip"
+          *ngFor="let f of filtros"
+          [class.activo]="filtro() === f.valor"
+          [attr.aria-pressed]="filtro() === f.valor"
+          (click)="setFiltro(f.valor)"
+        >
+          {{ f.etiqueta }} · {{ conteos()[f.valor] }}
+        </button>
+      </div>
+    </div>
 
     <app-tabla-avanzada
       [columnas]="columnas"
-      [rows]="rows()"
+      [rows]="filasFiltradas()"
       [cellClass]="cellClass"
+      [cellTemplate]="celda"
       [autoWidth]="true"
       [loading]="loading()"
       [filasPorPagina]="15"
@@ -30,4 +95,11 @@
       nombreExportar="SUI_Dashboard">
     </app-tabla-avanzada>
   </div>
+
+  <ng-template #celda let-value let-row="row" let-col="col">
+    <ng-container *ngIf="estadoDeCelda(row, col.field) as estado; else celdaTexto">
+      <span class="estado-pill" [ngClass]="'estado-' + estado"><span class="estado-punto" aria-hidden="true"></span>{{ value }}</span>
+    </ng-container>
+    <ng-template #celdaTexto>{{ col.field === 'USUARIO' ? value || '—' : value }}</ng-template>
+  </ng-template>
 </section>
