@@ -1,65 +1,127 @@
-<div class="sistema-container">
-  <div class="sistema-header">
-    <h2>Asignación de Sistemas por Usuario</h2>
-    <p class="sistema-subtitle">Elegí un usuario y arrastrá los sistemas entre columnas para asignarlos o quitarlos.</p>
-  </div>
-
-  <div *ngIf="error" class="error-message">{{ error }}</div>
-  <div *ngIf="success" class="success-message">{{ success }}</div>
-
-  <div class="filters">
-    <div class="form-group">
-      <label>Usuario</label>
-      <p-select
-        [options]="usuarioOptions"
-        [(ngModel)]="correo"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Seleccione un usuario"
-        [style]="{width: '100%'}"
-        [filter]="true"
-        filterBy="label"
-        filterPlaceholder="Buscar usuario..."
-        (onChange)="buscarSistemas()"
-      ></p-select>
+<div class="sistemas-layout">
+  <aside class="card-section usuarios-card" aria-label="Usuarios">
+    <div class="usuarios-search">
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <input
+        type="text"
+        placeholder="Buscar usuario o correo"
+        aria-label="Buscar usuario"
+        [(ngModel)]="busqueda"
+      />
     </div>
-  </div>
 
-  <div *ngIf="sisuId" class="picklist-card">
-    <p-pickList
-      [source]="listaSistema[0]"
-      [target]="listaSistema[1]"
-      sourceHeader="SISTEMA SIN ASIGNAR"
-      targetHeader="SISTEMA ASIGNADAS"
-      [dragdrop]="true"
-      [responsive]="true"
-      [sourceStyle]="{height: '360px'}"
-      [targetStyle]="{height: '360px'}"
-      [showSourceControls]="false"
-      [showTargetControls]="false"
-      breakpoint="1400px"
-    >
-      <ng-template let-sistema pTemplate="item">
-        <div class="sistema-chip">
-          <i class="pi pi-desktop"></i>
-          <span>{{ sistema.SIST_NOMBRE }}</span>
+    <div class="usuarios-list">
+      @for (usuario of usuariosFiltrados; track usuario.id) {
+        <button
+          type="button"
+          class="usuario-item"
+          [class.selected]="usuario.id === selectedUsuarioId"
+          [attr.aria-pressed]="usuario.id === selectedUsuarioId"
+          (click)="seleccionarUsuario(usuario.id)"
+        >
+          <span class="usuario-avatar" aria-hidden="true">{{ usuario.iniciales }}</span>
+          <span class="usuario-text">
+            <span class="usuario-nombre">{{ usuario.nombre }}</span>
+            <span class="usuario-correo">{{ usuario.correo }}</span>
+          </span>
+        </button>
+      } @empty {
+        <p class="usuarios-vacio">Ningún usuario coincide con la búsqueda.</p>
+      }
+    </div>
+
+    <p class="usuarios-footer">{{ usuariosFiltrados.length }} {{ usuariosFiltrados.length === 1 ? 'usuario' : 'usuarios' }}</p>
+  </aside>
+
+  <section class="card-section sistemas-panel" [attr.aria-label]="usuarioSeleccionado ? 'Sistemas de ' + usuarioSeleccionado.nombre : 'Sistemas'">
+    @if (usuarioSeleccionado; as usuario) {
+      <header class="panel-header">
+        <div class="panel-usuario">
+          <span class="usuario-avatar usuario-avatar-lg" aria-hidden="true">{{ usuario.iniciales }}</span>
+          <div>
+            <h3 class="panel-usuario-nombre">{{ usuario.nombre }}</h3>
+            <span class="panel-usuario-correo">{{ usuario.correo }}</span>
+          </div>
         </div>
-      </ng-template>
-      <ng-template pTemplate="emptymessagesource">
-        <div class="empty-list-message">Todos los sistemas están asignados</div>
-      </ng-template>
-      <ng-template pTemplate="emptymessagetarget">
-        <div class="empty-list-message">Sin sistemas asignados todavía</div>
-      </ng-template>
-    </p-pickList>
-  </div>
+        @if (!loading && sistemas.length > 0) {
+          <span class="sistemas-pill">{{ resumenTexto }}</span>
+        }
+      </header>
 
-  <p-button
-    *ngIf="sisuId"
-    icon="pi pi-save"
-    label="{{ loading ? 'Guardando...' : 'Actualizar Asignación de Sistema' }}"
-    [loading]="loading"
-    (click)="guardar()"
-    styleClass="w-full"
-  ></p-button>
+      <div class="panel-body">
+        @if (error) {
+          <div class="error-message">{{ error }}</div>
+        }
+        @if (success) {
+          <div class="success-message">{{ success }}</div>
+        }
+
+        @if (loading) {
+          <div class="loading-message"><i class="pi pi-spin pi-spinner"></i> Cargando sistemas...</div>
+        } @else if (sistemas.length === 0) {
+          @if (!error) {
+            <div class="empty-message"><i class="pi pi-info-circle"></i> No hay sistemas activos para asignar.</div>
+          }
+        } @else {
+          <p class="sistemas-lead">
+            Encendé los sistemas a los que puede entrar el usuario. Los permisos de cada sistema se configuran en la pestaña <b>Permisos</b>.
+          </p>
+
+          <div class="sistemas-grid">
+            @for (sistema of sistemas; track sistema.SIST_ID) {
+              <label class="sistema-card" [class.asignado]="isAsignado(sistema)">
+                <span class="switch">
+                  <input
+                    type="checkbox"
+                    [checked]="isAsignado(sistema)"
+                    [attr.aria-label]="'Acceso a ' + sistema.SIST_NOMBRE"
+                    (change)="toggleSistema(sistema)"
+                  />
+                  <span class="switch-track" aria-hidden="true"></span>
+                </span>
+                <span class="sistema-inicial" aria-hidden="true">{{ inicial(sistema) }}</span>
+                <span class="sistema-text">
+                  <span class="sistema-nombre">{{ sistema.SIST_NOMBRE }}</span>
+                  <span class="sistema-meta">{{ meta(sistema) }}</span>
+                </span>
+              </label>
+            }
+          </div>
+
+          @if (quitaAsignado) {
+            <div class="sistemas-warn" role="status">⚠ Al quitar un sistema, el usuario deja de verlo en el selector de sistema al guardar.</div>
+          }
+        }
+      </div>
+
+      @if (!loading && sistemas.length > 0) {
+        <footer class="sistemas-bar">
+          <span class="cambios-text" [class.pendientes]="cambiosPendientes > 0">{{ cambiosTexto }}</span>
+          <span class="sistemas-bar-spacer"></span>
+          <p-button
+            label="Descartar"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="cambiosPendientes === 0 || saving"
+            (onClick)="descartar()"
+          ></p-button>
+          <p-button
+            icon="pi pi-save"
+            [label]="saving ? 'Guardando...' : 'Guardar sistemas'"
+            [loading]="saving"
+            [disabled]="cambiosPendientes === 0 || saving"
+            (onClick)="guardar()"
+          ></p-button>
+        </footer>
+      }
+    } @else {
+      @if (error) {
+        <div class="panel-body"><div class="error-message">{{ error }}</div></div>
+      }
+      <div class="sistemas-empty-prompt">
+        <i class="pi pi-users" aria-hidden="true"></i>
+        <p>Seleccioná un usuario de la lista para ver y editar sus sistemas.</p>
+      </div>
+    }
+  </section>
 </div>
