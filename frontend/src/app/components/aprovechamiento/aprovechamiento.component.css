@@ -15,10 +15,9 @@
 .switch-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  gap: 14px;
+  padding: 16px 0;
+  border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -36,4 +35,82 @@
 .switch-estado {
   font-size: 13px;
   color: var(--color-text-secondary);
+}
+
+/* design/suministros-pantallas/14: section header, applied-state pill and footer with the pending notice. */
+.aprov {
+  padding: 0;
+  overflow: hidden;
+}
+
+.aprov-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+}
+
+.aprov-titulo {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.aprov-ayuda {
+  margin: 0;
+  max-width: 640px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.aprov-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-soft);
+}
+
+.aprov-pill::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.aprov-pill.activo {
+  color: var(--color-text-success);
+  background: var(--color-bg-success-soft);
+  border-color: var(--color-border-success-soft);
+}
+
+.aprov .switch-row {
+  padding: 16px 20px;
+}
+
+.aprov-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+}
+
+.aprov-estado {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.aprov-estado.pendiente {
+  color: var(--color-brand-strong);
+  font-weight: 600;
 }

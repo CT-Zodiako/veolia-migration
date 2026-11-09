@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -42,6 +42,9 @@ export class AprovechamientoComponent {
   loading = signal(false);
   consultado = signal(false);
   activar = signal(false);
+  // Value applied for the period (as consulted); the switch only becomes effective after Aceptar.
+  readonly estadoAplicado = signal(false);
+  readonly hayCambio = computed(() => this.consultado() && this.activar() !== this.estadoAplicado());
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly consultarTrigger$ = new Subject<void>();
@@ -77,6 +80,7 @@ export class AprovechamientoComponent {
       .subscribe((res) => {
         this.loading.set(false);
         this.consultado.set(true);
+        this.estadoAplicado.set(res.data?.aproActivar === 1);
         this.activar.set(res.data?.aproActivar === 1);
       });
   }

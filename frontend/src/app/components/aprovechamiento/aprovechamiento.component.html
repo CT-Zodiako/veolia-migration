@@ -8,11 +8,29 @@
   </div>
 </div>
 
-<div class="card-section" *ngIf="consultado()">
+<!-- design/suministros-pantallas/14-aprovechamiento-c-actual-mejorada.html: same switch + Aceptar, with title,
+     helper, applied-state pill and a pending-change notice. Legacy ActAprovechamiento.vue:17-21. -->
+<section class="card-section aprov" *ngIf="consultado()" aria-labelledby="aprov-titulo">
+  <header class="aprov-header">
+    <div>
+      <h2 class="aprov-titulo" id="aprov-titulo">Cobro de aprovechamiento</h2>
+      <p class="aprov-ayuda">Define si en este período se cobra aprovechamiento aunque no se tenga QA. El cambio solo se guarda al pulsar Aceptar.</p>
+    </div>
+    <span class="aprov-pill" [class.activo]="estadoAplicado()">Actual: {{ estadoAplicado() ? 'Activado' : 'Desactivado' }}</span>
+  </header>
+
   <div class="switch-row">
-    <!-- Legacy ActAprovechamiento.vue:17-21: "Cobro de aprovechamiento sin tener QA: {{ textoEstado }}" and button "Aceptar". -->
-    <p-toggleswitch [(ngModel)]="activar" [disabled]="loading()"></p-toggleswitch>
-    <span class="switch-title">Cobro de aprovechamiento sin tener QA: {{ activar() ? 'Activado' : 'Desactivado' }}</span>
+    <p-toggleswitch [(ngModel)]="activar" [disabled]="loading()" inputId="aprov-switch"></p-toggleswitch>
+    <label class="switch-label" for="aprov-switch">
+      <span class="switch-title">Cobro de aprovechamiento sin tener QA: <strong>{{ activar() ? 'Activado' : 'Desactivado' }}</strong></span>
+      <span class="switch-estado">{{ activar() ? 'Se cobra aprovechamiento aunque el período no tenga QA.' : 'Solo se cobra aprovechamiento cuando el período tiene QA.' }}</span>
+    </label>
   </div>
-  <p-button label="Aceptar" icon="pi pi-check" [loading]="loading()" (onClick)="confirmarAplicar()"></p-button>
-</div>
+
+  <footer class="aprov-footer">
+    <span class="aprov-estado" [class.pendiente]="hayCambio()" aria-live="polite">{{
+      hayCambio() ? 'Cambio sin aplicar: pasará a ' + (activar() ? 'Activado' : 'Desactivado') + ' al pulsar Aceptar.' : 'Sin cambios por aplicar.'
+    }}</span>
+    <p-button label="Aceptar" icon="pi pi-check" [loading]="loading()" [disabled]="!hayCambio() || loading()" (onClick)="confirmarAplicar()"></p-button>
+  </footer>
+</section>

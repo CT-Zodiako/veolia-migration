@@ -46,6 +46,26 @@ describe('AprovechamientoComponent (308) — legacy views/suministros/ActAprovec
     expect(el.textContent).toContain('Activado');
   });
 
+  // design/suministros-pantallas/14-aprovechamiento-c-actual-mejorada.html: title, helper, current-state pill,
+  // pending-change notice and Aceptar enabled only when the switch differs from the applied value.
+  it('shows the section, the applied state and a pending-change notice until Aceptar', () => {
+    const { fixture, component, el } = setup(0);
+    const aceptar = () => el.querySelector('.aprov-footer button') as HTMLButtonElement;
+
+    expect(el.querySelector('.aprov-titulo')?.textContent?.trim()).toBe('Cobro de aprovechamiento');
+    expect(el.querySelector('.aprov-ayuda')?.textContent).toContain('aunque no se tenga QA');
+    expect(el.querySelector('.aprov-pill')?.textContent?.trim()).toBe('Actual: Desactivado');
+    expect(el.querySelector('.aprov-estado')?.textContent?.trim()).toBe('Sin cambios por aplicar.');
+    expect(aceptar().disabled).toBe(true);
+
+    component.activar.set(true);
+    fixture.detectChanges();
+
+    expect(el.querySelector('.aprov-estado')?.textContent?.trim()).toBe('Cambio sin aplicar: pasará a Activado al pulsar Aceptar.');
+    expect(el.querySelector('.aprov-pill')?.textContent?.trim()).toBe('Actual: Desactivado');
+    expect(aceptar().disabled).toBe(false);
+  });
+
   // Legacy ActAprovechamiento.vue (makeOperation): postAprovechamiento for the previous month (January -> December).
   it('applies the switch for the previous month', () => {
     const { component, service } = setup(1);
