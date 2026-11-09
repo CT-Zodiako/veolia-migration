@@ -70,6 +70,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: DashboardComponent },
       { path: 'cambiar-clave', component: ChangePassComponent },
+      { path: 'documentacion', loadComponent: () => import('./components/documentacion/documentacion-page.component').then(m => m.DocumentacionPageComponent) },
       { path: 'usuarios', component: UsuariosComponent },
       { path: 'aps-usuario', component: ApsxUsuarioComponent },
       { path: 'asignacion-sistema', component: AsignacionSistemaComponent },

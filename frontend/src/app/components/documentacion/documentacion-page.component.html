@@ -1,0 +1,131 @@
+@if (articuloActivo(); as articulo) {
+  <div class="doc-contenido">
+    <button type="button" class="doc-volver" (click)="volver()">
+      <i class="pi pi-arrow-left"></i> Volver al centro de documentación
+    </button>
+    <article class="doc-articulo card-section">
+      <div class="doc-articulo-meta">
+        <span class="doc-tag">{{ articulo.categoria }}</span>
+        @if (articulo.sistema) {
+          <span class="doc-sistema"><i class="pi pi-desktop" aria-hidden="true"></i> {{ articulo.sistema }}</span>
+        }
+      </div>
+      <h2>{{ articulo.titulo }}</h2>
+      <p class="doc-articulo-texto">{{ articulo.contenido }}</p>
+      @if (articulo.ruta) {
+        <a class="doc-ir" [routerLink]="articulo.ruta">Ir a la pantalla</a>
+      }
+      @for (seccion of articulo.secciones ?? []; track $index) {
+        <section class="doc-seccion">
+          <h3>{{ seccion.titulo }}</h3>
+          @for (parrafo of seccion.parrafos; track $index) {
+            <p>{{ parrafo }}</p>
+          }
+        </section>
+      }
+      @if (articulo.pasos?.length) {
+        <section class="doc-seccion-pasos">
+          <h3>Paso a paso</h3>
+          <ol class="doc-pasos">
+            @for (paso of articulo.pasos; track $index) {
+              <li>{{ paso }}</li>
+            }
+          </ol>
+        </section>
+      }
+      @if (articulo.notas?.length) {
+        <aside class="doc-notas">
+          <h3><i class="pi pi-info-circle" aria-hidden="true"></i> Tené en cuenta</h3>
+          <ul>
+            @for (nota of articulo.notas; track $index) {
+              <li>{{ nota }}</li>
+            }
+          </ul>
+        </aside>
+      }
+    </article>
+    @if (relacionados().length) {
+      <section class="card-section doc-relacionados" aria-labelledby="doc-rel">
+        <h3 id="doc-rel">Más de {{ articulo.categoria }}</h3>
+        <ul>
+          @for (rel of relacionados(); track rel.slug) {
+            <li><button type="button" class="doc-link" (click)="abrir(rel)">{{ rel.titulo }}</button></li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+} @else {
+  <section class="doc-hero" aria-labelledby="doc-hero-titulo">
+    <span class="doc-eyebrow">Centro de documentación</span>
+    <h2 id="doc-hero-titulo">¿En qué te podemos ayudar?</h2>
+    <p>Guías paso a paso de cada módulo de VEO-Regulator, Reliquidaciones y SUI 853.</p>
+    <label class="doc-buscador">
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <input
+        type="search"
+        aria-label="Buscar en la documentación"
+        placeholder="Buscá por pantalla, proceso o error… ej. “reversión”"
+        [value]="termino()"
+        (input)="buscar($any($event.target).value)"
+      />
+    </label>
+    <div class="doc-populares">
+      <span>Más buscado:</span>
+      @for (busqueda of busquedasPopulares; track busqueda) {
+        <button type="button" (click)="buscar(busqueda)">{{ busqueda }}</button>
+      }
+    </div>
+  </section>
+
+  <div class="doc-contenido doc-contenido-solapado">
+    @if (termino().trim()) {
+      <section class="card-section doc-resultados" aria-live="polite">
+        @if (resultados().length) {
+          <h3>{{ resultados().length }} {{ resultados().length === 1 ? 'resultado' : 'resultados' }}</h3>
+          @for (articulo of resultados(); track articulo.slug) {
+            <button type="button" class="doc-resultado" (click)="abrir(articulo)">
+              <i class="pi {{ icono(articulo.categoria) }}" aria-hidden="true"></i>
+              <span><strong>{{ articulo.titulo }}</strong><small>{{ articulo.categoria }}</small></span>
+            </button>
+          }
+        } @else {
+          <p class="doc-sin-resultados">
+            No encontramos artículos para “{{ termino().trim() }}”. Probá con otra palabra.
+          </p>
+        }
+      </section>
+    } @else {
+      <div class="doc-grid">
+        @for (modulo of modulos; track modulo.categoria) {
+          <article class="doc-modulo">
+            <div class="doc-modulo-encabezado">
+              <span class="doc-modulo-icono" aria-hidden="true"><i class="pi {{ icono(modulo.categoria) }}"></i></span>
+              <div>
+                <h3>{{ modulo.categoria }}</h3>
+                <span class="doc-modulo-cantidad">{{ modulo.articulos.length }} {{ modulo.articulos.length === 1 ? 'artículo' : 'artículos' }}</span>
+              </div>
+            </div>
+            <ul>
+              @for (articulo of modulo.articulos; track articulo.slug) {
+                <li><button type="button" class="doc-link" (click)="abrir(articulo)">{{ articulo.titulo }}</button></li>
+              }
+            </ul>
+          </article>
+        }
+      </div>
+    }
+
+    @if (preguntasFrecuentes.length) {
+      <section class="card-section doc-faq" aria-labelledby="doc-faq-titulo">
+        <h3 id="doc-faq-titulo">Preguntas frecuentes</h3>
+        @for (pregunta of preguntasFrecuentes; track pregunta.slug; let primera = $first) {
+          <details [open]="primera">
+            <summary>{{ pregunta.titulo }}</summary>
+            <p>{{ pregunta.contenido }}</p>
+          </details>
+        }
+      </section>
+    }
+  </div>
+}

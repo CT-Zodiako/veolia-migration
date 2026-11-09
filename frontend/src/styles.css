@@ -32,9 +32,6 @@
   --color-border-success-soft: #bbf7d0;
   --color-text-success: #16a34a;
 
-  /* Papel del "libro" de documentación (Dashboard) -- distinto de --color-bg-card
-     a propósito, busca un tono cálido tipo página en vez de superficie neutra. */
-  --color-bg-book-page: #fdfbf3;
 
   /* App shell (sidebar + top bar), navy palette from the Dashboard gerencial mockup. The sidebar stays
      navy in both themes; --shell-accent is the fixed brand red for the active bar/dot. */
@@ -77,7 +74,6 @@
   --color-border-success-soft: #1e4a2f;
   --color-text-success: #4ade80;
 
-  --color-bg-book-page: #2a2622;
 
   --shell-sidebar-bg: #0b1f3a;
   --shell-sidebar-bg-hover: #13294a;
