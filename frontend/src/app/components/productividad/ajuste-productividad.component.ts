@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ParametrosConsultaStateService } from '../../services/parametros-consulta-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,9 @@ import { ApsSelectorComponent } from '../shared/aps-selector.component';
 import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { periodoInicial } from '../shared/periodo-inicial.util';
+
+const FORMATO_VALOR = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 6 });
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 @Component({
   selector: 'app-ajuste-productividad',
@@ -114,10 +117,19 @@ export class AjusteProductividadComponent {
     this.editingValor.set(item ? redondeo(item.prodValor) : 0);
   }
 
+  // design/suministros-pantallas/16: stored value in es-CO with up to 6 decimals (legacy redondeo); '' when not set,
+  // which the template shows as "Sin valor · Pendiente".
   valorMostrado(): string {
     const item = this.item();
-    return item ? String(redondeo(item.prodValor)) : '-';
+    return item ? FORMATO_VALOR.format(redondeo(item.prodValor)) : '';
   }
+
+  // Selected period shown in the row, e.g. "Marzo 2026".
+  readonly periodoTexto = computed(() => {
+    const anno = this.anno();
+    const mes = this.mes();
+    return anno && mes ? `${MESES[mes - 1]} ${anno}` : '';
+  });
 
   cancelarEdicion(): void {
     this.editando.set(false);

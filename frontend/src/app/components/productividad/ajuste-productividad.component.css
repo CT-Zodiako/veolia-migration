@@ -12,11 +12,82 @@
   align-items: center;
 }
 
-.actions {
-  display: flex;
-  gap: 0.4rem;
+/* Keep the actions cell a real table cell (display:flex on a <td> made it shorter than two-line rows, so its
+   bottom border jumped); space the buttons with a margin instead of flex gap. */
+td.actions {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+td.actions p-button + p-button {
+  margin-left: 0.4rem;
 }
 
 .text-right {
   text-align: right;
+}
+
+/* design/suministros-pantallas/16: centered column, titled card, visible period, pending state, footer. */
+:host {
+  display: block;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.prod-header {
+  margin-bottom: 12px;
+}
+
+.prod-titulo {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.prod-ayuda {
+  margin: 0;
+  max-width: 600px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.prod-periodo {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.prod-valor {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.prod-sin-valor {
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.prod-pendiente {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #8a5200;
+  background: #fff1d6;
+}
+
+:host-context(.app-dark) .prod-pendiente {
+  color: #fbbf24;
+  background: #3a2a0b;
+}
+
+.prod-pie {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
 }

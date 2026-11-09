@@ -8,16 +8,24 @@
   </div>
 </div>
 
-<div class="card-section">
+<!-- design/suministros-pantallas/16-productividad-c-actual-mejorada.html: same Valor/Acciones row and inline edit;
+     titled card, visible period, "Sin valor · Pendiente" instead of "-", footer. -->
+<section class="card-section prod-card" aria-labelledby="prod-titulo">
+  <header class="prod-header">
+    <h2 class="prod-titulo" id="prod-titulo">Ajuste de productividad del período</h2>
+    <p class="prod-ayuda">Un único valor por APS y mes. Si aparece "Sin valor", agregalo con el botón de la fila; si ya existe, editalo.</p>
+  </header>
   <p-table [value]="consultado() ? [{}] : []" [loading]="loading()" [tableStyle]="{ 'min-width': '20rem' }">
     <ng-template pTemplate="header">
       <tr>
+        <th>Período</th>
         <th class="text-right">Valor</th>
         <th>Acciones</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body">
       <tr>
+        <td><span class="prod-periodo">{{ periodoTexto() }}</span></td>
         <td class="text-right">
           <p-inputnumber
             *ngIf="editando(); else valorReadonly"
@@ -27,7 +35,10 @@
             [minFractionDigits]="0"
             [maxFractionDigits]="6"
           ></p-inputnumber>
-          <ng-template #valorReadonly>{{ valorMostrado() }}</ng-template>
+          <ng-template #valorReadonly>
+            <span *ngIf="item() !== null; else sinValor" class="prod-valor">{{ valorMostrado() }}</span>
+            <ng-template #sinValor><span class="prod-sin-valor">Sin valor</span> <span class="prod-pendiente">Pendiente</span></ng-template>
+          </ng-template>
         </td>
         <td class="actions">
           <ng-container *ngIf="editando(); else accionEditar">
@@ -37,10 +48,10 @@
               (click)="cancelarEdicion()"></p-button>
           </ng-container>
           <ng-template #accionEditar>
-            <p-button *ngIf="item() === null; else accionEditarExistente" icon="pi pi-plus" severity="success" size="small"
+            <p-button *ngIf="item() === null; else accionEditarExistente" icon="pi pi-plus" size="small"
               ariaLabel="Agregar" pTooltip="Agregar" (click)="iniciarEdicion()"></p-button>
             <ng-template #accionEditarExistente>
-              <p-button icon="pi pi-pencil" severity="info" size="small" ariaLabel="Editar" pTooltip="Editar"
+              <p-button icon="pi pi-pencil" severity="secondary" [outlined]="true" size="small" ariaLabel="Editar" pTooltip="Editar"
                 (click)="iniciarEdicion()"></p-button>
             </ng-template>
           </ng-template>
@@ -49,8 +60,11 @@
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="2">Seleccione APS, año y mes para ver el valor de productividad.</td>
+        <td colspan="3">Seleccione APS, año y mes para ver el valor de productividad.</td>
       </tr>
     </ng-template>
   </p-table>
-</div>
+  <p class="prod-pie" *ngIf="consultado() && !loading()">{{
+    item() === null ? 'Este período aún no tiene ajuste de productividad.' : 'Ajuste registrado para el período. Usá Editar para cambiarlo.'
+  }}</p>
+</section>

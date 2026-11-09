@@ -158,7 +158,8 @@ describe('AjusteProductividadComponent (303)', () => {
         of({ data: { apsaId: 5, prodAnno: 2026, prodMes: 2, prodValor: 0.123456789 } })
       );
       expect(button('Agregar')).toBeNull();
-      expect(host.querySelector('td.text-right')!.textContent!.trim()).toBe('0.123457');
+      // design/suministros-pantallas/16: read-only value in es-CO (decimal comma), still rounded to 6 decimals.
+      expect(host.querySelector('td.text-right')!.textContent!.trim()).toBe('0,123457');
 
       button('Editar')!.click();
       fixture.detectChanges();
@@ -184,6 +185,30 @@ describe('AjusteProductividadComponent (303)', () => {
       component.editingValor.set(1.5);
       fixture.detectChanges();
       expect(button('Guardar')!.disabled).toBe(false);
+    });
+
+    // design/suministros-pantallas/16-productividad-c-actual-mejorada.html: titled card, visible period in the row,
+    // "Sin valor · Pendiente" instead of "-", and a footer explaining the state.
+    it('titles the card, shows the period and a pending state instead of "-"', () => {
+      const { host } = render(of({ data: null }));
+      const txt = (sel: string) => host.querySelector(sel)?.textContent?.replace(/\s+/g, ' ').trim();
+
+      expect(txt('.prod-titulo')).toBe('Ajuste de productividad del período');
+      expect(Array.from(host.querySelectorAll('thead th')).map((th) => th.textContent?.trim())).toEqual(['Período', 'Valor', 'Acciones']);
+      expect(txt('.prod-periodo')).toBe('Marzo 2026');
+      expect(txt('.prod-sin-valor')).toBe('Sin valor');
+      expect(txt('.prod-pendiente')).toBe('Pendiente');
+      expect(txt('.prod-pie')).toBe('Este período aún no tiene ajuste de productividad.');
+      expect(host.textContent).not.toContain(' - ');
+    });
+
+    it('shows the stored value with up to 6 decimals and a footer for an existing ajuste', () => {
+      const { host } = render(of({ data: { apsaId: 5, prodAnno: 2026, prodMes: 2, prodValor: 0.9824101 } }));
+      const txt = (sel: string) => host.querySelector(sel)?.textContent?.replace(/\s+/g, ' ').trim();
+
+      expect(txt('.prod-valor')).toBe('0,98241');
+      expect(host.querySelector('.prod-pendiente')).toBeNull();
+      expect(txt('.prod-pie')).toBe('Ajuste registrado para el período. Usá Editar para cambiarlo.');
     });
   });
 });
