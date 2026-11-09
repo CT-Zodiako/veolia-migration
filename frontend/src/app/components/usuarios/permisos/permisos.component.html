@@ -1,91 +1,168 @@
-<div class="permisos-container">
-  <div class="permisos-header">
-    <h2>Permisos del Usuario</h2>
-  </div>
-
-  <div *ngIf="error" class="error-message">{{ error }}</div>
-  <div *ngIf="success" class="success-message">{{ success }}</div>
-
-  <div class="filters">
-    <div class="form-group">
-      <label>Usuario</label>
-      <p-select
-        [options]="usuarioOptions"
-        [(ngModel)]="selectedUsuarioId"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Seleccione un usuario"
-        [style]="{width: '100%'}"
-        [filter]="true"
-        filterBy="label"
-        filterPlaceholder="Buscar usuario..."
-        (onChange)="cargarPermisos()"
-      ></p-select>
-    </div>
-  </div>
-
-  <div *ngIf="loading" class="loading-message"><i class="pi pi-spin pi-spinner"></i> Cargando permisos...</div>
-
-  <div *ngIf="!loading && selectedUsuarioId && sistemasPermisos.length === 0" class="empty-message">
-    <i class="pi pi-info-circle"></i>
-    Este usuario no tiene sistemas asignados. Asigná un sistema en la pestaña "Sistemas" antes de configurar sus permisos.
-  </div>
-
-  <div *ngIf="!loading && sistemasPermisos.length > 0" class="sistemas-list">
-    <div class="usuario-activo">
-      <i class="pi pi-user"></i>
-      Configurando permisos de <strong>{{ usuarioSeleccionadoNombre }}</strong>
+<div class="permisos-layout">
+  <aside class="card-section usuarios-card" aria-label="Usuarios">
+    <div class="usuarios-search">
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <input
+        type="text"
+        placeholder="Buscar usuario o correo"
+        aria-label="Buscar usuario"
+        [(ngModel)]="busqueda"
+      />
     </div>
 
-    <p-accordion class="sistemas-accordion">
-      <p-accordion-panel *ngFor="let sistema of sistemasPermisos" [value]="sistema.sistemaId">
-        <p-accordion-header>
-          <div class="panel-header">
-            <span class="panel-header-title">{{ sistema.sistemaNombre }}</span>
-            <span class="panel-header-count">{{ contarSeleccionados(sistema.items) }} / {{ contarTotal(sistema.items) }} seleccionados</span>
+    <div class="usuarios-list">
+      @for (usuario of usuariosFiltrados; track usuario.id) {
+        <button
+          type="button"
+          class="usuario-item"
+          [class.selected]="usuario.id === selectedUsuarioId"
+          [attr.aria-pressed]="usuario.id === selectedUsuarioId"
+          (click)="seleccionarUsuario(usuario.id)"
+        >
+          <span class="usuario-avatar" aria-hidden="true">{{ usuario.iniciales }}</span>
+          <span class="usuario-text">
+            <span class="usuario-nombre">{{ usuario.nombre }}</span>
+            <span class="usuario-correo">{{ usuario.correo }}</span>
+          </span>
+        </button>
+      } @empty {
+        <p class="usuarios-vacio">Ningún usuario coincide con la búsqueda.</p>
+      }
+    </div>
+
+    <p class="usuarios-footer">{{ usuariosFiltrados.length }} {{ usuariosFiltrados.length === 1 ? 'usuario' : 'usuarios' }}</p>
+  </aside>
+
+  <section class="card-section permisos-panel" [attr.aria-label]="usuarioSeleccionado ? 'Permisos de ' + usuarioSeleccionado.nombre : 'Permisos'">
+    @if (usuarioSeleccionado; as usuario) {
+      <header class="panel-header">
+        <div class="panel-usuario">
+          <span class="usuario-avatar usuario-avatar-lg" aria-hidden="true">{{ usuario.iniciales }}</span>
+          <div>
+            <h3 class="panel-usuario-nombre">{{ usuario.nombre }}</h3>
+            @if (usuario.correo) {
+              <span class="panel-usuario-correo">{{ usuario.correo }}</span>
+            }
           </div>
-        </p-accordion-header>
-        <p-accordion-content>
-          <div class="panel-actions">
-            <a (click)="marcarTodos(sistema, true)">Marcar todos</a>
-            <span class="panel-actions-separator">·</span>
-            <a (click)="marcarTodos(sistema, false)">Desmarcar todos</a>
-          </div>
-          <ng-container *ngTemplateOutlet="menuItems; context: { $implicit: sistema.items }"></ng-container>
-        </p-accordion-content>
-      </p-accordion-panel>
-    </p-accordion>
+        </div>
 
-    <div class="guardar-bar">
-      <p-button
-        icon="pi pi-save"
-        label="{{ loading ? 'Guardando...' : 'Guardar Permisos' }}"
-        [loading]="loading"
-        (click)="guardar()"
-        styleClass="w-full"
-      ></p-button>
-    </div>
-  </div>
+        @if (!loading && sistemasPermisos.length > 0) {
+          <div class="panel-sistemas">
+            <div class="sistema-chips" role="group" aria-label="Sistema">
+              @for (sistema of sistemasPermisos; track sistema.sistemaId) {
+                <button
+                  type="button"
+                  class="sistema-chip"
+                  [class.active]="sistema === sistemaActivo"
+                  [attr.aria-pressed]="sistema === sistemaActivo"
+                  (click)="seleccionarSistema(sistema.sistemaId)"
+                >
+                  {{ sistema.sistemaNombre }}
+                  <span class="sistema-chip-count">{{ contarSeleccionados(sistema.items) }} / {{ contarTotal(sistema.items) }}</span>
+                </button>
+              }
+            </div>
+            @if (sistemaActivo; as sistema) {
+              <div class="marcar-acciones">
+                <button type="button" (click)="marcarTodos(sistema, true)">Marcar todos</button>
+                <span aria-hidden="true">·</span>
+                <button type="button" (click)="marcarTodos(sistema, false)">Desmarcar todos</button>
+              </div>
+            }
+          </div>
+        }
+      </header>
+
+      <div class="panel-body">
+        @if (error) {
+          <div class="error-message">{{ error }}</div>
+        }
+        @if (success) {
+          <div class="success-message">{{ success }}</div>
+        }
+
+        @if (loading) {
+          <div class="loading-message"><i class="pi pi-spin pi-spinner"></i> Cargando permisos...</div>
+        } @else if (sistemasPermisos.length === 0) {
+          <div class="empty-message">
+            <i class="pi pi-info-circle"></i>
+            Este usuario no tiene sistemas asignados. Asigná un sistema en la pestaña "Sistemas" antes de configurar sus permisos.
+          </div>
+        } @else if (sistemaActivo; as sistema) {
+          <div class="grupos-grid">
+            @for (grupo of gruposDe(sistema); track grupo.key) {
+              <section class="grupo-card">
+                <header class="grupo-header">
+                  <label class="grupo-toggle">
+                    <input
+                      type="checkbox"
+                      [checked]="isGrupoSeleccionado(grupo)"
+                      [indeterminate]="isGrupoParcial(grupo)"
+                      [attr.aria-label]="'Todo ' + grupo.label"
+                      (change)="toggleGrupo(grupo)"
+                    />
+                    <span class="grupo-nombre">{{ grupo.label }}</span>
+                  </label>
+                  <span class="grupo-count">{{ contarSeleccionados(grupo.opciones) }} de {{ contarTotal(grupo.opciones) }}</span>
+                </header>
+                <div class="grupo-opciones">
+                  <ng-container *ngTemplateOutlet="opciones; context: { $implicit: grupo.opciones, grupo: grupo.label }"></ng-container>
+                </div>
+              </section>
+            }
+          </div>
+        }
+      </div>
+
+      @if (!loading && sistemasPermisos.length > 0) {
+        <footer class="permisos-bar">
+          <span class="cambios-text" [class.pendientes]="cambiosPendientes > 0">{{ cambiosTexto }}</span>
+          <span class="permisos-bar-spacer"></span>
+          <p-button
+            label="Descartar"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="cambiosPendientes === 0 || saving"
+            (onClick)="descartar()"
+          ></p-button>
+          <p-button
+            icon="pi pi-save"
+            [label]="saving ? 'Guardando...' : 'Guardar permisos'"
+            [loading]="saving"
+            [disabled]="cambiosPendientes === 0 || saving"
+            (onClick)="guardar()"
+          ></p-button>
+        </footer>
+      }
+    } @else {
+      <div class="permisos-empty-prompt">
+        <i class="pi pi-users" aria-hidden="true"></i>
+        <p>Seleccioná un usuario de la lista para ver y editar sus permisos.</p>
+      </div>
+    }
+  </section>
 </div>
 
-<ng-template #menuItems let-items>
-  <div *ngFor="let item of items" class="menu-item">
-    <div
-      class="menu-item-content"
-      [class.selected]="isSelected(item.id)"
-      [class.partial]="isPartiallySelected(item.id)"
-      (click)="toggleMenuItem(item.id)"
-    >
-      <p-checkbox
-        [binary]="true"
-        [ngModel]="isSelected(item.id)"
-        (click)="$event.stopPropagation()"
-        (onChange)="toggleMenuItem(item.id)"
-      ></p-checkbox>
-      <label>{{ item.label }}</label>
+<ng-template #opciones let-nodos let-grupo="grupo">
+  @for (nodo of nodos; track nodo.id) {
+    <div class="opcion">
+      <label class="opcion-row">
+        <span class="opcion-label">{{ nodo.label }}</span>
+        <span class="switch">
+          <input
+            type="checkbox"
+            [checked]="isOpcionSeleccionada(nodo)"
+            [attr.aria-label]="grupo + ': ' + nodo.label"
+            (change)="toggleOpcion(nodo)"
+          />
+          <span class="switch-track" aria-hidden="true"></span>
+        </span>
+      </label>
+      @if (nodo.children.length > 0) {
+        <div class="opcion-children">
+          <ng-container *ngTemplateOutlet="opciones; context: { $implicit: nodo.children, grupo: grupo }"></ng-container>
+        </div>
+      }
     </div>
-    <div *ngIf="item.children && item.children.length > 0" class="menu-children">
-      <ng-container *ngTemplateOutlet="menuItems; context: { $implicit: item.children }"></ng-container>
-    </div>
-  </div>
+  }
 </ng-template>
