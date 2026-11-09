@@ -10,12 +10,12 @@ Reemplaza el contenido simulado de /documentacion por documentación real de có
 - S5: Existing page behavior (design 02-centro-pagina: search, popular chips, module cards, FAQ, support card, ?articulo= deep link, back) keeps working.
 
 ## Tasks
-- T1 [S3,S4,S5] inline+worker — article model + page rendering + data split into `frontend/src/app/services/documentacion/*.docs.ts` + integrity/coverage tests — DONE (17 tests green, full coverage test skipped until T3–T6 publish) — commit: not yet (user reviewing)
-- T2 [S1,S2] worker — Primeros pasos + Configuración + general FAQ → `general.docs.ts` — DONE, published (21 articles) — commit: not yet (user reviewing)
-- T3 [S1,S2] worker (DEFERRED by L3: content written, NOT published in index.ts) — Cálculo de Tarifas + Suministros → `tarifas-suministros.docs.ts` — commit: pending
-- T4 [S1,S2] worker (DEFERRED by L3: content written, NOT published in index.ts) — Reversiones + PGIRS + Informes (generales/gerenciales) → `reversiones-pgirs-informes.docs.ts` — commit: pending
-- T5 [S1,S2] worker (DEFERRED by L3: content written, NOT published in index.ts) — Reliquidaciones + Proyecciones → `reliquidaciones-proyecciones.docs.ts` — commit: pending
-- T6 [S1,S2] worker (DEFERRED by L3: content written, NOT published in index.ts) — SUI 853 → `sui853.docs.ts` — commit: pending
+- T1 [S3,S4,S5] inline+worker — article model + page rendering + data split into `frontend/src/app/services/documentacion/*.docs.ts` + integrity/coverage tests — DONE (17 tests green, full coverage test skipped until T3–T6 publish) — commit: 18a8a07
+- T2 [S1,S2] worker — Primeros pasos + Configuración + general FAQ → `general.docs.ts` — DONE, published (21 articles) — commit: 18a8a07
+- T3 [S1,S2] worker (DEFERRED by L3: content written in bca1887, NOT published in index.ts) — Cálculo de Tarifas + Suministros → `tarifas-suministros.docs.ts` — commit: pending
+- T4 [S1,S2] worker (DEFERRED by L3: content written in bca1887, NOT published in index.ts) — Reversiones + PGIRS + Informes (generales/gerenciales) → `reversiones-pgirs-informes.docs.ts` — commit: pending
+- T5 [S1,S2] worker (DEFERRED by L3: content written in bca1887, NOT published in index.ts) — Reliquidaciones + Proyecciones → `reliquidaciones-proyecciones.docs.ts` — commit: pending
+- T6 [S1,S2] worker (DEFERRED by L3: content written in bca1887, NOT published in index.ts) — SUI 853 → `sui853.docs.ts` — commit: pending
 - T7 [S1-S5] inline — publish T3–T6 in index.ts, un-skip full coverage test, full suite, commit — DEFERRED by L3
 
 ## Log
@@ -25,3 +25,4 @@ Reemplaza el contenido simulado de /documentacion por documentación real de có
 - L4: A concurrent session (login work) reverted ayuda.service.ts to HEAD and removed the floating help button (ayuda-flotante now only hosts the support menu; its .css staged as deleted). Parent re-applied only the documentation part of ayuda.service.ts and the '/documentacion' title in layout.component.ts; the other session's changes were left untouched.
 - L5: Evidence: documentacion page + content specs 17 passed, 1 skipped (full coverage, until T3–T6). Full suite: 21 failures in unrelated specs (facturacion, sui-integracion, sui-reversiones, verificacion-aps, reliq-tarificador) that pass in isolation (53/53) — load flakiness, not caused by this change.
 - L6: "no voe nada en docuentacon y ese boton de contato a soporte quitalo quita todo ese de srpote" — Cause of empty page: dev server on :4200 never picked up the worker's write to general.docs.ts (served `var DOCS_GENERAL = []`); touching the file rebuilt it. Support card and the "escribile a Soporte Directo" hint removed from /documentacion (test pins: no `.doc-soporte`, no "soporte" text). 17 passed, 1 skipped.
+- L7: "commitea" — commits 376f08d (design boards), 18a8a07 (page + general docs), bca1887 (unpublished drafts). backend/Veolia.Api/appsettings.json left uncommitted (not part of this feature).
