@@ -1,69 +1,213 @@
-.aps-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 24px;
+/* Warn tones are not global tokens yet; scoped here with their dark variants (design/usuarios-aps). */
+:host {
+  --aps-warn-text: #8a5200;
+  --aps-warn-bg: #fff1d6;
 }
 
-.aps-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--color-border);
+:host-context(.app-dark) {
+  --aps-warn-text: #fbbf24;
+  --aps-warn-bg: #3a2a0b;
 }
 
-.aps-header h2 {
-  color: var(--color-brand-strong);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
+.aps-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 16px 0;
 }
 
-.aps-subtitle {
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  margin: 8px 0 0 0;
-}
-
-.filters {
-  margin-bottom: 24px;
-}
-
-.form-group label {
-  display: block;
-  color: var(--color-text-body);
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.picklist-card {
+.card-section {
   background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
-  padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
 }
 
-.aps-chip {
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--color-brand-accent);
+  outline-offset: 2px;
+}
+
+/* Lista de usuarios (mismo patrón que Sistemas y Permisos) */
+
+.usuarios-card {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.usuarios-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+}
+
+.usuarios-search:focus-within {
+  border-color: var(--color-brand-accent);
+}
+
+.usuarios-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 14px;
+}
+
+.usuarios-search input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.usuarios-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.usuario-item {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.usuario-item:hover {
+  background: var(--color-bg-soft);
+}
+
+.usuario-item.selected {
+  background: var(--color-bg-danger-soft);
+  box-shadow: inset 3px 0 0 #f10400;
+}
+
+.usuario-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--shell-avatar-bg);
+  color: var(--shell-avatar-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.usuario-avatar-lg {
+  width: 42px;
+  height: 42px;
   font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-body);
 }
 
-.aps-chip i {
-  color: var(--color-brand-accent);
-  font-size: 15px;
+.usuario-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.empty-list-message {
-  padding: 24px 12px;
-  text-align: center;
-  color: var(--color-text-muted);
+.usuario-nombre {
+  color: var(--color-text-primary);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.usuario-correo {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.usuarios-vacio,
+.usuarios-footer {
+  margin: 4px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+/* Panel de APS */
+
+.aps-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.panel-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.panel-usuario-nombre {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 17px;
+}
+
+.panel-usuario-correo {
+  color: var(--color-text-secondary);
   font-size: 13px;
+}
+
+.aps-pill {
+  padding: 1px 8px;
+  border: 1px solid var(--color-border-success-soft);
+  border-radius: 999px;
+  background: var(--color-bg-success-soft);
+  color: var(--color-text-success);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-body {
+  padding: 16px 20px;
+}
+
+.loading-message,
+.empty-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
 }
 
 .error-message {
@@ -84,4 +228,174 @@
   border-radius: 8px;
   font-size: 14px;
   margin-bottom: 16px;
+}
+
+.aps-empty-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.aps-empty-prompt i {
+  color: var(--color-text-muted);
+  font-size: 32px;
+}
+
+.aps-empty-prompt p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Herramientas: buscador + chips */
+
+.aps-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.aps-search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.aps-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg-card);
+  color: var(--color-text-body);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.aps-chip:hover {
+  background: var(--color-bg-soft);
+}
+
+.aps-chip.active {
+  background: var(--shell-sidebar-bg);
+  border-color: var(--shell-sidebar-bg);
+  color: var(--shell-sidebar-text-strong);
+}
+
+/* Grilla de APS */
+
+.aps-grid {
+  display: grid;
+  /* Tiles wrap to the panel width (the tab panel can be narrow), so names never break mid-word. */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.aps-tile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg-card);
+  color: var(--color-text-body);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.aps-tile:hover {
+  background: var(--color-bg-soft);
+}
+
+.aps-tile input {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #c40300;
+  cursor: pointer;
+}
+
+.aps-tile.checked {
+  border-color: #c40300;
+  background: var(--color-bg-danger-soft);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.aps-tile.changed {
+  box-shadow: 0 0 0 2px var(--aps-warn-text);
+}
+
+.aps-tile-nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aps-tile-cambio {
+  flex-shrink: 0;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--aps-warn-bg);
+  color: var(--aps-warn-text);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.aps-vacio {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 16px 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+/* Barra de guardado */
+
+.aps-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0 0 12px 12px;
+  background: var(--color-bg-card);
+}
+
+.cambios-text {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.cambios-text.pendientes {
+  color: var(--color-brand-strong);
+  font-weight: 600;
+}
+
+.aps-bar-spacer {
+  flex: 1;
+}
+
+@media (max-width: 760px) {
+  .aps-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .usuarios-card {
+    position: static;
+  }
 }

@@ -1,70 +1,144 @@
-<div class="aps-container">
-  <div class="aps-header">
-    <h2>Asignación de APS por Usuario</h2>
-    <p class="aps-subtitle">Elegí un usuario y arrastrá los APS entre columnas para asignarlos o quitarlos.</p>
-  </div>
-
-  <div *ngIf="error" class="error-message">{{ error }}</div>
-  <div *ngIf="success" class="success-message">{{ success }}</div>
-
-  <div class="filters">
-    <div class="form-group">
-      <label>Usuario</label>
-      <p-select
-        [options]="usuarioOptions"
-        [(ngModel)]="selectedUsuarioId"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Seleccione un usuario"
-        [style]="{width: '100%'}"
-        [filter]="true"
-        filterBy="label"
-        filterPlaceholder="Buscar usuario..."
-        (onChange)="onUsuarioChange()"
-      ></p-select>
+<div class="aps-layout">
+  <aside class="card-section usuarios-card" aria-label="Usuarios">
+    <div class="usuarios-search">
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <input
+        type="text"
+        placeholder="Buscar usuario o correo"
+        aria-label="Buscar usuario"
+        [(ngModel)]="busqueda"
+      />
     </div>
-  </div>
 
-  <div *ngIf="selectedUsuarioId" class="picklist-card">
-    <p-pickList
-      [source]="listaAps[0]"
-      [target]="listaAps[1]"
-      sourceHeader="APS SIN ASIGNAR"
-      targetHeader="APS ASIGNADAS"
-      [dragdrop]="true"
-      [responsive]="true"
-      [sourceStyle]="{height: '360px'}"
-      [targetStyle]="{height: '360px'}"
-      [showSourceControls]="false"
-      [showTargetControls]="false"
-      [filterBy]="'APSA_NOMAPS'"
-      [showSourceFilter]="true"
-      [showTargetFilter]="true"
-      sourceFilterPlaceholder="Buscar APS..."
-      targetFilterPlaceholder="Buscar APS..."
-      breakpoint="1400px"
-    >
-      <ng-template let-aps pTemplate="item">
-        <div class="aps-chip">
-          <i class="pi pi-map-marker"></i>
-          <span>{{ aps.APSA_NOMAPS }}</span>
+    <div class="usuarios-list">
+      @for (usuario of usuariosFiltrados; track usuario.id) {
+        <button
+          type="button"
+          class="usuario-item"
+          [class.selected]="usuario.id === selectedUsuarioId"
+          [attr.aria-pressed]="usuario.id === selectedUsuarioId"
+          (click)="seleccionarUsuario(usuario.id)"
+        >
+          <span class="usuario-avatar" aria-hidden="true">{{ usuario.iniciales }}</span>
+          <span class="usuario-text">
+            <span class="usuario-nombre">{{ usuario.nombre }}</span>
+            <span class="usuario-correo">{{ usuario.correo }}</span>
+          </span>
+        </button>
+      } @empty {
+        <p class="usuarios-vacio">Ningún usuario coincide con la búsqueda.</p>
+      }
+    </div>
+
+    <p class="usuarios-footer">{{ usuariosFiltrados.length }} {{ usuariosFiltrados.length === 1 ? 'usuario' : 'usuarios' }}</p>
+  </aside>
+
+  <section class="card-section aps-panel" [attr.aria-label]="usuarioSeleccionado ? 'APS de ' + usuarioSeleccionado.nombre : 'APS'">
+    @if (usuarioSeleccionado; as usuario) {
+      <header class="panel-header">
+        <div class="panel-usuario">
+          <span class="usuario-avatar usuario-avatar-lg" aria-hidden="true">{{ usuario.iniciales }}</span>
+          <div>
+            <h3 class="panel-usuario-nombre">{{ usuario.nombre }}</h3>
+            <span class="panel-usuario-correo">{{ usuario.correo }}</span>
+          </div>
         </div>
-      </ng-template>
-      <ng-template pTemplate="emptymessagesource">
-        <div class="empty-list-message">Todos los APS están asignados</div>
-      </ng-template>
-      <ng-template pTemplate="emptymessagetarget">
-        <div class="empty-list-message">Sin APS asignados todavía</div>
-      </ng-template>
-    </p-pickList>
-  </div>
+        @if (!loading && aps.length > 0) {
+          <span class="aps-pill">{{ resumenTexto }}</span>
+        }
+      </header>
 
-  <p-button
-    *ngIf="selectedUsuarioId"
-    icon="pi pi-save"
-    label="{{ loading ? 'Guardando...' : 'Actualizar Asignación de APS' }}"
-    [loading]="loading"
-    (click)="guardar()"
-    styleClass="w-full"
-  ></p-button>
+      <div class="panel-body">
+        @if (error) {
+          <div class="error-message">{{ error }}</div>
+        }
+        @if (success) {
+          <div class="success-message">{{ success }}</div>
+        }
+
+        @if (loading) {
+          <div class="loading-message"><i class="pi pi-spin pi-spinner"></i> Cargando APS...</div>
+        } @else if (aps.length === 0) {
+          @if (!error) {
+            <div class="empty-message"><i class="pi pi-info-circle"></i> No hay APS disponibles para asignar.</div>
+          }
+        } @else {
+          <div class="aps-tools">
+            <div class="usuarios-search aps-search">
+              <i class="pi pi-search" aria-hidden="true"></i>
+              <input
+                type="text"
+                placeholder="Buscar APS"
+                aria-label="Buscar APS"
+                [(ngModel)]="busquedaAps"
+              />
+            </div>
+            <button type="button" class="aps-chip" (click)="marcarVisibles(true)">Seleccionar todos</button>
+            <button type="button" class="aps-chip" (click)="marcarVisibles(false)">Ninguno</button>
+            <button
+              type="button"
+              class="aps-chip"
+              [class.active]="soloAsignados"
+              [attr.aria-pressed]="soloAsignados"
+              (click)="toggleSoloAsignados()"
+            >Solo asignados</button>
+          </div>
+
+          <div class="aps-grid">
+            @for (item of apsVisibles; track item.APSA_ID) {
+              <label
+                class="aps-tile"
+                [class.checked]="isAsignada(item)"
+                [class.changed]="isCambiada(item)"
+                [attr.title]="item.APSA_NOMAPS"
+              >
+                <input
+                  type="checkbox"
+                  [checked]="isAsignada(item)"
+                  [attr.aria-label]="item.APSA_NOMAPS"
+                  [attr.aria-describedby]="isCambiada(item) ? 'aps-cambio-' + item.APSA_ID : null"
+                  (change)="toggleAps(item)"
+                />
+                <span class="aps-tile-nombre">{{ item.APSA_NOMAPS }}</span>
+                @if (isCambiada(item)) {
+                  <span class="aps-tile-cambio" [id]="'aps-cambio-' + item.APSA_ID" title="Cambio sin guardar">cambio</span>
+                }
+              </label>
+            } @empty {
+              <p class="aps-vacio">Ningún APS coincide con la búsqueda.</p>
+            }
+          </div>
+        }
+      </div>
+
+      @if (!loading && aps.length > 0) {
+        <footer class="aps-bar">
+          <span class="cambios-text" [class.pendientes]="cambiosPendientes > 0">{{ cambiosTexto }}</span>
+          <span class="aps-bar-spacer"></span>
+          <p-button
+            label="Descartar"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="cambiosPendientes === 0 || saving"
+            (onClick)="descartar()"
+          ></p-button>
+          <p-button
+            icon="pi pi-save"
+            [label]="saving ? 'Guardando...' : 'Guardar APS'"
+            [loading]="saving"
+            [disabled]="cambiosPendientes === 0 || saving"
+            (onClick)="guardar()"
+          ></p-button>
+        </footer>
+      }
+    } @else {
+      @if (error) {
+        <div class="panel-body"><div class="error-message">{{ error }}</div></div>
+      }
+      <div class="aps-empty-prompt">
+        <i class="pi pi-users" aria-hidden="true"></i>
+        <p>Seleccioná un usuario de la lista para ver y editar sus APS.</p>
+      </div>
+    }
+  </section>
 </div>
