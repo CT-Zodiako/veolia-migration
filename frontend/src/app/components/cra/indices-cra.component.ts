@@ -14,6 +14,11 @@ import { AnnoSelectorComponent } from '../shared/anno-selector.component';
 import { MesSelectorComponent } from '../shared/mes-selector.component';
 import { periodoInicial } from '../shared/periodo-inicial.util';
 
+const DESCRIPCION_INDICES: Record<string, string> = {
+  IPC: 'Índice de precios al consumidor',
+  SMLV: 'Salario mínimo legal vigente (pesos)'
+};
+
 @Component({
   selector: 'app-indices-cra',
   standalone: true,
@@ -93,6 +98,23 @@ export class IndicesCraComponent implements OnInit {
     this.mes.set(value);
     this.consultar();
   }
+
+  // design/suministros-pantallas/18: full value in Colombian format without rounding (accounting values, up to 15 decimals).
+  formatoValor(valor: number | string | null | undefined): string {
+    if (valor === null || valor === undefined || valor === '') return '—';
+    const texto = String(valor);
+    if (!/^-?\d+(\.\d+)?$/.test(texto)) return texto;
+    const [entero, decimales] = texto.split('.');
+    const agrupado = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return decimales ? `${agrupado},${decimales}` : agrupado;
+  }
+
+  /** Full name shown under the índice code; only for the índices whose meaning is confirmed. */
+  descripcionIndice(paraIndice20011: number): string {
+    return DESCRIPCION_INDICES[this.nombreIndice(paraIndice20011).trim().toUpperCase()] ?? '';
+  }
+
+  readonly totalIndices = 4;
 
   nombreIndice(paraIndice20011: number): string {
     return this.catalogo().get(paraIndice20011) ?? `Índice ${paraIndice20011}`;
